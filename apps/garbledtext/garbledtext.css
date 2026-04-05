@@ -1,0 +1,144 @@
+* {
+    font-family: "微软雅黑", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #3C4A4F;
+    color: #ddd;
+    padding: 20px;
+}
+
+.container {
+    background-color: #4A5859;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.title {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 14px;
+}
+
+.section {
+    margin-bottom: 14px;
+}
+
+.section-title {
+    display: block;
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 6px;
+}
+
+textarea {
+    width: 100%;
+    background-color: #2E3D3F;
+    border: 1px solid #5A6B6C;
+    color: #ddd;
+    font-size: 14px;
+    font-family: "Consolas", "微软雅黑", monospace;
+    padding: 10px;
+    border-radius: 4px;
+    outline: none;
+    resize: vertical;
+}
+
+textarea:focus {
+    border-color: #6A9BCC;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+thead th {
+    background-color: #3E5254;
+    padding: 10px 8px;
+    text-align: left;
+    border: 1px solid #5A6B6C;
+    position: sticky;
+    top: 0;
+}
+
+tbody td {
+    padding: 8px;
+    border: 1px solid #5A6B6C;
+    vertical-align: top;
+    word-break: break-all;
+}
+
+tbody tr:hover {
+    background-color: #3E5254;
+}
+
+.table-wrapper {
+    border: 1px solid #5A6B6C;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.table-header,
+.table-body {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.table-body-scroll {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.table-header th:nth-child(1),
+.table-body td:nth-child(1) {
+    width: 18%;
+}
+
+.table-header th:nth-child(2),
+.table-body td:nth-child(2) {
+    width: 18%;
+}
+
+.table-header th:nth-child(3),
+.table-body td:nth-child(3) {
+    width: 64%;
+}
+
+.notice {
+    background-color: #5C4A3A;
+    border-left: 4px solid #E8A84C;
+    color: #F0C878;
+    font-size: 13px;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    border-radius: 3px;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 14px;
+}
+
+button {
+    background-color: #5A6B6C;
+    border: 1px solid #6A7B7C;
+    color: #ddd;
+    font-size: 14px;
+    padding: 8px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #6A7B7C;
+}

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>时间转换器</title>
+    <link rel="stylesheet" href="timeconvert.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">时间</div>
+
+        <!-- 时间戳与时间互转 -->
+        <div class="section section-timestamp">
+        <div class="row">
+            <label>TimeStamp:</label>
+            <input type="number" id="timestamp-input" value="0" min="0">
+            <select id="timestamp-unit">
+                <option value="s">Second(s)</option>
+                <option value="ms">Millisecond(ms)</option>
+            </select>
+            <label>Time:</label>
+            <input type="text" id="time-input" placeholder="yyyy-MM-dd HH:mm:ss">
+        </div>
+
+        <div class="row">
+            <button id="btn-ts2time">Timestamp-&gt;Time</button>
+            <button id="btn-time2ts">Time-&gt;Timestamp</button>
+        </div>
+
+        <hr class="separator">
+
+        <!-- 当前时间实时显示 -->
+        <div class="row">
+            <label>Current timestamp:</label>
+            <input type="text" id="current-timestamp" class="current-timestamp" readonly>
+            <label>Current time:</label>
+            <input type="text" id="current-time" class="current-time" readonly>
+            <button id="btn-pause">Pause</button>
+        </div>
+
+        <hr class="separator">
+
+        <!-- 单位换算提示 -->
+        <div class="comment">
+            <span>1s = 1000ms</span>
+            <span>1ms = 1000μs</span>
+            <span>1μs = 1000ns</span>
+            <span>1ns = 1000ps</span>
+        </div>
+        </div>
+
+        <!-- 时区转换 -->
+        <div class="section section-timezone">
+        <div class="row">
+            <label>From Time:</label>
+            <input type="datetime-local" id="from-time" step="60">
+            <label>From Timezone:</label>
+            <select id="from-tz" class="tz-select"></select>
+            <label>To Timezone:</label>
+            <select id="to-tz" class="tz-select"></select>
+            <label>To Time:</label>
+            <input type="text" id="to-time" class="tz-out" readonly>
+            <button id="btn-swap">Swap</button>
+        </div>
+        </div>
+    </div>
+
+    <script src="timeconvert.js"></script>
+</body>
+</html>

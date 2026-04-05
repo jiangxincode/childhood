@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MD5 演示</title>
+    <script src="js/md5.js"></script>
+</head>
+<body>
+<h2>MD5 加密演示</h2>
+<input type="text" id="inputText" placeholder="输入内容">
+<button onclick="showMD5()">加密</button>
+<p>MD5结果：<span id="md5Result"></span></p>
+
+<script>
+    function showMD5() {
+        var text = document.getElementById('inputText').value;
+        var result = md5(text);
+        document.getElementById('md5Result').textContent = result;
+    }
+</script>
+</body>
+</html>

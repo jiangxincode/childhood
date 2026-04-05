@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>乱码恢复</title>
+    <link rel="stylesheet" href="garbledtext.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">乱码恢复</div>
+
+        <div class="section">
+            <label class="section-title">Please enter the garbled text:</label>
+            <textarea id="input-area" rows="6">鐢变簬鍦ㄧ被璺緞涓彂鐜颁簡涓€涓垨澶氫釜澶勭悊绋嬪簭锛屽洜姝ゅ惎鐢ㄤ簡</textarea>
+        </div>
+        <div class="notice">说明：并非所有乱码都可以被完美恢复，乱码中的问号说明该字符已经丢失，是无法恢复的。</div>
+        <div class="section table-wrapper">
+            <table class="table-header">
+                <thead>
+                    <tr>
+                        <th>Current Encoding</th>
+                        <th>Original Encoding</th>
+                        <th>Recovered Result</th>
+                    </tr>
+                </thead>
+            </table>
+            <div class="table-body-scroll">
+                <table class="table-body">
+                    <tbody id="result-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button id="btn-recover">Try All Encoding Combinations</button>
+        </div>
+    </div>
+
+    <script src="garbledtext.js"></script>
+</body>
+</html>

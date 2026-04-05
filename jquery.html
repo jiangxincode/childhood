@@ -1,0 +1,60 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@2.2.4/dist/jquery.min.js" type="text/javascript"></script>
+
+<style type="text/css">
+.red {
+	background-color: Red;
+}
+
+.green {
+	background-color: Green;
+}
+
+.blue {
+	background-color: Blue;
+}
+</style>
+
+<script type="text/javascript">
+
+        $(document).ready(
+        function() {
+            $("div").addClass("blue");
+            //$("#olID>li").addClass("green");
+
+            $("#olID>li").hover(
+            function() {
+                $(this).addClass("red")
+            },
+            function() {
+                $(this).removeClass("red")
+            });
+
+            $("#olID>li:last").hover(
+            function() {
+                $(this).addClass("green");
+
+            },
+            function() {
+                $(this).removeClass("green");
+
+            })
+        })
+
+    </script>
+
+</head>
+<body>
+	<form id="form1">
+		<div>
+			<ol id="olID">
+				<li>jiangxin</li>
+				<li>jiangxinnju@163.com</li>
+			</ol>
+		</div>
+	</form>
+</body>
+</html>

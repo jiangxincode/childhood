@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>色卡</title>
+    <link rel="stylesheet" href="colorcard.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">色卡</div>
+        <div class="section">
+            <select id="category-select">
+                <option value="ordinary" selected>Ordinary Colors</option>
+                <option value="ral">Ral Colors</option>
+            </select>
+        </div>
+        <div class="table-wrapper">
+            <table id="color-table">
+                <thead>
+                    <tr>
+                        <th style="width:15%">颜色</th>
+                        <th style="width:25%">英文</th>
+                        <th style="width:30%">中文</th>
+                        <th style="width:30%">RGB代码</th>
+                    </tr>
+                </thead>
+                <tbody id="color-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+    <script src="colorcard.js"></script>
+</body>
+</html>

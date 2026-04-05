@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Protobuf转换(Have Proto File)</title>
+    <link rel="stylesheet" href="protobuf-supervised.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">Protobuf转换(Have Proto File)</div>
+
+        <div class="section">
+            <label class="section-title">Proto File (.proto or .desc)</label>
+            <div class="file-row">
+                <input type="file" id="proto-file" accept=".proto,.desc,.bin">
+                <span id="file-status" class="file-status">未选择文件</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <label class="section-title">Message Type Name (留空则自动匹配)</label>
+            <input type="text" id="message-type" placeholder="e.g. AddressBook, Person">
+        </div>
+
+        <div class="content-panel">
+            <div class="text-panel">
+                <label class="section-title">Hex Input</label>
+                <textarea id="input-area" rows="18" spellcheck="false">0a2f0a084a6f686e20446f6510011a106a6f686e406578616d706c652e636f6d220f0a0b3131312d3232322d33333310010a1e0a084a616e6520446f6510021a106a616e65406578616d706c652e636f6d</textarea>
+            </div>
+            <div class="text-panel">
+                <label class="section-title">JSON Output</label>
+                <textarea id="output-area" rows="18" readonly spellcheck="false"></textarea>
+            </div>
+        </div>
+
+        <div class="operation-panel">
+            <button id="convert-btn">Convert</button>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/protobufjs@7/dist/protobuf.min.js"></script>
+    <script src="protobuf-supervised.js"></script>
+</body>
+</html>

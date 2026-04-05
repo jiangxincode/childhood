@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>亲戚计算器</title>
+    <link rel="stylesheet" href="relationship.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">亲戚关系</div>
+        <div class="display">
+            <input type="text" id="input-field" readonly placeholder="">
+            <input type="text" id="output-field" readonly placeholder="">
+        </div>
+        <div class="buttons">
+            <button class="btn" data-action="父">父</button>
+            <button class="btn" data-action="母">母</button>
+            <button class="btn" data-action="←">←</button>
+            <button class="btn" data-action="AC">AC</button>
+
+            <button class="btn" data-action="兄">兄</button>
+            <button class="btn" data-action="弟">弟</button>
+            <button class="btn" data-action="夫">夫</button>
+            <button class="btn disabled">&nbsp;</button>
+
+            <button class="btn" data-action="姐">姐</button>
+            <button class="btn" data-action="妹">妹</button>
+            <button class="btn" data-action="妻">妻</button>
+            <button class="btn" data-action="的">的</button>
+
+            <button class="btn" data-action="儿">儿</button>
+            <button class="btn" data-action="女">女</button>
+            <button class="btn btn-equal" data-action="=">=</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <p id="modal-text"></p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-yes" id="modal-yes">是</button>
+                <button class="modal-btn modal-btn-no" id="modal-no">否</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="relationship.js"></script>
+</body>
+</html>

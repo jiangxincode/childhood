@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!--suppress ALL -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script language="javascript">
+    var AllowImgFileSize = 512;                //允许上传图片文件的大小 0为无限制 单位：KB
+    var AllowImgWidth = 600;                        //允许上传的图片的宽度 0为无限制　单位：px(像素)
+    var AllowImgHeight = 600;                        //允许上传的图片的高度 0为无限制　单位：px(像素)
+    function checkImg() {
+        var txtImg = document.getElementById("txtImg");
+        if (txtImg.value == "") {
+            alert("请点击浏览按钮，选择您要上传的JPG或GIF文件!");
+            txtImg.focus();
+            return false;
+        }
+
+        var txtImg_url = txtImg.value.toLowerCase();
+        var txtImg_ext = txtImg_url.substring(txtImg_url.length - 3, txtImg_url.length);
+        if (txtImg_ext != "jpg" && txtImg_ext != "gif") {
+            alert("请选择JPG或GIF格式的文件!");
+            txtImg.select();
+            document.execCommand("Delete");
+            txtImg.focus();
+            return false;
+        }
+        var ErrMsgErrMsg = "";//错误信息
+        var img = new Image();
+        img.src = txtImg_url;
+        if (img.width > AllowImgWidth) {
+            ErrMsgErrMsg = "\n\n图片宽度超过限制 请上传宽度小于" + AllowImgWidth + "px的文件，当前图片宽度为" + img.width + "px";
+            alert(ErrMsgErrMsg);
+            return false;
+        }
+        if (img.height > AllowImgWidth) {
+            ErrMsgErrMsg = "\n\n图片高度超过限制 请上传高度小于" + AllowImgHeight + "px的文件，当前图片高度为" + img.height + "px";
+            alert(ErrMsgErrMsg);
+            return false;
+        }
+
+        var size = formatNum(img.fileSize / 1024, 2);
+        if (size > AllowImgFileSize) {
+            ErrMsgErrMsg = "\n\n图片文件大小超过限制 请上传小于" + AllowImgFileSize + "KB的文件，当前文件大小为" + size + "KB";
+            alert(ErrMsgErrMsg);
+            return false;
+        }
+        alert('ok!');
+        return true;
+    }
+
+    function formatNum(amt, pre) {
+        pre = pre > 0 && pre <= 20 ? pre : 2;
+
+        amt = parseFloat((amt + "").replace(/[^\d\.-]/g, "")).toFixed(pre) + "";
+        var left = amt.split(".")[0].split("").reverse();
+
+        var right = amt.split(".")[1];
+
+        var t = "";
+        for (var i = 0; i < left.length; i++) {
+            t += left[i] + ((i + 1) % 3 == 0 && (i + 1) != left.length ? "" : "");
+        }
+        return t.split("").reverse().join("") + "." + right;
+    }
+</script>
+
+<input name="txtImg" type="file" id="txtImg"/>
+<input name="btnUploadImg" type="button" id="btnUploadImg" value="上传" onclick="checkImg()"/>
+<span class="redcolor">(最佳图片尺寸:宽度不超过600像素,高度不超过600像素)</span>
+
+</body>
+</html>

@@ -1,0 +1,141 @@
+* {
+    font-family: "微软雅黑", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #3C4A4F;
+    color: #ddd;
+    padding: 20px;
+}
+
+.container {
+    background-color: #4A5859;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.title {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 18px;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+label {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="datetime-local"] {
+    background-color: #5A6B6C;
+    border: 1px solid #6A7B7C;
+    color: #ddd;
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 3px;
+    outline: none;
+}
+
+input[type="number"] {
+    width: 140px;
+}
+
+input[type="text"] {
+    flex: 1;
+    min-width: 160px;
+}
+
+input[type="datetime-local"] {
+    width: 220px;
+}
+
+select {
+    background-color: #5A6B6C;
+    border: 1px solid #6A7B7C;
+    color: #ddd;
+    font-size: 14px;
+    padding: 6px 8px;
+    border-radius: 3px;
+    outline: none;
+}
+
+button {
+    background-color: #5A6B6C;
+    border: 1px solid #6A7B7C;
+    color: #ddd;
+    font-size: 14px;
+    padding: 6px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+button:hover {
+    background-color: #6A7B7C;
+}
+
+.comment {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 14px;
+    padding: 6px 0;
+}
+
+.separator {
+    border: none;
+    border-top: 1px solid #5A6B6C;
+    margin: 10px 0;
+}
+
+.section {
+    padding: 16px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+}
+
+.section .row:last-child,
+.section .comment:last-child {
+    margin-bottom: 0;
+}
+
+.section-timestamp {
+    background-color: #3E5254;
+}
+
+.section-timezone {
+    background-color: #4A3E54;
+}
+
+.current-timestamp {
+    width: 200px;
+}
+
+.current-time {
+    width: 220px;
+}
+
+.tz-select {
+    width: 180px;
+}
+
+.tz-out {
+    width: 180px;
+}

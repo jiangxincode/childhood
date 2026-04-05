@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>颜色转换</title>
+    <link rel="stylesheet" href="colorconvert.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">颜色转换</div>
+
+        <!-- Color Box -->
+        <fieldset class="section">
+            <legend>Color Box</legend>
+            <div id="color-box"></div>
+        </fieldset>
+
+        <!-- RGB -->
+        <fieldset class="section">
+            <legend>RGB</legend>
+            <div class="row">
+                <label>R(Red, [0-255])</label>
+                <input type="number" id="rgb-r" min="0" max="255" value="0">
+                <label>G(Green, [0-255])</label>
+                <input type="number" id="rgb-g" min="0" max="255" value="0">
+                <label>B(Blue, [0-255])</label>
+                <input type="number" id="rgb-b" min="0" max="255" value="0">
+                <label>Hex</label>
+                <input type="text" id="rgb-hex" value="" title="0xFFFFFF格式常用在通用语言中(Java/C++等), #FFFFFF格式常用在标记语言中(XML/HTML等)">
+            </div>
+        </fieldset>
+
+        <!-- HSB/HSV -->
+        <fieldset class="section">
+            <legend>HSB/HSV</legend>
+            <div class="row">
+                <label>H(Hue, [0-360])</label>
+                <input type="number" id="hsv-h" min="0" max="360" value="0">
+                <label>S(Saturation, [0-100])</label>
+                <input type="number" id="hsv-s" min="0" max="100" value="100">
+                <label>B/V(Brightness/Value, [0-100])</label>
+                <input type="number" id="hsv-v" min="0" max="100" value="100">
+            </div>
+        </fieldset>
+
+        <!-- HSL -->
+        <fieldset class="section">
+            <legend>HSL</legend>
+            <div class="row">
+                <label>H(Hue, [0-360])</label>
+                <input type="number" id="hsl-h" min="0" max="360" value="0">
+                <label>S(Saturation, [0-100])</label>
+                <input type="number" id="hsl-s" min="0" max="100" value="100">
+                <label>L(Lightness, [0-100])</label>
+                <input type="number" id="hsl-l" min="0" max="100" value="50">
+            </div>
+        </fieldset>
+
+        <!-- CMYK -->
+        <fieldset class="section">
+            <legend>CMYK</legend>
+            <div class="row">
+                <label>C(Cyan, [0-100])</label>
+                <input type="number" id="cmyk-c" min="0" max="100" value="100">
+                <label>M(Magenta, [0-100])</label>
+                <input type="number" id="cmyk-m" min="0" max="100" value="100">
+                <label>Y(Yellow, [0-100])</label>
+                <input type="number" id="cmyk-y" min="0" max="100" value="100">
+                <label>K(Black, [0-100])</label>
+                <input type="number" id="cmyk-k" min="0" max="100" value="0">
+            </div>
+        </fieldset>
+
+        <!-- CIELAB -->
+        <fieldset class="section">
+            <legend>CIELAB</legend>
+            <div class="row">
+                <label>L([0-100])</label>
+                <input type="number" id="lab-l" min="0" max="100" value="50">
+                <label>A([-128-127])</label>
+                <input type="number" id="lab-a" min="-128" max="127" value="0">
+                <label>B([-128-127])</label>
+                <input type="number" id="lab-b" min="-128" max="127" value="0">
+            </div>
+        </fieldset>
+
+        <!-- 数值/百分比/16进制 -->
+        <fieldset class="section">
+            <legend>数值/百分比/16进制</legend>
+            <div class="row">
+                <label>[0-255]</label>
+                <input type="number" id="val-dec" min="0" max="255" value="0">
+                <label>[0%-100%]</label>
+                <input type="number" id="val-pct" min="0" max="100" value="0">
+                <label>[0x00-0xFF]</label>
+                <input type="text" id="val-hex" value="" title="0xFF格式常用在通用语言中(Java/C++等), #FF格式常用在标记语言中(XML/HTML等)">
+            </div>
+        </fieldset>
+    </div>
+    <script src="colorutils.js"></script>
+    <script src="colorconvert.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+/*stylesheet for My college.html*/
+div>p{
+border-style: solid;
+border-color: #000000;
+border-width: 2px;
+padding:10px;
+margin: 10px;
+background-color: #cccccc;}
+#top{
+font-size: 40px;
+font-weight: bold;}
+#backindex{
+position: absolute;
+right: 10px;
+top: 10px;}

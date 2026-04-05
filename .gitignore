@@ -1,0 +1,25 @@
+# Eclipse project
+.settings/
+.classpath
+
+
+# IDEA project
+*.idea/
+*.iml
+
+# VS Code project
+.vscode/
+
+# VIM
+*.swp
+
+# Node.js
+node_modules/
+
+# Others
+tmp/
+*.idx
+*.log
+.checkstyle
+.springBeans
+dependency-reduced-pom.xml

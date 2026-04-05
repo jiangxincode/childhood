@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>ASCII 查看器</title>
+    <link rel="stylesheet" href="asciiviewer.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">ASCII查看器</div>
+
+        <div class="section input-row">
+            <label class="section-title">输入汉字</label>
+            <input type="text" id="input-field" value="欢迎使用Aloys's Tool Box">
+            <select id="encoding-select">
+                <option value="utf-8" selected>UTF-8</option>
+                <option value="gb2312">GB2312</option>
+            </select>
+        </div>
+
+        <div class="section">
+            <label class="section-title" id="hex-title">16进制表示（UTF-8 编码）</label>
+            <textarea id="hex-area" readonly rows="5"></textarea>
+        </div>
+
+        <div class="section">
+            <label class="section-title" id="dec-title">10进制表示（UTF-8 编码）</label>
+            <textarea id="dec-area" readonly rows="5"></textarea>
+        </div>
+
+        <div class="section">
+            <label class="section-title">标准 7-bit ASCII 表（128 字符），鼠标悬停可查看十/十六进制值</label>
+            <div class="ascii-table" id="ascii-table"></div>
+        </div>
+    </div>
+
+    <script src="asciiviewer.js"></script>
+</body>
+</html>

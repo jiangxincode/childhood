@@ -1,0 +1,115 @@
+* {
+    font-family: "微软雅黑", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #3C4A4F;
+    color: #ddd;
+    padding: 20px;
+}
+
+.container {
+    background-color: #4A5859;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.title {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 14px;
+}
+
+.section {
+    margin-bottom: 12px;
+}
+
+.section-title {
+    display: block;
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 6px;
+}
+
+.file-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.file-status {
+    font-size: 12px;
+    color: #888;
+}
+
+input[type="file"] {
+    font-size: 13px;
+    color: #ddd;
+}
+
+input[type="text"] {
+    width: 100%;
+    background-color: #5A6B6C;
+    border: 1px solid #6A7B7C;
+    color: #ddd;
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 3px;
+    outline: none;
+}
+
+input[type="text"]:focus {
+    border-color: #6A9BCC;
+}
+
+.content-panel {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.text-panel {
+    flex: 1;
+}
+
+textarea {
+    width: 100%;
+    background-color: #2E3D3F;
+    border: 1px solid #5A6B6C;
+    color: #ddd;
+    font-size: 13px;
+    font-family: "Consolas", "Courier New", monospace;
+    padding: 10px;
+    border-radius: 4px;
+    outline: none;
+    resize: vertical;
+}
+
+textarea:focus {
+    border-color: #6A9BCC;
+}
+
+.operation-panel {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    background-color: #5A6B6C;
+    border: 1px solid #6A7B7C;
+    color: #ddd;
+    font-size: 13px;
+    padding: 8px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #6A8B8C;
+}

@@ -1,0 +1,92 @@
+* {
+    font-family: "微软雅黑", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #3C4A4F;
+    color: #ddd;
+    padding: 20px;
+}
+
+.container {
+    background-color: #4A5859;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.title {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 14px;
+}
+
+fieldset.section {
+    border: 1px solid #6A7B7C;
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+}
+
+legend {
+    color: #aaa;
+    font-size: 13px;
+    padding: 0 6px;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.row label {
+    font-size: 12px;
+    color: #bbb;
+    white-space: nowrap;
+}
+
+.row input[type="number"],
+.row input[type="text"] {
+    width: 80px;
+    background-color: #5A6B6C;
+    border: 1px solid #6A7B7C;
+    color: #ddd;
+    font-size: 13px;
+    padding: 6px 8px;
+    border-radius: 3px;
+    outline: none;
+    text-align: center;
+}
+
+.row input:focus {
+    border-color: #6A9BCC;
+}
+
+#color-box {
+    width: 100%;
+    height: 40px;
+    background-color: #000000;
+    border-radius: 3px;
+    border: 1px solid #6A7B7C;
+}
+
+#val-preview {
+    width: 60px;
+    height: 30px;
+    background-color: #000;
+    border: 1px solid #6A7B7C;
+    border-radius: 3px;
+}
+
+/* hide number input spinners for cleaner look */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+}

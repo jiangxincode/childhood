@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>中文/Unicode 转换</title>
+    <link rel="stylesheet" href="zh2unicode.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">中文/Unicode</div>
+        <div class="panels">
+            <div class="panel">
+                <label class="panel-title">中文</label>
+                <textarea id="zh-text" placeholder="输入中文"></textarea>
+            </div>
+            <div class="panel">
+                <label class="panel-title">Unicode</label>
+                <textarea id="unicode-text" placeholder="Enter Unicode (e.g. \u4e2d\u56fd)"></textarea>
+            </div>
+        </div>
+        <div class="buttons">
+            <button id="btn-zh2unicode">中文-&gt;Unicode</button>
+            <button id="btn-unicode2zh">Unicode-&gt;中文</button>
+        </div>
+    </div>
+    <script src="zh2unicode.js"></script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html lang="zh" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta name="description" content="description"/>
+	<meta name="keywords" content="keywords"/>
+	<!-- all,none,index,noindex,follow,nofollow -->
+	<meta name="robots" content="all"/>
+	<meta http-equiv="expires" content="Fri,12 Jan 2020 18:18:18 GMT">
+	<meta http-equiv="pragma" content="no-cache"/>
+	<meta http-equiv="author" content="author"/>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<title>Aloys's Blog</title>
+	<link rel="stylesheet" type="text/css" href="css/aloys.css" />
+	</head>
+<body>
+	<!--title-->
+	<div id="title">
+	<h1>Aloys's Blog</h1>
+	</div>
+	<!--title-->
+
+    <audio id="player" controls></audio>
+    <button id="nextBtn">下一首</button>
+    <script>
+        const songs = [
+            'media/One Night In 塞外.mp3',
+            'media/江湖再见.mp3'
+        ];
+        let current = 0;
+        const player = document.getElementById('player');
+        const nextBtn = document.getElementById('nextBtn');
+
+        function loadSong(index) {
+            player.src = songs[index];
+            player.play();
+        }
+
+        player.addEventListener('ended', () => {
+            current = (current + 1) % songs.length;
+            loadSong(current);
+        });
+
+        nextBtn.addEventListener('click', () => {
+            current = (current + 1) % songs.length;
+            loadSong(current);
+        });
+
+        window.onload = () => loadSong(current);
+    </script>
+
+
+	<!--列表-->
+	<ol type="1">
+		<li><strong>Primary School.</strong></li>
+			<p>My primary school is in the Doudian Primary School.</p>
+			<p>Six years was spent there.</p>
+		<li><strong>Junior High School.</strong></li>
+			<p>My junior high school is in the <a href="http://www.cz13z.com" target="_black">No.13 Middle School</a>.</p>
+			<p>Three years was spent there.</p>
+		<li><strong>Senior High School.</strong></li>
+			<ul>
+				<li><a href="http://www.hbczyizhong.cn" target="_black">Changzhou No.1 Middle School</a>.</li>
+				<p>Three years was spent there.</p>
+				<li><a href="http://www.hbhz.net/" target="_black">Hengshui No.1 Middle School</a>.</li>
+				<p>One year was spent there.</p>
+			</ul>
+		<li><strong>College</strong></li>
+			<p>My college is in the <a href="http://www.nju.edu.cn/" target="_black">Nanjing University</a>.</p>
+			<p>Four years will be spend here.</p>
+	</ol>
+	<!--列表-->
+	<hr />
+	<!--联系方式-->
+	<div>
+		<address>JiangXin, Xianlin Campus, Nanjing University, Jiangsu Province.</address>
+		<p><a href="map.html" target="_black">Find Me On the Map</a></p>
+		<a href="mailto:jinagxinnju@163.com" title="给我们发邮件"><img src="images/email.jpg" width="50" alt="Icon of Email"/></a>
+		<a href="http://weibo.com/u/2214029217?wvr=5&topnav=1&wvr=5" title="收听微博" target="_black"><img src="images/sina.jpg" width="50" alt="Icon of Blog"/></a>
+		<a href="test.html" target="_black" >去测试页</a>
+		<a href="login.html" target="_black">去登陆页</a>
+		<a href="tourist.html" target="_black" >去旅游页</a>
+	</div>
+	<!--联系方式-->
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Protobuf转换(Non Proto File)</title>
+    <link rel="stylesheet" href="protobuf-unsupervised.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">Protobuf转换(Non Proto File)</div>
+        <div class="content-panel">
+            <div class="text-panel">
+                <label class="section-title">Hex Input</label>
+                <textarea id="input-area" rows="20" spellcheck="false">0a2f0a084a6f686e20446f6510011a106a6f686e406578616d706c652e636f6d220f0a0b3131312d3232322d33333310010a1e0a084a616e6520446f6510021a106a616e65406578616d706c652e636f6d</textarea>
+            </div>
+            <div class="text-panel">
+                <label class="section-title">JSON Output</label>
+                <textarea id="output-area" rows="20" readonly spellcheck="false"></textarea>
+            </div>
+        </div>
+        <div class="operation-panel">
+            <button id="convert-btn">Convert</button>
+        </div>
+    </div>
+    <script src="protobuf-decoder.js"></script>
+    <script src="protobuf-unsupervised.js"></script>
+</body>
+</html>

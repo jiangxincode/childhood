@@ -1,0 +1,65 @@
+/*This StyleSheet is for code writing-mode*/
+body{
+color:#000000;
+backcolor:#ffffff;
+font-family:arial,verdana,sans-serif;
+font-size:12px;
+}
+
+p{
+margin-bottom:1em:margin-top:1.5em;
+}
+
+.codeintext{
+font-family:courier,"new courier",monospace;
+font-weight:bold;
+}
+
+.codeforeground{
+font-family:courier,"new courier",monospace;
+font-weight:bold;
+letter-spacing:-0.1em;
+display:block;
+background-color:#cccccc;
+padding:0.5em;
+margin-bottom:1em;
+margin-top;1.5em;
+}
+
+.codebackground{
+font-family:courier,"new courier",monospace;
+font-weight:bold;
+letter-spacing:-0.1em;
+display:block;
+background-color:#ffffff;
+padding:0.5em;
+margin-bottom:1em;
+margin-top:1.5em;
+}
+
+.keystroke{
+font-famile:times,"Times New Roman",serif;
+font-style:italic;
+}
+
+.importantwords{
+font-weight:bold;
+}
+
+.boxtext{
+font-weight:bold;
+background-color:#efefef;
+width:90%;
+padding:1em;
+margin-left:3em;margin-right:3em;margin-top:1.5em;margin-bottom:1em;
+border-style:solid;border-width:1px;border-color:#000000;
+}
+
+.background{
+font-style:italic;
+width:90;
+padding:1em;
+margin-left:3em;margin-right:3em;margin-top:1.5em;margin-bottom:1em;
+}
+
+

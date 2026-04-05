@@ -1,0 +1,119 @@
+* {
+    font-family: "微软雅黑", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #3C4A4F;
+    color: #ddd;
+    padding: 20px;
+}
+
+.container {
+    background-color: #4A5859;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.title {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 14px;
+}
+
+.section {
+    margin-bottom: 14px;
+}
+
+.section-title {
+    display: block;
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 6px;
+}
+
+input[type="text"] {
+    width: 100%;
+    background-color: #5A6B6C;
+    border: 1px solid #6A7B7C;
+    color: #ddd;
+    font-size: 14px;
+    padding: 8px 10px;
+    border-radius: 3px;
+    outline: none;
+}
+
+.input-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-row .section-title {
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+.input-row input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+}
+
+select {
+    background-color: #5A6B6C;
+    border: 1px solid #6A7B7C;
+    color: #ddd;
+    font-size: 14px;
+    padding: 6px 8px;
+    border-radius: 3px;
+    outline: none;
+}
+
+textarea {
+    width: 100%;
+    background-color: #2E3D3F;
+    border: 1px solid #5A6B6C;
+    color: #ddd;
+    font-size: 14px;
+    font-family: "Consolas", "Courier New", monospace;
+    padding: 10px;
+    border-radius: 4px;
+    outline: none;
+    resize: vertical;
+}
+
+textarea:focus {
+    border-color: #6A9BCC;
+}
+
+.ascii-table {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 2px;
+}
+
+.ascii-cell {
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 13px;
+    border: 1px solid #6A7B7C;
+    border-radius: 2px;
+    background-color: #5A6B6C;
+    cursor: default;
+    transition: background-color 0.15s;
+}
+
+.ascii-cell:hover {
+    background-color: #6A8B8C;
+}
+
+.ascii-cell.control {
+    color: #9AB;
+    font-style: italic;
+}
