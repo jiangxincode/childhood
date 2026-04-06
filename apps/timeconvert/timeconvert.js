@@ -10,6 +10,7 @@
     var fromTimeEl, fromTzEl, toTzEl, toTimeEl;
     var isPaused = false;
     var timer = null;
+    var rafId = null;
 
     function pad(n, len) {
         var s = String(n);
@@ -17,9 +18,13 @@
         return s;
     }
 
-    function formatDate(d) {
-        return d.getFullYear() + "-" + pad(d.getMonth() + 1, 2) + "-" + pad(d.getDate(), 2)
+    function formatDate(d, showMs) {
+        var s = d.getFullYear() + "-" + pad(d.getMonth() + 1, 2) + "-" + pad(d.getDate(), 2)
             + " " + pad(d.getHours(), 2) + ":" + pad(d.getMinutes(), 2) + ":" + pad(d.getSeconds(), 2);
+        if (showMs) {
+            s += "." + pad(d.getMilliseconds(), 3);
+        }
+        return s;
     }
 
     function formatDateTimeLocal(d) {
@@ -27,7 +32,7 @@
             + "T" + pad(d.getHours(), 2) + ":" + pad(d.getMinutes(), 2);
     }
 
-    // 解析 "yyyy-MM-dd HH:mm:ss" 或 "yyyy-MM-dd HH:mm" 格式
+    // 解析 "yyyy-MM-dd HH:mm:ss" 或 "yyyy-MM-dd HH:mm:ss.SSS" 格式
     function parseTime(str) {
         str = str.trim();
         var parts = str.split(/[\s]+/);
@@ -35,9 +40,21 @@
         var dateParts = parts[0].split("-");
         var timeParts = parts[1].split(":");
         if (dateParts.length < 3 || timeParts.length < 2) return null;
+        var sec = 0;
+        var ms = 0;
+        if (timeParts[2]) {
+            var secParts = timeParts[2].split(".");
+            sec = parseInt(secParts[0]) || 0;
+            if (secParts[1]) {
+                ms = parseInt(secParts[1].substring(0, 3)) || 0;
+                // 补齐到3位再解析（如 ".12" 应为 120ms）
+                while (secParts[1].length < 3) secParts[1] += "0";
+                ms = parseInt(secParts[1].substring(0, 3)) || 0;
+            }
+        }
         var d = new Date(
             parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]),
-            parseInt(timeParts[0]), parseInt(timeParts[1]), timeParts[2] ? parseInt(timeParts[2]) : 0
+            parseInt(timeParts[0]), parseInt(timeParts[1]), sec, ms
         );
         return isNaN(d.getTime()) ? null : d;
     }
@@ -130,9 +147,31 @@
     function updateCurrent() {
         if (isPaused) return;
         var now = new Date();
-        var ts = Math.floor(now.getTime() / 1000);
-        currentTsEl.value = ts;
-        currentTimeEl.value = formatDate(now);
+        if (tsUnit.value === "ms") {
+            currentTsEl.value = now.getTime();
+        } else {
+            currentTsEl.value = Math.floor(now.getTime() / 1000);
+        }
+        currentTimeEl.value = formatDate(now, tsUnit.value === "ms");
+    }
+
+    function rafLoop() {
+        updateCurrent();
+        rafId = requestAnimationFrame(rafLoop);
+    }
+
+    function startTimer() {
+        stopTimer();
+        if (tsUnit.value === "ms") {
+            rafId = requestAnimationFrame(rafLoop);
+        } else {
+            timer = setInterval(updateCurrent, 1000);
+        }
+    }
+
+    function stopTimer() {
+        if (timer) { clearInterval(timer); timer = null; }
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     }
 
     function init() {
@@ -161,7 +200,7 @@
             } else {
                 d = new Date(ts);
             }
-            timeInput.value = formatDate(d);
+            timeInput.value = formatDate(d, tsUnit.value === "ms");
         });
 
         // Time -> Timestamp
@@ -189,6 +228,15 @@
         fromTzEl.addEventListener("change", convertTimezone);
         toTzEl.addEventListener("change", convertTimezone);
 
+        // 单位切换时立即刷新并切换刷新策略
+        tsUnit.addEventListener("change", function () {
+            var wasPaused = isPaused;
+            isPaused = false;
+            updateCurrent();
+            isPaused = wasPaused;
+            startTimer();
+        });
+
         // Swap
         document.getElementById("btn-swap").addEventListener("click", function () {
             var tmp = fromTzEl.value;
@@ -199,7 +247,7 @@
 
         // 启动实时时钟
         updateCurrent();
-        timer = setInterval(updateCurrent, 1000);
+        startTimer();
 
         // 初始执行一次时区转换
         convertTimezone();

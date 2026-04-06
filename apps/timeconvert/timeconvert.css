@@ -26,6 +26,13 @@ body {
     margin-bottom: 18px;
 }
 
+.section-title {
+    font-size: 15px;
+    color: #ddd;
+    margin-bottom: 8px;
+    padding-left: 2px;
+}
+
 .row {
     display: flex;
     align-items: center;
@@ -52,7 +59,7 @@ input[type="datetime-local"] {
 }
 
 input[type="number"] {
-    width: 140px;
+    width: 200px;
 }
 
 input[type="text"] {
@@ -89,6 +96,19 @@ button:hover {
     background-color: #6A7B7C;
 }
 
+.arrow-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.arrow-btn {
+    padding: 2px 10px;
+    font-size: 16px;
+    line-height: 1;
+    min-width: 0;
+}
+
 .comment {
     display: flex;
     gap: 30px;
@@ -120,8 +140,42 @@ button:hover {
     background-color: #3E5254;
 }
 
+.row-unit-selector {
+    background-color: rgba(0, 0, 0, 0.15);
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.comment-inline {
+    font-size: 13px;
+    color: #aaa;
+    margin-left: 10px;
+}
+
 .section-timezone {
     background-color: #4A3E54;
+}
+
+.tz-grid {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.tz-col-time,
+.tz-col-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tz-col-swap {
+    display: flex;
+    align-items: center;
+}
+
+.tz-grid .row {
+    margin-bottom: 0;
 }
 
 .current-timestamp {
