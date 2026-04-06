@@ -12,6 +12,8 @@
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 	<title>Aloys's Blog</title>
 	<link rel="stylesheet" type="text/css" href="css/aloys.css" />
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@2.2.4/dist/jquery.min.js"></script>
+	<script type="text/javascript" src="js/scroll_images.js"></script>
 	</head>
 <body>
 	<!--title-->
@@ -49,26 +51,6 @@
         window.onload = () => loadSong(current);
     </script>
 
-
-	<!--列表-->
-	<ol type="1">
-		<li><strong>Primary School.</strong></li>
-			<p>My primary school is in the Doudian Primary School.</p>
-			<p>Six years was spent there.</p>
-		<li><strong>Junior High School.</strong></li>
-			<p>My junior high school is in the <a href="http://www.cz13z.com" target="_black">No.13 Middle School</a>.</p>
-			<p>Three years was spent there.</p>
-		<li><strong>Senior High School.</strong></li>
-			<ul>
-				<li><a href="http://www.hbczyizhong.cn" target="_black">Changzhou No.1 Middle School</a>.</li>
-				<p>Three years was spent there.</p>
-				<li><a href="http://www.hbhz.net/" target="_black">Hengshui No.1 Middle School</a>.</li>
-				<p>One year was spent there.</p>
-			</ul>
-		<li><strong>College</strong></li>
-			<p>My college is in the <a href="http://www.nju.edu.cn/" target="_black">Nanjing University</a>.</p>
-			<p>Four years will be spend here.</p>
-	</ol>
 	<!--列表-->
 	<hr />
 	<!--联系方式-->
@@ -80,7 +62,27 @@
 		<a href="test.html" target="_black" >去测试页</a>
 		<a href="login.html" target="_black">去登陆页</a>
 		<a href="tourist.html" target="_black" >去旅游页</a>
+		<a href="information.html" target="_black" >课程表</a>
+		<a href="get_size.html" target="_black" >获取尺寸</a>
+		<a href="jquery.html" target="_black" >jQuery 示例</a>
+		<a href="echarts.html" target="_black" >ECharts 图表</a>
 	</div>
 	<!--联系方式-->
+
+	<div class="boxbox">
+	<div class="picbox">
+		<ul class="piclist mainlist">
+			<li><a href="http://www.cz13z.com" target="_blank"><img src="images/沧州市第十三中学.jpg" width="220" height="105" /></a></li>
+			<li><a href="http://www.hbczyizhong.cn" target="_blank"><img src="images/沧州市第一中学.jpg" width="220" height="105" /></a></li>
+			<li><a href="http://www.nju.edu.cn/" target="_blank"><img src="images/南京大学.jpg" width="220" height="105" /></a></li>
+			<li><a href="https://www.huawei.com/cn/" target="_blank"><img src="images/华为公司.jpg" width="220" height="105" /></a></li>
+			<li><a href="https://www.honor.com/cn" target="_blank"><img src="images/荣耀公司.jpg" width="220" height="105" /></a></li>
+            <li><a href="https://www.mi.com/" target="_blank"><img src="images/小米.jpg" width="220" height="105" /></a></li>
+		</ul>
+        <ul class="piclist swaplist"></ul>
+	</div>
+	<div class="og_prev"></div>
+	<div class="og_next"></div>
+</div>
 </body>
 </html>

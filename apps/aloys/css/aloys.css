@@ -1,0 +1,153 @@
+body {
+margin: 0;
+padding: 0;
+font-size: 12px;
+background-color: #E830B0;
+background-image:url("../images/background.jpg"); 
+background-repeat: repeat-x;
+}
+
+#title{
+margin: 0;
+padding: 0;
+height:100px;
+border-bottom-style: solid;
+border-bottom-color: red;
+border-bottom-width: 2px;
+font-size: 24px;
+color: #FF6F10;
+text-shadow:#999999 5px -5px 3px;
+text-align: center;
+vertical-align: middle;
+}
+
+#menu {
+	width: 830px;
+	height: 70px;
+	background: url(../images/img03.jpg) no-repeat;
+}
+
+#menu ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+#menu li {
+	display: inline;
+}
+
+#menu a {
+	display: block;
+	float: left;
+	width: 166px;
+	height: 73px;
+	padding-top: 20px;
+	text-transform: lowercase;
+	text-decoration: none;
+	text-align: center;
+	letter-spacing: -1px;
+	font-size: 24px;
+	color: #FFFFFF;
+}
+
+#menu a:hover {
+	background: url(../images/img09.jpg) no-repeat;
+	color: #FFFFFF;
+}
+
+#menu .active a {
+	background: url(../images/img09.jpg) no-repeat;
+	color: #372412;
+}
+
+strong{
+border-width: 1px;
+border-style: solid;
+border-color: #000000;
+margin: 1px;
+background-color: #cccccc;}
+
+/* CSS Document */
+body,
+ul,
+li {
+    padding: 0;
+    margin: 0;
+}
+
+ul,
+li {
+    list-style: none;
+}
+
+img {
+    border: none;
+}
+
+a {
+    color: #6cf;
+}
+
+a:hover {
+    color: #84B263;
+}
+
+.boxbox {
+    width: 980px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    _height: 100%;
+}
+
+.picbox {
+    width: 980px;
+    height: 115px;
+    overflow: hidden;
+    position: relative;
+}
+
+.piclist {
+    height: 115px;
+    position: absolute;
+    left: 0px;
+    top: 0px
+}
+
+.piclist li {
+    background: #eee;
+    margin-right: 20px;
+    padding: 5px;
+    float: left;
+}
+
+.swaplist {
+    position: absolute;
+    left: -3000px;
+    top: 0px
+}
+
+.og_prev,
+.og_next {
+    width: 30px;
+    height: 50px;
+    background: url(../images/icon.png) no-repeat;
+    background: url(../images/icon_ie6.png) no-repeat\9;
+    position: absolute;
+    top: 33px;
+    z-index: 99;
+    cursor: pointer;
+    filter: alpha(opacity=70);
+    opacity: 0.7;
+}
+
+.og_prev {
+    background-position: 0 -60px;
+    left: 4px;
+}
+
+.og_next {
+    background-position: 0 0;
+    right: 4px;
+}

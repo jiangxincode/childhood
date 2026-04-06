@@ -1,8 +1,0 @@
-/*style sheet for test.html*/
-body,h1,p,img,b{
-	border-style: solid;
-	border-width: 2px;
-	border-color: #000000;
-	padding:2px;}
-h1,b{
-background-color: #cccccc;}
