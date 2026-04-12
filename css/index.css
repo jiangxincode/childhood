@@ -1,0 +1,68 @@
+ol {
+	counter-reset: li; /* 创建一个计数器 */
+	list-style: none; /* 清除列表默认的编码*/
+	*list-style: decimal; /* 让IE6/7具有默认的编码 */
+	font: 15px 'trebuchet MS', 'lucida sans';
+	padding: 0;
+	margin-bottom: 4em;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+}
+
+ol ol {
+	margin: 0 0 0 2em; /* 给二级列表增加一定的左边距*/
+}
+
+/*rounded shaped numbers*/
+.rounded-list a {
+	position: relative;
+	display: block;
+	padding: 0.4em 0.4em 0.4em 2em;
+	*padding: 0.4em; /*for ie6/7*/
+	margin: 0.5em 0;
+	background: #ddd;
+	color: #444;
+	text-decoration: none;
+	/*CSS3属性*/
+	border-radius: 0.3em; /*制作圆角*/
+	/* transition动画效果*/
+	-moz-transition: all 0.3s ease-out;
+	-webkit-transition: all 0.3s ease-out;
+	-o-transition: all 0.3s ease-out;
+	-ms-transition: all 0.3s ease-out;
+	transition: all 0.3s ease-out;
+}
+
+.rounded-list a:hover {
+	background: #eee;
+}
+
+.rounded-list a:hover::before {
+	/*悬停时旋转编码*/
+	-moz-transform: rotate(360deg);
+	-webkit-transform: rotate(360deg);
+	-o-transform: rotate(360deg);
+	-ms-transform: rotate(360deg);
+	transform: rotate(360deg);
+}
+
+.rounded-list a::before {
+	content: counter(li);
+	counter-increment: li;
+	position: absolute;
+	left: -1.3em;
+	top: 50%;
+	margin-top: -1.3em;
+	background: #87ceeb;
+	height: 2em;
+	width: 2em;
+	line-height: 2em;
+	border: 0.3em solid #fff;
+	text-align: center;
+	font-weight: bold;
+	border-radius: 2em;
+	-webkit-transition: all 0.3s ease-out;
+	-moz-transition: all 0.3s ease-out;
+	-ms-transition: all 0.3s ease-out;
+	-o-transition: all 0.3s ease-out;
+	transition: all 0.3s ease-out;
+}

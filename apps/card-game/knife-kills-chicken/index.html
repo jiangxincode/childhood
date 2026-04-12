@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>刀杀鸡</title>
+  <link rel="stylesheet" href="game.css">
+  <script src="../../../js/baidu-analytics.js"></script>
+</head>
+<body>
+
+  <!-- 模式选择界面 -->
+  <div id="mode-selection" class="overlay">
+    <div class="overlay-content">
+      <h1 class="game-title">刀杀鸡</h1>
+      <p class="subtitle">扛刀扛枪版</p>
+      <div class="mode-buttons">
+        <button id="btn-pvp" class="btn btn-pvp">双人对战</button>
+        <button id="btn-pve" class="btn btn-pve">人机对战</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 石头剪刀布选择界面 -->
+  <div id="rps-section" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2>石头剪刀布 - 决定先手</h2>
+      <div id="rps-pvp" style="display:none;">
+        <div class="rps-player">
+          <h3>玩家1 选择</h3>
+          <div class="rps-buttons" id="rps-p1-buttons">
+            <button class="btn btn-rps" data-player="1" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-player="1" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-player="1" data-choice="paper">🖐️ 布</button>
+          </div>
+          <p id="rps-p1-status" class="rps-status">请选择</p>
+        </div>
+        <div class="rps-player">
+          <h3>玩家2 选择</h3>
+          <div class="rps-buttons" id="rps-p2-buttons">
+            <button class="btn btn-rps" data-player="2" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-player="2" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-player="2" data-choice="paper">🖐️ 布</button>
+          </div>
+          <p id="rps-p2-status" class="rps-status">请选择</p>
+        </div>
+      </div>
+      <div id="rps-pve" style="display:none;">
+        <div class="rps-player">
+          <h3>你的选择</h3>
+          <div class="rps-buttons" id="rps-player-buttons">
+            <button class="btn btn-rps" data-player="human" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-player="human" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-player="human" data-choice="paper">🖐️ 布</button>
+          </div>
+        </div>
+      </div>
+      <div id="rps-result" class="rps-result"></div>
+    </div>
+  </div>
+
+  <!-- 游戏区域 -->
+  <div id="game-area" style="display:none;">
+    <!-- 状态栏 -->
+    <div id="status-bar">
+      <div class="status-item">
+        <span class="label">当前行动方：</span>
+        <span id="current-team" class="team-indicator">—</span>
+      </div>
+      <div class="status-item">
+        <span class="label">回合：</span>
+        <span id="turn-count">0</span>
+      </div>
+      <div class="status-item">
+        <span class="label" id="red-label">红方剩余：</span>
+        <span id="red-remaining" class="red-text">8</span>
+      </div>
+      <div class="status-item">
+        <span class="label" id="blue-label">蓝方剩余：</span>
+        <span id="blue-remaining" class="blue-text">8</span>
+      </div>
+    </div>
+
+    <!-- 主游戏区域：棋盘 + 规则面板 -->
+    <div id="game-main">
+      <!-- 棋盘 -->
+      <div id="board">
+        <div class="cell" data-x="0" data-y="0"></div>
+        <div class="cell" data-x="1" data-y="0"></div>
+        <div class="cell" data-x="2" data-y="0"></div>
+        <div class="cell" data-x="3" data-y="0"></div>
+        <div class="cell" data-x="0" data-y="1"></div>
+        <div class="cell" data-x="1" data-y="1"></div>
+        <div class="cell" data-x="2" data-y="1"></div>
+        <div class="cell" data-x="3" data-y="1"></div>
+        <div class="cell" data-x="0" data-y="2"></div>
+        <div class="cell" data-x="1" data-y="2"></div>
+        <div class="cell" data-x="2" data-y="2"></div>
+        <div class="cell" data-x="3" data-y="2"></div>
+        <div class="cell" data-x="0" data-y="3"></div>
+        <div class="cell" data-x="1" data-y="3"></div>
+        <div class="cell" data-x="2" data-y="3"></div>
+        <div class="cell" data-x="3" data-y="3"></div>
+      </div>
+
+      <!-- 游戏规则面板 -->
+      <div id="rules-panel">
+        <h3>📜 游戏规则</h3>
+        <div class="rule-section">
+          <h4>🔄 相克关系</h4>
+          <ul>
+            <li>马蜂 → 癞痢</li>
+            <li>老虎 → 人</li>
+            <li>鸡 → 马蜂</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>⚔️ 扛刀扛枪</h4>
+          <ul>
+            <li>人 + 刀 = 扛刀人 → 杀鸡</li>
+            <li>癞痢 + 枪 = 扛枪癞痢 → 杀老虎</li>
+            <li>刀和枪不能单独移动</li>
+            <li>只能扛己方武器</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🚀 火箭规则</h4>
+          <ul>
+            <li>火箭克所有角色</li>
+            <li>吃掉对方后同归于尽</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🎮 基本操作</h4>
+          <ul>
+            <li>点击背面牌翻牌</li>
+            <li>选中己方牌后点击目标走牌/吃牌/扛刀枪</li>
+            <li>一方无牌或无合法操作则对方获胜</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 被吃掉的牌展示区域 -->
+    <div id="captured-area">
+      <div class="captured-section">
+        <h3 class="red-text">红方被吃</h3>
+        <div id="captured-red" class="captured-cards"></div>
+      </div>
+      <div class="captured-section">
+        <h3 class="blue-text">蓝方被吃</h3>
+        <div id="captured-blue" class="captured-cards"></div>
+      </div>
+    </div>
+
+    <!-- 操作提示信息区域 -->
+    <div id="message"></div>
+  </div>
+
+  <!-- 游戏结束界面 -->
+  <div id="game-over" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2 id="winner-text">游戏结束</h2>
+      <button id="btn-restart" class="btn btn-restart">重新开始</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
