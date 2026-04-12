@@ -1,68 +1,108 @@
-ol {
-	counter-reset: li; /* 创建一个计数器 */
-	list-style: none; /* 清除列表默认的编码*/
-	*list-style: decimal; /* 让IE6/7具有默认的编码 */
-	font: 15px 'trebuchet MS', 'lucida sans';
-	padding: 0;
-	margin-bottom: 4em;
-	text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Microsoft YaHei', 'trebuchet MS', sans-serif;
+    background: #1a1a2e;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2.5em 0 4em;
 }
 
-ol ol {
-	margin: 0 0 0 2em; /* 给二级列表增加一定的左边距*/
+h1 {
+    font-size: 1.8em;
+    color: #e0e0e0;
+    margin-bottom: 2.5em;
+    letter-spacing: 0.1em;
 }
 
-/*rounded shaped numbers*/
-.rounded-list a {
-	position: relative;
-	display: block;
-	padding: 0.4em 0.4em 0.4em 2em;
-	*padding: 0.4em; /*for ie6/7*/
-	margin: 0.5em 0;
-	background: #ddd;
-	color: #444;
-	text-decoration: none;
-	/*CSS3属性*/
-	border-radius: 0.3em; /*制作圆角*/
-	/* transition动画效果*/
-	-moz-transition: all 0.3s ease-out;
-	-webkit-transition: all 0.3s ease-out;
-	-o-transition: all 0.3s ease-out;
-	-ms-transition: all 0.3s ease-out;
-	transition: all 0.3s ease-out;
+/* 容器 */
+.gallery_container {
+    position: relative;
+    width: 800px;
+    height: 380px;
 }
 
-.rounded-list a:hover {
-	background: #eee;
+/* 透视包裹层 */
+.gallery_wrap {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 600px;
+    height: 340px;
+    margin-left: -300px;
+    margin-top: -170px;
+    perspective: 1000px;
 }
 
-.rounded-list a:hover::before {
-	/*悬停时旋转编码*/
-	-moz-transform: rotate(360deg);
-	-webkit-transform: rotate(360deg);
-	-o-transform: rotate(360deg);
-	-ms-transform: rotate(360deg);
-	transform: rotate(360deg);
+/* 每张卡片 */
+.gallery_item {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.5s ease;
 }
 
-.rounded-list a::before {
-	content: counter(li);
-	counter-increment: li;
-	position: absolute;
-	left: -1.3em;
-	top: 50%;
-	margin-top: -1.3em;
-	background: #87ceeb;
-	height: 2em;
-	width: 2em;
-	line-height: 2em;
-	border: 0.3em solid #fff;
-	text-align: center;
-	font-weight: bold;
-	border-radius: 2em;
-	-webkit-transition: all 0.3s ease-out;
-	-moz-transition: all 0.3s ease-out;
-	-ms-transition: all 0.3s ease-out;
-	-o-transition: all 0.3s ease-out;
-	transition: all 0.3s ease-out;
+.gallery_item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+    transition: transform 0.4s ease;
+}
+
+/* 标签 */
+.slide-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.6em 1em;
+    background: linear-gradient(transparent, rgba(0,0,0,0.68));
+    color: #fff;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-align: center;
+    letter-spacing: 0.12em;
+    pointer-events: none;
+}
+
+/* 中间（正面） */
+.front_side {
+    z-index: 5;
+    transform: rotateY(0deg) translateX(0) translateZ(0) scale(1);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.7);
+}
+
+.front_side:hover img {
+    transform: scale(1.05);
+}
+
+/* 左侧 */
+.gallery_left_middle {
+    z-index: 3;
+    transform: rotateY(30deg) translateX(-220px) translateZ(-200px) scale(0.75);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+    opacity: 0.85;
+}
+
+/* 右侧 */
+.gallery_right_middle {
+    z-index: 3;
+    transform: rotateY(-30deg) translateX(220px) translateZ(-200px) scale(0.75);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+    opacity: 0.85;
+}
+
+/* 隐藏（待机） */
+.gallery_out {
+    z-index: 1;
+    transform: rotateY(0deg) translateX(0) translateZ(-400px) scale(0.5);
+    opacity: 0;
+    pointer-events: none;
 }

@@ -1,25 +1,76 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>童年游戏合集</title>
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
 
-    <title>前端示例集合</title>
-    <meta http-equiv="pragma" content="no-cache">
-    <meta http-equiv="cache-control" content="no-cache">
-    <meta http-equiv="expires" content="0">
-    <meta http-equiv="keywords" content="前端,练习,示例">
-    <meta http-equiv="description" content="一些前端示例">
-    <link rel="stylesheet" type="text/css" href="css/index.css">
-    <script src="js/baidu-analytics.js"></script>
+<link rel="stylesheet" type="text/css" href="css/normalize.css" />
+<link rel="stylesheet" href="css/jquery-yys-slider.css">
+<script src="js/baidu-analytics.js"></script>
 </head>
-
 <body>
-<h1>前端示例集合</h1>
-<ol class="rounded-list">
-    <li><a href="apps/card-game/knife-kills-chicken/index.html">刀杀鸡（卡牌游戏）</a></li>
-    <li><a href="apps/card-game/dragon-tiger-fight/index.html">龙虎斗（卡牌游戏）</a></li>
-    <li><a href="apps/card-game/animal-chess/index.html">兽棋（卡牌游戏）</a></li>
-    <li><a href="apps/card-game/chinese-army-chess/index.html">军棋（卡牌游戏）</a></li>
-</ol>
+
+<div class="content-part part-tese">
+	<h1 class="page-title">童年游戏合集</h1>
+	<div class="gallery_container">
+		<div class="gallery_wrap threeD_gallery_wrap" style="margin-left: -360px; margin-top: -260px;">
+			<div href="javascript:;" class="gallery_item threeD_gallery_item gallery_left_middle" data-href="apps/card-game/knife-kills-chicken/index.html">
+				<img src="images/刀杀鸡.jpg" class="show">
+				<div class="item-label">刀杀鸡</div>
+				<div class="line-t"></div>
+				<div class="line-r"></div>
+				<div class="line-b"></div>
+				<div class="line-l"></div>
+			</div>
+			<div href="javascript:;" class="gallery_item threeD_gallery_item front_side" data-href="apps/card-game/dragon-tiger-fight/index.html">
+				<img src="images/龙虎斗.jpg" class="show">
+				<div class="item-label">龙虎斗</div>
+				<div class="line-t"></div>
+				<div class="line-r"></div>
+				<div class="line-b"></div>
+				<div class="line-l"></div>
+			</div>
+			<div href="javascript:;" class="gallery_item threeD_gallery_item gallery_right_middle" data-href="apps/card-game/animal-chess/index.html">
+				<img src="images/兽旗.jpg" class="show">
+				<div class="item-label">兽棋</div>
+				<div class="line-t"></div>
+				<div class="line-r"></div>
+				<div class="line-b"></div>
+				<div class="line-l"></div>
+			</div>
+			<div href="javascript:;" class="gallery_item threeD_gallery_item gallery_out" data-href="apps/card-game/chinese-army-chess/index.html">
+				<img src="images/军旗.jpg" class="show">
+				<div class="item-label">军棋</div>
+				<div class="line-t"></div>
+				<div class="line-r"></div>
+				<div class="line-b"></div>
+				<div class="line-l"></div>
+			</div>
+		</div>
+		<a class="prev" href="javascript:;"></a>
+		<a class="next" href="javascript:;"></a>
+	</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@2.2.4/dist/jquery.min.js" type="text/javascript"></script>
+<script src="js/jquery-yys-slider.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(function(){
+	$('.content-part.part-tese').addClass('show');
+	$('.gallery_container').gallery_slider({imgNum: 4});
+
+	// 点击中间图片跳转
+	$('.gallery_container').on('click', '.front_side', function(){
+		var href = $(this).data('href');
+		if (href) window.location.href = href;
+	});
+})
+</script>
+
 </body>
 </html>
