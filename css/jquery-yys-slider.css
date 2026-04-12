@@ -41,3 +41,6 @@ h2{width: 960px;margin: 20px auto;font-size: 18px;line-height: 25px;font-weight:
 .item-label{position:absolute;bottom:0;left:0;right:0;padding:12px 0;background:rgba(0,0,0,0.55);color:#fff;font-size:24px;font-weight:bold;text-align:center;letter-spacing:0.15em;}
 
 .page-title{text-align:center;color:#fff;font-size:32px;letter-spacing:0.2em;margin:0;padding:20px 0 0;}
+
+.github-link{position:fixed;top:16px;right:16px;z-index:100;opacity:0.7;transition:opacity 0.2s;}
+.github-link:hover{opacity:1;}
