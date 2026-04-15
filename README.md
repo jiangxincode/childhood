@@ -12,10 +12,11 @@ ease](https://github.com/jiangxincode/childhood/actions/workflows/childhood.yml/
 
 ## 游戏列表
 
-- 刀杀鸡 — 经典卡牌对战游戏
-- 龙虎斗 — 龙虎双方比大小
-- 兽棋 — 动物棋，大吃小的策略游戏
-- 军棋 — 经典军棋翻棋玩法
+- 刀杀鸡
+- 龙虎斗
+- 兽棋
+- 军棋
+- 猫捉老鼠
 
 ## 本地运行
 
