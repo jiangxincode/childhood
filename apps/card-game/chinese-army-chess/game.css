@@ -480,19 +480,12 @@ body {
 
 @media (max-width: 700px) {
   :root {
-    --cell-size: 80px;
-    --cell-gap: 6px;
+    --cell-size: calc((100vw - 80px) / 5);
+    --cell-gap: 5px;
   }
 
   .cell-back::after {
-    font-size: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  :root {
-    --cell-size: 56px;
-    --cell-gap: 4px;
+    font-size: 18px;
   }
 
   .overlay-content {
@@ -531,8 +524,15 @@ body {
     flex-direction: column;
     gap: 10px;
   }
+}
+
+@media (max-width: 400px) {
+  :root {
+    --cell-size: calc((100vw - 60px) / 5);
+    --cell-gap: 3px;
+  }
 
   .cell-back::after {
-    font-size: 14px;
+    font-size: 13px;
   }
 }

@@ -11,6 +11,7 @@
 
 <link rel="stylesheet" type="text/css" href="css/normalize.css" />
 <link rel="stylesheet" href="css/jquery-yys-slider.css">
+<link rel="stylesheet" href="css/index.css">
 <script src="js/baidu-analytics.js"></script>
 <script src="js/common.js"></script>
 </head>
@@ -81,10 +82,18 @@ $(function(){
 	$('.content-part.part-tese').addClass('show');
 	$('.gallery_container').gallery_slider({imgNum: 6});
 
-	// 点击中间图片跳转
+	// 桌面端：点击中间图片跳转
 	$('.gallery_container').on('click', '.front_side', function(){
 		var href = $(this).data('href');
 		if (href) window.location.href = href;
+	});
+
+	// 移动端：所有卡片均可点击跳转
+	$('.gallery_container').on('click', '.gallery_item', function(){
+		if ($(window).width() <= 860) {
+			var href = $(this).data('href');
+			if (href) window.location.href = href;
+		}
 	});
 })
 </script>

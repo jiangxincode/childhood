@@ -1,108 +1,99 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ============================================================
+   首页样式 - 覆盖插件默认值 + 移动端响应式
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
-    font-family: 'Microsoft YaHei', 'trebuchet MS', sans-serif;
     background: #1a1a2e;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2.5em 0 4em;
+    font-family: 'Microsoft YaHei', 'trebuchet MS', sans-serif;
 }
 
-h1 {
-    font-size: 1.8em;
-    color: #e0e0e0;
-    margin-bottom: 2.5em;
-    letter-spacing: 0.1em;
+/* ---- 移动端：降级为网格列表 ---- */
+@media (max-width: 860px) {
+    /* 重置插件的绝对定位布局 */
+    .content-part.part-tese {
+        height: auto !important;
+        position: static !important;
+        padding: 1.5em 16px 3em;
+    }
+
+    .page-title {
+        font-size: 1.4em !important;
+        padding: 0 0 1em !important;
+    }
+
+    .part-tese .gallery_container {
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    .part-tese .gallery_container .gallery_wrap,
+    .gallery_wrap.threeD_gallery_wrap {
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        perspective: none !important;
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    /* 所有卡片统一显示 */
+    .threeD_gallery_item {
+        position: relative !important;
+        width: 100% !important;
+        height: 0 !important;
+        padding-bottom: 120% !important;
+        transform: none !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        z-index: auto !important;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    .threeD_gallery_item img {
+        position: absolute !important;
+        top: 0; left: 0;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover;
+        visibility: visible !important;
+    }
+
+    .item-label {
+        position: absolute !important;
+        font-size: 1em !important;
+    }
+
+    /* 隐藏轮播左右按钮 */
+    .gallery_container .prev,
+    .gallery_container .next {
+        display: none !important;
+    }
+
+    /* 线条装饰隐藏 */
+    .line-t, .line-r, .line-b, .line-l {
+        display: none !important;
+    }
 }
 
-/* 容器 */
-.gallery_container {
-    position: relative;
-    width: 800px;
-    height: 380px;
-}
+@media (max-width: 480px) {
+    .part-tese .gallery_container .gallery_wrap,
+    .gallery_wrap.threeD_gallery_wrap {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
 
-/* 透视包裹层 */
-.gallery_wrap {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 600px;
-    height: 340px;
-    margin-left: -300px;
-    margin-top: -170px;
-    perspective: 1000px;
-}
-
-/* 每张卡片 */
-.gallery_item {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-    border-radius: 10px;
-    overflow: hidden;
-    transition: all 0.5s ease;
-}
-
-.gallery_item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    pointer-events: none;
-    transition: transform 0.4s ease;
-}
-
-/* 标签 */
-.slide-label {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 0.6em 1em;
-    background: linear-gradient(transparent, rgba(0,0,0,0.68));
-    color: #fff;
-    font-size: 1.1em;
-    font-weight: bold;
-    text-align: center;
-    letter-spacing: 0.12em;
-    pointer-events: none;
-}
-
-/* 中间（正面） */
-.front_side {
-    z-index: 5;
-    transform: rotateY(0deg) translateX(0) translateZ(0) scale(1);
-    box-shadow: 0 12px 48px rgba(0,0,0,0.7);
-}
-
-.front_side:hover img {
-    transform: scale(1.05);
-}
-
-/* 左侧 */
-.gallery_left_middle {
-    z-index: 3;
-    transform: rotateY(30deg) translateX(-220px) translateZ(-200px) scale(0.75);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
-    opacity: 0.85;
-}
-
-/* 右侧 */
-.gallery_right_middle {
-    z-index: 3;
-    transform: rotateY(-30deg) translateX(220px) translateZ(-200px) scale(0.75);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
-    opacity: 0.85;
-}
-
-/* 隐藏（待机） */
-.gallery_out {
-    z-index: 1;
-    transform: rotateY(0deg) translateX(0) translateZ(-400px) scale(0.5);
-    opacity: 0;
-    pointer-events: none;
+    .page-title {
+        font-size: 1.2em !important;
+    }
 }

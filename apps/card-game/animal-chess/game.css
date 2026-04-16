@@ -451,9 +451,9 @@ body {
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 700px) {
   :root {
-    --cell-size: 100px;
+    --cell-size: calc((100vw - 80px) / 4);
     --cell-gap: 6px;
   }
 
@@ -495,9 +495,13 @@ body {
   }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 400px) {
   :root {
-    --cell-size: 64px;
+    --cell-size: calc((100vw - 60px) / 4);
     --cell-gap: 4px;
+  }
+
+  .cell-back::after {
+    font-size: 18px;
   }
 }
