@@ -17,6 +17,7 @@ ease](https://github.com/jiangxincode/childhood/actions/workflows/childhood.yml/
 - 兽棋
 - 军棋
 - 猫捉老鼠
+- 小皇帝
 
 ## 本地运行
 
