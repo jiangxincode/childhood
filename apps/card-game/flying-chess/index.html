@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>飞行棋</title>
+  <link rel="stylesheet" href="css/init.css">
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.css">
+  <script src="../../../js/baidu-analytics.js"></script>
+  <script src="../../../js/common.js"></script>
+  <script src="js/Coord.js"></script>
+</head>
+<body>
+
+  <!-- 游戏设置界面 -->
+  <div id="option-panel" class="option-panel">
+    <div class="option-content">
+      <h1 class="option-title">飞行棋</h1>
+      <p class="option-subtitle">经典飞行棋</p>
+      <form class="option-form" onsubmit="return false;">
+        <div class="form-grid">
+          <div class="form-group">
+            <span class="color-dot" style="background:#e53935"></span>
+            <label>红方</label>
+            <select id="redUser">
+              <option value="normal" selected>玩家</option>
+              <option value="computer">电脑</option>
+              <option value="close">无</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <span class="color-dot" style="background:#1565c0"></span>
+            <label>蓝方</label>
+            <select id="blueUser">
+              <option value="normal">玩家</option>
+              <option value="computer" selected>电脑</option>
+              <option value="close">无</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <span class="color-dot" style="background:#f9a825"></span>
+            <label>黄方</label>
+            <select id="yellowUser">
+              <option value="normal">玩家</option>
+              <option value="computer" selected>电脑</option>
+              <option value="close">无</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <span class="color-dot" style="background:#2e7d32"></span>
+            <label>绿方</label>
+            <select id="greenUser">
+              <option value="normal">玩家</option>
+              <option value="computer" selected>电脑</option>
+              <option value="close">无</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid form-grid-options">
+          <div class="form-group">
+            <label>起飞点数</label>
+            <select id="qifei">
+              <option value="2,4,6">2, 4, 6</option>
+              <option value="5,6">5, 6</option>
+              <option value="6" selected>6</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>难度</label>
+            <select id="nandu">
+              <option value="easy">简单</option>
+              <option value="normal" selected>普通</option>
+              <option value="hard">难</option>
+            </select>
+          </div>
+        </div>
+        <button type="button" id="begin" class="btn-begin">开始游戏</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 状态栏 -->
+  <div id="status-bar">
+    <div class="status-item">
+      <span class="label">当前行动方：</span>
+      <span id="current-player" class="team-indicator">—</span>
+    </div>
+    <div class="status-item">
+      <span class="status-color" style="color:#e53935">红</span>
+      <span id="type-red" class="status-type">玩家</span>
+      <span class="label">到达：</span><span id="count-red">0</span>/4
+    </div>
+    <div class="status-item">
+      <span class="status-color" style="color:#1565c0">蓝</span>
+      <span id="type-blue" class="status-type">电脑</span>
+      <span class="label">到达：</span><span id="count-blue">0</span>/4
+    </div>
+    <div class="status-item">
+      <span class="status-color" style="color:#f9a825">黄</span>
+      <span id="type-yellow" class="status-type">电脑</span>
+      <span class="label">到达：</span><span id="count-yellow">0</span>/4
+    </div>
+    <div class="status-item">
+      <span class="status-color" style="color:#2e7d32">绿</span>
+      <span id="type-green" class="status-type">电脑</span>
+      <span class="label">到达：</span><span id="count-green">0</span>/4
+    </div>
+  </div>
+
+  <!-- 主游戏区域：棋盘 + 规则面板 -->
+  <div id="game-main">
+    <!-- 游戏主容器 -->
+    <div class="main">
+      <!-- 骰子区域 -->
+      <div class="dice" id="dice">
+        <div class="slot slot1"></div>
+        <div class="slot slot2"></div>
+        <div class="slot slot3"></div>
+        <div class="slot slot4"></div>
+        <div class="slot slot5"></div>
+        <div class="slot slot6"></div>
+      </div>
+
+      <!-- 各玩家骰子结果显示 -->
+      <div id="sdnred" class="showdicenum sdnred"></div>
+      <div id="sdnblue" class="showdicenum sdnblue"></div>
+      <div id="sdnyellow" class="showdicenum sdnyellow"></div>
+      <div id="sdngreen" class="showdicenum sdngreen"></div>
+    </div>
+
+    <!-- 游戏规则面板（游戏开始后显示在棋盘右侧） -->
+    <div id="rules-panel">
+      <h3>📜 游戏规则</h3>
+      <div class="rule-section">
+        <h4>🛫 起飞规则</h4>
+        <ul>
+          <li id="rule-takeoff">掷到6飞机才能起飞</li>
+          <li>掷到6可以再掷一次</li>
+          <li>连续3次掷6，所有飞机回停机坪</li>
+        </ul>
+      </div>
+      <div class="rule-section">
+        <h4>🎲 移动规则</h4>
+        <ul>
+          <li>同色格可跳跃4格</li>
+          <li>同色带标记格可飞跃12格</li>
+        </ul>
+      </div>
+      <div class="rule-section">
+        <h4>💥 撞机规则</h4>
+        <ul>
+          <li>撞到对手飞机将其送回停机坪</li>
+        </ul>
+      </div>
+      <div class="rule-section">
+        <h4>🏆 胜负判定</h4>
+        <ul>
+          <li>4架飞机全部到达终点即获胜</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 电脑回合遮罩 -->
+  <div class="shade">&nbsp;</div>
+
+  <!-- 音效播放元素 -->
+  <audio id="yinxiao" src=""></audio>
+
+  <!-- jQuery (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@2.1.3/dist/jquery.min.js"></script>
+  <script>
+    var $j = jQuery.noConflict();
+  </script>
+  <!-- SlotMachine 插件 -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.min.js"></script>
+  <!-- 游戏逻辑 -->
+  <script src="js/Audio.js"></script>
+  <script src="js/Option.js"></script>
+  <script src="js/Rule.js"></script>
+  <script src="js/Computer.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>

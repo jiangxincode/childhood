@@ -1,0 +1,342 @@
+body {
+    background: #f5f0e1;
+}
+
+/* ---- 设置界面（参考龙虎斗 overlay 样式） ---- */
+.option-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.option-panel.hidden {
+    display: none;
+}
+
+.option-content {
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px 48px;
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.option-title {
+    font-size: 42px;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.option-subtitle {
+    font-size: 16px;
+    color: #888;
+    margin-bottom: 32px;
+}
+
+.option-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-grid-options {
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+}
+
+.color-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.form-group label {
+    font-size: 14px;
+    color: #555;
+    flex-shrink: 0;
+    min-width: 48px;
+}
+
+.form-group select {
+    flex: 1;
+    padding: 8px 10px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.btn-begin {
+    padding: 14px 32px;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+    background: #333;
+    color: #fff;
+    width: 100%;
+}
+
+.btn-begin:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-begin:active {
+    transform: translateY(0);
+}
+
+/* ---- 主游戏区域：棋盘 + 规则面板 ---- */
+#game-main {
+    display: none;
+    gap: 20px;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+/* ---- 状态栏 ---- */
+#status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    justify-content: center;
+    margin: 0 auto 16px;
+    padding: 12px 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    max-width: 1205px;
+}
+
+.status-item {
+    font-size: 15px;
+}
+
+.label {
+    color: #777;
+}
+
+.team-indicator {
+    font-weight: bold;
+}
+
+.status-color {
+    font-weight: bold;
+    margin-right: 2px;
+}
+
+.status-type {
+    font-size: 12px;
+    color: #999;
+    margin-right: 6px;
+    padding: 1px 6px;
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.main {
+    width: 985px;
+    height: 985px;
+    background: url("../images/background.png");
+    position: relative;
+    flex-shrink: 0;
+}
+
+.dice {
+    width: 110px;
+    height: 110px;
+    position: absolute;
+    top: 438px;
+    left: 438px;
+    z-index: 999;
+}
+
+.plane {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    line-height: 50px;
+    text-align: center;
+    font-size: 30px;
+    color: crimson;
+    position: absolute;
+    z-index: 99;
+}
+
+.slot {
+    width: 110px;
+    height: 110px;
+}
+
+.slot1 {
+    background-image: url("../images/1.png");
+}
+
+.slot2 {
+    background-image: url("../images/2.png");
+}
+
+.slot3 {
+    background-image: url("../images/3.png");
+}
+
+.slot4 {
+    background-image: url("../images/4.png");
+}
+
+.slot5 {
+    background-image: url("../images/5.png");
+}
+
+.slot6 {
+    background-image: url("../images/6.png");
+}
+
+.showdicenum {
+    width: 209px;
+    height: 50px;
+    text-align: center;
+    line-height: 50px;
+    font-size: 36px;
+    position: absolute;
+    z-index: 9;
+    font-weight: bold;
+}
+
+.sdnred {
+    color: red;
+    left: 738px;
+    top: 120px;
+}
+
+.sdnblue {
+    color: blue;
+    left: 738px;
+    top: 820px;
+}
+
+.sdnyellow {
+    color: yellow;
+    left: 39px;
+    top: 820px;
+}
+
+.sdngreen {
+    color: green;
+    left: 39px;
+    top: 120px;
+}
+
+.shade {
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    display: none;
+    position: absolute;
+    top: 0;
+    min-height: 900px;
+}
+
+/* ---- 游戏规则面板 ---- */
+#rules-panel {
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    width: 220px;
+    font-size: 13px;
+    line-height: 1.6;
+    display: none;
+}
+
+#rules-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #333;
+    border-bottom: 2px solid #8b5a2b;
+    padding-bottom: 8px;
+}
+
+.rule-section {
+    margin-bottom: 12px;
+}
+
+.rule-section h4 {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+.rule-section ul {
+    list-style: none;
+    padding-left: 4px;
+}
+
+.rule-section li {
+    color: #666;
+    padding: 1px 0;
+}
+
+#rules-panel li:hover {
+    background: none;
+}
+
+/* ---- 响应式布局 ---- */
+@media (max-width: 1300px) {
+    #game-main {
+        flex-direction: column;
+        align-items: center;
+    }
+    #rules-panel {
+        width: 100%;
+        max-width: 985px;
+    }
+}
+
+@media (max-width: 700px) {
+    .option-content {
+        padding: 28px 20px;
+    }
+    .option-title {
+        font-size: 32px;
+    }
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .form-grid-options {
+        grid-template-columns: 1fr;
+    }
+}
