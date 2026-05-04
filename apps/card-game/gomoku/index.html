@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>五子棋</title>
+  <link rel="stylesheet" href="game.css">
+  <script src="../../../js/baidu-analytics.js"></script>
+  <script src="../../../js/common.js"></script>
+</head>
+<body>
+
+  <!-- 模式选择界面 -->
+  <div id="mode-selection" class="overlay">
+    <div class="overlay-content">
+      <h1 class="game-title">五子棋</h1>
+      <p class="subtitle">经典五子棋</p>
+      <div class="mode-buttons">
+        <button id="btn-pvp" class="btn btn-pvp">双人对战</button>
+        <button id="btn-pve" class="btn btn-pve">人机对战</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 石头剪刀布选择界面 -->
+  <div id="rps-section" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2>石头剪刀布 - 决定先手</h2>
+      <div id="rps-pvp" style="display:none;">
+        <div class="rps-player">
+          <h3>玩家1 选择</h3>
+          <div class="rps-buttons" id="rps-p1-buttons">
+            <button class="btn btn-rps" data-player="1" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-player="1" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-player="1" data-choice="paper">🖐️ 布</button>
+          </div>
+          <p id="rps-p1-status" class="rps-status">请选择</p>
+        </div>
+        <div class="rps-player">
+          <h3>玩家2 选择</h3>
+          <div class="rps-buttons" id="rps-p2-buttons">
+            <button class="btn btn-rps" data-player="2" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-player="2" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-player="2" data-choice="paper">🖐️ 布</button>
+          </div>
+          <p id="rps-p2-status" class="rps-status">请选择</p>
+        </div>
+      </div>
+      <div id="rps-pve" style="display:none;">
+        <div class="rps-player">
+          <h3>你的选择</h3>
+          <div class="rps-buttons" id="rps-player-buttons">
+            <button class="btn btn-rps" data-player="human" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-player="human" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-player="human" data-choice="paper">🖐️ 布</button>
+          </div>
+        </div>
+      </div>
+      <div id="rps-result" class="rps-result"></div>
+    </div>
+  </div>
+
+  <!-- 游戏区域 -->
+  <div id="game-area" style="display:none;">
+    <!-- 状态栏 -->
+    <div id="status-bar">
+      <div class="status-item">
+        <span class="label">当前行动方：</span>
+        <span id="current-player" class="team-indicator">—</span>
+      </div>
+      <div class="status-item">
+        <span class="label">回合：</span>
+        <span id="turn-count">0</span>
+      </div>
+      <div class="status-item">
+        <span class="label" style="color:#0A0A0A">黑棋：</span>
+        <span id="score-black" class="text-black">0</span>
+      </div>
+      <div class="status-item">
+        <span class="label" style="color:#999">白棋：</span>
+        <span id="score-white" class="text-white-stone">0</span>
+      </div>
+    </div>
+
+    <!-- 主游戏区域：棋盘 + 规则面板 -->
+    <div id="game-main">
+      <!-- 棋盘 -->
+      <canvas id="board-canvas"></canvas>
+
+      <!-- 游戏规则面板 -->
+      <div id="rules-panel">
+        <h3>📜 游戏规则</h3>
+        <div class="rule-section">
+          <h4>🎮 基本规则</h4>
+          <ul>
+            <li>15×15棋盘，双方轮流落子</li>
+            <li>黑棋先行</li>
+            <li>通过猜先决定黑白方</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🏆 胜利条件</h4>
+          <ul>
+            <li>横、竖或斜连成五子</li>
+            <li>先达成者获胜</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>📍 星位标记</h4>
+          <ul>
+            <li>天元（中心点）</li>
+            <li>四个角星位</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🤖 人机模式</h4>
+          <ul>
+            <li>AI使用贪心评分策略</li>
+            <li>兼顾进攻与防守</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作提示信息区域 -->
+    <div id="message"></div>
+  </div>
+
+  <!-- 游戏结束界面 -->
+  <div id="game-over" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2 id="winner-text">游戏结束</h2>
+      <button id="btn-restart" class="btn btn-restart">重新开始</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
