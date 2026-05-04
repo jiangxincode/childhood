@@ -364,7 +364,7 @@ body {
 
 #message.info {
   color: var(--valid-move-color);
-  background: rgba(76, 175, 80, 0.1);
+  background: rgba(76, 175, 80, 0.2);
 }
 
 /* ---- 游戏结束界面 ---- */

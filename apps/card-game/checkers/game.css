@@ -1,17 +1,12 @@
 /* ============================================================
-   井字棋 (Tic-Tac-Toe) - 游戏样式
+   国际跳棋 (Checkers) - 游戏样式
    ============================================================ */
 
 :root {
-  --x-color: #1565c0;
-  --x-light: #42a5f5;
-  --o-color: #e53935;
-  --o-light: #ef5350;
-  --board-bg: #5d4037;
-  --cell-bg: #efebe9;
-  --cell-border: #8d6e63;
-  --cell-size: 120px;
-  --cell-gap: 4px;
+  --red-color: #c0392b;
+  --white-color: #ecf0f1;
+  --board-light: #f0d9b5;
+  --board-dark: #8b6914;
   --overlay-bg: rgba(0, 0, 0, 0.7);
 }
 
@@ -23,7 +18,7 @@
 
 body {
   font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -165,7 +160,7 @@ body {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 700px;
+  max-width: 900px;
 }
 
 #game-main {
@@ -201,66 +196,22 @@ body {
   font-weight: bold;
 }
 
-.text-x {
-  color: var(--x-color);
+.text-red {
+  color: var(--red-color);
 }
 
-.text-o {
-  color: var(--o-color);
+.text-white-piece {
+  color: #95a5a6;
 }
 
-/* ---- 棋盘 3x3 ---- */
-#board {
-  display: grid;
-  grid-template-columns: repeat(3, var(--cell-size));
-  grid-template-rows: repeat(3, var(--cell-size));
-  gap: var(--cell-gap);
-  padding: var(--cell-gap);
-  background: var(--board-bg);
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  border: 4px solid var(--cell-border);
-}
-
-/* ---- 棋格 ---- */
-.cell {
-  width: var(--cell-size);
-  height: var(--cell-size);
-  background: var(--cell-bg);
+/* ---- 棋盘 ---- */
+#board-canvas {
+  display: block;
   border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 56px;
-  font-weight: bold;
-  transition: transform 0.15s, box-shadow 0.15s;
-  user-select: none;
-}
-
-.cell:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
-}
-
-.cell-x {
-  color: var(--x-color);
-  text-shadow: 0 2px 8px rgba(21, 101, 192, 0.3);
-}
-
-.cell-o {
-  color: var(--o-color);
-  text-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
-}
-
-.cell-win {
-  background: #fff9c4;
-  animation: winPulse 0.8s ease-in-out infinite alternate;
-}
-
-@keyframes winPulse {
-  from { box-shadow: 0 0 8px #ffd600; }
-  to { box-shadow: 0 0 20px #ffd600; transform: scale(1.05); }
+  max-width: 100%;
+  height: auto;
 }
 
 /* ---- 规则面板 ---- */
@@ -278,7 +229,7 @@ body {
   font-size: 16px;
   margin-bottom: 12px;
   color: #333;
-  border-bottom: 2px solid var(--board-bg);
+  border-bottom: 2px solid var(--board-dark);
   padding-bottom: 8px;
 }
 
@@ -314,11 +265,11 @@ body {
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   width: 100%;
-  max-width: 360px;
+  max-width: 480px;
 }
 
 #message.error {
-  color: var(--o-color);
+  color: #e53935;
   background: rgba(229, 57, 53, 0.1);
 }
 
@@ -341,11 +292,6 @@ body {
 
 /* ---- 响应式 ---- */
 @media (max-width: 700px) {
-  :root {
-    --cell-size: calc((100vw - 60px) / 3);
-    --cell-gap: 3px;
-  }
-
   .overlay-content {
     padding: 24px 16px;
   }
@@ -376,7 +322,7 @@ body {
 
   #rules-panel {
     width: 100%;
-    max-width: 360px;
+    max-width: 480px;
   }
 
   #status-bar {
@@ -386,9 +332,5 @@ body {
 
   .status-item {
     font-size: 13px;
-  }
-
-  .cell {
-    font-size: 40px;
   }
 }
