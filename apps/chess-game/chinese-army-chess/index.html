@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>军棋（明棋）</title>
+  <link rel="stylesheet" href="game.css">
+  <script src="../../../js/baidu-analytics.js"></script>
+  <script src="../../../js/common.js"></script>
+</head>
+<body>
+
+  <!-- 模式选择界面 -->
+  <div id="mode-selection" class="overlay">
+    <div class="overlay-content">
+      <h1 class="game-title">军棋</h1>
+      <p class="subtitle">选择游戏模式</p>
+      <div class="mode-section">
+        <h3>翻棋</h3>
+        <div class="mode-buttons">
+          <button class="btn btn-flip" data-game-type="flip" data-opp-type="pvp">双人对战</button>
+          <button class="btn btn-flip" data-game-type="flip" data-opp-type="pve">人机对战</button>
+        </div>
+      </div>
+      <div class="mode-section">
+        <h3>明棋</h3>
+        <div class="mode-buttons">
+          <button class="btn btn-open" data-game-type="open" data-opp-type="pvp">双人对战</button>
+          <button class="btn btn-open" data-game-type="open" data-opp-type="pve">人机对战</button>
+        </div>
+      </div>
+      <div class="mode-section">
+        <h3>暗棋</h3>
+        <div class="mode-buttons">
+          <button class="btn btn-hidden" data-game-type="hidden" data-opp-type="pvp">双人对战</button>
+          <button class="btn btn-hidden" data-game-type="hidden" data-opp-type="pve">人机对战</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 石头剪刀布选择界面 -->
+  <div id="rps-section" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2>石头剪刀布 - 决定先手</h2>
+      <div id="rps-pvp" style="display:none;">
+        <div class="rps-player">
+          <h3>红方选择</h3>
+          <div class="rps-buttons" id="rps-p1-buttons">
+            <button class="btn btn-rps" data-player="1" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-player="1" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-player="1" data-choice="paper">🖐️ 布</button>
+          </div>
+          <p id="rps-p1-status" class="rps-status">请选择</p>
+        </div>
+        <div class="rps-player">
+          <h3>蓝方选择</h3>
+          <div class="rps-buttons" id="rps-p2-buttons">
+            <button class="btn btn-rps" data-player="2" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-player="2" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-player="2" data-choice="paper">🖐️ 布</button>
+          </div>
+          <p id="rps-p2-status" class="rps-status">请选择</p>
+        </div>
+      </div>
+      <div id="rps-pve" style="display:none;">
+        <div class="rps-player">
+          <h3>你的选择</h3>
+          <div class="rps-buttons" id="rps-player-buttons">
+            <button class="btn btn-rps" data-player="human" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-player="human" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-player="human" data-choice="paper">🖐️ 布</button>
+          </div>
+        </div>
+      </div>
+      <div id="rps-result" class="rps-result"></div>
+    </div>
+  </div>
+
+  <!-- 游戏区域 -->
+  <div id="game-area" style="display:none;">
+    <!-- 状态栏 -->
+    <div id="status-bar">
+      <div class="status-item">
+        <span class="label">当前行动方：</span>
+        <span id="current-team" class="team-indicator">—</span>
+      </div>
+      <div class="status-item">
+        <span class="label">回合：</span>
+        <span id="turn-count">0</span>
+      </div>
+      <div class="status-item">
+        <span class="label" id="red-label">红方：</span>
+        <span id="red-remaining" class="red-text">25</span>
+      </div>
+      <div class="status-item">
+        <span class="label" id="blue-label">蓝方：</span>
+        <span id="blue-remaining" class="blue-text">25</span>
+      </div>
+    </div>
+
+    <!-- 主游戏区域：棋盘 + 规则面板 -->
+    <div id="game-main">
+      <div id="board-container"></div>
+
+      <!-- 游戏规则面板 -->
+      <div id="rules-panel">
+        <h3>游戏规则</h3>
+
+        <!-- 翻棋规则 -->
+        <div id="rules-flip" class="rules-content" style="display:none;">
+          <div class="rule-section">
+            <h4>棋盘布局</h4>
+            <ul>
+              <li>50颗棋子随机放置（不含行营）</li>
+              <li>所有棋子初始面朝下</li>
+            </ul>
+          </div>
+          <div class="rule-section">
+            <h4>翻棋规则</h4>
+            <ul>
+              <li>点击面朝下棋子可翻开</li>
+              <li>翻开后显示棋子所属阵营和等级</li>
+              <li>面朝下棋子不可移动、不可被攻击</li>
+            </ul>
+          </div>
+          <div class="rule-section">
+            <h4>等级排列</h4>
+            <p>司令 > 军长 > 师长 > 旅长 > 团长 > 营长 > 连长 > 排长 > 工兵</p>
+          </div>
+          <div class="rule-section">
+            <h4>移动规则</h4>
+            <ul>
+              <li>普通棋子每次移动一步</li>
+              <li>铁路线上可沿铁路移动</li>
+              <li>工兵可沿铁路无限距离移动</li>
+              <li>工兵可在铁路转弯处转向</li>
+              <li>行营为安全区，不可被攻击</li>
+            </ul>
+          </div>
+          <div class="rule-section">
+            <h4>战斗规则</h4>
+            <ul>
+              <li>高等级吃低等级，同级同归于尽</li>
+              <li>炸弹碰任何棋子同归于尽</li>
+              <li>地雷不可移动，碰之同归于尽</li>
+              <li>工兵可排雷</li>
+            </ul>
+          </div>
+          <div class="rule-section">
+            <h4>胜负条件</h4>
+            <ul>
+              <li>工兵扛走对方军旗获胜</li>
+              <li>对方无可翻开/移动棋子也获胜</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 明棋规则 -->
+        <div id="rules-open" class="rules-content">
+          <div class="rule-section">
+            <h4>棋盘布局</h4>
+            <ul>
+              <li>双方各25颗棋子分半放置</li>
+              <li>所有棋子初始面朝上</li>
+              <li>军旗必须在大本营</li>
+              <li>地雷只能在最后两行</li>
+              <li>炸弹不能在第一行</li>
+              <li>行营不放棋子</li>
+            </ul>
+          </div>
+          <div class="rule-section">
+            <h4>等级排列</h4>
+            <p>司令 > 军长 > 师长 > 旅长 > 团长 > 营长 > 连长 > 排长 > 工兵</p>
+          </div>
+          <div class="rule-section">
+            <h4>移动规则</h4>
+            <ul>
+              <li>普通棋子每次移动一步</li>
+              <li>铁路线上可沿铁路移动</li>
+              <li>工兵可沿铁路无限距离移动</li>
+              <li>工兵可在铁路转弯处转向</li>
+              <li>行营为安全区，不可被攻击</li>
+              <li>可通过对角线进出行营</li>
+            </ul>
+          </div>
+          <div class="rule-section">
+            <h4>战斗规则</h4>
+            <ul>
+              <li>高等级吃低等级，同级同归于尽</li>
+              <li>炸弹碰任何棋子同归于尽</li>
+              <li>地雷不可移动，碰之同归于尽</li>
+              <li>工兵可排雷</li>
+            </ul>
+          </div>
+          <div class="rule-section">
+            <h4>胜负条件</h4>
+            <ul>
+              <li>工兵扛走对方军旗获胜</li>
+              <li>对方无可移动棋子也获胜</li>
+            </ul>
+          </div>
+          <div class="rule-section">
+            <h4>操作说明</h4>
+            <ul>
+              <li>点击己方棋子选中</li>
+              <li>点击目标位置移动/吃子</li>
+              <li>绿色标记为移动目标</li>
+              <li>红色标记为吃子目标</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 暗棋规则 -->
+        <div id="rules-hidden" class="rules-content" style="display:none;">
+          <div class="rule-section">
+            <h4>棋盘布局</h4>
+            <ul>
+              <li>双方各25颗棋子分半放置</li>
+              <li>初始只显示己方棋子</li>
+              <li>对方棋子面朝下（不可见）</li>
+              <li>行营不放棋子</li>
+            </ul>
+          </div>
+          <div class="rule-section">
+            <h4>等级排列</h4>
+            <p>司令 > 军长 > 师长 > 旅长 > 团长 > 营长 > 连长 > 排长 > 工兵</p>
+          </div>
+          <div class="rule-section">
+            <h4>移动规则</h4>
+            <ul>
+              <li>普通棋子每次移动一步</li>
+              <li>铁路线上可沿铁路移动</li>
+              <li>工兵可沿铁路无限距离移动</li>
+              <li>工兵可在铁路转弯处转向</li>
+              <li>行营为安全区，不可被攻击</li>
+              <li>面朝下棋子不可移动、不可被攻击</li>
+            </ul>
+          </div>
+          <div class="rule-section">
+            <h4>战斗规则</h4>
+            <ul>
+              <li>高等级吃低等级，同级同归于尽</li>
+              <li>炸弹碰任何棋子同归于尽</li>
+              <li>地雷不可移动，碰之同归于尽</li>
+              <li>工兵可排雷</li>
+            </ul>
+          </div>
+          <div class="rule-section">
+            <h4>特殊规则</h4>
+            <ul>
+              <li>司令阵亡时，对方军旗自动暴露</li>
+            </ul>
+          </div>
+          <div class="rule-section">
+            <h4>胜负条件</h4>
+            <ul>
+              <li>工兵扛走对方军旗获胜</li>
+              <li>对方无可移动棋子也获胜</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 被吃掉的棋子展示区域 -->
+    <div id="captured-area">
+      <div class="captured-section">
+        <h3 class="red-text">红方被吃</h3>
+        <div id="captured-red" class="captured-cards"></div>
+      </div>
+      <div class="captured-section">
+        <h3 class="blue-text">蓝方被吃</h3>
+        <div id="captured-blue" class="captured-cards"></div>
+      </div>
+    </div>
+
+    <!-- 操作提示信息区域 -->
+    <div id="message"></div>
+  </div>
+
+  <!-- 游戏结束界面 -->
+  <div id="game-over" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2 id="winner-text">游戏结束</h2>
+      <button id="btn-restart" class="btn btn-restart">重新开始</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
