@@ -1,34 +1,68 @@
 # 童年游戏合集
 
-[![Apache License V2.0](https://img.shields.io/badge/license-Apache%202-green)](http://www.apache.org/licenses/LICENSE-2.0)
-[![Build and Rel
-ease](https://github.com/jiangxincode/childhood/actions/workflows/childhood.yml/badge.svg)](https://github.com/jiangxincode/childhood/actions/workflows/childhood.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green)](http://www.apache.org/licenses/LICENSE-2.0)
+[![CI](https://github.com/jiangxincode/childhood/actions/workflows/childhood.yml/badge.svg)](https://github.com/jiangxincode/childhood/actions/workflows/childhood.yml)
+[![CodeQL](https://github.com/jiangxincode/childhood/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/jiangxincode/childhood/actions/workflows/codeql-analysis.yml)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen)](https://jiangxincode.github.io/childhood/)
 
-一个前端小游戏合集项目，收录了几款经典的童年卡牌游戏，使用纯 HTML/CSS/JavaScript 实现。
+一个纯前端经典游戏合集，收录了 **14 款**童年桌游与卡牌游戏，零框架、零构建，开箱即玩。
 
-在线回忆童年: <https://jiangxincode.github.io/childhood/>
+**[在线体验](https://jiangxincode.github.io/childhood/)**
 
-![Screenshot](https://github.com/jiangxincode/childhood/raw/master/images/screenshot_index.png)
+## 卡牌游戏
 
-## 游戏列表
+![经典童年卡牌对战](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/经典同童年卡牌对战.jpg)
 
-- 刀杀鸡
-- 龙虎斗
-- 兽棋
-- 军棋
-- 猫捉老鼠
-- 小皇帝
+| 刀杀鸡 | 龙虎斗 | 兽棋 |
+|:------:|:------:|:----:|
+| ![刀杀鸡](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/刀杀鸡.jpg) | ![龙虎斗](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/龙虎斗.jpg) | ![兽棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/兽旗.jpg) |
 
-## 本地运行
+| 军棋（卡牌版） | 猫捉老鼠 | 小皇帝 |
+|:-------------:|:-------:|:------:|
+| ![军棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/军师旅团营.jpg) | ![猫捉老鼠](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/猫捉老鼠.jpg) | ![小皇帝](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/小皇帝.jpg) |
 
-```shell
+## 棋类游戏
+
+![策略棋盘博弈](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/策略棋盘博弈.jpg)
+
+| 中国象棋 | 国际象棋 | 军棋（棋盘版） |
+|:-------:|:-------:|:------------:|
+| ![中国象棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/象棋.jpg) | ![国际象棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/国际象棋.jpg) | ![军棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/军棋.jpg) |
+
+| 五子棋 | 黑白棋 | 国际跳棋 |
+|:-----:|:-----:|:-------:|
+| ![五子棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/五子棋.jpg) | ![黑白棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/黑白棋.jpg) | ![国际跳棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/国际跳棋.jpg) |
+
+| 飞行棋 | 井字棋 |
+|:-----:|:-----:|
+| ![飞行棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/飞行棋.jpg) | ![井字棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/井字棋.jpg) |
+
+## 快速开始
+
+```bash
+# 克隆项目
+git clone https://github.com/jiangxincode/childhood.git
+cd childhood
+
+# 安装依赖
 npm install
+
+# 直接用浏览器打开即可
+open index.html        # macOS
+start index.html       # Windows
+xdg-open index.html    # Linux
 ```
 
-安装依赖后，直接用浏览器打开 `index.html` 即可进入首页，通过图片轮播选择游戏。
+## 运行测试
 
-## 本地测试
+```bash
+# 执行全部测试
+npm test
 
-```shell
-npx vitest run
+# 监听模式
+npm run test:watch
 ```
+
+## 许可证
+
+[Apache License 2.0](LICENSE)
