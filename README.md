@@ -70,6 +70,12 @@ npm test
 npm run test:watch
 ```
 
+## 交流群
+
+欢迎加入QQ交流群，一起讨论游戏玩法、反馈问题或分享童年回忆：
+
+<img src="https://raw.githubusercontent.com/wiki/jiangxincode/childhood/qrcode_1778427076704.jpg" alt="QQ交流群" width="200">
+
 ## 许可证
 
 [Apache License 2.0](LICENSE)
