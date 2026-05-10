@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 140">
+  <defs>
+    <linearGradient id="iconBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E74C3C"/>
+      <stop offset="100%" style="stop-color:#C0392B"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#00000025"/>
+    </filter>
+  </defs>
+
+  <!-- === Icon === -->
+  <g transform="translate(8, 10)" filter="url(#shadow)">
+    <rect x="0" y="0" width="120" height="120" rx="28" fill="url(#iconBg)"/>
+
+    <!-- 3x3 board grid -->
+    <g opacity="0.3">
+      <line x1="40" y1="28" x2="40" y2="92" stroke="#FFF" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="80" y1="28" x2="80" y2="92" stroke="#FFF" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="28" y1="40" x2="92" y2="40" stroke="#FFF" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="28" y1="80" x2="92" y2="80" stroke="#FFF" stroke-width="2.2" stroke-linecap="round"/>
+    </g>
+
+    <!-- Game pawn -->
+    <g transform="translate(60, 40)">
+      <circle cx="0" cy="0" r="10" fill="#F7C948"/>
+      <path d="M-8,8 Q-8,18 0,22 Q8,18 8,8 Z" fill="#F7C948"/>
+      <ellipse cx="0" cy="24" rx="12" ry="4" fill="#F7C948" opacity="0.6"/>
+    </g>
+
+    <!-- Star -->
+    <polygon points="100,20 103,28 112,28 105,33 107,41 100,36 93,41 95,33 88,28 97,28"
+             fill="#F7C948" opacity="0.85"/>
+
+    <!-- Small dot -->
+    <circle cx="26" cy="96" r="4" fill="#F7C948" opacity="0.4"/>
+  </g>
+
+  <!-- === childhood text === -->
+  <text x="150" y="86" font-family="'Baloo 2','Fredoka One','Comic Neue',cursive,sans-serif"
+        font-size="60" font-weight="800" fill="#1A5276" letter-spacing="2.5">
+    ch<tspan dx="-4">i</tspan><tspan dx="-11">l</tspan><tspan dx="-4">d</tspan>h<tspan fill="#D35400" dx="-1">oo</tspan>d
+  </text>
+
+  <!-- Tagline -->
+  <text x="150" y="112" font-family="'Nunito','Noto Sans SC','Microsoft YaHei',sans-serif"
+        font-size="14" font-weight="400" fill="#999" letter-spacing="3">
+    CLASSIC GAMES COLLECTION
+  </text>
+</svg>

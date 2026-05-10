@@ -1,10 +1,16 @@
-# 童年游戏合集
+<p align="center">
+  <img src="images/logo.svg" alt="childhood logo" width="400">
+</p>
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-green)](http://www.apache.org/licenses/LICENSE-2.0)
-[![CI](https://github.com/jiangxincode/childhood/actions/workflows/childhood.yml/badge.svg)](https://github.com/jiangxincode/childhood/actions/workflows/childhood.yml)
-[![CodeQL](https://github.com/jiangxincode/childhood/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/jiangxincode/childhood/actions/workflows/codeql-analysis.yml)
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen)](https://jiangxincode.github.io/childhood/)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=jiangxincode_childhood&metric=alert_status)](https://sonarcloud.io/dashboard?id=jiangxincode_childhood)
+<h1 align="center">童年游戏合集</h1>
+
+<p align="center">
+  <a href="http://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/license-Apache%202.0-green" alt="License"></a>
+  <a href="https://github.com/jiangxincode/childhood/actions/workflows/childhood.yml"><img src="https://github.com/jiangxincode/childhood/actions/workflows/childhood.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/jiangxincode/childhood/actions/workflows/codeql-analysis.yml"><img src="https://github.com/jiangxincode/childhood/actions/workflows/codeql-analysis.yml/badge.svg" alt="CodeQL"></a>
+  <a href="https://jiangxincode.github.io/childhood/"><img src="https://img.shields.io/badge/GitHub%20Pages-live-brightgreen" alt="GitHub Pages"></a>
+  <a href="https://sonarcloud.io/dashboard?id=jiangxincode_childhood"><img src="https://sonarcloud.io/api/project_badges/measure?project=jiangxincode_childhood&metric=alert_status" alt="Quality Gate Status"></a>
+</p>
 
 一个纯前端经典游戏合集，收录了 **14 款**童年桌游与卡牌游戏，零框架、零构建，开箱即玩。
 

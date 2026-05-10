@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 240">
+  <defs>
+    <linearGradient id="iconBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E74C3C"/>
+      <stop offset="100%" style="stop-color:#C0392B"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="115%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#00000025"/>
+    </filter>
+  </defs>
+
+  <!-- Icon -->
+  <g transform="translate(28, 16)" filter="url(#shadow)">
+    <rect x="0" y="0" width="200" height="200" rx="44" fill="url(#iconBg)"/>
+
+    <!-- 3x3 board grid — shifted up -->
+    <g opacity="0.3">
+      <line x1="66" y1="30" x2="66" y2="120" stroke="#FFF" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="134" y1="30" x2="134" y2="120" stroke="#FFF" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="40" y1="50" x2="160" y2="50" stroke="#FFF" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="40" y1="100" x2="160" y2="100" stroke="#FFF" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+
+    <!-- Game pawn — shifted up -->
+    <g transform="translate(100, 38)">
+      <circle cx="0" cy="0" r="14" fill="#F7C948"/>
+      <path d="M-11,10 Q-11,25 0,30 Q11,25 11,10 Z" fill="#F7C948"/>
+      <ellipse cx="0" cy="33" rx="17" ry="5" fill="#F7C948" opacity="0.6"/>
+    </g>
+
+    <!-- Star -->
+    <polygon points="170,22 174,36 188,36 176,44 180,58 170,50 160,58 164,44 152,36 166,36"
+             fill="#F7C948" opacity="0.85"/>
+
+    <!-- Small dot -->
+    <circle cx="42" cy="108" r="5" fill="#F7C948" opacity="0.4"/>
+
+    <!-- childhood text inside icon -->
+    <text x="100" y="172" text-anchor="middle"
+          font-family="'Baloo 2','Fredoka One','Comic Neue',cursive,sans-serif"
+          font-size="32" font-weight="800" fill="#FFF" letter-spacing="1.5">
+      ch<tspan dx="-3">i</tspan><tspan dx="-8">l</tspan><tspan dx="-3">d</tspan>h<tspan fill="#F7C948" dx="-1">oo</tspan>d
+    </text>
+  </g>
+</svg>
