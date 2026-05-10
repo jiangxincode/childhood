@@ -1,26 +1,306 @@
 /* ============================================================
-   首页样式 - 覆盖插件默认值 + 移动端响应式
+   首页样式 - 一级入口 + 炫酷效果
+   轮播样式由 jquery-yys-slider.css 提供，这里不重复定义
    ============================================================ */
 
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
-    background: #1a1a2e;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
     font-family: 'Microsoft YaHei', 'trebuchet MS', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
-/* ---- 移动端：降级为网格列表 ---- */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ---- 一级入口选择器 ---- */
+.category-selector {
+    text-align: center;
+    padding: 40px 20px 20px;
+    position: relative;
+    z-index: 10;
+}
+
+.main-title {
+    font-size: 42px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #f093fb, #f5576c, #4facfe, #00f2fe);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: titleGradient 5s ease infinite;
+    margin-bottom: 40px;
+    text-shadow: 0 0 40px rgba(79, 172, 254, 0.3);
+    letter-spacing: 8px;
+}
+
+@keyframes titleGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.category-cards {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.category-card {
+    position: relative;
+    width: 240px;
+    height: 160px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+}
+
+.category-card:hover {
+    transform: translateY(-8px) scale(1.02);
+}
+
+.card-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(79, 172, 254, 0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+}
+
+.category-card:hover .card-glow {
+    opacity: 1;
+}
+
+.card-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.card-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    color: #fff;
+    opacity: 0.8;
+    transition: all 0.3s;
+}
+
+.category-card:hover .card-icon {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.card-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    margin: 0 0 6px;
+    letter-spacing: 4px;
+}
+
+.card-desc {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+.card-border {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    padding: 2px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: all 0.4s;
+}
+
+.category-card:hover .card-border {
+    background: linear-gradient(135deg, rgba(79, 172, 254, 0.5), rgba(0, 242, 254, 0.3));
+}
+
+.category-card.active {
+    background: rgba(79, 172, 254, 0.15);
+}
+
+.category-card.active .card-border {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    animation: borderPulse 2s ease infinite;
+}
+
+@keyframes borderPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.category-card.active .card-icon {
+    color: #4facfe;
+    opacity: 1;
+}
+
+/* ---- 游戏区域 ---- */
+.game-section {
+    display: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.game-section.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+    animation: sectionFadeIn 0.6s ease forwards;
+}
+
+@keyframes sectionFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ---- 轮播箭头样式 ---- */
+.gallery_container .prev,
+.gallery_container .next {
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.gallery_container .prev:hover,
+.gallery_container .next:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.gallery_container .prev::after,
+.gallery_container .next::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 30px;
+    height: 30px;
+    border-top: 3px solid rgba(255, 255, 255, 0.8);
+    border-left: 3px solid rgba(255, 255, 255, 0.8);
+    transition: all 0.3s;
+}
+
+.gallery_container .prev::after {
+    left: 40px;
+    transform: translateY(-50%) rotate(-45deg);
+}
+
+.gallery_container .next::after {
+    right: 40px;
+    transform: translateY(-50%) rotate(135deg);
+}
+
+.gallery_container .prev:hover::after,
+.gallery_container .next:hover::after {
+    border-color: #4facfe;
+    filter: drop-shadow(0 0 8px rgba(79, 172, 254, 0.8));
+}
+
+/* 入口卡片点击波纹效果 */
+.category-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(79, 172, 254, 0.4) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.category-card:active::after {
+    opacity: 1;
+}
+
+/* 选中状态的光晕动画 */
+.category-card.active .card-glow {
+    opacity: 0.5;
+    animation: activeGlow 2s ease-in-out infinite;
+}
+
+@keyframes activeGlow {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 0.7; }
+}
+
+/* ---- 移动端响应式 ---- */
 @media (max-width: 860px) {
+    .category-selector {
+        padding: 20px 16px 10px;
+    }
+
+    .main-title {
+        font-size: 28px;
+        margin-bottom: 24px;
+        letter-spacing: 4px;
+    }
+
+    .category-cards {
+        gap: 16px;
+    }
+
+    .category-card {
+        width: 160px;
+        height: 120px;
+    }
+
+    .card-icon {
+        width: 36px;
+        height: 36px;
+        margin-bottom: 8px;
+    }
+
+    .card-title {
+        font-size: 16px;
+    }
+
+    .card-desc {
+        font-size: 10px;
+    }
+
     /* 重置插件的绝对定位布局 */
     .content-part.part-tese {
         height: auto !important;
         position: static !important;
         padding: 1.5em 16px 3em;
-    }
-
-    .page-title {
-        font-size: 1.4em !important;
-        padding: 0 0 1em !important;
     }
 
     .part-tese .gallery_container {
@@ -57,12 +337,13 @@ body {
         z-index: auto !important;
         border-radius: 10px;
         overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
     .threeD_gallery_item img {
         position: absolute !important;
-        top: 0; left: 0;
+        top: 0;
+        left: 0;
         width: 100% !important;
         height: 100% !important;
         object-fit: cover;
@@ -87,99 +368,87 @@ body {
 }
 
 @media (max-width: 480px) {
+    .main-title {
+        font-size: 22px;
+        letter-spacing: 2px;
+    }
+
+    .category-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .category-card {
+        width: 200px;
+        height: 100px;
+    }
+
     .part-tese .gallery_container .gallery_wrap,
     .gallery_wrap.threeD_gallery_wrap {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 10px;
     }
-
-    .page-title {
-        font-size: 1.2em !important;
-    }
 }
 
-/* ---- 底部棋类游戏区域 ---- */
-.board-games-section {
-    max-width: 600px;
-    margin: 2em auto 3em;
-    padding: 0 16px;
-    text-align: center;
-}
-
-.section-title {
-    font-size: 1.1em;
-    color: #ccc;
-    margin-bottom: 1em;
-    font-weight: normal;
-    letter-spacing: 2px;
-}
-
-.board-games-grid {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-
-.board-game-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 120px;
-    text-decoration: none;
-    border-radius: 10px;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    transition: transform 0.2s, box-shadow 0.2s;
-    cursor: pointer;
-}
-
-.board-game-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-}
-
-.board-game-card img {
+/* ---- 粒子背景效果 ---- */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 100px;
-    object-fit: cover;
-    display: block;
-}
-
-.board-game-label {
-    display: block;
-    padding: 6px 0;
-    font-size: 0.85em;
-    color: #ddd;
-}
-
-/* 即将推出（置灰） */
-.board-game-card.coming-soon {
-    opacity: 0.45;
-    cursor: default;
+    height: 100%;
+    background-image:
+        radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.3), transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.2), transparent),
+        radial-gradient(2px 2px at 50px 160px, rgba(255,255,255,0.3), transparent),
+        radial-gradient(2px 2px at 90px 40px, rgba(255,255,255,0.2), transparent),
+        radial-gradient(2px 2px at 130px 80px, rgba(255,255,255,0.3), transparent),
+        radial-gradient(2px 2px at 160px 120px, rgba(255,255,255,0.2), transparent);
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    animation: particleFloat 30s linear infinite;
     pointer-events: none;
+    z-index: 0;
 }
 
-.coming-soon-placeholder {
+@keyframes particleFloat {
+    from { transform: translateY(0); }
+    to { transform: translateY(-200px); }
+}
+
+/* 确保内容在粒子之上 */
+.category-selector,
+.game-section {
+    position: relative;
+    z-index: 1;
+}
+
+/* 星空背景增强 */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2em;
-    color: #888;
-    background: rgba(255, 255, 255, 0.04);
+    height: 100%;
+    background:
+        radial-gradient(1px 1px at 100px 200px, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 300px 100px, rgba(255,255,255,0.3), transparent),
+        radial-gradient(1px 1px at 400px 300px, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 200px 400px, rgba(255,255,255,0.3), transparent),
+        radial-gradient(1px 1px at 500px 150px, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 600px 250px, rgba(255,255,255,0.3), transparent),
+        radial-gradient(1px 1px at 150px 350px, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 350px 450px, rgba(255,255,255,0.3), transparent);
+    background-repeat: repeat;
+    background-size: 700px 500px;
+    animation: starsFloat 60s linear infinite;
+    pointer-events: none;
+    z-index: 0;
 }
 
-.coming-soon-tag {
-    display: block;
-    font-size: 0.7em;
-    color: #999;
-    padding-bottom: 6px;
-}
-
-@media (max-width: 860px) {
-    .board-games-section {
-        margin: 1.5em auto 2em;
-    }
+@keyframes starsFloat {
+    from { transform: translateY(0) translateX(0); }
+    to { transform: translateY(-500px) translateX(-100px); }
 }

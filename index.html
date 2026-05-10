@@ -17,122 +17,220 @@
 </head>
 <body>
 
-<div class="content-part part-tese">
-	<h1 class="page-title">童年游戏合集</h1>
-	<div class="gallery_container">
-		<div class="gallery_wrap threeD_gallery_wrap" style="margin-left: -360px; margin-top: -260px;">
-			<div href="javascript:;" class="gallery_item threeD_gallery_item gallery_left_middle" data-href="apps/card-game/knife-kills-chicken/index.html">
-				<img src="images/刀杀鸡.jpg" class="show">
-				<div class="item-label">刀杀鸡</div>
-				<div class="line-t"></div>
-				<div class="line-r"></div>
-				<div class="line-b"></div>
-				<div class="line-l"></div>
-			</div>
-			<div href="javascript:;" class="gallery_item threeD_gallery_item front_side" data-href="apps/card-game/dragon-tiger-fight/index.html">
-				<img src="images/龙虎斗.jpg" class="show">
-				<div class="item-label">龙虎斗</div>
-				<div class="line-t"></div>
-				<div class="line-r"></div>
-				<div class="line-b"></div>
-				<div class="line-l"></div>
-			</div>
-			<div href="javascript:;" class="gallery_item threeD_gallery_item gallery_right_middle" data-href="apps/card-game/animal-chess/index.html">
-				<img src="images/兽旗.jpg" class="show">
-				<div class="item-label">兽棋</div>
-				<div class="line-t"></div>
-				<div class="line-r"></div>
-				<div class="line-b"></div>
-				<div class="line-l"></div>
-			</div>
-			<div href="javascript:;" class="gallery_item threeD_gallery_item gallery_out" data-href="apps/card-game/chinese-army-chess/index.html">
-				<img src="images/军师旅团营.jpg" class="show">
-				<div class="item-label">军棋</div>
-				<div class="line-t"></div>
-				<div class="line-r"></div>
-				<div class="line-b"></div>
-				<div class="line-l"></div>
-			</div>
-			<div href="javascript:;" class="gallery_item threeD_gallery_item gallery_out" data-href="apps/card-game/cat-and-mouse/index.html">
-				<img src="images/猫捉老鼠.jpg" class="show">
-				<div class="item-label">猫捉老鼠</div>
-				<div class="line-t"></div>
-				<div class="line-r"></div>
-				<div class="line-b"></div>
-				<div class="line-l"></div>
-			</div>
-			<div href="javascript:;" class="gallery_item threeD_gallery_item gallery_out" data-href="apps/card-game/little-emperor/index.html">
-				<img src="images/小皇帝.jpg" class="show">
-				<div class="item-label">小皇帝</div>
-				<div class="line-t"></div>
-				<div class="line-r"></div>
-				<div class="line-b"></div>
-				<div class="line-l"></div>
-			</div>
-		</div>
-		<a class="prev" href="javascript:;"></a>
-		<a class="next" href="javascript:;"></a>
-	</div>
+<!-- 一级入口选择器 -->
+<div class="category-selector">
+    <h1 class="main-title">童年游戏合集</h1>
+    <div class="category-cards">
+        <div class="category-card active" data-category="card">
+            <div class="card-glow"></div>
+            <div class="card-content">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="2" y="2" width="20" height="20" rx="3"/>
+                        <path d="M12 8v8M8 12h8"/>
+                    </svg>
+                </div>
+                <h2 class="card-title">卡片游戏</h2>
+                <p class="card-desc">经典童年卡牌对战</p>
+            </div>
+            <div class="card-border"></div>
+        </div>
+        <div class="category-card" data-category="chess">
+            <div class="card-glow"></div>
+            <div class="card-content">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="4"/>
+                        <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
+                    </svg>
+                </div>
+                <h2 class="card-title">棋类游戏</h2>
+                <p class="card-desc">策略棋盘博弈</p>
+            </div>
+            <div class="card-border"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 卡片游戏区域 -->
+<div class="game-section active" id="card-section">
+    <div class="content-part part-tese">
+        <div class="gallery_container">
+            <div class="gallery_wrap threeD_gallery_wrap" style="margin-left: -360px; margin-top: -260px;">
+                <div href="javascript:;" class="gallery_item threeD_gallery_item gallery_left_middle" data-href="apps/card-game/knife-kills-chicken/index.html">
+                    <img src="images/刀杀鸡.jpg" class="show">
+                    <div class="item-label">刀杀鸡</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+                <div href="javascript:;" class="gallery_item threeD_gallery_item front_side" data-href="apps/card-game/dragon-tiger-fight/index.html">
+                    <img src="images/龙虎斗.jpg" class="show">
+                    <div class="item-label">龙虎斗</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+                <div href="javascript:;" class="gallery_item threeD_gallery_item gallery_right_middle" data-href="apps/card-game/animal-chess/index.html">
+                    <img src="images/兽旗.jpg" class="show">
+                    <div class="item-label">兽棋</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+                <div href="javascript:;" class="gallery_item threeD_gallery_item gallery_out" data-href="apps/card-game/chinese-army-chess/index.html">
+                    <img src="images/军师旅团营.jpg" class="show">
+                    <div class="item-label">军棋</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+                <div href="javascript:;" class="gallery_item threeD_gallery_item gallery_out" data-href="apps/card-game/cat-and-mouse/index.html">
+                    <img src="images/猫捉老鼠.jpg" class="show">
+                    <div class="item-label">猫捉老鼠</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+                <div href="javascript:;" class="gallery_item threeD_gallery_item gallery_out" data-href="apps/card-game/little-emperor/index.html">
+                    <img src="images/小皇帝.jpg" class="show">
+                    <div class="item-label">小皇帝</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+            </div>
+            <a class="prev" href="javascript:;"></a>
+            <a class="next" href="javascript:;"></a>
+        </div>
+    </div>
+</div>
+
+<!-- 棋类游戏区域 -->
+<div class="game-section" id="chess-section">
+    <div class="content-part part-tese">
+        <div class="gallery_container chess-gallery">
+            <div class="gallery_wrap threeD_gallery_wrap" style="margin-left: -360px; margin-top: -260px;">
+                <div href="javascript:;" class="gallery_item threeD_gallery_item gallery_out" data-href="apps/chess-game/reversi/index.html">
+                    <img src="images/黑白棋.jpg" class="show">
+                    <div class="item-label">黑白棋</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+                <div href="javascript:;" class="gallery_item threeD_gallery_item gallery_out" data-href="apps/chess-game/flying-chess/index.html">
+                    <img src="images/飞行棋.jpg" class="show">
+                    <div class="item-label">飞行棋</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+                <div href="javascript:;" class="gallery_item threeD_gallery_item gallery_left_middle" data-href="apps/chess-game/tic-tac-toe/index.html">
+                    <img src="images/井字棋.jpg" class="show">
+                    <div class="item-label">井字棋</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+                <div href="javascript:;" class="gallery_item threeD_gallery_item front_side" data-href="apps/chess-game/gomoku/index.html">
+                    <img src="images/五子棋.jpg" class="show">
+                    <div class="item-label">五子棋</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+                <div href="javascript:;" class="gallery_item threeD_gallery_item gallery_right_middle" data-href="apps/chess-game/checkers/index.html">
+                    <img src="images/国际跳棋.jpg" class="show">
+                    <div class="item-label">国际跳棋</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+                <div href="javascript:;" class="gallery_item threeD_gallery_item gallery_out" data-href="apps/chess-game/chinese-chess/index.html">
+                    <img src="images/象棋.jpg" class="show">
+                    <div class="item-label">中国象棋</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+                <div href="javascript:;" class="gallery_item threeD_gallery_item gallery_out" data-href="apps/chess-game/international-chess/index.html">
+                    <img src="images/国际象棋.jpg" class="show">
+                    <div class="item-label">国际象棋</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+                <div href="javascript:;" class="gallery_item threeD_gallery_item gallery_out" data-href="apps/chess-game/chinese-army-chess/index.html">
+                    <img src="images/军棋.jpg" class="show">
+                    <div class="item-label">军棋</div>
+                    <div class="line-t"></div>
+                    <div class="line-r"></div>
+                    <div class="line-b"></div>
+                    <div class="line-l"></div>
+                </div>
+            </div>
+            <a class="prev" href="javascript:;"></a>
+            <a class="next" href="javascript:;"></a>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@2.2.4/dist/jquery.min.js" type="text/javascript"></script>
 <script src="js/jquery-yys-slider.js" type="text/javascript"></script>
-<div class="board-games-section">
-	<h2 class="section-title">棋类游戏</h2>
-	<div class="board-games-grid">
-		<a href="apps/chess-game/reversi/index.html" class="board-game-card">
-			<img src="images/黑白棋.jpg" alt="黑白棋">
-			<span class="board-game-label">黑白棋</span>
-		</a>
-		<a href="apps/chess-game/flying-chess/index.html" class="board-game-card">
-			<img src="images/飞行棋.jpg" alt="飞行棋">
-			<span class="board-game-label">飞行棋</span>
-		</a>
-		<a href="apps/chess-game/tic-tac-toe/index.html" class="board-game-card">
-			<img src="images/井字棋.jpg" alt="井字棋">
-			<span class="board-game-label">井字棋</span>
-		</a>
-		<a href="apps/chess-game/gomoku/index.html" class="board-game-card">
-			<img src="images/五子棋.jpg" alt="五子棋">
-			<span class="board-game-label">五子棋</span>
-		</a>
-		<a href="apps/chess-game/checkers/index.html" class="board-game-card">
-			<img src="images/国际跳棋.jpg" alt="国际跳棋">
-			<span class="board-game-label">国际跳棋</span>
-		</a>
-		<a href="apps/chess-game/chinese-chess/index.html" class="board-game-card">
-			<img src="images/象棋.jpg" alt="中国象棋">
-			<span class="board-game-label">中国象棋</span>
-		</a>
-		<a href="apps/chess-game/international-chess/index.html" class="board-game-card">
-			<img src="images/国际象棋.jpg" alt="国际象棋">
-			<span class="board-game-label">国际象棋</span>
-		</a>
-		<a href="apps/chess-game/chinese-army-chess/index.html" class="board-game-card">
-			<img src="images/军棋.jpg" alt="军棋">
-			<span class="board-game-label">军棋</span>
-		</a>
-	</div>
-</div>
-
 <script type="text/javascript">
 $(function(){
-	$('.content-part.part-tese').addClass('show');
-	$('.gallery_container').gallery_slider({imgNum: 6});
+    // 一级入口切换逻辑
+    $('.category-card').on('click', function(){
+        var category = $(this).data('category');
 
-	// 桌面端：点击中间图片跳转
-	$('.gallery_container').on('click', '.front_side', function(){
-		var href = $(this).data('href');
-		if (href) window.location.href = href;
-	});
+        // 更新选中状态
+        $('.category-card').removeClass('active');
+        $(this).addClass('active');
 
-	// 移动端：所有卡片均可点击跳转
-	$('.gallery_container').on('click', '.gallery_item', function(){
-		if ($(window).width() <= 860) {
-			var href = $(this).data('href');
-			if (href) window.location.href = href;
-		}
-	});
+        // 切换显示区域
+        $('.game-section').removeClass('active');
+        if (category === 'card') {
+            $('#card-section').addClass('active');
+        } else {
+            $('#chess-section').addClass('active');
+        }
+    });
+
+    // 初始化卡片游戏轮播
+    $('#card-section .gallery_container').gallery_slider({imgNum: 6});
+    $('#card-section .content-part.part-tese').addClass('show');
+
+    // 初始化棋类游戏轮播
+    $('#chess-section .gallery_container').gallery_slider({imgNum: 8});
+    $('#chess-section .content-part.part-tese').addClass('show');
+
+    // 桌面端：点击中间图片跳转
+    $('.gallery_container').on('click', '.front_side', function(){
+        var href = $(this).data('href');
+        if (href) window.location.href = href;
+    });
+
+    // 移动端：所有卡片均可点击跳转
+    $('.gallery_container').on('click', '.gallery_item', function(){
+        if ($(window).width() <= 860) {
+            var href = $(this).data('href');
+            if (href) window.location.href = href;
+        }
+    });
 })
 </script>
 
