@@ -40,6 +40,15 @@ body {
     margin-bottom: 40px;
     text-shadow: 0 0 40px rgba(79, 172, 254, 0.3);
     letter-spacing: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.title-logo {
+    width: 320px;
+    flex-shrink: 0;
 }
 
 @keyframes titleGradient {
@@ -273,6 +282,10 @@ body {
         letter-spacing: 4px;
     }
 
+    .title-logo {
+        width: 240px;
+    }
+
     .category-cards {
         gap: 16px;
     }
@@ -371,6 +384,10 @@ body {
     .main-title {
         font-size: 22px;
         letter-spacing: 2px;
+    }
+
+    .title-logo {
+        width: 200px;
     }
 
     .category-cards {
