@@ -4,6 +4,7 @@
 [![CI](https://github.com/jiangxincode/childhood/actions/workflows/childhood.yml/badge.svg)](https://github.com/jiangxincode/childhood/actions/workflows/childhood.yml)
 [![CodeQL](https://github.com/jiangxincode/childhood/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/jiangxincode/childhood/actions/workflows/codeql-analysis.yml)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen)](https://jiangxincode.github.io/childhood/)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=jiangxincode_childhood&metric=alert_status)](https://sonarcloud.io/dashboard?id=jiangxincode_childhood)
 
 一个纯前端经典游戏合集，收录了 **14 款**童年桌游与卡牌游戏，零框架、零构建，开箱即玩。
 
