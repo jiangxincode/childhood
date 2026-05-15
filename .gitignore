@@ -21,3 +21,5 @@ tmp/
 
 .kiro/
 .claude/
+
+sonar-report.xml

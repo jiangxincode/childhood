@@ -12,7 +12,7 @@
   <a href="https://sonarcloud.io/dashboard?id=jiangxincode_childhood"><img src="https://sonarcloud.io/api/project_badges/measure?project=jiangxincode_childhood&metric=alert_status" alt="Quality Gate Status"></a>
 </p>
 
-一个纯前端经典游戏合集，收录了 **14 款**童年桌游与卡牌游戏，零框架、零构建，开箱即玩。
+一个纯前端经典游戏合集，收录了 **15 款**童年桌游与卡牌游戏，零框架、零构建，开箱即玩。
 
 **[在线体验](https://jiangxincode.github.io/childhood/)**
 
@@ -40,9 +40,9 @@
 |:-----:|:-----:|:-------:|
 | ![五子棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/五子棋.jpg) | ![黑白棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/黑白棋.jpg) | ![国际跳棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/国际跳棋.jpg) |
 
-| 飞行棋 | 井字棋 |
-|:-----:|:-----:|
-| ![飞行棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/飞行棋.jpg) | ![井字棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/井字棋.jpg) |
+| 飞行棋 | 井字棋 | 中国跳棋 |
+|:-----:|:-----:|:-------:|
+| ![飞行棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/飞行棋.jpg) | ![井字棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/井字棋.jpg) | ![中国跳棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/中国跳棋.jpg) |
 
 ## 快速开始
 

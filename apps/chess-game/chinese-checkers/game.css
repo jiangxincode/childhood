@@ -1,0 +1,387 @@
+/* ============================================================
+   中国跳棋 - 样式表
+   ============================================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ============================================================
+   遮罩层（模式选择、游戏结束）
+   ============================================================ */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.overlay-content {
+  background: white;
+  border-radius: 20px;
+  padding: 40px 50px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+}
+
+.game-title {
+  font-size: 42px;
+  color: #333;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 30px;
+}
+
+/* ============================================================
+   按钮样式
+   ============================================================ */
+
+.mode-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.btn {
+  padding: 15px 30px;
+  font-size: 18px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-pvp {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-pve {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.btn-restart {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 18px;
+}
+
+/* ============================================================
+   石头剪刀布界面
+   ============================================================ */
+
+#rps-section h2 {
+  margin-bottom: 24px;
+  color: #333;
+}
+
+.rps-player {
+  margin-bottom: 20px;
+}
+
+.rps-player h3 {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #555;
+}
+
+.rps-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.btn-rps {
+  background: #fff;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-rps:hover {
+  border-color: #333;
+  background: #f5f5f5;
+}
+
+.btn-rps.selected {
+  border-color: #ffd600;
+  background: #fff9c4;
+}
+
+.rps-status {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #888;
+}
+
+.rps-result {
+  margin-top: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* ============================================================
+   游戏区域 - 上下结构
+   ============================================================ */
+
+#game-area {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+}
+
+/* ============================================================
+   状态栏
+   ============================================================ */
+
+#status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  justify-content: center;
+  margin-bottom: 16px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  width: 100%;
+}
+
+.status-item {
+  font-size: 15px;
+}
+
+.label {
+  color: #777;
+}
+
+.team-indicator {
+  font-weight: bold;
+}
+
+.text-red { color: #e53935; }
+.text-blue { color: #1565c0; }
+.text-green { color: #2e7d32; }
+.text-yellow { color: #f9a825; }
+.text-purple { color: #7b1fa2; }
+.text-orange { color: #ef6c00; }
+
+/* ============================================================
+   主游戏区域
+   ============================================================ */
+
+#game-main {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* ============================================================
+   棋盘 SVG
+   ============================================================ */
+
+#board-svg {
+  background: #f5f0e1;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================================
+   棋子样式
+   ============================================================ */
+
+.piece {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.piece:hover {
+  filter: brightness(1.2);
+  transform-origin: center;
+}
+
+.piece.selected {
+  filter: brightness(1.3);
+  stroke: #333;
+  stroke-width: 3;
+}
+
+.piece.valid-move {
+  cursor: pointer;
+}
+
+/* ============================================================
+   规则面板
+   ============================================================ */
+
+#rules-panel {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  width: 220px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+#rules-panel h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: #333;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+}
+
+.rule-section {
+  margin-bottom: 12px;
+}
+
+.rule-section h4 {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.rule-section ul {
+  list-style: none;
+  padding-left: 4px;
+}
+
+.rule-section li {
+  color: #666;
+  padding: 1px 0;
+}
+
+/* ============================================================
+   消息提示
+   ============================================================ */
+
+#message {
+  margin-top: 12px;
+  padding: 10px 20px;
+  font-size: 15px;
+  color: #555;
+  text-align: center;
+  min-height: 40px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  max-width: 480px;
+}
+
+#message.error {
+  color: #c62828;
+  background: rgba(229, 57, 53, 0.1);
+}
+
+#message.info {
+  color: #1565c0;
+  background: rgba(21, 101, 192, 0.1);
+}
+
+/* ============================================================
+   游戏结束
+   ============================================================ */
+
+#game-over .overlay-content h2 {
+  font-size: 28px;
+  margin-bottom: 24px;
+}
+
+/* ============================================================
+   响应式设计
+   ============================================================ */
+
+@media (max-width: 700px) {
+  .overlay-content {
+    padding: 24px 16px;
+  }
+
+  .game-title {
+    font-size: 32px;
+  }
+
+  .btn {
+    padding: 10px 22px;
+    font-size: 16px;
+  }
+
+  .mode-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  #game-main {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #rules-panel {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  #status-bar {
+    gap: 8px 16px;
+    padding: 10px 12px;
+  }
+
+  .status-item {
+    font-size: 13px;
+  }
+
+  .rps-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .btn-rps {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
