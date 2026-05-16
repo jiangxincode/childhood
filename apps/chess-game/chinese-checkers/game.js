@@ -4,6 +4,12 @@
 // Reference: anchengjian/chinese_checkers implementation
 // 17x17 axial coordinate system, 121 valid positions forming a hexagram
 
+if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
+  var _gameUtils = require('../../common/game-utils.js');
+  var judgeRPS = _gameUtils.judgeRPS;
+  var getRPSName = _gameUtils.getRPSName;
+}
+
 var EMPTY = 0;
 var RED = 1;
 var BLUE = 2;
@@ -503,27 +509,6 @@ function initGame(state) {
   for (var i = 0; i < state.players.length; i++) {
     placePieces(state.board, state.players[i]);
   }
-}
-
-// ============================================================
-// Rock-Paper-Scissors
-// ============================================================
-
-function judgeRPS(choice1, choice2) {
-  if (choice1 === choice2) return 0;
-  if (
-    (choice1 === 'rock' && choice2 === 'scissors') ||
-    (choice1 === 'scissors' && choice2 === 'paper') ||
-    (choice1 === 'paper' && choice2 === 'rock')
-  ) {
-    return 1;
-  }
-  return -1;
-}
-
-function getRPSName(choice) {
-  var names = { 'rock': '石头', 'scissors': '剪刀', 'paper': '布' };
-  return names[choice] || choice;
 }
 
 // ============================================================

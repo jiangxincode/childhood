@@ -2,6 +2,12 @@
 // Army Chess (Open) - Game Core Logic
 // ============================================================
 
+if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
+  var _gameUtils = require('../../common/game-utils.js');
+  var judgeRPS = _gameUtils.judgeRPS;
+  var getRPSName = _gameUtils.getRPSName;
+}
+
 // ============================================================
 // Constants
 // ============================================================
@@ -150,19 +156,6 @@ function getImagePath(piece) {
   if (isFlag(piece.name)) return 'images/军旗.png';
   if (piece.team === RED) return 'images/红-' + piece.name + '.png';
   return 'images/蓝-' + piece.name + '.png';
-}
-
-// RPS judgment
-function judgeRPS(choice1, choice2) {
-  if (choice1 === choice2) return 0;
-  if (
-    (choice1 === 'rock' && choice2 === 'scissors') ||
-    (choice1 === 'scissors' && choice2 === 'paper') ||
-    (choice1 === 'paper' && choice2 === 'rock')
-  ) {
-    return 1;
-  }
-  return -1;
 }
 
 // ============================================================
@@ -1543,10 +1536,6 @@ if (typeof document !== 'undefined') {
   // ============================================================
   // Rock-Paper-Scissors
   // ============================================================
-  function getRPSName(c) {
-    return { 'rock': '石头', 'scissors': '剪刀', 'paper': '布' }[c] || c;
-  }
-
   function handleRPSChoice(player, choice, ev) {
     if (player === 'human') {
       rpsChoices.human = choice;

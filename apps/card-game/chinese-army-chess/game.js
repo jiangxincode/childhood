@@ -3,6 +3,15 @@
 // ============================================================
 
 // ============================================================
+// Shared module loading (Node.js test environment)
+// ============================================================
+if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
+  var _gameUtils = require('../../common/game-utils.js');
+  var judgeRPS = _gameUtils.judgeRPS;
+  var shuffleArray = _gameUtils.shuffleArray;
+}
+
+// ============================================================
 // Task 1.1: Constants and basic utility functions
 // ============================================================
 
@@ -101,23 +110,6 @@ function getRank(name) {
 }
 
 /**
- * Rock-Paper-Scissors judgment
- * @param {string} choice1 - 'rock' | 'scissors' | 'paper'
- * @param {string} choice2 - 'rock' | 'scissors' | 'paper'
- * @returns {number} 1=first player wins, -1=second player wins, 0=draw
- */
-function judgeRPS(choice1, choice2) {
-  if (choice1 === choice2) return 0;
-  if (
-    (choice1 === 'rock' && choice2 === 'scissors') ||
-    (choice1 === 'scissors' && choice2 === 'paper') ||
-    (choice1 === 'paper' && choice2 === 'rock')
-  ) {
-    return 1;
-  }
-  return -1;
-}
-
 /**
  * Check if coordinates are within 5x5 board range
  * @param {number} x - 0~4
@@ -239,11 +231,7 @@ function createGameState(mode) {
     faceUp: false
   });
 
-  // Fisher-Yates shuffle
-  for (let i = pieces.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
-  }
+  shuffleArray(pieces);
 
   // Place onto 5x5 board board[y][x]
   const board = [];

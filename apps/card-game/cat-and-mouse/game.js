@@ -2,6 +2,25 @@
 // Cat Catches Mouse - Game Core Logic
 // ============================================================
 
+// ============================================================
+// Shared module loading (Node.js test environment)
+// ============================================================
+if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
+  var _gameUtils = require('../../common/game-utils.js');
+  var judgeRPS = _gameUtils.judgeRPS;
+  var shuffleArray = _gameUtils.shuffleArray;
+}
+if (typeof DIRECTIONS === 'undefined' && typeof require !== 'undefined') {
+  var _core = require('../../common/card-game-core.js');
+  var DIRECTIONS = _core.DIRECTIONS;
+  var inBounds = _core.inBounds;
+  var getValidMoves = _core.getValidMoves;
+  var getValidCapturesCore = _core.getValidCaptures;
+  var flipCard = _core.flipCard;
+  var moveCard = _core.moveCard;
+  var createBaseState = _core.createBaseState;
+}
+
 // All piece names (shared by red/blue, sorted by rank, lower value = stronger)
 const PIECE_NAMES = ['大黄猫', '小花猫', '大灰鼠', '米老鼠', '白老鼠', '偷米鼠', '大头鼠', '油滑鼠'];
 
@@ -21,42 +40,6 @@ function getImagePath(team, name) {
   const prefix = team === 'red' ? '红' : '蓝';
   return `images/${prefix}-${name}.png`;
 }
-
-/**
- * Rock-Paper-Scissors judgment
- * @param {string} choice1 - 'rock' | 'scissors' | 'paper'
- * @param {string} choice2 - 'rock' | 'scissors' | 'paper'
- * @returns {number} 1=first player wins, -1=second player wins, 0=draw
- */
-function judgeRPS(choice1, choice2) {
-  if (choice1 === choice2) return 0;
-  if (
-    (choice1 === 'rock' && choice2 === 'scissors') ||
-    (choice1 === 'scissors' && choice2 === 'paper') ||
-    (choice1 === 'paper' && choice2 === 'rock')
-  ) {
-    return 1;
-  }
-  return -1;
-}
-
-/**
- * Check if coordinates are within board range（4×4）
- * @param {number} x
- * @param {number} y
- * @returns {boolean}
- */
-function inBounds(x, y) {
-  return x >= 0 && x <= 3 && y >= 0 && y <= 3;
-}
-
-// Four adjacent direction offsets
-const DIRECTIONS = [
-  { dx: -1, dy: 0 },
-  { dx: 1, dy: 0 },
-  { dx: 0, dy: -1 },
-  { dx: 0, dy: 1 }
-];
 
 /**
  * Check if attacker piece can capture defender piece
@@ -89,73 +72,38 @@ function isMutualDestruction(attacker, defender) {
  * @returns {GameState}
  */
 function createGameState(mode) {
+  var state = createBaseState(mode);
+
   // Create 16 pieces: 8 red + 8 blue
-  const cards = [];
-  for (const name of PIECE_NAMES) {
-    cards.push({ name, team: 'red', rank: RANK_MAP[name], faceUp: false });
+  var cards = [];
+  for (var i = 0; i < PIECE_NAMES.length; i++) {
+    var name = PIECE_NAMES[i];
+    cards.push({ name: name, team: 'red', rank: RANK_MAP[name], faceUp: false });
   }
-  for (const name of PIECE_NAMES) {
-    cards.push({ name, team: 'blue', rank: RANK_MAP[name], faceUp: false });
+  for (var i = 0; i < PIECE_NAMES.length; i++) {
+    var name = PIECE_NAMES[i];
+    cards.push({ name: name, team: 'blue', rank: RANK_MAP[name], faceUp: false });
   }
 
-  // Fisher-Yates shuffle algorithm
-  for (let i = cards.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [cards[i], cards[j]] = [cards[j], cards[i]];
-  }
+  // Fisher-Yates shuffle
+  shuffleArray(cards);
 
   // Place onto 4x4 board
-  const board = [];
-  for (let y = 0; y < 4; y++) {
-    const row = [];
-    for (let x = 0; x < 4; x++) {
+  var board = [];
+  for (var y = 0; y < 4; y++) {
+    var row = [];
+    for (var x = 0; x < 4; x++) {
       row.push(cards[y * 4 + x]);
     }
     board.push(row);
   }
 
-  return {
-    mode,
-    board,
-    currentTeam: null,
-    playerTeam: null,
-    aiTeam: null,
-    teamAssigned: false,
-    firstPlayer: null,
-    turnCount: 0,
-    capturedRed: [],
-    capturedBlue: [],
-    selectedCell: null,
-    gameOver: false,
-    winner: null,
-    aiThinking: false,
-    aiFirst: false
-  };
+  state.board = board;
+  return state;
 }
 
 /**
- * Get valid move targets (adjacent empty cells)
- * @param {Array} board - 4×4 board
- * @param {number} x
- * @param {number} y
- * @returns {Array<{x, y}>}
- */
-function getValidMoves(board, x, y) {
-  const card = board[y][x];
-  if (!card) return [];
-  const moves = [];
-  for (const { dx, dy } of DIRECTIONS) {
-    const nx = x + dx;
-    const ny = y + dy;
-    if (inBounds(nx, ny) && board[ny][nx] === null) {
-      moves.push({ x: nx, y: ny });
-    }
-  }
-  return moves;
-}
-
-/**
- * Get valid capture target list
+ * Get valid capture targets (wrapper for shared module)
  * @param {Array} board - 4×4 board
  * @param {number} x
  * @param {number} y
@@ -163,85 +111,7 @@ function getValidMoves(board, x, y) {
  * @returns {Array<{x, y}>}
  */
 function getValidCaptures(board, x, y, team) {
-  const card = board[y][x];
-  if (!card || !card.faceUp || card.team !== team) return [];
-  const captures = [];
-  for (const { dx, dy } of DIRECTIONS) {
-    const nx = x + dx;
-    const ny = y + dy;
-    if (!inBounds(nx, ny)) continue;
-    const target = board[ny][nx];
-    if (!target || !target.faceUp || target.team === team) continue;
-    if (!canCapture(card, target)) continue;
-    captures.push({ x: nx, y: ny });
-  }
-  return captures;
-}
-
-/**
- * Execute flip operation (modifies state in place)
- * - Flip piece, set faceUp=true
- * - First flip determines team assignment (teamAssigned)
- * - Switch currentTeam, turnCount++
- * @param {GameState} state
- * @param {number} x
- * @param {number} y
- * @returns {GameState|null}
- */
-function flipCard(state, x, y) {
-  if (!inBounds(x, y)) return null;
-  const card = state.board[y][x];
-  if (!card || card.faceUp) return null;
-
-  card.faceUp = true;
-
-  if (!state.teamAssigned) {
-    state.teamAssigned = true;
-    if (state.mode === 'pve') {
-      if (state.aiFirst) {
-        // AI flips first, AI gets flipped card team
-        state.aiTeam = card.team;
-        state.playerTeam = card.team === 'red' ? 'blue' : 'red';
-      } else {
-        // Player flips first, player gets flipped card team
-        state.playerTeam = card.team;
-        state.aiTeam = card.team === 'red' ? 'blue' : 'red';
-      }
-    }
-    // After first flip, switch to opponent turn
-    if (state.mode === 'pve') {
-      const flipperTeam = state.aiFirst ? state.aiTeam : state.playerTeam;
-      state.currentTeam = flipperTeam === 'red' ? 'blue' : 'red';
-    } else {
-      state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
-    }
-  } else {
-    state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
-  }
-
-  state.turnCount++;
-  return state;
-}
-
-/**
- * Execute move operation (modifies state in place)
- * @param {GameState} state
- * @param {{x,y}} from - start position
- * @param {{x,y}} to - target cell
- * @returns {GameState|null}
- */
-function moveCard(state, from, to) {
-  if (!inBounds(from.x, from.y) || !inBounds(to.x, to.y)) return null;
-  const card = state.board[from.y][from.x];
-  if (!card || !card.faceUp || card.team !== state.currentTeam) return null;
-  if (state.board[to.y][to.x] !== null) return null;
-  if (Math.abs(from.x - to.x) + Math.abs(from.y - to.y) !== 1) return null;
-
-  state.board[to.y][to.x] = card;
-  state.board[from.y][from.x] = null;
-  state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
-  state.turnCount++;
-  return state;
+  return getValidCapturesCore(board, x, y, team, canCapture);
 }
 
 /**

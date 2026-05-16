@@ -2,6 +2,12 @@
 // Gomoku (Five in a Row) - Game Core Logic
 // ============================================================
 
+if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
+  var _gameUtils = require('../../common/game-utils.js');
+  var judgeRPS = _gameUtils.judgeRPS;
+  var getRPSName = _gameUtils.getRPSName;
+}
+
 var BOARD_SIZE = 15;
 var EMPTY = 0;
 var BLACK = 1;  // First player
@@ -229,27 +235,6 @@ function getBestAIMove(board, aiPlayer) {
   }
 
   return { x: bestX, y: bestY };
-}
-
-// ============================================================
-// Rock-Paper-Scissors
-// ============================================================
-
-function judgeRPS(choice1, choice2) {
-  if (choice1 === choice2) return 0;
-  if (
-    (choice1 === 'rock' && choice2 === 'scissors') ||
-    (choice1 === 'scissors' && choice2 === 'paper') ||
-    (choice1 === 'paper' && choice2 === 'rock')
-  ) {
-    return 1;
-  }
-  return -1;
-}
-
-function getRPSName(choice) {
-  var names = { 'rock': '石头', 'scissors': '剪刀', 'paper': '布' };
-  return names[choice] || choice;
 }
 
 // ============================================================

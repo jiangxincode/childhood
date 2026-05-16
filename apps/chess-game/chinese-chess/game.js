@@ -2,6 +2,12 @@
 // Chinese Chess (Xiangqi) - Game Core Logic
 // ============================================================
 
+if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
+  var _gameUtils = require('../../common/game-utils.js');
+  var judgeRPS = _gameUtils.judgeRPS;
+  var getRPSName = _gameUtils.getRPSName;
+}
+
 var COLS = 9;
 var ROWS = 10;
 var EMPTY = 0;
@@ -939,17 +945,6 @@ if (typeof document !== 'undefined') {
         }
       }
     }
-  }
-
-  function judgeRPS(c1, c2) {
-    if (c1 === c2) return 0;
-    if ((c1 === 'rock' && c2 === 'scissors') || (c1 === 'scissors' && c2 === 'paper') || (c1 === 'paper' && c2 === 'rock'))
-      return 1;
-    return -1;
-  }
-
-  function getRPSName(c) {
-    return { 'rock': '石头', 'scissors': '剪刀', 'paper': '布' }[c] || c;
   }
 
   document.addEventListener('DOMContentLoaded', function() {

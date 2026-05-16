@@ -2,6 +2,12 @@
 // Reversi (Othello) - Game Core Logic
 // ============================================================
 
+if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
+  var _gameUtils = require('../../common/game-utils.js');
+  var judgeRPS = _gameUtils.judgeRPS;
+  var getRPSName = _gameUtils.getRPSName;
+}
+
 // ============================================================
 // Task 1.1: Constants and Basic Utility Functions
 // ============================================================
@@ -661,38 +667,6 @@ function handleRPSChoice(player, choice) {
       }
     }
   }
-}
-
-/**
- * RPS judgment
- * @param {string} choice1 - 'rock' | 'scissors' | 'paper'
- * @param {string} choice2 - 'rock' | 'scissors' | 'paper'
- * @returns {number} 1=First player wins, -1=Second player wins, 0=Draw
- */
-function judgeRPS(choice1, choice2) {
-  if (choice1 === choice2) return 0;
-  if (
-    (choice1 === 'rock' && choice2 === 'scissors') ||
-    (choice1 === 'scissors' && choice2 === 'paper') ||
-    (choice1 === 'paper' && choice2 === 'rock')
-  ) {
-    return 1;
-  }
-  return -1;
-}
-
-/**
- * Get Chinese name for RPS choice
- * @param {string} choice - 'rock' | 'scissors' | 'paper'
- * @returns {string}
- */
-function getRPSName(choice) {
-  const names = {
-    'rock': '石头',
-    'scissors': '剪刀',
-    'paper': '布'
-  };
-  return names[choice] || choice;
 }
 
 // Export for testing

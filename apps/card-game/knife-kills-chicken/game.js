@@ -2,6 +2,23 @@
 // Knife Kills Chicken (Carry Weapon Version) - Game Core Logic
 // ============================================================
 
+// ============================================================
+// Shared module loading (Node.js test environment)
+// ============================================================
+if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
+  var _gameUtils = require('../../common/game-utils.js');
+  var judgeRPS = _gameUtils.judgeRPS;
+  var shuffleArray = _gameUtils.shuffleArray;
+}
+if (typeof DIRECTIONS === 'undefined' && typeof require !== 'undefined') {
+  var _core = require('../../common/card-game-core.js');
+  var DIRECTIONS = _core.DIRECTIONS;
+  var inBounds = _core.inBounds;
+  var flipCard = _core.flipCard;
+  var moveCard = _core.moveCard;
+  var createBaseState = _core.createBaseState;
+}
+
 // 8 roles
 const ROLES = ['马蜂', '癞痢', '枪', '老虎', '人', '刀', '鸡', '火箭'];
 
@@ -41,24 +58,6 @@ function getImagePath(role, team) {
   const prefix = IMAGE_MAP[role];
   const color = team === 'red' ? '红' : '蓝';
   return `images/${prefix}-${color}.png`;
-}
-
-/**
- * Rock-Paper-Scissors judgment
- * @param {string} choice1 - first player choice 'rock' | 'scissors' | 'paper'
- * @param {string} choice2 - second player choice 'rock' | 'scissors' | 'paper'
- * @returns {number} 1=first player wins, -1=second player wins, 0=draw
- */
-function judgeRPS(choice1, choice2) {
-  if (choice1 === choice2) return 0;
-  if (
-    (choice1 === 'rock' && choice2 === 'scissors') ||
-    (choice1 === 'scissors' && choice2 === 'paper') ||
-    (choice1 === 'paper' && choice2 === 'rock')
-  ) {
-    return 1;
-  }
-  return -1;
 }
 
 /**
@@ -105,70 +104,36 @@ function canCapture(attackerCard, defenderCard) {
  * @returns {GameState} initial state
  */
 function createGameState(mode) {
+  var state = createBaseState(mode);
+
   // Generate 16 cards: 8 red + 8 blue, one of each role per side
-  const cards = [];
-  for (const role of ROLES) {
-    cards.push({ role, team: 'red', faceUp: false, carrying: null });
-    cards.push({ role, team: 'blue', faceUp: false, carrying: null });
+  var cards = [];
+  for (var i = 0; i < ROLES.length; i++) {
+    var role = ROLES[i];
+    cards.push({ role: role, team: 'red', faceUp: false, carrying: null });
+    cards.push({ role: role, team: 'blue', faceUp: false, carrying: null });
   }
 
   // Fisher-Yates shuffle
-  for (let i = cards.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const temp = cards[i];
-    cards[i] = cards[j];
-    cards[j] = temp;
-  }
+  shuffleArray(cards);
 
-  // Place onto 4x4 board[y][x]
-  const board = [];
-  for (let y = 0; y < 4; y++) {
-    const row = [];
-    for (let x = 0; x < 4; x++) {
+  // Place onto 4x4 board
+  var board = [];
+  for (var y = 0; y < 4; y++) {
+    var row = [];
+    for (var x = 0; x < 4; x++) {
       row.push(cards[y * 4 + x]);
     }
     board.push(row);
   }
 
-  return {
-    mode: mode,
-    board: board,
-    currentTeam: null,
-    playerTeam: null,
-    aiTeam: null,
-    teamAssigned: false,
-    firstPlayer: null,
-    turnCount: 0,
-    capturedRed: [],
-    capturedBlue: [],
-    selectedCell: null,
-    gameOver: false,
-    winner: null,
-    aiThinking: false,
-    aiFirst: false
-  };
-}
-
-// Four adjacent direction offsets
-const DIRECTIONS = [
-  { dx: -1, dy: 0 },
-  { dx: 1, dy: 0 },
-  { dx: 0, dy: -1 },
-  { dx: 0, dy: 1 }
-];
-
-/**
- * Check if coordinates are within board range
- * @param {number} x
- * @param {number} y
- * @returns {boolean}
- */
-function inBounds(x, y) {
-  return x >= 0 && x <= 3 && y >= 0 && y <= 3;
+  state.board = board;
+  return state;
 }
 
 /**
  * Get all valid move targets for a piece (empty cells with Manhattan distance 1)
+ * Knife and spear cannot move when not carried
  * @param {(Card|null)[][]} board - board state
  * @param {number} x - piece x coordinate
  * @param {number} y - piece y coordinate
@@ -193,6 +158,7 @@ function getValidMoves(board, x, y) {
 
 /**
  * Get all valid capture targets for a piece
+ * Knife and spear themselves cannot capture any role
  * @param {(Card|null)[][]} board - board state
  * @param {number} x - piece x coordinate
  * @param {number} y - piece y coordinate
@@ -230,16 +196,16 @@ function getValidCaptures(board, x, y, team) {
 function getCarryTargets(board, x, y, team) {
   const card = board[y][x];
   if (!card || !card.faceUp || card.team !== team) return [];
-  
+
   // Only human can carry knife, only scalper can carry spear
   let weaponRole = null;
   if (card.role === '人') weaponRole = '刀';
   else if (card.role === '癞痢') weaponRole = '枪';
   else return [];
-  
+
   // If already carrying, can't carry again
   if (card.carrying) return [];
-  
+
   const targets = [];
   for (const { dx, dy } of DIRECTIONS) {
     const nx = x + dx;
@@ -252,83 +218,6 @@ function getCarryTargets(board, x, y, team) {
     }
   }
   return targets;
-}
-
-/**
- * Execute flip operation
- * @param {GameState} state - current state (modified in place)
- * @param {number} x - target x coordinate
- * @param {number} y - target y coordinate
- * @returns {GameState|null} modified state, null on invalid operation
- */
-function flipCard(state, x, y) {
-  // Coordinates out of bounds
-  if (!inBounds(x, y)) return null;
-  const card = state.board[y][x];
-  // Empty or already face-up
-  if (!card || card.faceUp) return null;
-
-  // Flip
-  card.faceUp = true;
-
-  // First flip: determine team assignment
-  if (!state.teamAssigned) {
-    state.teamAssigned = true;
-    if (state.mode === 'pve') {
-      if (state.aiFirst) {
-        state.aiTeam = card.team;
-        state.playerTeam = card.team === 'red' ? 'blue' : 'red';
-      } else {
-        state.playerTeam = card.team;
-        state.aiTeam = card.team === 'red' ? 'blue' : 'red';
-      }
-    }
-    // After first flip, switch to non-flipper team
-    // Flipper is currentTeam (not yet switched), flipper controls card.team
-    // So next team should be opponent of flipper team
-    // But since flipper team may differ from currentTeam, need to set directly
-    if (state.mode === 'pve') {
-      // Flipper team determined, next team is opponent
-      var flipperTeam = state.aiFirst ? state.aiTeam : state.playerTeam;
-      state.currentTeam = flipperTeam === 'red' ? 'blue' : 'red';
-    } else {
-      state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
-    }
-  } else {
-    // Not first flip, normal switch
-    state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
-  }
-  state.turnCount++;
-
-  return state;
-}
-
-/**
- * Execute move operation
- * @param {GameState} state - current state (modified in place)
- * @param {{x: number, y: number}} from - start position
- * @param {{x: number, y: number}} to - target position
- * @returns {GameState|null} modified state, null on invalid operation
- */
-function moveCard(state, from, to) {
-  if (!inBounds(from.x, from.y) || !inBounds(to.x, to.y)) return null;
-  const card = state.board[from.y][from.x];
-  // Start position must have card, face-up, belong to current team
-  if (!card || !card.faceUp || card.team !== state.currentTeam) return null;
-  // Target position must be empty
-  if (state.board[to.y][to.x] !== null) return null;
-  // Manhattan distance must be 1
-  if (Math.abs(from.x - to.x) + Math.abs(from.y - to.y) !== 1) return null;
-
-  // Move
-  state.board[to.y][to.x] = card;
-  state.board[from.y][from.x] = null;
-
-  // Switch current team
-  state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
-  state.turnCount++;
-
-  return state;
 }
 
 /**
@@ -599,7 +488,7 @@ if (typeof document !== 'undefined') {
   const $winnerText = document.getElementById('winner-text');
   const $btnRestart = document.getElementById('btn-restart');
 
-  // --- Renderer functions (Task 9.1) ---
+  // --- Renderer functions ---
 
   function getCell(x, y) {
     return $board.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
@@ -623,7 +512,7 @@ if (typeof document !== 'undefined') {
           cell.appendChild(back);
         } else {
           cell.classList.add(card.team === 'red' ? 'cell-red' : 'cell-blue');
-          
+
           if (card.carrying) {
             // Knife carrier/spear carrier - two-layer overlapping cards
             cell.classList.add('cell-carry', 'cell-carry-glow');
@@ -634,7 +523,7 @@ if (typeof document !== 'undefined') {
             bottomImg.alt = card.role;
             bottom.appendChild(bottomImg);
             cell.appendChild(bottom);
-            
+
             var top = document.createElement('div');
             top.className = 'carry-top';
             var topImg = document.createElement('img');
@@ -797,7 +686,7 @@ if (typeof document !== 'undefined') {
   }
 
 
-  // --- Rock-Paper-Scissors logic (Task 9.2) ---
+  // --- Rock-Paper-Scissors logic ---
   let rpsP1Choice = null;
   let rpsP2Choice = null;
 
@@ -808,7 +697,6 @@ if (typeof document !== 'undefined') {
     renderBoard(gameState);
 
     // In PVE mode, if AI goes first, trigger AI flip directly
-    // Team not yet assigned (teamAssigned=false), but first step can only flip
     if (gameState.mode === 'pve' && gameState.aiFirst) {
       triggerAI();
     } else {
@@ -889,7 +777,7 @@ if (typeof document !== 'undefined') {
   });
 
 
-  // --- Mode selection (Task 9.2) ---
+  // --- Mode selection ---
   document.getElementById('btn-pvp').addEventListener('click', function() {
     gameState = createGameState('pvp');
     showRPSSelection('pvp');
@@ -906,7 +794,7 @@ if (typeof document !== 'undefined') {
     showModeSelection();
   });
 
-  // --- Board click event handler (Task 9.2) ---
+  // --- Board click event handler ---
   $board.addEventListener('click', function(e) {
     if (!gameState || gameState.gameOver) return;
     if (gameState.aiThinking) return;
@@ -1080,7 +968,7 @@ if (typeof document !== 'undefined') {
   }
 
 
-  // --- AI action flow (Task 9.3) ---
+  // --- AI action flow ---
   function triggerAI() {
     gameState.aiThinking = true;
     showMessage('电脑思考中...', 'info');

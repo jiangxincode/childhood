@@ -2,6 +2,21 @@
 // Dragon Tiger Fight - Game Core Logic
 // ============================================================
 
+// ============================================================
+// Shared module loading (Node.js test environment)
+// ============================================================
+if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
+  var _gameUtils = require('../../common/game-utils.js');
+  var judgeRPS = _gameUtils.judgeRPS;
+  var shuffleArray = _gameUtils.shuffleArray;
+}
+if (typeof DIRECTIONS === 'undefined' && typeof require !== 'undefined') {
+  var _core = require('../../common/card-game-core.js');
+  var DIRECTIONS = _core.DIRECTIONS;
+  var inBounds = _core.inBounds;
+  var getValidMoves = _core.getValidMoves;
+}
+
 // Dragon team 8 pieces (rank 1-8, lower value = higher rank)
 const DRAGON_PIECES = ['龙王', '神龙', '金龙', '青龙', '赤龙', '白龙', '风雨龙', '变形龙'];
 
@@ -57,42 +72,6 @@ function getRank(piece) {
 }
 
 /**
- * Rock-Paper-Scissors judgment
- * @param {string} choice1 - 'rock' | 'scissors' | 'paper'
- * @param {string} choice2 - 'rock' | 'scissors' | 'paper'
- * @returns {number} 1=first player wins, -1=second player wins, 0=draw
- */
-function judgeRPS(choice1, choice2) {
-  if (choice1 === choice2) return 0;
-  if (
-    (choice1 === 'rock' && choice2 === 'scissors') ||
-    (choice1 === 'scissors' && choice2 === 'paper') ||
-    (choice1 === 'paper' && choice2 === 'rock')
-  ) {
-    return 1;
-  }
-  return -1;
-}
-
-/**
- * Check if coordinates are within board range
- * @param {number} x
- * @param {number} y
- * @returns {boolean}
- */
-function inBounds(x, y) {
-  return x >= 0 && x <= 3 && y >= 0 && y <= 3;
-}
-
-// Four adjacent direction offsets
-const DIRECTIONS = [
-  { dx: -1, dy: 0 },
-  { dx: 1, dy: 0 },
-  { dx: 0, dy: -1 },
-  { dx: 0, dy: 1 }
-];
-
-/**
  * Check if attacker piece can capture defender piece
  * Rules:
  * 1. Must be different teams
@@ -145,11 +124,7 @@ function createGameState(mode) {
   for (const piece of TIGER_PIECES) {
     cards.push({ piece, team: 'tiger', rank: RANK_MAP[piece], faceUp: false });
   }
-  // Fisher-Yates shuffle algorithm
-  for (let i = cards.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [cards[i], cards[j]] = [cards[j], cards[i]];
-  }
+  shuffleArray(cards);
   // Place onto 4x4 board
   const board = [];
   for (let y = 0; y < 4; y++) {
@@ -167,27 +142,6 @@ function createGameState(mode) {
     selectedCell: null, gameOver: false, winner: null,
     aiThinking: false, aiFirst: false
   };
-}
-
-/**
- * Get valid move targets (adjacent empty cells)
- * @param {Board} board - board
- * @param {number} x - piece x coordinate
- * @param {number} y - piece y coordinate
- * @returns {Array<{x, y}>}
- */
-function getValidMoves(board, x, y) {
-  const card = board[y][x];
-  if (!card) return [];
-  const moves = [];
-  for (const { dx, dy } of DIRECTIONS) {
-    const nx = x + dx;
-    const ny = y + dy;
-    if (inBounds(nx, ny) && board[ny][nx] === null) {
-      moves.push({ x: nx, y: ny });
-    }
-  }
-  return moves;
 }
 
 /**
