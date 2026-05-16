@@ -1,5 +1,5 @@
 /**
- * 设置
+ * Settings
  * @constructor
  */
 var PlaneOption = function () {
@@ -14,20 +14,20 @@ var PlaneOption = function () {
         this.state = state;
     };
     this.userList = [new PLANEUSER('red', 'normal'), new PLANEUSER('blue', 'computer'), new PLANEUSER('yellow', 'computer'), new PLANEUSER('green', 'computer')];
-    this.difficulty = 'normal';  //难度
-    this.currentUser = 'red';  //当前用户
-    this.backgroundMusic = true;    //背景音乐开关
-    this.gameMusic = true;  //游戏音效开关
+    this.difficulty = 'normal';  //Difficulty
+    this.currentUser = 'red';  //Current user
+    this.backgroundMusic = true;    //Background music toggle
+    this.gameMusic = true;  //Game sound effect toggle
 
     /**
-     * 设置难度
+     * Set difficulty
      */
     this.setDifficulty = function () {
         this.difficulty = $j('#nandu').val();
     };
 
     /**
-     * 设置默认首个启动用户
+     * Set default first player
      */
     function setFirstUser() {
         for (var i = 0; i < this.userList.length; i++) {
@@ -46,7 +46,7 @@ var PlaneOption = function () {
     };
 
     /**
-     * 开始
+     * Start game
      */
     this.begin = function () {
         this.setUserList();

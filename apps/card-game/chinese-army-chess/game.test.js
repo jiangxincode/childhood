@@ -15,7 +15,7 @@ const {
 } = require('./game.js');
 
 // ============================================================
-// 辅助函数
+// Helper Functions
 // ============================================================
 function emptyBoard() {
   return Array.from({ length: 5 }, () => Array(5).fill(null));
@@ -47,9 +47,9 @@ function makeState(board, currentTeam, opts = {}) {
 
 
 // ============================================================
-// 单元测试 - 石头剪刀布 9 种组合穷举
+// Unit Tests - Rock-Paper-Scissors 9 combinations exhaustive
 // ============================================================
-describe('judgeRPS - 石头剪刀布判定', () => {
+describe('judgeRPS - Rock-Paper-Scissors判定', () => {
   it('rock vs rock = 0 (平局)', () => expect(judgeRPS('rock', 'rock')).toBe(0));
   it('scissors vs scissors = 0 (平局)', () => expect(judgeRPS('scissors', 'scissors')).toBe(0));
   it('paper vs paper = 0 (平局)', () => expect(judgeRPS('paper', 'paper')).toBe(0));
@@ -62,24 +62,24 @@ describe('judgeRPS - 石头剪刀布判定', () => {
 });
 
 // ============================================================
-// 单元测试 - 图片映射 25 种棋子验证
+// Unit Tests - Image mapping 25 piece types verification
 // ============================================================
 describe('getImagePath - 图片映射正确性', () => {
-  // 红方 12 张
+  // Red team 12 pieces
   for (const name of TEAM_PIECE_NAMES) {
     it(`红方"${name}"应返回 images/红-${name}.png`, () => {
       const piece = makePiece(name, 'red');
       expect(getImagePath(piece)).toBe(`images/红-${name}.png`);
     });
   }
-  // 蓝方 12 张
+  // Blue team 12 pieces
   for (const name of TEAM_PIECE_NAMES) {
     it(`蓝方"${name}"应返回 images/蓝-${name}.png`, () => {
       const piece = makePiece(name, 'blue');
       expect(getImagePath(piece)).toBe(`images/蓝-${name}.png`);
     });
   }
-  // 军旗
+  // Flag
   it('军旗应返回 images/军旗.png', () => {
     const piece = { name: '军旗', team: 'neutral', rank: null, faceUp: true };
     expect(getImagePath(piece)).toBe('images/军旗.png');
@@ -87,7 +87,7 @@ describe('getImagePath - 图片映射正确性', () => {
 });
 
 // ============================================================
-// 单元测试 - 具体吃子场景
+// Unit Tests - Specific capture scenarios
 // ============================================================
 describe('canCapture / resolveCombat - 具体吃子场景', () => {
   it('炸弹同归于尽：红炸弹 vs 蓝司令 → mutual_destruction', () => {
@@ -145,18 +145,18 @@ describe('canCapture / resolveCombat - 具体吃子场景', () => {
 });
 
 // ============================================================
-// 单元测试 - getValidMoves / getValidCaptures
+// Unit Tests - getValidMoves / getValidCaptures
 // ============================================================
 describe('getValidMoves - 合法移动检测', () => {
-  it('棋盘满时（初始状态）：普通棋子无法走牌（无空位）', () => {
+  it('board满时（初始状态）：普通棋子无法走牌（无空位）', () => {
     const state = createGameState('pvp');
-    // 找一个已翻开的普通棋子（手动翻开）
+    // Find a face-up normal piece (manually flip)
     state.board[0][0].faceUp = true;
     state.board[0][0].team = 'red';
     state.board[0][0].name = '司令';
     state.board[0][0].rank = 1;
     const moves = getValidMoves(state.board, 0, 0, 'red');
-    // 棋盘满，无空位，不能走牌
+    // Board full, no empty cells, cannot move
     expect(moves.filter(m => m.type === 'move')).toHaveLength(0);
   });
 
@@ -206,7 +206,7 @@ describe('getValidCaptures - 合法吃牌检测', () => {
 });
 
 // ============================================================
-// 单元测试 - flipCard 翻牌操作
+// Unit Tests - flipCard operation
 // ============================================================
 describe('flipCard - 翻牌操作', () => {
   it('翻开普通棋子：faceUp 变为 true，currentTeam 切换，turnCount++', () => {
@@ -259,7 +259,7 @@ describe('flipCard - 翻牌操作', () => {
 });
 
 // ============================================================
-// 单元测试 - moveCard 走牌操作
+// Unit Tests - moveCard operation
 // ============================================================
 describe('moveCard - 走牌操作', () => {
   it('地雷不可移动：返回 null', () => {
@@ -291,7 +291,7 @@ describe('moveCard - 走牌操作', () => {
     const board = emptyBoard();
     board[1][1] = makePiece('司令', 'red');
     board[1][2] = { name: '军旗', team: 'neutral', rank: null, faceUp: true };
-    // 还有工兵在场，司令不是最小棋子
+    // Engineer still on field, commander is not smallest piece
     board[0][0] = makePiece('工兵', 'red');
     const state = makeState(board, 'red');
     expect(moveCard(state, { x: 1, y: 1 }, { x: 2, y: 1 })).toBeNull();
@@ -299,10 +299,10 @@ describe('moveCard - 走牌操作', () => {
 });
 
 // ============================================================
-// 单元测试 - captureCard 吃牌操作
+// Unit Tests - captureCard operation
 // ============================================================
 describe('captureCard - 吃牌操作', () => {
-  it('炸弹同归于尽：双方均从棋盘移除', () => {
+  it('炸弹同归于尽：双方均从board移除', () => {
     const board = emptyBoard();
     board[1][1] = makePiece('炸弹', 'red');
     board[1][2] = makePiece('司令', 'blue');
@@ -338,7 +338,7 @@ describe('captureCard - 吃牌操作', () => {
 });
 
 // ============================================================
-// 单元测试 - canCaptureFlag 抱军旗判定
+// Unit Tests - canCaptureFlag check
 // ============================================================
 describe('canCaptureFlag - 抱军旗判定', () => {
   it('最小普通棋子与军旗相邻：返回 { canCapture: true, flagX, flagY }', () => {
@@ -356,7 +356,7 @@ describe('canCaptureFlag - 抱军旗判定', () => {
     const board = emptyBoard();
     board[2][2] = makePiece('司令', 'red');
     board[2][3] = { name: '军旗', team: 'neutral', rank: null, faceUp: true };
-    // 工兵也在场，司令不是最小
+    // Engineer also on field, commander is not smallest
     board[0][0] = makePiece('工兵', 'red');
     const result = canCaptureFlag(board, 2, 2, 'red');
     expect(result).toBeNull();
@@ -380,7 +380,7 @@ describe('canCaptureFlag - 抱军旗判定', () => {
 });
 
 // ============================================================
-// 单元测试 - checkGameOver 游戏结束判定
+// Unit Tests - checkGameOver check
 // ============================================================
 describe('checkGameOver - 游戏结束判定', () => {
   it('state.gameOver=true 时：返回 { ended: true, winner }', () => {
@@ -391,9 +391,9 @@ describe('checkGameOver - 游戏结束判定', () => {
   });
 
   it('当前行动方无合法操作：返回 { ended: true, winner: 对方 }', () => {
-    // 构造一个红方无任何合法操作的状态（棋盘全空，currentTeam=red）
+    // Construct state where red has no legal actions (board empty, currentTeam=red)
     const board = emptyBoard();
-    // 只放一张蓝方已翻开棋子，红方无棋子
+    // Place only one blue face-up piece, red has no pieces
     board[0][0] = makePiece('司令', 'blue');
     const state = makeState(board, 'red');
     const result = checkGameOver(state);
@@ -403,7 +403,7 @@ describe('checkGameOver - 游戏结束判定', () => {
 
   it('正常游戏中：返回 { ended: false, winner: null }', () => {
     const board = emptyBoard();
-    board[0][0] = makePiece('司令', 'red', false); // 未翻开，红方可翻牌
+    board[0][0] = makePiece('司令', 'red', false); // Face-down, red can flip
     board[1][0] = makePiece('工兵', 'blue');
     const state = makeState(board, 'red');
     const result = checkGameOver(state);
@@ -413,7 +413,7 @@ describe('checkGameOver - 游戏结束判定', () => {
 });
 
 // ============================================================
-// 单元测试 - aiDecide AI 决策优先级
+// Unit Tests - aiDecide AI decision priority
 // ============================================================
 describe('aiDecide - AI 决策优先级', () => {
   it('存在抱军旗机会时：返回 type=move 且 to 为军旗位置', () => {
@@ -449,12 +449,12 @@ describe('aiDecide - AI 决策优先级', () => {
 
 
 // ============================================================
-// Property 1: 初始状态不变量
-// Feature: chinese-army-chess-game, Property 1: 初始状态不变量
+// Property 1: Initial state invariants
+// Feature: chinese-army-chess-game, Property 1: Initial state invariants
 // Validates: Requirements 1.2, 1.4, 1.5
 // ============================================================
 describe('Property 1: 初始状态不变量', () => {
-  it('createGameState 创建的棋盘满足所有不变量', () => {
+  it('createGameState 创建的board满足所有不变量', () => {
     fc.assert(fc.property(fc.constantFrom('pvp', 'pve'), (mode) => {
       const state = createGameState(mode);
       let total = 0, redCount = 0, blueCount = 0, neutralCount = 0;
@@ -478,8 +478,8 @@ describe('Property 1: 初始状态不变量', () => {
 });
 
 // ============================================================
-// Property 2: 图片路径映射正确性
-// Feature: chinese-army-chess-game, Property 2: 图片路径映射正确性
+// Property 2: Image path mapping correctness
+// Feature: chinese-army-chess-game, Property 2: Image path mapping correctness
 // Validates: Requirements 3.2, 12.1
 // ============================================================
 describe('Property 2: 图片路径映射正确性', () => {
@@ -503,8 +503,8 @@ describe('Property 2: 图片路径映射正确性', () => {
 });
 
 // ============================================================
-// Property 3: 等级映射正确性
-// Feature: chinese-army-chess-game, Property 3: 等级映射正确性
+// Property 3: Rank mapping correctness
+// Feature: chinese-army-chess-game, Property 3: Rank mapping correctness
 // Validates: Requirements 7.1, 7.4
 // ============================================================
 describe('Property 3: 等级映射正确性', () => {
@@ -526,8 +526,8 @@ describe('Property 3: 等级映射正确性', () => {
 });
 
 // ============================================================
-// Property 4: 战斗判定完整性
-// Feature: chinese-army-chess-game, Property 4: 战斗判定完整性
+// Property 4: Combat resolution completeness
+// Feature: chinese-army-chess-game, Property 4: Combat resolution completeness
 // Validates: Requirements 6.1, 6.4, 6.7, 6.8, 8.2, 8.3, 8.4, 9.2, 9.3, 9.5, 10.3
 // ============================================================
 describe('Property 4: 战斗判定完整性', () => {
@@ -594,8 +594,8 @@ describe('Property 4: 战斗判定完整性', () => {
 });
 
 // ============================================================
-// Property 5: 战斗结果正确性
-// Feature: chinese-army-chess-game, Property 5: 战斗结果正确性
+// Property 5: Combat result correctness
+// Feature: chinese-army-chess-game, Property 5: Combat result correctness
 // Validates: Requirements 6.2, 6.3, 8.2, 8.4, 9.2, 9.3, 9.4
 // ============================================================
 describe('Property 5: 战斗结果正确性', () => {
@@ -646,8 +646,8 @@ describe('Property 5: 战斗结果正确性', () => {
 });
 
 // ============================================================
-// Property 6: 操作后回合切换
-// Feature: chinese-army-chess-game, Property 6: 操作后回合切换
+// Property 6: Turn switching after action
+// Feature: chinese-army-chess-game, Property 6: Turn switching after action
 // Validates: Requirements 3.3, 5.4, 6.5, 11.2
 // ============================================================
 describe('Property 6: 操作后回合切换', () => {
@@ -656,7 +656,7 @@ describe('Property 6: 操作后回合切换', () => {
       const state = createGameState(mode);
       state.currentTeam = 'red';
       const prevTurn = state.turnCount;
-      // 找一张未翻开的棋子
+      // Find a face-down piece
       let fx = -1, fy = -1;
       outer: for (let y = 0; y < 5; y++) {
         for (let x = 0; x < 5; x++) {
@@ -691,8 +691,8 @@ describe('Property 6: 操作后回合切换', () => {
 });
 
 // ============================================================
-// Property 7: 非法操作拒绝
-// Feature: chinese-army-chess-game, Property 7: 非法操作拒绝
+// Property 7: Illegal action rejection
+// Feature: chinese-army-chess-game, Property 7: Illegal action rejection
 // Validates: Requirements 5.2, 5.5, 5.6, 5.7, 6.6, 11.4
 // ============================================================
 describe('Property 7: 非法操作拒绝', () => {
@@ -748,19 +748,19 @@ describe('Property 7: 非法操作拒绝', () => {
 });
 
 // ============================================================
-// Property 8: 抱军旗判定正确性
-// Feature: chinese-army-chess-game, Property 8: 抱军旗判定正确性
+// Property 8: Flag capture check correctness
+// Feature: chinese-army-chess-game, Property 8: Flag capture check correctness
 // Validates: Requirements 10.4, 10.5, 10.6
 // ============================================================
 describe('Property 8: 抱军旗判定正确性', () => {
   it('仅最小普通棋子可抱军旗', () => {
-    // 工兵是最小普通棋子（rank=10），与军旗相邻
+    // Engineer is smallest normal piece (rank=10), adjacent to flag
     const board = emptyBoard();
     board[2][2] = makePiece('工兵', 'red');
     board[2][3] = { name: '军旗', team: 'neutral', rank: null, faceUp: true };
     expect(canCaptureFlag(board, 2, 2, 'red')).not.toBeNull();
 
-    // 司令不是最小棋子（工兵也在场）
+    // Commander is not smallest piece (engineer also on field)
     board[0][0] = makePiece('司令', 'red');
     expect(canCaptureFlag(board, 0, 0, 'red')).toBeNull();
   });
@@ -786,8 +786,8 @@ describe('Property 8: 抱军旗判定正确性', () => {
 });
 
 // ============================================================
-// Property 9: 游戏结束判定
-// Feature: chinese-army-chess-game, Property 9: 游戏结束判定
+// Property 9: Game over check
+// Feature: chinese-army-chess-game, Property 9: Game over check
 // Validates: Requirements 10.7
 // ============================================================
 describe('Property 9: 游戏结束判定', () => {
@@ -807,7 +807,7 @@ describe('Property 9: 游戏结束判定', () => {
   });
 
   it('当前行动方无合法操作时对方获胜', () => {
-    // 红方无棋子，无法操作
+    // Red has no pieces, cannot act
     const board = emptyBoard();
     board[0][0] = makePiece('司令', 'blue');
     const state = makeState(board, 'red');
@@ -818,7 +818,7 @@ describe('Property 9: 游戏结束判定', () => {
 
   it('双方均有合法操作时游戏未结束', () => {
     const board = emptyBoard();
-    board[0][0] = makePiece('司令', 'red', false); // 红方可翻牌
+    board[0][0] = makePiece('司令', 'red', false); // Red can flip
     board[1][0] = makePiece('工兵', 'blue');
     const state = makeState(board, 'red');
     const result = checkGameOver(state);
@@ -828,8 +828,8 @@ describe('Property 9: 游戏结束判定', () => {
 });
 
 // ============================================================
-// Property 10: PVE 首次翻牌阵营分配
-// Feature: chinese-army-chess-game, Property 10: PVE 首次翻牌阵营分配
+// Property 10: PVE first flip team assignment
+// Feature: chinese-army-chess-game, Property 10: PVE first flip team assignment
 // Validates: Requirements 4.2, 4.4, 4.5
 // ============================================================
 describe('Property 10: PVE 首次翻牌阵营分配', () => {
@@ -887,8 +887,8 @@ describe('Property 10: PVE 首次翻牌阵营分配', () => {
 });
 
 // ============================================================
-// Property 11: AI 决策合法性
-// Feature: chinese-army-chess-game, Property 11: AI 决策合法性
+// Property 11: AI decision legality
+// Feature: chinese-army-chess-game, Property 11: AI decision legality
 // Validates: Requirements 15.1, 15.2, 15.5, 15.7
 // ============================================================
 describe('Property 11: AI 决策合法性', () => {
@@ -896,7 +896,7 @@ describe('Property 11: AI 决策合法性', () => {
     const board = emptyBoard();
     board[2][2] = makePiece('工兵', 'red');
     board[2][3] = { name: '军旗', team: 'neutral', rank: null, faceUp: true };
-    // 也有吃牌机会，但抱军旗优先级更高
+    // Also has capture opportunity, but flag capture has higher priority
     board[2][1] = makePiece('工兵', 'blue');
     const state = makeState(board, 'red');
     const decision = aiDecide(state, 'red');
@@ -909,7 +909,7 @@ describe('Property 11: AI 决策合法性', () => {
     const board = emptyBoard();
     board[1][1] = makePiece('司令', 'red');
     board[1][2] = makePiece('工兵', 'blue');
-    // 无翻牌机会（所有棋子已翻开）
+    // No flip opportunity (all pieces face-up)
     const state = makeState(board, 'red');
     const decision = aiDecide(state, 'red');
     expect(decision).not.toBeNull();
@@ -921,7 +921,7 @@ describe('Property 11: AI 决策合法性', () => {
       const state = createGameState(mode);
       state.currentTeam = 'red';
       const decision = aiDecide(state, 'red');
-      // 初始状态有未翻开棋子，应返回 flip
+      // Initial state has face-down pieces, should return flip
       expect(decision).not.toBeNull();
       expect(['flip', 'move', 'capture']).toContain(decision.type);
     }));

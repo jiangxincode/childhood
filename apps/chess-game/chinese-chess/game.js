@@ -1,5 +1,5 @@
 // ============================================================
-// 中国象棋 (Chinese Chess) - 游戏核心逻辑
+// Chinese Chess (Xiangqi) - Game Core Logic
 // ============================================================
 
 var COLS = 9;
@@ -31,7 +31,7 @@ FLEX_VALUES[R_HORSE] = 12; FLEX_VALUES[R_CHARIOT] = 6; FLEX_VALUES[R_CANNON] = 6
 FLEX_VALUES[B_GENERAL] = 0; FLEX_VALUES[B_ADVISOR] = 1; FLEX_VALUES[B_ELEPHANT] = 1;
 FLEX_VALUES[B_HORSE] = 12; FLEX_VALUES[B_CHARIOT] = 6; FLEX_VALUES[B_CANNON] = 6; FLEX_VALUES[B_PAWN] = 15;
 
-// 兵/卒位置附加值
+// Pawn position bonus values
 var SOLDIER_POS_RED = [
   [0, 90, 90, 70, 70, 0, 0, 0, 0, 0],
   [0, 90, 90, 90, 70, 0, 0, 0, 0, 0],
@@ -57,7 +57,7 @@ var SOLDIER_POS_BLACK = [
 ];
 
 // ============================================================
-// 初始棋盘
+// Initial board
 // ============================================================
 
 function createBoard() {
@@ -67,14 +67,14 @@ function createBoard() {
     for (var r = 0; r < ROWS; r++) col.push(EMPTY);
     board.push(col);
   }
-  // 黑方 (上方, row 0-4)
+  // Black (top, row 0-4)
   board[0][0] = B_CHARIOT; board[1][0] = B_HORSE; board[2][0] = B_ELEPHANT;
   board[3][0] = B_ADVISOR; board[4][0] = B_GENERAL; board[5][0] = B_ADVISOR;
   board[6][0] = B_ELEPHANT; board[7][0] = B_HORSE; board[8][0] = B_CHARIOT;
   board[1][2] = B_CANNON; board[7][2] = B_CANNON;
   board[0][3] = B_PAWN; board[2][3] = B_PAWN; board[4][3] = B_PAWN;
   board[6][3] = B_PAWN; board[8][3] = B_PAWN;
-  // 红方 (下方, row 5-9)
+  // Red (bottom, row 5-9)
   board[0][9] = R_CHARIOT; board[1][9] = R_HORSE; board[2][9] = R_ELEPHANT;
   board[3][9] = R_ADVISOR; board[4][9] = R_GENERAL; board[5][9] = R_ADVISOR;
   board[6][9] = R_ELEPHANT; board[7][9] = R_HORSE; board[8][9] = R_CHARIOT;
@@ -85,7 +85,7 @@ function createBoard() {
 }
 
 // ============================================================
-// 棋子判定
+// Piece identification
 // ============================================================
 
 function isRed(piece) { return piece >= R_GENERAL && piece <= R_PAWN; }
@@ -108,7 +108,7 @@ function isElephant(piece) { return piece === R_ELEPHANT || piece === B_ELEPHANT
 function isPawn(piece) { return piece === R_PAWN || piece === B_PAWN; }
 
 // ============================================================
-// 棋盘操作
+// Board operations
 // ============================================================
 
 function copyBoard(board) {
@@ -127,7 +127,7 @@ function applyMove(board, move) {
 }
 
 // ============================================================
-// 走法生成
+// Move generation
 // ============================================================
 
 function getValidMoves(board, c, r) {
@@ -144,7 +144,7 @@ function getValidMoves(board, c, r) {
   else if (isCannon(piece)) moves = getCannonMoves(board, c, r, color);
   else if (isPawn(piece)) moves = getPawnMoves(board, c, r, color);
 
-  // 将帅对面规则：如果移动后己方将帅被对面将帅直吃，则非法
+  // General facing rule: illegal if own general faces opponent general after move
   var validMoves = [];
   for (var i = 0; i < moves.length; i++) {
     var newBoard = applyMove(board, moves[i]);
@@ -345,7 +345,7 @@ function getAllMoves(board, color) {
 }
 
 // ============================================================
-// 胜负检测
+// Win/loss detection
 // ============================================================
 
 function checkGameOver(board, nextPlayer) {
@@ -367,7 +367,7 @@ function checkGameOver(board, nextPlayer) {
 }
 
 // ============================================================
-// AI: Alpha-Beta 剪枝 (Negamax)
+// AI: Alpha-Beta Pruning (Negamax)
 // ============================================================
 
 function evaluateBoard(board, aiColor) {
@@ -463,7 +463,7 @@ function getBestAIMove(board, aiColor) {
 }
 
 // ============================================================
-// 游戏状态
+// Game state
 // ============================================================
 
 function createGameState(mode) {
@@ -484,7 +484,7 @@ function createGameState(mode) {
 }
 
 // ============================================================
-// 导出供测试使用
+// Export for testing
 // ============================================================
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -513,7 +513,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 // ============================================================
-// 浏览器UI
+// Browser UI
 // ============================================================
 
 if (typeof document !== 'undefined') {
@@ -575,7 +575,7 @@ if (typeof document !== 'undefined') {
       }
     }
 
-    // 九宫格对角线
+    // Palace diagonals
     context.beginPath();
     context.moveTo(toCanvasX(3), toCanvasY(0));
     context.lineTo(toCanvasX(5), toCanvasY(2));
@@ -593,7 +593,7 @@ if (typeof document !== 'undefined') {
     context.lineTo(toCanvasX(3), toCanvasY(9));
     context.stroke();
 
-    // 楚河汉界
+    // Chu River Han Border
     context.fillStyle = '#333';
     context.font = 'bold 28px "KaiTi", "楷体", serif';
     context.textAlign = 'center';
@@ -608,13 +608,13 @@ if (typeof document !== 'undefined') {
     var cy = toCanvasY(r);
     var color = getOwner(piece);
 
-    // 阴影
+    // Shadow
     context.fillStyle = 'rgba(0,0,0,0.25)';
     context.beginPath();
     context.arc(cx + 2, cy + 2, PIECE_RADIUS, 0, Math.PI * 2);
     context.fill();
 
-    // 棋子底色
+    // Piece base color
     var gradient = context.createRadialGradient(cx - 6, cy - 6, 2, cx, cy, PIECE_RADIUS);
     if (color === RED) {
       gradient.addColorStop(0, '#f5c6c6');
@@ -628,19 +628,19 @@ if (typeof document !== 'undefined') {
     context.arc(cx, cy, PIECE_RADIUS, 0, Math.PI * 2);
     context.fill();
 
-    // 外圈
+    // Outer ring
     context.strokeStyle = color === RED ? '#922b21' : '#1a252f';
     context.lineWidth = 2;
     context.stroke();
 
-    // 内圈
+    // Inner ring
     context.strokeStyle = color === RED ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.3)';
     context.lineWidth = 1;
     context.beginPath();
     context.arc(cx, cy, PIECE_RADIUS - 4, 0, Math.PI * 2);
     context.stroke();
 
-    // 文字
+    // Text
     context.fillStyle = '#fff';
     context.font = 'bold 22px "KaiTi", "楷体", "SimSun", "宋体", serif';
     context.textAlign = 'center';

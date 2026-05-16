@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 const { PIECE_NAMES, RANK_MAP, DIRECTIONS, getImagePath, judgeRPS, inBounds, canCapture, isMutualDestruction, createGameState, getValidMoves, getValidCaptures, flipCard, moveCard, captureCard, hasAnyLegalAction, checkGameOver, aiDecide } = require('./game.js');
 
 // ============================================================
-// 辅助函数
+// Helper Functions
 // ============================================================
 function emptyBoard() {
   return Array.from({ length: 4 }, () => Array(4).fill(null));
@@ -26,7 +26,7 @@ function makeState(board, currentTeam, opts = {}) {
 }
 
 // ============================================================
-// 常量验证
+// Constants verification
 // ============================================================
 describe('constants - 常量验证', () => {
   it('PIECE_NAMES 应包含 8 个棋子名', () => {
@@ -55,7 +55,7 @@ describe('constants - 常量验证', () => {
 });
 
 // ============================================================
-// getImagePath - 图片路径
+// getImagePath - image path
 // ============================================================
 describe('getImagePath - 图片路径', () => {
   it('红方大黄猫应返回 images/红-大黄猫.png', () => {
@@ -76,10 +76,10 @@ describe('getImagePath - 图片路径', () => {
 });
 
 // ============================================================
-// judgeRPS - 石头剪刀布判定（9种组合穷举）
+// judgeRPS - Rock-Paper-Scissors judgment (9 combinations)
 // ============================================================
-describe('judgeRPS - 石头剪刀布判定', () => {
-  // 平局
+describe('judgeRPS - Rock-Paper-Scissors判定', () => {
+  // Draw
   it('rock vs rock = 0（平局）', () => {
     expect(judgeRPS('rock', 'rock')).toBe(0);
   });
@@ -90,7 +90,7 @@ describe('judgeRPS - 石头剪刀布判定', () => {
     expect(judgeRPS('paper', 'paper')).toBe(0);
   });
 
-  // 第一方胜
+  // First player wins
   it('rock vs scissors = 1（第一方胜）', () => {
     expect(judgeRPS('rock', 'scissors')).toBe(1);
   });
@@ -101,7 +101,7 @@ describe('judgeRPS - 石头剪刀布判定', () => {
     expect(judgeRPS('paper', 'rock')).toBe(1);
   });
 
-  // 第二方胜
+  // Second player wins
   it('rock vs paper = -1（第二方胜）', () => {
     expect(judgeRPS('rock', 'paper')).toBe(-1);
   });
@@ -114,16 +114,16 @@ describe('judgeRPS - 石头剪刀布判定', () => {
 });
 
 // ============================================================
-// inBounds - 边界判定
+// inBounds - boundary check
 // ============================================================
 describe('inBounds - 边界判定', () => {
-  it('棋盘内坐标 (0,0) 返回 true', () => {
+  it('board内坐标 (0,0) 返回 true', () => {
     expect(inBounds(0, 0)).toBe(true);
   });
-  it('棋盘内坐标 (3,3) 返回 true', () => {
+  it('board内坐标 (3,3) 返回 true', () => {
     expect(inBounds(3, 3)).toBe(true);
   });
-  it('棋盘内坐标 (1,2) 返回 true', () => {
+  it('board内坐标 (1,2) 返回 true', () => {
     expect(inBounds(1, 2)).toBe(true);
   });
   it('越界坐标 (-1,0) 返回 false', () => {
@@ -141,7 +141,7 @@ describe('inBounds - 边界判定', () => {
 });
 
 // ============================================================
-// canCapture - 吃牌判定（无逆袭，纯等级比较）
+// canCapture - capture judgment (no reversal, pure rank comparison)
 // ============================================================
 describe('canCapture - 吃牌判定', () => {
   it('高等级吃低等级：大黄猫(0)吃小花猫(1) → true', () => {
@@ -188,7 +188,7 @@ describe('canCapture - 吃牌判定', () => {
 });
 
 // ============================================================
-// isMutualDestruction - 同归于尽判定
+// isMutualDestruction - mutual destruction check
 // ============================================================
 describe('isMutualDestruction - 同归于尽判定', () => {
   it('同级棋子应判定为同归于尽', () => {
@@ -211,10 +211,10 @@ describe('isMutualDestruction - 同归于尽判定', () => {
 });
 
 // ============================================================
-// createGameState - 初始游戏状态
+// createGameState - initial game state
 // ============================================================
-describe('createGameState - 初始游戏状态', () => {
-  it('pvp 模式应返回包含所有必要字段的游戏状态', () => {
+describe('createGameState - 初始Game state', () => {
+  it('pvp 模式应返回包含所有必要字段的Game state', () => {
     const state = createGameState('pvp');
     expect(state.mode).toBe('pvp');
     expect(state.currentTeam).toBeNull();
@@ -232,7 +232,7 @@ describe('createGameState - 初始游戏状态', () => {
     expect(state.aiFirst).toBe(false);
   });
 
-  it('棋盘应为 4x4，包含恰好 16 张牌', () => {
+  it('board应为 4x4，包含恰好 16 张牌', () => {
     const state = createGameState('pvp');
     expect(state.board).toHaveLength(4);
     let cardCount = 0;
@@ -292,7 +292,7 @@ describe('createGameState - 初始游戏状态', () => {
 });
 
 // ============================================================
-// getValidMoves - 合法移动检测
+// getValidMoves - valid move detection
 // ============================================================
 describe('getValidMoves - 合法移动检测', () => {
   it('中间位置四周都为空时返回 4 个合法目标', () => {
@@ -345,7 +345,7 @@ describe('getValidMoves - 合法移动检测', () => {
 });
 
 // ============================================================
-// getValidCaptures - 合法吃牌检测
+// getValidCaptures - valid capture detection
 // ============================================================
 describe('getValidCaptures - 合法吃牌检测', () => {
   it('相邻有可吃的对方已翻开的牌时返回该目标', () => {
@@ -410,7 +410,7 @@ describe('getValidCaptures - 合法吃牌检测', () => {
 });
 
 // ============================================================
-// flipCard - 翻牌操作
+// flipCard - flip operation
 // ============================================================
 describe('flipCard - 翻牌操作', () => {
   it('翻开一张背面朝上的牌', () => {
@@ -479,7 +479,7 @@ describe('flipCard - 翻牌操作', () => {
 });
 
 // ============================================================
-// moveCard - 走牌操作
+// moveCard - move operation
 // ============================================================
 describe('moveCard - 走牌操作', () => {
   it('将牌移动到相邻空位', () => {
@@ -552,7 +552,7 @@ describe('moveCard - 走牌操作', () => {
 });
 
 // ============================================================
-// captureCard - 吃牌操作
+// captureCard - capture operation
 // ============================================================
 describe('captureCard - 吃牌操作', () => {
   it('普通吃牌：攻击方移到被吃方位置，原位置清空', () => {
@@ -643,7 +643,7 @@ describe('captureCard - 吃牌操作', () => {
     expect(captureCard(state, { x: 1, y: 1 }, { x: 2, y: 1 })).toBeNull();
   });
 
-  it('同级吃牌同归于尽：双方都从棋盘移除', () => {
+  it('同级吃牌同归于尽：双方都从board移除', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('大黄猫', 'red');
     board[1][2] = makeCard('大黄猫', 'blue');
@@ -673,7 +673,7 @@ describe('captureCard - 吃牌操作', () => {
 });
 
 // ============================================================
-// hasAnyLegalAction - 合法操作检测
+// hasAnyLegalAction - legal action detection
 // ============================================================
 describe('hasAnyLegalAction - 合法操作检测', () => {
   it('有未翻开的牌时返回 true', () => {
@@ -698,7 +698,7 @@ describe('hasAnyLegalAction - 合法操作检测', () => {
     expect(hasAnyLegalAction(board, 'red')).toBe(true);
   });
 
-  it('棋盘上无己方牌且无未翻开的牌时返回 false', () => {
+  it('board上无己方牌且无未翻开的牌时返回 false', () => {
     const board = emptyBoard();
     board[0][0] = makeCard('大黄猫', 'blue');
     expect(hasAnyLegalAction(board, 'red')).toBe(false);
@@ -706,7 +706,7 @@ describe('hasAnyLegalAction - 合法操作检测', () => {
 
   it('己方牌被完全包围且无吃牌机会且无未翻开的牌时返回 false', () => {
     const board = emptyBoard();
-    // 油滑鼠(rank=7)被高等级牌包围，无法吃任何一张，且无空位可移动
+    // Slippery rat(rank=7) surrounded by higher rank cards, cannot capture any, no empty cells
     board[1][1] = makeCard('油滑鼠', 'red');
     board[1][0] = makeCard('大黄猫', 'blue');
     board[1][2] = makeCard('小花猫', 'blue');
@@ -715,14 +715,14 @@ describe('hasAnyLegalAction - 合法操作检测', () => {
     expect(hasAnyLegalAction(board, 'red')).toBe(false);
   });
 
-  it('空棋盘返回 false', () => {
+  it('空board返回 false', () => {
     const board = emptyBoard();
     expect(hasAnyLegalAction(board, 'red')).toBe(false);
   });
 });
 
 // ============================================================
-// checkGameOver - 游戏结束判定
+// checkGameOver - game over check
 // ============================================================
 describe('checkGameOver - 游戏结束判定', () => {
   it('红方无牌时蓝方获胜', () => {
@@ -773,7 +773,7 @@ describe('checkGameOver - 游戏结束判定', () => {
 });
 
 // ============================================================
-// aiDecide - AI 决策函数
+// aiDecide - AI decision function
 // ============================================================
 describe('aiDecide - AI 决策函数', () => {
   it('存在吃牌机会时优先返回 capture 操作', () => {
@@ -791,15 +791,15 @@ describe('aiDecide - AI 决策函数', () => {
   it('优先非同归于尽的吃牌', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('大黄猫', 'red');
-    // 同级同归于尽
+    // Same rank mutual destruction
     board[0][1] = makeCard('大黄猫', 'blue');
-    // 非同归于尽（高等级吃低等级）
+    // Non-mutual destruction (higher rank captures lower rank)
     board[1][2] = makeCard('小花猫', 'blue');
     const state = makeState(board, 'red');
     const decision = aiDecide(state, 'red');
     expect(decision).not.toBeNull();
     expect(decision.type).toBe('capture');
-    // 应选择非同归于尽的吃牌
+    // Should choose non-mutual-destruction capture
     expect(decision.to).toEqual({ x: 2, y: 1 });
   });
 
@@ -808,7 +808,7 @@ describe('aiDecide - AI 决策函数', () => {
     board[0][0] = makeCard('油滑鼠', 'red');
     board[0][1] = makeCard('大黄猫', 'blue');
     board[1][0] = makeCard('小花猫', 'blue');
-    // 未翻开的牌
+    // Face-down card
     board[3][3] = makeCard('大灰鼠', 'red', false);
     const state = makeState(board, 'red');
     const decision = aiDecide(state, 'red');
@@ -821,7 +821,7 @@ describe('aiDecide - AI 决策函数', () => {
   it('只有走牌可用时返回 move 操作', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('大黄猫', 'red');
-    // 四周有空位，无对方牌可吃，无未翻开的牌
+    // Surrounding has empty cells, no opponent cards to capture, no face-down cards
     const state = makeState(board, 'red');
     const decision = aiDecide(state, 'red');
     expect(decision).not.toBeNull();
@@ -869,15 +869,15 @@ describe('aiDecide - AI 决策函数', () => {
   it('多个吃牌选项时优先吃 rank 小的高价值目标', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('大黄猫', 'red');
-    // rank=1 小花猫（高价值目标）
+    // rank=1 kitten (high value target)
     board[1][2] = makeCard('小花猫', 'blue');
-    // rank=7 油滑鼠（低价值目标）
+    // rank=7 slippery rat (low value target)
     board[0][1] = makeCard('油滑鼠', 'blue');
     const state = makeState(board, 'red');
     const decision = aiDecide(state, 'red');
     expect(decision).not.toBeNull();
     expect(decision.type).toBe('capture');
-    // 应选择吃 rank 更小的小花猫
+    // Should prefer capturing kitten with smaller rank
     expect(decision.to).toEqual({ x: 2, y: 1 });
   });
 });

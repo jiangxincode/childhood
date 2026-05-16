@@ -1,5 +1,5 @@
 /**
- * 电脑
+ * Computer player
  * @constructor
  */
 var Computer = function () {
@@ -22,7 +22,7 @@ var Computer = function () {
     };
 
     /**
-     * 执行下一步
+     * Execute next step
      */
     function diceClick() {
         var nextSt = setTimeout(function () {
@@ -37,12 +37,12 @@ var Computer = function () {
     }
 
     /**
-     * 根据长度均衡获取0,0-1,0-2,0-3的随机整数
-     * @param leng  长度
+     * Get a random integer (0 to length-1) with uniform distribution
+     * @param leng  length
      * @returns {*}
      */
     function obtainRandomNum(leng) {
-        var num = Math.floor(Math.random() * 10);//均衡获取0-9的随机整数
+        var num = Math.floor(Math.random() * 10);//Get a random integer from 0-9 with uniform distribution
         switch (leng) {
             case 1:
                 return 0;

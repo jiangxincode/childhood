@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 const { DRAGON_PIECES, TIGER_PIECES, RANK_MAP, IMAGE_MAP, TEAM_MAP, DIRECTIONS, getImagePath, getTeam, getRank, judgeRPS, inBounds, canCapture, isMutualDestruction, createGameState, getValidMoves, getValidCaptures, flipCard, moveCard, captureCard, hasAnyLegalAction, checkGameOver, aiDecide } = require('./game.js');
 
 // ============================================================
-// 辅助函数
+// Helper Functions
 // ============================================================
 function emptyBoard() {
   return Array.from({ length: 4 }, () => Array(4).fill(null));
@@ -27,7 +27,7 @@ function makeState(board, currentTeam, opts = {}) {
 
 
 // ============================================================
-// 常量验证
+// Constants verification
 // ============================================================
 describe('constants - 常量定义', () => {
   it('DRAGON_PIECES 应包含8个龙队棋子', () => {
@@ -42,7 +42,7 @@ describe('constants - 常量定义', () => {
 
   it('RANK_MAP 应包含16个棋子的等级映射', () => {
     expect(Object.keys(RANK_MAP)).toHaveLength(16);
-    // 龙队
+    // Dragon team
     expect(RANK_MAP['龙王']).toBe(1);
     expect(RANK_MAP['神龙']).toBe(2);
     expect(RANK_MAP['金龙']).toBe(3);
@@ -51,7 +51,7 @@ describe('constants - 常量定义', () => {
     expect(RANK_MAP['白龙']).toBe(6);
     expect(RANK_MAP['风雨龙']).toBe(7);
     expect(RANK_MAP['变形龙']).toBe(8);
-    // 虎队
+    // Tiger team
     expect(RANK_MAP['虎王']).toBe(1);
     expect(RANK_MAP['东北虎']).toBe(2);
     expect(RANK_MAP['大头虎']).toBe(3);
@@ -83,7 +83,7 @@ describe('constants - 常量定义', () => {
 
 
 // ============================================================
-// getImagePath - 图片路径（只需1个参数）
+// getImagePath - image path (only 1 parameter)
 // ============================================================
 describe('getImagePath - 图片路径', () => {
   it('龙队棋子返回正确的图片路径', () => {
@@ -111,7 +111,7 @@ describe('getImagePath - 图片路径', () => {
 
 
 // ============================================================
-// getTeam - 获取阵营
+// getTeam - get team
 // ============================================================
 describe('getTeam - 获取棋子阵营', () => {
   it('龙队棋子返回 dragon', () => {
@@ -129,7 +129,7 @@ describe('getTeam - 获取棋子阵营', () => {
 
 
 // ============================================================
-// getRank - 获取等级
+// getRank - get rank
 // ============================================================
 describe('getRank - 获取棋子等级', () => {
   it('龙队各棋子等级正确', () => {
@@ -157,10 +157,10 @@ describe('getRank - 获取棋子等级', () => {
 
 
 // ============================================================
-// judgeRPS - 石头剪刀布判定（9种组合穷举）
+// judgeRPS - Rock-Paper-Scissors judgment (9 combinations)
 // ============================================================
-describe('judgeRPS - 石头剪刀布判定', () => {
-  // 平局
+describe('judgeRPS - Rock-Paper-Scissors判定', () => {
+  // Draw
   it('rock vs rock = 0 (平局)', () => {
     expect(judgeRPS('rock', 'rock')).toBe(0);
   });
@@ -171,7 +171,7 @@ describe('judgeRPS - 石头剪刀布判定', () => {
     expect(judgeRPS('paper', 'paper')).toBe(0);
   });
 
-  // 第一方胜
+  // First player wins
   it('rock vs scissors = 1 (第一方胜)', () => {
     expect(judgeRPS('rock', 'scissors')).toBe(1);
   });
@@ -182,7 +182,7 @@ describe('judgeRPS - 石头剪刀布判定', () => {
     expect(judgeRPS('paper', 'rock')).toBe(1);
   });
 
-  // 第二方胜
+  // Second player wins
   it('rock vs paper = -1 (第二方胜)', () => {
     expect(judgeRPS('rock', 'paper')).toBe(-1);
   });
@@ -196,10 +196,10 @@ describe('judgeRPS - 石头剪刀布判定', () => {
 
 
 // ============================================================
-// inBounds - 边界检测
+// inBounds - boundary check
 // ============================================================
 describe('inBounds - 边界检测', () => {
-  it('棋盘范围内返回 true', () => {
+  it('board范围内返回 true', () => {
     expect(inBounds(0, 0)).toBe(true);
     expect(inBounds(3, 3)).toBe(true);
     expect(inBounds(1, 2)).toBe(true);
@@ -207,7 +207,7 @@ describe('inBounds - 边界检测', () => {
     expect(inBounds(3, 0)).toBe(true);
   });
 
-  it('棋盘范围外返回 false', () => {
+  it('board范围外返回 false', () => {
     expect(inBounds(-1, 0)).toBe(false);
     expect(inBounds(0, -1)).toBe(false);
     expect(inBounds(4, 0)).toBe(false);
@@ -219,7 +219,7 @@ describe('inBounds - 边界检测', () => {
 
 
 // ============================================================
-// canCapture - 吃牌判定（含逆袭规则）
+// canCapture - capture judgment (with reversal rules)
 // ============================================================
 describe('canCapture - 吃牌判定', () => {
   it('高等级吃低等级: 龙王(1)吃神龙(2) → false（同阵营不能吃）', () => {
@@ -291,7 +291,7 @@ describe('canCapture - 吃牌判定', () => {
 
 
 // ============================================================
-// isMutualDestruction - 同归于尽判定
+// isMutualDestruction - mutual destruction check
 // ============================================================
 describe('isMutualDestruction - 同归于尽判定', () => {
   it('同级棋子返回 true', () => {
@@ -315,10 +315,10 @@ describe('isMutualDestruction - 同归于尽判定', () => {
 
 
 // ============================================================
-// createGameState - 初始游戏状态
+// createGameState - initial game state
 // ============================================================
-describe('createGameState - 初始游戏状态', () => {
-  it('PVP模式应返回包含所有必要字段的游戏状态', () => {
+describe('createGameState - 初始Game state', () => {
+  it('PVP模式应返回包含所有必要字段的Game state', () => {
     const state = createGameState('pvp');
     expect(state.mode).toBe('pvp');
     expect(state.currentTeam).toBeNull();
@@ -340,7 +340,7 @@ describe('createGameState - 初始游戏状态', () => {
     expect(state.mode).toBe('pve');
   });
 
-  it('棋盘应为4x4，包含恰好16张牌', () => {
+  it('board应为4x4，包含恰好16张牌', () => {
     const state = createGameState('pvp');
     expect(state.board.length).toBe(4);
     let cardCount = 0;
@@ -396,7 +396,7 @@ describe('createGameState - 初始游戏状态', () => {
 
 
 // ============================================================
-// getValidMoves - 合法移动检测
+// getValidMoves - valid move detection
 // ============================================================
 describe('getValidMoves - 合法移动检测', () => {
   it('中间位置四周都为空时返回4个合法目标', () => {
@@ -450,7 +450,7 @@ describe('getValidMoves - 合法移动检测', () => {
 
 
 // ============================================================
-// getValidCaptures - 合法吃牌检测
+// getValidCaptures - valid capture detection
 // ============================================================
 describe('getValidCaptures - 合法吃牌检测', () => {
   it('相邻有可吃的对方已翻开的牌时返回该目标', () => {
@@ -466,7 +466,7 @@ describe('getValidCaptures - 合法吃牌检测', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('变形龙', 'dragon');
     board[1][2] = makeCard('虎王', 'tiger');
-    // 变形龙(rank8)可以吃虎王(rank1) - 逆袭
+    // Shape dragon(rank8) can capture tiger king(rank1) - reversal
     const captures = getValidCaptures(board, 1, 1, 'dragon');
     expect(captures).toHaveLength(1);
     expect(captures).toContainEqual({ x: 2, y: 1 });
@@ -476,7 +476,7 @@ describe('getValidCaptures - 合法吃牌检测', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('风雨龙', 'dragon');
     board[1][2] = makeCard('虎王', 'tiger');
-    // 风雨龙(rank7)不能吃虎王(rank1)
+    // Storm dragon(rank7) cannot capture tiger king(rank1)
     const captures = getValidCaptures(board, 1, 1, 'dragon');
     expect(captures).toHaveLength(0);
   });
@@ -533,7 +533,7 @@ describe('getValidCaptures - 合法吃牌检测', () => {
 
 
 // ============================================================
-// flipCard - 翻牌操作
+// flipCard - flip operation
 // ============================================================
 describe('flipCard - 翻牌操作', () => {
   it('翻开一张背面朝上的牌', () => {
@@ -623,7 +623,7 @@ describe('flipCard - 翻牌操作', () => {
 
 
 // ============================================================
-// moveCard - 走牌操作
+// moveCard - move operation
 // ============================================================
 describe('moveCard - 走牌操作', () => {
   it('将牌移动到相邻空位', () => {
@@ -697,7 +697,7 @@ describe('moveCard - 走牌操作', () => {
 
 
 // ============================================================
-// captureCard - 吃牌操作
+// captureCard - capture operation
 // ============================================================
 describe('captureCard - 吃牌操作', () => {
   it('成功吃牌：攻击方移到被吃方位置，原位置清空', () => {
@@ -783,7 +783,7 @@ describe('captureCard - 吃牌操作', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('风雨龙', 'dragon');
     board[1][2] = makeCard('虎王', 'tiger');
-    // 风雨龙(rank7)不能吃虎王(rank1)
+    // Storm dragon(rank7) cannot capture tiger king(rank1)
     const state = makeState(board, 'dragon');
     expect(captureCard(state, { x: 1, y: 1 }, { x: 2, y: 1 })).toBeNull();
   });
@@ -834,7 +834,7 @@ describe('captureCard - 吃牌操作', () => {
 
 
 // ============================================================
-// hasAnyLegalAction - 合法操作检测
+// hasAnyLegalAction - legal action detection
 // ============================================================
 describe('hasAnyLegalAction - 合法操作检测', () => {
   it('有未翻开的牌时返回 true', () => {
@@ -853,25 +853,25 @@ describe('hasAnyLegalAction - 合法操作检测', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('龙王', 'dragon');
     board[1][2] = makeCard('东北虎', 'tiger');
-    // 龙王四周被占满但可以吃东北虎
+    // Dragon king surrounded but can capture northeast tiger
     board[1][0] = makeCard('神龙', 'dragon');
     board[0][1] = makeCard('金龙', 'dragon');
     board[2][1] = makeCard('青龙', 'dragon');
     expect(hasAnyLegalAction(board, 'dragon')).toBe(true);
   });
 
-  it('棋盘上无己方牌且无未翻开的牌时返回 false', () => {
+  it('board上无己方牌且无未翻开的牌时返回 false', () => {
     const board = emptyBoard();
     board[0][0] = makeCard('虎王', 'tiger');
     expect(hasAnyLegalAction(board, 'dragon')).toBe(false);
   });
 
   it('己方牌被完全包围且无吃牌机会且无未翻开的牌时返回 false', () => {
-    // 填满4x4棋盘，龙方所有棋子无法移动也无法吃牌
-    // 龙方4子 rank 2-5，虎方12子全部虎王(rank 1)
-    // 龙方 rank 2-5 > 虎方 rank 1，所以龙方无法吃虎方
-    // 同时龙方 rank 互不相同，也不存在同归于尽
-    // 所有位置被占满，无空位可移动
+    // Fill 4x4 board, all dragon pieces cannot move or capture
+    // Dragon 4 pieces rank 2-5, tiger 12 pieces all tiger king(rank 1)
+    // Dragon rank 2-5 > tiger rank 1, so dragon cannot capture tiger
+    // Dragon ranks are all different, no mutual destruction possible
+    // All positions occupied, no empty cells to move
     const board = [
       [makeCard('虎王', 'tiger'),  makeCard('虎王', 'tiger'),  makeCard('虎王', 'tiger'),  makeCard('虎王', 'tiger')],
       [makeCard('虎王', 'tiger'),  makeCard('神龙', 'dragon'), makeCard('金龙', 'dragon'), makeCard('虎王', 'tiger')],
@@ -881,7 +881,7 @@ describe('hasAnyLegalAction - 合法操作检测', () => {
     expect(hasAnyLegalAction(board, 'dragon')).toBe(false);
   });
 
-  it('空棋盘返回 false', () => {
+  it('空board返回 false', () => {
     const board = emptyBoard();
     expect(hasAnyLegalAction(board, 'dragon')).toBe(false);
   });
@@ -889,7 +889,7 @@ describe('hasAnyLegalAction - 合法操作检测', () => {
 
 
 // ============================================================
-// checkGameOver - 游戏结束判定
+// checkGameOver - game over check
 // ============================================================
 describe('checkGameOver - 游戏结束判定', () => {
   it('dragon无牌时tiger获胜', () => {
@@ -910,7 +910,7 @@ describe('checkGameOver - 游戏结束判定', () => {
 
   it('当前行动方无合法操作时对方获胜', () => {
     const board = emptyBoard();
-    // dragon 无任何棋子，必然无合法操作
+    // dragon has no pieces, necessarily no legal actions
     board[0][0] = makeCard('虎王', 'tiger');
     const result = checkGameOver(board, 'dragon');
     expect(result.ended).toBe(true);
@@ -938,7 +938,7 @@ describe('checkGameOver - 游戏结束判定', () => {
 
 
 // ============================================================
-// aiDecide - AI决策函数
+// aiDecide - AI decision function
 // ============================================================
 describe('aiDecide - AI决策函数', () => {
   it('存在吃牌机会时返回 capture 操作', () => {
@@ -983,30 +983,30 @@ describe('aiDecide - AI决策函数', () => {
     const decision = aiDecide(state, 'dragon');
     expect(decision).not.toBeNull();
     expect(decision.type).toBe('capture');
-    // 应该优先吃东北虎(rank2)而不是白虎(rank7)
+    // Should prefer capturing northeast tiger(rank2) over white tiger(rank7)
     expect(decision.to).toEqual({ x: 0, y: 1 });
   });
 
   it('优先选择非同归于尽的吃牌', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('龙王', 'dragon');
-    board[1][0] = makeCard('虎王', 'tiger');     // 同级，同归于尽
-    board[0][1] = makeCard('东北虎', 'tiger');   // 非同归于尽
+    board[1][0] = makeCard('虎王', 'tiger');     // Same rank, mutual destruction
+    board[0][1] = makeCard('东北虎', 'tiger');   // Non-mutual destruction
     const state = makeState(board, 'dragon');
     const decision = aiDecide(state, 'dragon');
     expect(decision).not.toBeNull();
     expect(decision.type).toBe('capture');
-    // 应该优先吃东北虎（非同归于尽）
+    // Should prefer capturing northeast tiger (non-mutual destruction)
     expect(decision.to).toEqual({ x: 1, y: 0 });
   });
 
   it('只有未翻开的牌可用时返回 flip 操作', () => {
     const board = emptyBoard();
-    // dragon 的牌被己方包围无法移动
+    // dragon cards surrounded by own team, cannot move
     board[0][0] = makeCard('龙王', 'dragon');
     board[0][1] = makeCard('神龙', 'dragon');
     board[1][0] = makeCard('金龙', 'dragon');
-    // 有一张未翻开的牌
+    // There is one face-down card
     board[3][3] = makeCard('虎王', 'tiger', false);
     const state = makeState(board, 'dragon');
     const decision = aiDecide(state, 'dragon');
@@ -1019,7 +1019,7 @@ describe('aiDecide - AI决策函数', () => {
   it('翻牌优先于走牌', () => {
     const board = emptyBoard();
     board[0][0] = makeCard('龙王', 'dragon');
-    // 龙王四周有空位可走，但也有未翻开的牌
+    // Dragon king has empty cells around, but also has face-down cards
     board[3][3] = makeCard('虎王', 'tiger', false);
     const state = makeState(board, 'dragon');
     const decision = aiDecide(state, 'dragon');
@@ -1030,13 +1030,13 @@ describe('aiDecide - AI决策函数', () => {
   it('只有走牌可用时返回 move 操作', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('龙王', 'dragon');
-    // 四周有空位，无对方牌可吃，无未翻开的牌
+    // Surrounding has empty cells, no opponent cards to capture, no face-down cards
     const state = makeState(board, 'dragon');
     const decision = aiDecide(state, 'dragon');
     expect(decision).not.toBeNull();
     expect(decision.type).toBe('move');
     expect(decision.from).toEqual({ x: 1, y: 1 });
-    // 目标应是相邻空位之一
+    // Target should be one of adjacent empty cells
     const validTargets = [
       { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 0 }, { x: 1, y: 2 }
     ];
@@ -1045,7 +1045,7 @@ describe('aiDecide - AI决策函数', () => {
 
   it('无任何合法操作时返回 null', () => {
     const board = emptyBoard();
-    // dragon 无任何棋子，必然无合法操作
+    // dragon has no pieces, necessarily no legal actions
     board[0][0] = makeCard('虎王', 'tiger');
     const state = makeState(board, 'dragon');
     const decision = aiDecide(state, 'dragon');

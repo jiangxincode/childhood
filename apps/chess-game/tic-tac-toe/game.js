@@ -1,19 +1,19 @@
 // ============================================================
-// 井字棋 (Tic-Tac-Toe) - 游戏核心逻辑
+// Tic-Tac-Toe - Game Core Logic
 // ============================================================
 
 const PLAYER_X = 'X';
 const PLAYER_O = 'O';
 
 const WIN_LINES = [
-  [{x:0,y:0},{x:1,y:0},{x:2,y:0}], // 横1
-  [{x:0,y:1},{x:1,y:1},{x:2,y:1}], // 横2
-  [{x:0,y:2},{x:1,y:2},{x:2,y:2}], // 横3
-  [{x:0,y:0},{x:0,y:1},{x:0,y:2}], // 竖1
-  [{x:1,y:0},{x:1,y:1},{x:1,y:2}], // 竖2
-  [{x:2,y:0},{x:2,y:1},{x:2,y:2}], // 竖3
-  [{x:0,y:0},{x:1,y:1},{x:2,y:2}], // 对角线
-  [{x:2,y:0},{x:1,y:1},{x:0,y:2}]  // 反对角线
+  [{x:0,y:0},{x:1,y:0},{x:2,y:0}], // Row 1
+  [{x:0,y:1},{x:1,y:1},{x:2,y:1}], // Row 2
+  [{x:0,y:2},{x:1,y:2},{x:2,y:2}], // Row 3
+  [{x:0,y:0},{x:0,y:1},{x:0,y:2}], // Column 1
+  [{x:1,y:0},{x:1,y:1},{x:1,y:2}], // Column 2
+  [{x:2,y:0},{x:2,y:1},{x:2,y:2}], // Column 3
+  [{x:0,y:0},{x:1,y:1},{x:2,y:2}], // Diagonal
+  [{x:2,y:0},{x:1,y:1},{x:0,y:2}]  // Anti-diagonal
 ];
 
 function createGameState(mode) {
@@ -89,7 +89,7 @@ function getOpponent(player) {
 }
 
 // ============================================================
-// AI: Minimax算法
+// AI: Minimax Algorithm
 // ============================================================
 
 function minimax(board, depth, isMaximizing, aiPlayer) {
@@ -124,20 +124,20 @@ function getBestAIMove(board, aiPlayer) {
   var moves = getValidMoves(board);
   if (moves.length === 0) return null;
 
-  // 先检查能否立即获胜
+  // First check if AI can win immediately
   for (var i = 0; i < moves.length; i++) {
     var newBoard = makeMove(board, moves[i].x, moves[i].y, aiPlayer);
     if (checkWin(newBoard)) return moves[i];
   }
 
-  // 再检查对手能否立即获胜（需要堵住）
+  // Then check if opponent can win immediately (need to block)
   var opponent = getOpponent(aiPlayer);
   for (var i = 0; i < moves.length; i++) {
     var newBoard = makeMove(board, moves[i].x, moves[i].y, opponent);
     if (checkWin(newBoard)) return moves[i];
   }
 
-  // Minimax选择最优
+  // Minimax selects optimal move
   var bestScore = -100;
   var bestMove = moves[0];
   for (var i = 0; i < moves.length; i++) {
@@ -152,7 +152,7 @@ function getBestAIMove(board, aiPlayer) {
 }
 
 // ============================================================
-// 石头剪刀布
+// Rock-Paper-Scissors
 // ============================================================
 
 function judgeRPS(choice1, choice2) {
@@ -173,7 +173,7 @@ function getRPSName(choice) {
 }
 
 // ============================================================
-// 导出供测试使用
+// Export for testing
 // ============================================================
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -194,7 +194,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 // ============================================================
-// 浏览器UI
+// Browser UI
 // ============================================================
 
 if (typeof document !== 'undefined') {
@@ -243,7 +243,7 @@ if (typeof document !== 'undefined') {
       }
     });
 
-    // 高亮获胜连线
+    // Highlight winning line
     if (state.winLine) {
       for (var i = 0; i < state.winLine.length; i++) {
         var pos = state.winLine[i];

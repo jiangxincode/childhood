@@ -18,7 +18,7 @@ const {
 } = require('./game.js');
 
 // ============================================================
-// 辅助函数
+// Helper Functions
 // ============================================================
 function emptyBoard() {
   var board = [];
@@ -56,9 +56,9 @@ function makeState(board, currentTeam, opts) {
 }
 
 // ============================================================
-// 基础工具函数测试
+// Basic Utility Functions test
 // ============================================================
-describe('基础工具函数', () => {
+describe('Basic Utility Functions', () => {
   it('isNormalPiece', () => {
     expect(isNormalPiece('工兵')).toBe(true);
     expect(isNormalPiece('司令')).toBe(true);
@@ -125,22 +125,22 @@ describe('基础工具函数', () => {
   });
 
   it('hasDiagonalEligibility', () => {
-    // (0,1): boardRow=1, 0+1=1 奇数 → true
+    // (0,1): boardRow=1, 0+1=1 odd -> true
     expect(hasDiagonalEligibility(0, 1)).toBe(true);
-    // (1,2): boardRow=2, 1+2=3 奇数 → true
+    // (1,2): boardRow=2, 1+2=3 odd -> true
     expect(hasDiagonalEligibility(1, 2)).toBe(true);
-    // (0,0): boardRow=0, 0+0=0 偶数 → false
+    // (0,0): boardRow=0, 0+0=0 even -> false
     expect(hasDiagonalEligibility(0, 0)).toBe(false);
-    // (2,3): boardRow=3, 2+3=5 奇数 → true
+    // (2,3): boardRow=3, 2+3=5 odd -> true
     expect(hasDiagonalEligibility(2, 3)).toBe(true);
   });
 });
 
 // ============================================================
-// 铁路判定测试
+// Railway Detection test
 // ============================================================
-describe('铁路判定', () => {
-  it('水平铁路', () => {
+describe('Railway Detection', () => {
+  it('Horizontal railway', () => {
     expect(isOnHRailway(1)).toBe(true);
     expect(isOnHRailway(5)).toBe(true);
     expect(isOnHRailway(6)).toBe(true);
@@ -149,88 +149,88 @@ describe('铁路判定', () => {
     expect(isOnHRailway(3)).toBe(false);
   });
 
-  it('垂直铁路', () => {
-    // 左右两侧
+  it('Vertical railway', () => {
+    // Left and right sides
     expect(isOnVRailway(0, 1)).toBe(true);
     expect(isOnVRailway(4, 5)).toBe(true);
-    expect(isOnVRailway(0, 0)).toBe(false); // 端点不算
+    expect(isOnVRailway(0, 0)).toBe(false); // Endpoints do not count
     expect(isOnVRailway(0, 11)).toBe(false);
-    // 中间
+    // Middle
     expect(isOnVRailway(2, 5)).toBe(true);
     expect(isOnVRailway(2, 6)).toBe(true);
     expect(isOnVRailway(2, 4)).toBe(false);
   });
 
   it('areOnSameRailway', () => {
-    // 水平相邻且在水平铁路上
+    // Horizontally adjacent and on Horizontal railway
     expect(areOnSameRailway(0, 1, 1, 1)).toBe(true);
     expect(areOnSameRailway(3, 10, 4, 10)).toBe(true);
-    // 垂直相邻且在垂直铁路上
+    // Vertically adjacent and on Vertical railway
     expect(areOnSameRailway(0, 1, 0, 2)).toBe(true);
     expect(areOnSameRailway(4, 5, 4, 6)).toBe(true);
-    // 跨越 gap row：中间列和侧边铁路可以跨越
+    // Crossing gap row: middle column and side railways can cross
     expect(areOnSameRailway(2, 5, 2, 6)).toBe(true);
     expect(areOnSameRailway(0, 5, 0, 6)).toBe(true);
     expect(areOnSameRailway(4, 5, 4, 6)).toBe(true);
-    expect(areOnSameRailway(1, 5, 1, 6)).toBe(false); // 非铁路列不能跨越
+    expect(areOnSameRailway(1, 5, 1, 6)).toBe(false); // Non-railway columns cannot cross
     expect(areOnSameRailway(3, 5, 3, 6)).toBe(false);
-    // 不相邻
+    // Not adjacent
     expect(areOnSameRailway(0, 1, 0, 3)).toBe(false);
   });
 });
 
 // ============================================================
-// 战斗判定测试
+// Combat Resolution test
 // ============================================================
-describe('战斗判定', () => {
-  it('高等级吃低等级', () => {
+describe('Combat Resolution', () => {
+  it('Higher rank captures lower rank', () => {
     expect(canCapture(makePiece('司令', RED), makePiece('军长', BLUE))).toBe(true);
     expect(canCapture(makePiece('军长', RED), makePiece('工兵', BLUE))).toBe(true);
   });
 
-  it('低等级不能吃高等级', () => {
+  it('Lower rank cannot capture higher rank', () => {
     expect(canCapture(makePiece('工兵', RED), makePiece('司令', BLUE))).toBe(false);
   });
 
-  it('同级同归于尽', () => {
+  it('Same rank mutual destruction', () => {
     expect(canCapture(makePiece('连长', RED), makePiece('连长', BLUE))).toBe(true);
     expect(resolveCombat(makePiece('连长', RED), makePiece('连长', BLUE))).toBe('mutual_destruction');
   });
 
-  it('炸弹碰任何棋子同归于尽', () => {
+  it('Bomb destroys any piece in mutual destruction', () => {
     expect(canCapture(makePiece('炸弹', RED), makePiece('司令', BLUE))).toBe(true);
     expect(resolveCombat(makePiece('炸弹', RED), makePiece('司令', BLUE))).toBe('mutual_destruction');
     expect(resolveCombat(makePiece('工兵', RED), makePiece('炸弹', BLUE))).toBe('mutual_destruction');
   });
 
-  it('工兵排雷', () => {
+  it('Engineer clears mines', () => {
     expect(canCapture(makePiece('工兵', RED), makePiece('地雷', BLUE))).toBe(true);
     expect(resolveCombat(makePiece('工兵', RED), makePiece('地雷', BLUE))).toBe('attacker_wins');
   });
 
-  it('非工兵碰地雷同归于尽', () => {
+  it('Non-engineer hits mine in mutual destruction', () => {
     expect(canCapture(makePiece('排长', RED), makePiece('地雷', BLUE))).toBe(true);
     expect(resolveCombat(makePiece('排长', RED), makePiece('地雷', BLUE))).toBe('mutual_destruction');
   });
 
-  it('军旗不可被吃', () => {
+  it('Flag cannot be captured', () => {
     expect(canCapture(makePiece('工兵', RED), makePiece('军旗', BLUE))).toBe(false);
   });
 
-  it('地雷不能主动攻击', () => {
+  it('Mine cannot attack', () => {
     expect(canCapture(makePiece('地雷', RED), makePiece('工兵', BLUE))).toBe(false);
   });
 
-  it('同阵营不能互吃', () => {
+  it('Same team cannot capture each other', () => {
     expect(canCapture(makePiece('司令', RED), makePiece('工兵', RED))).toBe(false);
   });
 });
 
 // ============================================================
-// 创建游戏状态测试
+// Game State Creation Tests
 // ============================================================
 describe('createGameState', () => {
-  it('明棋：创建后棋盘有 50 颗棋子', () => {
+  it('Open mode: board has 50 pieces after creation', () => {
     var state = createGameState({ gameType: 'open', oppType: 'pvp' });
     var count = 0;
     for (var y = 0; y < ROWS; y++) {
@@ -241,7 +241,7 @@ describe('createGameState', () => {
     expect(count).toBe(50);
   });
 
-  it('明棋：每方 25 颗棋子', () => {
+  it('Open mode: each side has 25 pieces', () => {
     var state = createGameState({ gameType: 'open', oppType: 'pvp' });
     var redCount = 0, blueCount = 0;
     for (var y = 0; y < ROWS; y++) {
@@ -255,7 +255,7 @@ describe('createGameState', () => {
     expect(blueCount).toBe(25);
   });
 
-  it('明棋：军旗在大本营中', () => {
+  it('Open mode: flag is in base camp', () => {
     var state = createGameState({ gameType: 'open', oppType: 'pvp' });
     var flags = [];
     for (var y = 0; y < ROWS; y++) {
@@ -270,7 +270,7 @@ describe('createGameState', () => {
     }
   });
 
-  it('明棋：地雷在最后两行', () => {
+  it('Open mode: mines are in last two rows', () => {
     var state = createGameState({ gameType: 'open', oppType: 'pvp' });
     for (var y = 0; y < ROWS; y++) {
       for (var x = 0; x < COLS; x++) {
@@ -286,7 +286,7 @@ describe('createGameState', () => {
     }
   });
 
-  it('明棋：炸弹不在第一行', () => {
+  it('Open mode: bombs are not in first row', () => {
     var state = createGameState({ gameType: 'open', oppType: 'pvp' });
     for (var y = 0; y < ROWS; y++) {
       for (var x = 0; x < COLS; x++) {
@@ -302,7 +302,7 @@ describe('createGameState', () => {
     }
   });
 
-  it('明棋：所有棋子面朝上', () => {
+  it('Open mode: all pieces face up', () => {
     var state = createGameState({ gameType: 'open', oppType: 'pvp' });
     for (var y = 0; y < ROWS; y++) {
       for (var x = 0; x < COLS; x++) {
@@ -312,7 +312,7 @@ describe('createGameState', () => {
     }
   });
 
-  it('翻棋：50颗棋子随机放满全棋盘（不含行营）', () => {
+  it('Flip mode: 50 pieces randomly placed on full board (excluding camps)', () => {
     var state = createGameState({ gameType: 'flip', oppType: 'pvp' });
     var count = 0;
     for (var y = 0; y < ROWS; y++) {
@@ -321,14 +321,14 @@ describe('createGameState', () => {
       }
     }
     expect(count).toBe(50);
-    // 行营中没有棋子
+    // No pieces in camps
     for (var i = 0; i < CAMPS.length; i++) {
       var c = CAMPS[i];
       expect(state.board[c.y][c.x]).toBe(null);
     }
   });
 
-  it('翻棋：所有棋子面朝下', () => {
+  it('Flip mode: all pieces face down', () => {
     var state = createGameState({ gameType: 'flip', oppType: 'pvp' });
     for (var y = 0; y < ROWS; y++) {
       for (var x = 0; x < COLS; x++) {
@@ -338,7 +338,7 @@ describe('createGameState', () => {
     }
   });
 
-  it('暗棋：行营中没有棋子', () => {
+  it('Hidden mode: no pieces in camps', () => {
     var state = createGameState({ gameType: 'hidden', oppType: 'pvp' });
     for (var i = 0; i < CAMPS.length; i++) {
       var c = CAMPS[i];
@@ -348,55 +348,55 @@ describe('createGameState', () => {
 });
 
 // ============================================================
-// 移动验证测试
+// Move Validation Tests
 // ============================================================
 describe('getValidMoves', () => {
-  it('地雷不可移动', () => {
+  it('Mine cannot move', () => {
     var board = emptyBoard();
     board[10][2] = makePiece('地雷', RED);
     var moves = getValidMoves(board, 2, 10, RED);
     expect(moves.length).toBe(0);
   });
 
-  it('军旗不可移动', () => {
+  it('Flag cannot move', () => {
     var board = emptyBoard();
     board[11][1] = makePiece('军旗', RED);
     var moves = getValidMoves(board, 1, 11, RED);
     expect(moves.length).toBe(0);
   });
 
-  it('普通棋子可向相邻空位移动', () => {
+  it('Normal piece can move to adjacent empty position', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('排长', RED);
     var moves = getValidMoves(board, 2, 5, RED);
-    // (2,5) 在铁路上，可以沿铁路和普通方向移动
+    // (2,5) is on railway, can move along railway and normal directions
     expect(moves.length).toBeGreaterThan(0);
-    // 至少能向上 (2,4) 或向下 (2,6，跨越gap)
+    // At least can go up (2,4) or down (2,6, crossing gap)
     var hasUp = moves.some(function (m) { return m.x === 2 && m.y === 4; });
     expect(hasUp).toBe(true);
   });
 
-  it('工兵可沿铁路无限移动', () => {
+  it('Engineer can move unlimited along railway', () => {
     var board = emptyBoard();
     board[1][0] = makePiece('工兵', RED);
-    // (0,1) 在水平和垂直铁路上
+    // (0,1) is on Horizontal and Vertical railway
     var moves = getValidMoves(board, 0, 1, RED);
-    // 应该能移动到水平铁路 (1,1), (2,1), (3,1), (4,1)
+    // Should be able to move to Horizontal railway (1,1), (2,1), (3,1), (4,1)
     var hasFar = moves.some(function (m) { return m.x === 4 && m.y === 1; });
     expect(hasFar).toBe(true);
   });
 
-  it('行营中的棋子不能被攻击', () => {
+  it('Pieces in camp cannot be attacked', () => {
     var board = emptyBoard();
-    board[2][1] = makePiece('工兵', RED);  // (1,2) 是行营
+    board[2][1] = makePiece('工兵', RED);  // (1,2) is a camp
     board[2][0] = makePiece('司令', BLUE);
     var moves = getValidMoves(board, 0, 2, BLUE);
-    // 司令不能吃行营中的工兵
+    // Commander cannot capture engineer in camp
     var canAttackCamp = moves.some(function (m) { return m.x === 1 && m.y === 2; });
     expect(canAttackCamp).toBe(false);
   });
 
-  it('己方棋子不能移动到己方棋子位置', () => {
+  it('Own piece cannot move to own piece position', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('排长', RED);
     board[5][3] = makePiece('连长', RED);
@@ -405,27 +405,27 @@ describe('getValidMoves', () => {
     expect(canMoveToOwn).toBe(false);
   });
 
-  it('跨越 gap row 只能通过中间列', () => {
+  it('Gap row can only be crossed via middle column', () => {
     var board = emptyBoard();
     board[5][1] = makePiece('排长', RED);
     var moves = getValidMoves(board, 1, 5, RED);
-    // (1,5) 不能向下跨越到 (1,6)
+    // (1,5) cannot cross down to (1,6)
     var canCross = moves.some(function (m) { return m.x === 1 && m.y === 6; });
     expect(canCross).toBe(false);
 
     board[5][2] = makePiece('排长', RED);
     var moves2 = getValidMoves(board, 2, 5, RED);
-    // (2,5) 可以向下跨越到 (2,6)
+    // (2,5) can cross down to (2,6)
     var canCross2 = moves2.some(function (m) { return m.x === 2 && m.y === 6; });
     expect(canCross2).toBe(true);
   });
 });
 
 // ============================================================
-// 移动操作测试
+// Move Operation Tests
 // ============================================================
 describe('moveCard', () => {
-  it('普通移动成功', () => {
+  it('Normal move succeeds', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('排长', RED);
     var state = makeState(board, RED);
@@ -436,7 +436,7 @@ describe('moveCard', () => {
     expect(state.currentTeam).toBe(BLUE);
   });
 
-  it('吃子成功', () => {
+  it('Capture succeeds', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('司令', RED);
     board[4][2] = makePiece('工兵', BLUE);
@@ -447,7 +447,7 @@ describe('moveCard', () => {
     expect(state.capturedBlue).toContain('工兵');
   });
 
-  it('同归于尽', () => {
+  it('Mutual destruction', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('连长', RED);
     board[4][2] = makePiece('连长', BLUE);
@@ -460,7 +460,7 @@ describe('moveCard', () => {
     expect(state.capturedBlue).toContain('连长');
   });
 
-  it('工兵扛旗获胜', () => {
+  it('Engineer captures flag for victory', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('工兵', RED);
     board[6][2] = makePiece('军旗', BLUE);
@@ -471,7 +471,7 @@ describe('moveCard', () => {
     expect(state.winner).toBe(RED);
   });
 
-  it('不能移动到非法位置', () => {
+  it('Cannot move to illegal position', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('排长', RED);
     var state = makeState(board, RED);
@@ -479,7 +479,7 @@ describe('moveCard', () => {
     expect(result).toBe(null);
   });
 
-  it('暗棋：司令被吃暴露对方军旗', () => {
+  it('Hidden mode: commander captured reveals opponent flag', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('司令', RED);
     board[4][2] = makePiece('司令', BLUE);
@@ -491,10 +491,10 @@ describe('moveCard', () => {
 });
 
 // ============================================================
-// 游戏结束判定测试
+// Game Over Detection Tests
 // ============================================================
 describe('checkGameOver', () => {
-  it('游戏已通过扛旗结束', () => {
+  it('Game ended by capturing flag', () => {
     var board = emptyBoard();
     var state = makeState(board, RED, { gameOver: true, winner: RED });
     var result = checkGameOver(state);
@@ -502,17 +502,17 @@ describe('checkGameOver', () => {
     expect(result.winner).toBe(RED);
   });
 
-  it('红方无可用棋子，蓝方胜', () => {
+  it('Red has no usable pieces, blue wins', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('工兵', BLUE);
-    // 红方没有任何棋子
+    // Red has no pieces
     var state = makeState(board, RED);
     var result = checkGameOver(state);
     expect(result.ended).toBe(true);
     expect(result.winner).toBe(BLUE);
   });
 
-  it('双方都有棋子时游戏继续', () => {
+  it('Game continues when both sides have pieces', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('工兵', RED);
     board[0][2] = makePiece('工兵', BLUE);
@@ -523,13 +523,13 @@ describe('checkGameOver', () => {
 });
 
 // ============================================================
-// AI 决策测试
+// AI Decision Tests
 // ============================================================
 describe('aiDecide', () => {
-  it('AI 优先扛旗', () => {
+  it('AI prioritizes capturing flag', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('工兵', BLUE);
-    board[6][2] = makePiece('军旗', RED); // 军旗在红方大本营
+    board[6][2] = makePiece('军旗', RED); // Flag in red headquarters
     var state = makeState(board, BLUE, { aiTeam: BLUE });
     var decision = aiDecide(state, BLUE);
     expect(decision).not.toBe(null);
@@ -537,25 +537,25 @@ describe('aiDecide', () => {
     expect(decision.to.y).toBe(6);
   });
 
-  it('AI 有吃子机会时吃子', () => {
+  it('AI captures when opportunity exists', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('司令', BLUE);
     board[5][3] = makePiece('工兵', RED);
-    board[0][0] = makePiece('工兵', RED); // 避免蓝方无对手导致游戏结束
+    board[0][0] = makePiece('工兵', RED); // Prevent blue from having no opponent causing game over
     var state = makeState(board, BLUE, { aiTeam: BLUE });
     var decision = aiDecide(state, BLUE);
     expect(decision).not.toBe(null);
-    // 应该选择吃子
+    // Should choose capture
     var eats = decision.to.x === 3 && decision.to.y === 5;
     expect(eats).toBe(true);
   });
 
-  it('无操作时返回 null', () => {
+  it('Returns null when no actions available', () => {
     var board = emptyBoard();
-    // 只有地雷和军旗，不可移动
+    // Only mines and flag, cannot move
     board[11][1] = makePiece('军旗', BLUE);
     board[10][0] = makePiece('地雷', BLUE);
-    board[0][0] = makePiece('工兵', RED); // 对手
+    board[0][0] = makePiece('工兵', RED); // Opponent
     var state = makeState(board, BLUE, { aiTeam: BLUE });
     var decision = aiDecide(state, BLUE);
     expect(decision).toBe(null);
@@ -563,22 +563,22 @@ describe('aiDecide', () => {
 });
 
 // ============================================================
-// 石头剪刀布测试
+// RPS Tests
 // ============================================================
 describe('judgeRPS', () => {
-  it('平局', () => {
+  it('Draw', () => {
     expect(judgeRPS('rock', 'rock')).toBe(0);
     expect(judgeRPS('scissors', 'scissors')).toBe(0);
     expect(judgeRPS('paper', 'paper')).toBe(0);
   });
 
-  it('第一方胜', () => {
+  it('First player wins', () => {
     expect(judgeRPS('rock', 'scissors')).toBe(1);
     expect(judgeRPS('scissors', 'paper')).toBe(1);
     expect(judgeRPS('paper', 'rock')).toBe(1);
   });
 
-  it('第二方胜', () => {
+  it('Second player wins', () => {
     expect(judgeRPS('rock', 'paper')).toBe(-1);
     expect(judgeRPS('scissors', 'rock')).toBe(-1);
     expect(judgeRPS('paper', 'scissors')).toBe(-1);
@@ -586,10 +586,10 @@ describe('judgeRPS', () => {
 });
 
 // ============================================================
-// 军旗扛走测试
+// Flag Capture test
 // ============================================================
-describe('军旗扛走', () => {
-  it('工兵可以通过对角线进入大本营扛旗', () => {
+describe('Flag Capture', () => {
+  it('Engineer can enter base camp diagonally to capture flag', () => {
     var board = emptyBoard();
     board[1][0] = makePiece('工兵', RED);
     board[0][1] = makePiece('军旗', BLUE);
@@ -598,7 +598,7 @@ describe('军旗扛走', () => {
     expect(flagMove).not.toBe(undefined);
   });
 
-  it('非工兵棋子不能扛旗', () => {
+  it('Non-engineer pieces cannot capture flag', () => {
     var board = emptyBoard();
     board[1][0] = makePiece('排长', RED);
     board[0][1] = makePiece('军旗', BLUE);
@@ -607,22 +607,22 @@ describe('军旗扛走', () => {
     expect(flagMove).toBe(undefined);
   });
 
-  it('工兵可以沿铁路到达大本营附近', () => {
+  it('Engineer can reach near base camp via railway', () => {
     var board = emptyBoard();
     board[5][0] = makePiece('工兵', RED);
     board[0][1] = makePiece('军旗', BLUE);
     var moves = getEngineerMoves(board, 0, 5, RED);
-    // 工兵可以沿铁路到 (0,1)
+    // Engineer can reach (0,1) via railway
     var canReach01 = moves.some(function (m) { return m.x === 0 && m.y === 1; });
     expect(canReach01).toBe(true);
   });
 });
 
 // ============================================================
-// 行营保护测试
+// Camp Protection test
 // ============================================================
-describe('行营保护', () => {
-  it('行营中的棋子不能被攻击', () => {
+describe('Camp Protection', () => {
+  it('Pieces in camp cannot be attacked', () => {
     var board = emptyBoard();
     board[2][1] = makePiece('工兵', RED);
     board[2][0] = makePiece('司令', BLUE);
@@ -631,7 +631,7 @@ describe('行营保护', () => {
     expect(canAttack).toBe(false);
   });
 
-  it('大本营中的非军旗棋子也不能被攻击', () => {
+  it('Non-flag pieces in base camp cannot be attacked', () => {
     var board = emptyBoard();
     board[0][1] = makePiece('工兵', RED);
     board[0][0] = makePiece('司令', BLUE);
@@ -640,8 +640,8 @@ describe('行营保护', () => {
     expect(canAttack).toBe(false);
   });
 
-  it('行营中的棋子可以沿对角线跳到另一个行营', () => {
-    // (1,2) 和 (2,3) 是对角线相邻的行营
+  it('Pieces in camp can jump diagonally to another camp', () => {
+    // (1,2) and (2,3) are diagonally adjacent camps
     var board = emptyBoard();
     board[2][1] = makePiece('工兵', RED);
     var moves = getValidMoves(board, 1, 2, RED);
@@ -649,8 +649,8 @@ describe('行营保护', () => {
     expect(canReachCamp).toBe(true);
   });
 
-  it('行营中的棋子可以经过空格到达较远的行营', () => {
-    // (2,3) 到 (1,4) 需要经过中间空格
+  it('Pieces in camp can pass through empty cells to reach farther camps', () => {
+    // (2,3) to (1,4) needs to pass through middle empty cell
     var board = emptyBoard();
     board[3][2] = makePiece('团长', RED);
     var moves = getValidMoves(board, 2, 3, RED);
@@ -658,7 +658,7 @@ describe('行营保护', () => {
     expect(canReachCamp).toBe(true);
   });
 
-  it('工兵可以从铁路进入相邻行营', () => {
+  it('Engineer can enter adjacent camp from railway', () => {
     var board = emptyBoard();
     board[1][1] = makePiece('工兵', RED);
     var moves = getValidMoves(board, 1, 1, RED);
@@ -666,16 +666,16 @@ describe('行营保护', () => {
     expect(canEnterCamp).toBe(true);
   });
 
-  it('行营中棋子不能跳过己方棋子到达另一个行营', () => {
-    // (1,2) 想到 (2,3)，但中间格被己方棋子占据
+  it('Camp piece cannot jump over own piece to reach another camp', () => {
+    // (1,2) wants to reach (2,3), but middle cell occupied by own piece
     var board = emptyBoard();
     board[2][1] = makePiece('工兵', RED);
-    // (2,3) 不是直接相邻的，需要经过中间格，但中间格如果有己方棋子则不能通过
-    // 这里测试 (1,2) 到 (3,4) 的路径：需要经过 (2,3) 行营
-    // (1,2) -> (2,3) 是直接相邻行营，所以中间没有障碍格
-    // 换一个更合适的测试：(1,7) 到 (3,9) 经过 (2,8)
+    // (2,3) is not directly adjacent, needs to pass through middle cell, but blocked if middle has own piece
+    // Testing path from (1,2) to (3,4): needs to pass through (2,3) camp
+    // (1,2) -> (2,3) is directly adjacent camp, so no obstacle cell in between
+    // Use a better test: (1,7) to (3,9) passing through (2,8)
     board[7][1] = makePiece('团长', RED);
-    board[8][2] = makePiece('连长', RED); // 己方棋子占据中间行营
+    board[8][2] = makePiece('连长', RED); // Own piece occupies middle camp
     var moves = getValidMoves(board, 1, 7, RED);
     var canReachCamp = moves.some(function (m) { return m.x === 3 && m.y === 9; });
     expect(canReachCamp).toBe(false);
@@ -683,10 +683,10 @@ describe('行营保护', () => {
 });
 
 // ============================================================
-// shuffle 测试
+// Shuffle Tests
 // ============================================================
 describe('shuffle', () => {
-  it('打乱后元素不变', () => {
+  it('Elements unchanged after shuffle', () => {
     var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     var sorted = arr.slice().sort();
     shuffle(arr);
@@ -695,10 +695,10 @@ describe('shuffle', () => {
 });
 
 // ============================================================
-// 翻棋模式测试
+// Flip Mode test
 // ============================================================
-describe('翻棋模式', () => {
-  it('翻开棋子', () => {
+describe('Flip Mode', () => {
+  it('Flip piece', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('工兵', RED, STATE_FACE_DOWN);
     var state = makeState(board, RED, { gameType: 'flip' });
@@ -708,14 +708,14 @@ describe('翻棋模式', () => {
     expect(state.currentTeam).toBe(BLUE);
   });
 
-  it('面朝下的棋子不能移动', () => {
+  it('Face-down piece cannot move', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('排长', RED, STATE_FACE_DOWN);
     var moves = getValidMoves(board, 2, 5, RED, 'flip');
     expect(moves.length).toBe(0);
   });
 
-  it('不能攻击面朝下的棋子', () => {
+  it('Cannot attack face-down piece', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('司令', RED);
     board[4][2] = makePiece('工兵', BLUE, STATE_FACE_DOWN);
@@ -724,7 +724,7 @@ describe('翻棋模式', () => {
     expect(canAttack).toBe(false);
   });
 
-  it('翻棋模式：AI优先翻开棋子', () => {
+  it('Flip Mode：AI优先Flip piece', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('工兵', BLUE, STATE_FACE_DOWN);
     board[0][0] = makePiece('工兵', RED, STATE_FACE_UP);
@@ -736,10 +736,10 @@ describe('翻棋模式', () => {
 });
 
 // ============================================================
-// 暗棋模式测试
+// Hidden Mode test
 // ============================================================
-describe('暗棋模式', () => {
-  it('暗棋模式：所有棋子初始面朝下', () => {
+describe('Hidden Mode', () => {
+  it('Hidden Mode：所有棋子初始面朝下', () => {
     var state = createGameState({ gameType: 'hidden', oppType: 'pvp' });
     for (var y = 0; y < ROWS; y++) {
       for (var x = 0; x < COLS; x++) {
@@ -749,7 +749,7 @@ describe('暗棋模式', () => {
     }
   });
 
-  it('暗棋模式：司令被吃暴露军旗', () => {
+  it('Hidden Mode：司令被吃暴露军旗', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('司令', RED);
     board[4][2] = makePiece('司令', BLUE);
@@ -759,7 +759,7 @@ describe('暗棋模式', () => {
     expect(state.board[0][1].state).toBe(STATE_FACE_UP);
   });
 
-  it('暗棋模式：司令同归于尽暴露双方军旗', () => {
+  it('Hidden Mode：司令Mutual destruction暴露双方军旗', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('司令', RED);
     board[4][2] = makePiece('司令', BLUE);
@@ -771,7 +771,7 @@ describe('暗棋模式', () => {
     expect(state.board[11][1].state).toBe(STATE_FACE_UP);
   });
 
-  it('暗棋模式：不能攻击面朝下的棋子', () => {
+  it('Hidden Mode：Cannot attack face-down piece', () => {
     var board = emptyBoard();
     board[5][2] = makePiece('司令', RED);
     board[4][2] = makePiece('工兵', BLUE, STATE_FACE_DOWN);

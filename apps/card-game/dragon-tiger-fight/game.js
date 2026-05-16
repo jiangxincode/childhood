@@ -1,14 +1,14 @@
 // ============================================================
-// 龙虎斗 - 游戏核心逻辑
+// Dragon Tiger Fight - Game Core Logic
 // ============================================================
 
-// 龙队8张棋子（等级1-8，数值越小等级越高）
+// Dragon team 8 pieces (rank 1-8, lower value = higher rank)
 const DRAGON_PIECES = ['龙王', '神龙', '金龙', '青龙', '赤龙', '白龙', '风雨龙', '变形龙'];
 
-// 虎队8张棋子（等级1-8）
+// Tiger team 8 pieces (rank 1-8)
 const TIGER_PIECES = ['虎王', '东北虎', '大头虎', '下山虎', '绿虎', '妖虎', '白虎', '小王虎'];
 
-// 等级映射：棋子名 → 等级数值（1最高，8最低）
+// Rank mapping: piece name -> rank value (1=highest, 8=lowest)
 const RANK_MAP = {
   '龙王': 1, '神龙': 2, '金龙': 3, '青龙': 4,
   '赤龙': 5, '白龙': 6, '风雨龙': 7, '变形龙': 8,
@@ -16,7 +16,7 @@ const RANK_MAP = {
   '绿虎': 5, '妖虎': 6, '白虎': 7, '小王虎': 8
 };
 
-// 图片映射：棋子名 → 图片文件名
+// Image mapping: piece name -> image filename
 const IMAGE_MAP = {
   '龙王': '龙1.jpg', '神龙': '龙2.jpg', '金龙': '龙3.jpg', '青龙': '龙4.jpg',
   '赤龙': '龙5.jpg', '白龙': '龙6.jpg', '风雨龙': '龙7.jpg', '变形龙': '龙8.jpg',
@@ -24,23 +24,23 @@ const IMAGE_MAP = {
   '绿虎': '虎5.jpg', '妖虎': '虎6.jpg', '白虎': '虎7.jpg', '小王虎': '虎8.jpg'
 };
 
-// 阵营映射：棋子名 → 阵营
+// Team mapping: piece name -> team
 const TEAM_MAP = {};
 DRAGON_PIECES.forEach(p => { TEAM_MAP[p] = 'dragon'; });
 TIGER_PIECES.forEach(p => { TEAM_MAP[p] = 'tiger'; });
 
 /**
- * 获取棋子图片路径
- * @param {string} piece - 棋子名称
- * @returns {string} 图片路径 如 'images/龙1.jpg'
+ * Get piece image path
+ * @param {string} piece - piece name
+ * @returns {string} image path e.g. 'images/龙1.jpg'
  */
 function getImagePath(piece) {
   return `images/${IMAGE_MAP[piece]}`;
 }
 
 /**
- * 获取棋子所属阵营
- * @param {string} piece - 棋子名称
+ * Get piece team
+ * @param {string} piece - piece name
  * @returns {string} 'dragon' | 'tiger'
  */
 function getTeam(piece) {
@@ -48,19 +48,19 @@ function getTeam(piece) {
 }
 
 /**
- * 获取棋子等级
- * @param {string} piece - 棋子名称
- * @returns {number} 等级数值 1-8
+ * Get piece rank
+ * @param {string} piece - piece name
+ * @returns {number} rank value 1-8
  */
 function getRank(piece) {
   return RANK_MAP[piece];
 }
 
 /**
- * 石头剪刀布判定
+ * Rock-Paper-Scissors judgment
  * @param {string} choice1 - 'rock' | 'scissors' | 'paper'
  * @param {string} choice2 - 'rock' | 'scissors' | 'paper'
- * @returns {number} 1=第一方胜, -1=第二方胜, 0=平局
+ * @returns {number} 1=first player wins, -1=second player wins, 0=draw
  */
 function judgeRPS(choice1, choice2) {
   if (choice1 === choice2) return 0;
@@ -75,7 +75,7 @@ function judgeRPS(choice1, choice2) {
 }
 
 /**
- * 判断坐标是否在棋盘范围内
+ * Check if coordinates are within board range
  * @param {number} x
  * @param {number} y
  * @returns {boolean}
@@ -84,7 +84,7 @@ function inBounds(x, y) {
   return x >= 0 && x <= 3 && y >= 0 && y <= 3;
 }
 
-// 四个相邻方向偏移量
+// Four adjacent direction offsets
 const DIRECTIONS = [
   { dx: -1, dy: 0 },
   { dx: 1, dy: 0 },
@@ -93,16 +93,16 @@ const DIRECTIONS = [
 ];
 
 /**
- * 判断攻击方棋子是否可以吃掉防守方棋子
- * 规则：
- * 1. 必须是不同阵营
- * 2. 高等级（数值小）吃低等级（数值大）
- * 3. 同级同归于尽（canCapture返回true，同归于尽在captureCard中处理）
- * 4. 逆袭：等级8吃对方等级1
- * 5. 等级1不能吃对方等级8（被逆袭克制）
- * @param {Card} attacker - 攻击方棋子
- * @param {Card} defender - 防守方棋子
- * @returns {boolean} 是否可以吃
+ * Check if attacker piece can capture defender piece
+ * Rules:
+ * 1. Must be different teams
+ * 2. Higher rank (lower value) captures lower rank (higher value)
+ * 3. Same rank = mutual destruction (canCapture returns true, handled in captureCard)
+ * 4. Reversal: rank 8 captures opponent rank 1
+ * 5. Rank 1 cannot capture opponent rank 8 (countered by reversal)
+ * @param {Card} attacker - attacker piece
+ * @param {Card} defender - defender piece
+ * @returns {boolean} whether can capture
  */
 function canCapture(attacker, defender) {
   if (attacker.team === defender.team) return false;
@@ -110,30 +110,30 @@ function canCapture(attacker, defender) {
   const attRank = attacker.rank;
   const defRank = defender.rank;
 
-  // 逆袭规则：等级8吃对方等级1
+  // Reversal rule: rank 8 captures opponent rank 1
   if (attRank === 8 && defRank === 1) return true;
 
-  // 等级1不能吃对方等级8（被逆袭克制）
+  // Rank 1 cannot capture opponent rank 8 (countered by reversal)
   if (attRank === 1 && defRank === 8) return false;
 
-  // 高等级（数值小）吃低等级（数值大），或同级
+  // Higher rank (lower value) captures lower rank (higher value), or same rank
   if (attRank <= defRank) return true;
 
   return false;
 }
 
 /**
- * 判断吃牌后是否同归于尽
- * @param {Card} attacker - 攻击方棋子
- * @param {Card} defender - 防守方棋子
- * @returns {boolean} 是否同归于尽
+ * Check if capture results in mutual destruction
+ * @param {Card} attacker - attacker piece
+ * @param {Card} defender - defender piece
+ * @returns {boolean} whether mutual destruction
  */
 function isMutualDestruction(attacker, defender) {
   return attacker.rank === defender.rank;
 }
 
 /**
- * 创建初始游戏状态
+ * Create initial game state
  * @param {string} mode - 'pvp' | 'pve'
  * @returns {GameState}
  */
@@ -145,12 +145,12 @@ function createGameState(mode) {
   for (const piece of TIGER_PIECES) {
     cards.push({ piece, team: 'tiger', rank: RANK_MAP[piece], faceUp: false });
   }
-  // Fisher-Yates 洗牌算法
+  // Fisher-Yates shuffle algorithm
   for (let i = cards.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [cards[i], cards[j]] = [cards[j], cards[i]];
   }
-  // 放置到 4×4 棋盘
+  // Place onto 4x4 board
   const board = [];
   for (let y = 0; y < 4; y++) {
     const row = [];
@@ -170,10 +170,10 @@ function createGameState(mode) {
 }
 
 /**
- * 获取合法移动目标（相邻空位）
- * @param {Board} board - 棋盘
- * @param {number} x - 棋子x坐标
- * @param {number} y - 棋子y坐标
+ * Get valid move targets (adjacent empty cells)
+ * @param {Board} board - board
+ * @param {number} x - piece x coordinate
+ * @param {number} y - piece y coordinate
  * @returns {Array<{x, y}>}
  */
 function getValidMoves(board, x, y) {
@@ -191,11 +191,11 @@ function getValidMoves(board, x, y) {
 }
 
 /**
- * 获取合法吃牌目标
- * @param {Board} board - 棋盘
- * @param {number} x - 棋子x坐标
- * @param {number} y - 棋子y坐标
- * @param {string} team - 当前阵营 'dragon' | 'tiger'
+ * Get valid capture targets
+ * @param {Board} board - board
+ * @param {number} x - piece x coordinate
+ * @param {number} y - piece y coordinate
+ * @param {string} team - current team 'dragon' | 'tiger'
  * @returns {Array<{x, y}>}
  */
 function getValidCaptures(board, x, y, team) {
@@ -215,7 +215,7 @@ function getValidCaptures(board, x, y, team) {
 }
 
 /**
- * 执行翻牌操作（就地修改state）
+ * Execute flip operation (modifies state in place)
  * @param {GameState} state
  * @param {number} x
  * @param {number} y
@@ -228,7 +228,7 @@ function flipCard(state, x, y) {
 
   card.faceUp = true;
 
-  // 第一张翻牌：确定阵营分配
+  // First flip: determine team assignment
   if (!state.teamAssigned) {
     state.teamAssigned = true;
     if (state.mode === 'pve') {
@@ -240,7 +240,7 @@ function flipCard(state, x, y) {
         state.aiTeam = card.team === 'dragon' ? 'tiger' : 'dragon';
       }
     }
-    // 第一次翻牌后，切换到非翻牌者的阵营
+    // After first flip, switch to non-flipper team
     if (state.mode === 'pve') {
       var flipperTeam = state.aiFirst ? state.aiTeam : state.playerTeam;
       state.currentTeam = flipperTeam === 'dragon' ? 'tiger' : 'dragon';
@@ -255,10 +255,10 @@ function flipCard(state, x, y) {
 }
 
 /**
- * 执行走牌操作（就地修改state）
+ * Execute move operation (modifies state in place)
  * @param {GameState} state
- * @param {{x,y}} from - 起始位置
- * @param {{x,y}} to - 目标位置
+ * @param {{x,y}} from - start position
+ * @param {{x,y}} to - target position
  * @returns {GameState|null}
  */
 function moveCard(state, from, to) {
@@ -276,11 +276,11 @@ function moveCard(state, from, to) {
 }
 
 /**
- * 执行吃牌操作（就地修改state）
- * 处理同归于尽：同级棋子相遇时双方均被移除
+ * Execute capture operation (modifies state in place)
+ * Handle mutual destruction: same-rank pieces both removed when meeting
  * @param {GameState} state
- * @param {{x,y}} from - 攻击方位置
- * @param {{x,y}} to - 防守方位置
+ * @param {{x,y}} from - attacker position
+ * @param {{x,y}} to - defender position
  * @returns {GameState|null}
  */
 function captureCard(state, from, to) {
@@ -292,14 +292,14 @@ function captureCard(state, from, to) {
   if (Math.abs(from.x - to.x) + Math.abs(from.y - to.y) !== 1) return null;
   if (!canCapture(attacker, defender)) return null;
 
-  // 被吃方加入对应阵营的被吃列表
+  // Add captured piece to corresponding team captured list
   if (defender.team === 'dragon') {
     state.capturedDragon.push(defender.piece);
   } else {
     state.capturedTiger.push(defender.piece);
   }
 
-  // 同归于尽处理
+  // Mutual destruction handling
   if (isMutualDestruction(attacker, defender)) {
     if (attacker.team === 'dragon') {
       state.capturedDragon.push(attacker.piece);
@@ -309,7 +309,7 @@ function captureCard(state, from, to) {
     state.board[from.y][from.x] = null;
     state.board[to.y][to.x] = null;
   } else {
-    // 普通吃牌
+    // Normal capture
     state.board[to.y][to.x] = attacker;
     state.board[from.y][from.x] = null;
   }
@@ -320,18 +320,18 @@ function captureCard(state, from, to) {
 }
 
 /**
- * 检查指定阵营是否有任何合法操作（翻牌/走牌/吃牌）
- * @param {Board} board - 棋盘
- * @param {string} team - 阵营 'dragon' | 'tiger'
+ * Check if a team has any legal action (flip/move/capture)
+ * @param {Board} board - board
+ * @param {string} team - team 'dragon' | 'tiger'
  * @returns {boolean}
  */
 function hasAnyLegalAction(board, team) {
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x++) {
       const card = board[y][x];
-      // 翻牌：有任何未翻开的牌即可
+      // Flip: any face-down card on board
       if (card && !card.faceUp) return true;
-      // 走牌/吃牌：己方已翻开的牌
+      // Move/capture: own face-up cards
       if (card && card.faceUp && card.team === team) {
         if (getValidMoves(board, x, y).length > 0) return true;
         if (getValidCaptures(board, x, y, team).length > 0) return true;
@@ -342,9 +342,9 @@ function hasAnyLegalAction(board, team) {
 }
 
 /**
- * 检查游戏是否结束
- * @param {Board} board - 棋盘
- * @param {string} currentTeam - 当前行动方 'dragon' | 'tiger'
+ * Check if game is over
+ * @param {Board} board - board
+ * @param {string} currentTeam - current team 'dragon' | 'tiger'
  * @returns {{ended: boolean, winner: string|null}}
  */
 function checkGameOver(board, currentTeam) {
@@ -368,16 +368,16 @@ function checkGameOver(board, currentTeam) {
 }
 
 /**
- * AI决策：选择最优操作
- * 优先级：吃牌（优先吃高等级）> 翻牌（随机）> 走牌（随机）
+ * AI decision: select optimal action
+ * Priority: capture (prefer high rank) > flip (random) > move (random)
  * @param {GameState} state
- * @param {string} aiTeam - AI阵营 'dragon' | 'tiger'
+ * @param {string} aiTeam - AI team 'dragon' | 'tiger'
  * @returns {{type, from?, to?, x?, y?}|null}
  */
 function aiDecide(state, aiTeam) {
   const board = state.board;
 
-  // 优先级1：吃牌（优先吃高等级棋子，避免高等级同归于尽）
+  // Priority 1: capture (prefer high rank pieces, avoid high-rank mutual destruction)
   const allCaptures = [];
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x++) {
@@ -406,7 +406,7 @@ function aiDecide(state, aiTeam) {
     return { type: 'capture', from: allCaptures[0].from, to: allCaptures[0].to };
   }
 
-  // 优先级2：翻牌（随机）
+  // Priority 2: flip (random)
   const faceDownCells = [];
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x++) {
@@ -419,7 +419,7 @@ function aiDecide(state, aiTeam) {
     return { type: 'flip', x: pick.x, y: pick.y };
   }
 
-  // 优先级3：走牌（随机）
+  // Priority 3: move (random)
   const allMoves = [];
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x++) {
@@ -440,7 +440,7 @@ function aiDecide(state, aiTeam) {
 }
 
 // ============================================================
-// 模块导出（Node.js 环境）
+// Module exports (Node.js environment)
 // ============================================================
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -470,7 +470,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 // ============================================================
-// UI 控制器（仅浏览器环境）
+// UI controller (browser environment only)
 // ============================================================
 if (typeof document !== 'undefined') {
   var gameState = null;
@@ -494,7 +494,7 @@ if (typeof document !== 'undefined') {
   var $winnerText = document.getElementById('winner-text');
   var $btnRestart = document.getElementById('btn-restart');
 
-  // --- 渲染器函数 ---
+  // --- Renderer functions ---
 
   function getCell(x, y) {
     return $board.querySelector('.cell[data-x="' + x + '"][data-y="' + y + '"]');
@@ -553,7 +553,7 @@ if (typeof document !== 'undefined') {
   }
 
   function updateStatus(state) {
-    // 当前行动方
+    // Current team
     if (state.currentTeam) {
       var teamName = state.currentTeam === 'dragon' ? '龙队' : '虎队';
       $currentTeam.textContent = teamName;
@@ -562,10 +562,10 @@ if (typeof document !== 'undefined') {
       $currentTeam.textContent = '—';
     }
 
-    // 回合数
+    // Turn count
     $turnCount.textContent = state.turnCount;
 
-    // 剩余棋子
+    // Remaining pieces
     var dragonCount = 0, tigerCount = 0;
     for (var y = 0; y < 4; y++) {
       for (var x = 0; x < 4; x++) {
@@ -579,7 +579,7 @@ if (typeof document !== 'undefined') {
     $dragonRemaining.textContent = dragonCount;
     $tigerRemaining.textContent = tigerCount;
 
-    // 被吃掉的牌
+    // Captured cards
     $capturedDragon.innerHTML = '';
     for (var i = 0; i < state.capturedDragon.length; i++) {
       var piece = state.capturedDragon[i];
@@ -670,7 +670,7 @@ if (typeof document !== 'undefined') {
   }
 
 
-  // --- 石头剪刀布逻辑 ---
+  // --- Rock-Paper-Scissors logic ---
   var rpsP1Choice = null;
   var rpsP2Choice = null;
 
@@ -680,7 +680,7 @@ if (typeof document !== 'undefined') {
     gameState.firstPlayer = firstTeam;
     renderBoard(gameState);
 
-    // PVE模式下，如果电脑先手，直接触发AI翻牌
+    // In PVE mode, if AI goes first, trigger AI flip directly
     if (gameState.mode === 'pve' && gameState.aiFirst) {
       triggerAI();
     } else {
@@ -709,12 +709,12 @@ if (typeof document !== 'undefined') {
       // PVE
       var aiChoiceName = choiceNames[choice2];
       if (result === 1) {
-        // 玩家赢了石头剪刀布 → 玩家先手
+        // Player won RPS -> player goes first
         $rpsResult.textContent = '电脑出了' + aiChoiceName + '，你赢了！你先手';
         gameState.aiFirst = false;
         setTimeout(function() { startGame('dragon'); }, 1500);
       } else {
-        // 电脑赢了石头剪刀布 → 电脑先手
+        // Computer won RPS -> computer goes first
         $rpsResult.textContent = '电脑出了' + aiChoiceName + '，电脑赢了！电脑先手';
         gameState.aiFirst = true;
         setTimeout(function() { startGame('dragon'); }, 1500);
@@ -722,7 +722,7 @@ if (typeof document !== 'undefined') {
     }
   }
 
-  // PVP 石头剪刀布按钮
+  // PVP Rock-Paper-Scissors buttons
   document.querySelectorAll('#rps-pvp .btn-rps').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var player = btn.dataset.player;
@@ -746,7 +746,7 @@ if (typeof document !== 'undefined') {
     });
   });
 
-  // PVE 石头剪刀布按钮
+  // PVE Rock-Paper-Scissors buttons
   document.querySelectorAll('#rps-pve .btn-rps').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var playerChoice = btn.dataset.choice;
@@ -761,7 +761,7 @@ if (typeof document !== 'undefined') {
   });
 
 
-  // --- 模式选择 ---
+  // --- Mode selection ---
   document.getElementById('btn-pvp').addEventListener('click', function() {
     gameState = createGameState('pvp');
     showRPSSelection('pvp');
@@ -772,18 +772,18 @@ if (typeof document !== 'undefined') {
     showRPSSelection('pve');
   });
 
-  // --- 重新开始 ---
+  // --- Restart ---
   $btnRestart.addEventListener('click', function() {
     gameState = null;
     showModeSelection();
   });
 
-  // --- 棋盘点击事件处理 ---
+  // --- Board click event handler ---
   $board.addEventListener('click', function(e) {
     if (!gameState || gameState.gameOver) return;
     if (gameState.aiThinking) return;
 
-    // PVE模式下，只允许玩家在自己回合点击
+    // In PVE mode, only allow player to click on their turn
     if (gameState.mode === 'pve' && gameState.teamAssigned && gameState.currentTeam === gameState.aiTeam) return;
 
     var cell = e.target.closest('.cell');
@@ -794,18 +794,18 @@ if (typeof document !== 'undefined') {
     var card = gameState.board[y][x];
     var currentTeam = gameState.currentTeam;
 
-    // 已有选中棋子
+    // Already have selected piece
     if (gameState.selectedCell) {
       var sel = gameState.selectedCell;
 
-      // 点击同一格取消选中
+      // Click same cell to deselect
       if (sel.x === x && sel.y === y) {
         gameState.selectedCell = null;
         clearHighlights();
         return;
       }
 
-      // 点击对方已翻开的牌 → 尝试吃牌
+      // Click opponent face-up card -> try capture
       if (card && card.faceUp && card.team !== currentTeam) {
         if (getValidCaptures(gameState.board, sel.x, sel.y, currentTeam).some(function(t) { return t.x === x && t.y === y; })) {
           var result = captureCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
@@ -821,7 +821,7 @@ if (typeof document !== 'undefined') {
         return;
       }
 
-      // 点击空位 → 尝试走牌
+      // Click empty cell -> try move
       if (!card) {
         var moveResult = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
         if (moveResult) {
@@ -833,21 +833,21 @@ if (typeof document !== 'undefined') {
         }
       }
 
-      // 点击己方已翻开的牌 → 重新选中
+      // Click own face-up card -> reselect
       if (card && card.faceUp && card.team === currentTeam) {
         selectCard(x, y);
         return;
       }
 
-      // 无效目标
+      // Invalid target
       gameState.selectedCell = null;
       clearHighlights();
       return;
     }
 
-    // 没有选中棋子
+    // No piece selected
 
-    // 点击未翻开的牌 → 翻牌
+    // Click face-down card -> flip
     if (card && !card.faceUp) {
       var flipResult = flipCard(gameState, x, y);
       if (flipResult) {
@@ -858,13 +858,13 @@ if (typeof document !== 'undefined') {
       }
     }
 
-    // 点击己方已翻开的牌 → 选中
+    // Click own face-up card -> select
     if (card && card.faceUp && card.team === currentTeam) {
       selectCard(x, y);
       return;
     }
 
-    // 点击对方已翻开的牌（未选中状态）
+    // Click opponent face-up card (no selection)
     if (card && card.faceUp && card.team !== currentTeam) {
       showMessage('这不是你的棋子', 'error');
       return;
@@ -884,7 +884,7 @@ if (typeof document !== 'undefined') {
   }
 
   function afterAction() {
-    // 检查游戏结束
+    // Check game over
     var result = checkGameOver(gameState.board, gameState.currentTeam);
     if (result.ended) {
       gameState.gameOver = true;
@@ -894,13 +894,13 @@ if (typeof document !== 'undefined') {
       return;
     }
 
-    // 更新提示信息
+    // Update message
     if (gameState.mode === 'pve') {
       if (gameState.teamAssigned && gameState.currentTeam === gameState.aiTeam) {
-        // 阵营已分配，轮到AI
+        // Team assigned, AI turn
         triggerAI();
       } else if (!gameState.teamAssigned && gameState.aiFirst) {
-        // 阵营未分配但电脑先手（第一次翻牌后轮到玩家翻牌）
+        // Team not assigned but computer first (player flips after first flip)
         showMessage('请翻开一张牌', '');
       } else if (!gameState.teamAssigned) {
         showMessage('请翻开一张牌', '');
@@ -919,7 +919,7 @@ if (typeof document !== 'undefined') {
   }
 
 
-  // --- AI操作流程 ---
+  // --- AI action flow ---
   function triggerAI() {
     gameState.aiThinking = true;
     showMessage('电脑思考中...', 'info');
@@ -928,7 +928,7 @@ if (typeof document !== 'undefined') {
     setTimeout(function() {
       var decision = aiDecide(gameState, gameState.aiTeam);
       if (!decision) {
-        // AI无合法操作 → 游戏应已结束
+        // AI has no legal action -> game should be over
         gameState.aiThinking = false;
         afterAction();
         return;
@@ -948,7 +948,7 @@ if (typeof document !== 'undefined') {
       flipCard(gameState, decision.x, decision.y);
       renderBoard(gameState);
 
-      // 翻牌后重新获取cell并高亮
+      // Re-get cell and highlight after flip
       var cell2 = getCell(decision.x, decision.y);
       cell2.classList.add('cell-ai-highlight');
 
@@ -998,6 +998,6 @@ if (typeof document !== 'undefined') {
     }
   }
 
-  // 初始化：显示模式选择
+  // Initialize: show mode selection
   showModeSelection();
 }

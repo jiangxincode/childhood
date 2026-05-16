@@ -209,15 +209,15 @@
 <script src="js/jquery-yys-slider.js" type="text/javascript"></script>
 <script type="text/javascript">
 $(function(){
-    // 一级入口切换逻辑
+    // Category switching logic
     $('.category-card').on('click', function(){
         var category = $(this).data('category');
 
-        // 更新选中状态
+        // Update selected state
         $('.category-card').removeClass('active');
         $(this).addClass('active');
 
-        // 切换显示区域
+        // Switch display area
         $('.game-section').removeClass('active');
         if (category === 'card') {
             $('#card-section').addClass('active');
@@ -226,21 +226,21 @@ $(function(){
         }
     });
 
-    // 初始化卡片游戏轮播
+    // Initialize card game carousel
     $('#card-section .gallery_container').gallery_slider({imgNum: 6});
     $('#card-section .content-part.part-tese').addClass('show');
 
-    // 初始化棋类游戏轮播
+    // Initialize chess game carousel
     $('#chess-section .gallery_container').gallery_slider({imgNum: 10});
     $('#chess-section .content-part.part-tese').addClass('show');
 
-    // 桌面端：点击中间图片跳转
+    // Desktop: click center image to navigate
     $('.gallery_container').on('click', '.front_side', function(){
         var href = $(this).data('href');
         if (href) window.location.href = href;
     });
 
-    // 移动端：所有卡片均可点击跳转
+    // Mobile: all cards are clickable
     $('.gallery_container').on('click', '.gallery_item', function(){
         if ($(window).width() <= 860) {
             var href = $(this).data('href');

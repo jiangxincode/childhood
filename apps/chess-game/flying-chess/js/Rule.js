@@ -1,10 +1,10 @@
 /**
- * 规则
+ * Rules
  * @constructor
  */
 var Rule = function () {
     /**
-     * 验证当前用户是否胜利
+     * Check if current user has won
      * @returns {boolean}
      */
     this.victory = function () {
@@ -22,9 +22,9 @@ var Rule = function () {
 
     /**
      *
-     * @param type  类型  被攻击打回   胜利
-     * @param color 颜色
-     * @param obj   该飞机
+     * @param type  type: 'attack' (knocked back) or 'win' (victory)
+     * @param color color
+     * @param obj   the plane element
      */
     this.planeBack = function (type, color, obj) {
         var top, left;
@@ -62,18 +62,18 @@ var Rule = function () {
                 }
                 break;
         }
-        if (type == 'attack') { //被攻击打回
+        if (type == 'attack') { //Knocked back by attack
             $j(obj).animate({'top': top, 'left': left}).attr({'coordId': 0, 'step': 0, 'state': 'unready'});
-        } else {  //胜利回归
+        } else {  //Victory return
             $j(obj).animate({'top': top, 'left': left}, function () {
-                //变成胜利图案
+                //Change to victory pattern
 
             }).attr({'state': 'win'}).html('win');
         }
     };
 
     /**
-     * 连投3次6，当前用户所有飞机打回
+     * Rolled 6 three times consecutively, all planes of current user are sent back
      */
     function backCurrentUserAllPlane() {
         $j('.plane').each(function () {
@@ -84,7 +84,7 @@ var Rule = function () {
     }
 
     /**
-     * 计算连续投6次数
+     * Count consecutive 6 rolls
      * @returns {boolean}
      */
     this.countSixTime = function () {
@@ -92,7 +92,7 @@ var Rule = function () {
             sixTime++;
         }
         if (sixTime == 3) {
-            //将该用户所有在外的飞机回收
+            //Recall all planes of current user that are on the board
             planeAudio.playRolledThreeTimeSixMusic();
             backCurrentUserAllPlane();
             return true;

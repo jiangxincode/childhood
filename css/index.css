@@ -1,6 +1,6 @@
 /* ============================================================
-   首页样式 - 一级入口 + 炫酷效果
-   轮播样式由 jquery-yys-slider.css 提供，这里不重复定义
+   Homepage styles - Category selector + cool effects
+   Carousel styles provided by jquery-yys-slider.css, not duplicated here
    ============================================================ */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -20,7 +20,7 @@ body {
     100% { background-position: 0% 50%; }
 }
 
-/* ---- 一级入口选择器 ---- */
+/* ---- Category Selector ---- */
 .category-selector {
     text-align: center;
     padding: 40px 20px 20px;
@@ -177,7 +177,7 @@ body {
     opacity: 1;
 }
 
-/* ---- 游戏区域 ---- */
+/* ---- Game Area ---- */
 .game-section {
     display: none;
     opacity: 0;
@@ -203,7 +203,7 @@ body {
     }
 }
 
-/* ---- 轮播箭头样式 ---- */
+/* ---- Carousel Arrow Styles ---- */
 .gallery_container .prev,
 .gallery_container .next {
     cursor: pointer;
@@ -243,7 +243,7 @@ body {
     filter: drop-shadow(0 0 8px rgba(79, 172, 254, 0.8));
 }
 
-/* 入口卡片点击波纹效果 */
+/* Card click ripple effect */
 .category-card::after {
     content: '';
     position: absolute;
@@ -259,7 +259,7 @@ body {
     opacity: 1;
 }
 
-/* 选中状态的光晕动画 */
+/* Active state glow animation */
 .category-card.active .card-glow {
     opacity: 0.5;
     animation: activeGlow 2s ease-in-out infinite;
@@ -270,7 +270,7 @@ body {
     50% { transform: scale(1.1); opacity: 0.7; }
 }
 
-/* ---- 移动端响应式 ---- */
+/* ---- Mobile Responsive ---- */
 @media (max-width: 860px) {
     .category-selector {
         padding: 20px 16px 10px;
@@ -309,7 +309,7 @@ body {
         font-size: 10px;
     }
 
-    /* 重置插件的绝对定位布局 */
+    /* Reset plugin absolute positioning */
     .content-part.part-tese {
         height: auto !important;
         position: static !important;
@@ -338,7 +338,7 @@ body {
         gap: 12px;
     }
 
-    /* 所有卡片统一显示 */
+    /* Show all cards uniformly */
     .threeD_gallery_item {
         position: relative !important;
         width: 100% !important;
@@ -368,13 +368,13 @@ body {
         font-size: 1em !important;
     }
 
-    /* 隐藏轮播左右按钮 */
+    /* Hide carousel arrows */
     .gallery_container .prev,
     .gallery_container .next {
         display: none !important;
     }
 
-    /* 线条装饰隐藏 */
+    /* Hide line decorations */
     .line-t, .line-r, .line-b, .line-l {
         display: none !important;
     }
@@ -407,7 +407,7 @@ body {
     }
 }
 
-/* ---- 粒子背景效果 ---- */
+/* ---- Particle Background Effect ---- */
 body::before {
     content: '';
     position: fixed;
@@ -434,14 +434,14 @@ body::before {
     to { transform: translateY(-200px); }
 }
 
-/* 确保内容在粒子之上 */
+/* Ensure content above particles */
 .category-selector,
 .game-section {
     position: relative;
     z-index: 1;
 }
 
-/* 星空背景增强 */
+/* Starry background enhancement */
 body::after {
     content: '';
     position: fixed;

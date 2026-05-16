@@ -264,16 +264,16 @@ describe('getRPSName', () => {
 });
 
 // ============================================================
-// 补充测试：getAdjacentMoves
+// Additional tests: getAdjacentMoves
 // ============================================================
 
-describe('getAdjacentMoves (补充)', () => {
-  it('中心位置返回所有空邻接格', () => {
+describe('getAdjacentMoves (supplementary)', () => {
+  it('center position returns all empty adjacent cells', () => {
     var board = createBoard();
     var moves = getAdjacentMoves(board, 60);
     expect(moves.length).toBe(ADJACENT[60].length);
   });
-  it('被棋子占据的邻接格不返回', () => {
+  it('adjacent cells occupied by pieces are not returned', () => {
     var board = createBoard();
     var neighbors = ADJACENT[60];
     board[neighbors[0]] = RED;
@@ -283,13 +283,13 @@ describe('getAdjacentMoves (补充)', () => {
     expect(moves).not.toContain(neighbors[0]);
     expect(moves).not.toContain(neighbors[1]);
   });
-  it('边界位置邻接格较少', () => {
+  it('edge positions have fewer adjacent cells', () => {
     var board = createBoard();
     var moves = getAdjacentMoves(board, 0);
     expect(moves.length).toBeLessThan(6);
     expect(moves.length).toBe(ADJACENT[0].length);
   });
-  it('所有邻接格都被占据时返回空数组', () => {
+  it('returns empty array when all adjacent cells are occupied', () => {
     var board = createBoard();
     var neighbors = ADJACENT[60];
     for (var i = 0; i < neighbors.length; i++) {
@@ -301,16 +301,16 @@ describe('getAdjacentMoves (补充)', () => {
 });
 
 // ============================================================
-// 补充测试：getJumpMoves
+// Additional tests: getJumpMoves
 // ============================================================
 
-describe('getJumpMoves (补充)', () => {
-  it('单跳：中间有棋子且目标为空', () => {
+describe('getJumpMoves (supplementary)', () => {
+  it('single jump: piece in middle and empty target', () => {
     var board = createBoard();
     var neighbors = ADJACENT[60];
-    // 在第一个邻接格放棋子，使其成为跳板
+    // Place piece in first adjacent cell to create a springboard
     board[neighbors[0]] = RED;
-    // 计算跳越目标：从60跳过neighbors[0]
+    // Calculate jump target: jump from 60 over neighbors[0]
     var p1 = positions[60];
     var p2 = positions[neighbors[0]];
     var dstX = p2.x + (p2.x - p1.x);
@@ -323,19 +323,19 @@ describe('getJumpMoves (补充)', () => {
       expect(moves).toContain(dstIdx);
     }
   });
-  it('无法跳跃时返回空数组', () => {
+  it('returns empty array when no jump is possible', () => {
     var board = createBoard();
-    // 空棋盘上没有跳板
+    // No springboard on empty board
     var visited = {};
     var moves = getJumpMoves(board, 60, visited);
     expect(moves).toHaveLength(0);
   });
-  it('visited 防环机制：已访问位置不重复跳', () => {
+  it('visited anti-loop mechanism: visited positions are not jumped again', () => {
     var board = createBoard();
     var neighbors = ADJACENT[60];
     board[neighbors[0]] = RED;
     var visited = {};
-    // 预先标记所有可能目标为已访问
+    // Pre-mark all possible targets as visited
     var p1 = positions[60];
     var p2 = positions[neighbors[0]];
     var dstX = p2.x + (p2.x - p1.x);
@@ -347,10 +347,10 @@ describe('getJumpMoves (补充)', () => {
       expect(moves).not.toContain(posKey[dstKey]);
     }
   });
-  it('多跳递归：连续跳跃链', () => {
+  it('multi-jump recursion: consecutive jump chain', () => {
     var board = createBoard();
-    // 构造一个可以连续跳的场景
-    // 选一个有足够邻居的位置链
+    // Construct a scenario with consecutive jumps
+    // Choose a position chain with enough neighbors
     var cell = 60;
     var neighbors = ADJACENT[cell];
     if (neighbors.length >= 2) {
@@ -358,75 +358,75 @@ describe('getJumpMoves (补充)', () => {
       board[neighbors[1]] = RED;
       var visited = {};
       var moves = getJumpMoves(board, cell, visited);
-      // 应该至少有2个跳越目标（每个跳板一个）
+      // Should have at least 2 jump targets (one per springboard)
       expect(moves.length).toBeGreaterThanOrEqual(2);
     }
   });
 });
 
 // ============================================================
-// 补充测试：getLegalMoves 边界情况
+// Additional tests: getLegalMoves edge cases
 // ============================================================
 
-describe('getLegalMoves (补充)', () => {
-  it('角落位置的合法移动', () => {
+describe('getLegalMoves (supplementary)', () => {
+  it('legal moves from corner position', () => {
     var board = createBoard();
     var moves = getLegalMoves(board, 0);
-    // 角落位置只有邻接移动，无跳板时等于邻接数
+    // Corner positions only have adjacent moves, equals adjacent count without springboard
     expect(moves.length).toBe(ADJACENT[0].length);
   });
-  it('空位无棋子时返回空数组', () => {
+  it('returns empty array for empty cell with no piece', () => {
     var board = createBoard();
-    // 对空位调用 getLegalMoves 应返回空（虽然实际使用中不会这样调用）
+    // Calling getLegalMoves on empty cell should return empty (though not called this way in practice)
     var moves = getLegalMoves(board, 60);
-    // 空位本身没有棋子，但函数仍然返回邻接空位（这是设计行为）
+    // Empty cell has no piece, but function still returns adjacent empty cells (this is by design)
     expect(moves.length).toBe(ADJACENT[60].length);
   });
-  it('全棋盘被占满时返回空数组', () => {
+  it('returns empty array when board is full', () => {
     var board = createBoard();
-    // 填满整个棋盘
+    // Fill the entire board
     for (var i = 0; i < TOTAL_POSITIONS; i++) {
       board[i] = RED;
     }
     var moves = getLegalMoves(board, 60);
     expect(moves).toHaveLength(0);
   });
-  it('多跳路径包含在结果中', () => {
+  it('multi-jump paths are included in results', () => {
     var board = createBoard();
     board[60] = RED;
     var neighbors = ADJACENT[60];
     board[neighbors[0]] = BLUE;
     var moves = getLegalMoves(board, 60);
-    // 邻接移动 + 可能的跳越
+    // Adjacent moves + possible jumps
     expect(moves.length).toBeGreaterThanOrEqual(neighbors.length - 1);
   });
 });
 
 // ============================================================
-// 补充测试：placePieces 其他玩家
+// Additional tests: placePieces other players
 // ============================================================
 
-describe('placePieces (补充)', () => {
-  it('BLUE 棋子放置正确', () => {
+describe('placePieces (supplementary)', () => {
+  it('BLUE pieces placed correctly', () => {
     var board = createBoard();
     placePieces(board, BLUE);
     for (var i = 0; i < START_POSITIONS[BLUE].length; i++) {
       expect(board[START_POSITIONS[BLUE][i]]).toBe(BLUE);
     }
   });
-  it('GREEN 棋子放置正确', () => {
+  it('GREEN pieces placed correctly', () => {
     var board = createBoard();
     placePieces(board, GREEN);
     for (var i = 0; i < START_POSITIONS[GREEN].length; i++) {
       expect(board[START_POSITIONS[GREEN][i]]).toBe(GREEN);
     }
   });
-  it('所有6个玩家的起始位置互不重叠', () => {
+  it('all 6 players start positions do not overlap', () => {
     var board = createBoard();
     for (var p = RED; p <= ORANGE; p++) {
       placePieces(board, p);
     }
-    // 每个位置只能有一个玩家
+    // Each position can only have one player
     for (var i = 0; i < TOTAL_POSITIONS; i++) {
       if (board[i] !== EMPTY) {
         expect(board[i]).toBeGreaterThanOrEqual(RED);
@@ -437,39 +437,39 @@ describe('placePieces (补充)', () => {
 });
 
 // ============================================================
-// 补充测试：checkWin 边界情况
+// Additional tests: checkWin edge cases
 // ============================================================
 
-describe('checkWin (补充)', () => {
-  it('最后一个棋子到位时立即获胜', () => {
+describe('checkWin (supplementary)', () => {
+  it('wins immediately when last piece reaches target', () => {
     var board = createBoard();
     var targets = TARGET_POSITIONS[RED];
-    // 放置9个到位，最后一个放在起始位置
+    // Place 9 in target, last one at start position
     for (var i = 0; i < targets.length - 1; i++) {
       board[targets[i]] = RED;
     }
-    // 还差一个，不算赢
+    // One short, not a win yet
     expect(checkWin(board, RED)).toBe(false);
-    // 最后一个到位
+    // Last one reaches target
     board[targets[targets.length - 1]] = RED;
     expect(checkWin(board, RED)).toBe(true);
   });
-  it('目标区域有其他玩家棋子不算获胜', () => {
+  it('target area with other player pieces does not count as win', () => {
     var board = createBoard();
     var targets = TARGET_POSITIONS[RED];
     for (var i = 0; i < targets.length; i++) {
-      board[targets[i]] = BLUE; // 放的是BLUE不是RED
+      board[targets[i]] = BLUE; // Placed BLUE not RED
     }
     expect(checkWin(board, RED)).toBe(false);
   });
 });
 
 // ============================================================
-// 补充测试：checkGameOver 多人场景
+// Additional tests: checkGameOver multiplayer scenarios
 // ============================================================
 
-describe('checkGameOver (补充)', () => {
-  it('3人游戏中只有目标玩家获胜', () => {
+describe('checkGameOver (supplementary)', () => {
+  it('only target player wins in 3-player game', () => {
     var board = createBoard();
     for (var i = 0; i < TARGET_POSITIONS[RED].length; i++) {
       board[TARGET_POSITIONS[RED][i]] = RED;
@@ -477,7 +477,7 @@ describe('checkGameOver (补充)', () => {
     var winner = checkGameOver(board, [RED, BLUE, GREEN]);
     expect(winner).toBe(RED);
   });
-  it('6人游戏中无赢家时返回null', () => {
+  it('returns null when no winner in 6-player game', () => {
     var board = createBoard();
     placePieces(board, RED);
     placePieces(board, BLUE);
@@ -487,18 +487,18 @@ describe('checkGameOver (补充)', () => {
 });
 
 // ============================================================
-// 补充测试：createGameState pve 模式
+// Additional tests: createGameState pve mode
 // ============================================================
 
-describe('createGameState (补充)', () => {
-  it('pve模式创建正确状态', () => {
+describe('createGameState (supplementary)', () => {
+  it('pve mode creates correct state', () => {
     var state = createGameState('pve', 2);
     expect(state.mode).toBe('pve');
     expect(state.playerCount).toBe(2);
     expect(state.gameOver).toBe(false);
     expect(state.winner).toBeNull();
   });
-  it('不同playerCount创建正确的players数组', () => {
+  it('different playerCount creates correct players array', () => {
     var state2 = createGameState('pvp', 2);
     expect(state2.players).toEqual([1, 2]);
     var state4 = createGameState('pvp', 4);
@@ -509,13 +509,13 @@ describe('createGameState (补充)', () => {
 });
 
 // ============================================================
-// 新增测试：evaluateMove
+// New tests: evaluateMove
 // ============================================================
 
 describe('evaluateMove', () => {
-  it('前进得分：向目标区域移动得分高于远离', () => {
+  it('progress score: moving toward target scores higher than moving away', () => {
     var board = createBoard();
-    // 放一个RED棋子在中间位置，周围留空
+    // Place a RED piece in middle position, leave surrounding empty
     board[60] = RED;
     var neighbors = ADJACENT[60];
     var scores = [];
@@ -524,20 +524,20 @@ describe('evaluateMove', () => {
         scores.push(evaluateMove(board, RED, 60, neighbors[i], [RED, BLUE]));
       }
     }
-    // 至少应该有一些方向可以移动
+    // Should have at least some directions to move
     expect(scores.length).toBeGreaterThan(0);
-    // 不同方向的得分应该不同（前进 vs 后退）
+    // Scores in different directions should differ (forward vs backward)
     var allSame = scores.every(function(s) { return s === scores[0]; });
-    // 如果位置评分有差异，不同方向的得分应该不同
+    // If position scores differ, scores in different directions should differ
     if (!allSame) {
       var max = Math.max.apply(null, scores);
       var min = Math.min.apply(null, scores);
       expect(max).toBeGreaterThan(min);
     }
   });
-  it('进入目标区域获得高额奖励', () => {
+  it('entering target area gives high bonus', () => {
     var board = createBoard();
-    // 把RED棋子放在目标区域旁边
+    // Place RED piece next to target area
     var target = TARGET_POSITIONS[RED][0];
     var neighbors = ADJACENT[target];
     var source = null;
@@ -550,14 +550,14 @@ describe('evaluateMove', () => {
     if (source !== null) {
       board[source] = RED;
       var score = evaluateMove(board, RED, source, target, [RED, BLUE]);
-      // 进入目标区域应该有显著正分
+      // Entering target area should have significant positive score
       expect(score).toBeGreaterThan(0);
     }
   });
-  it('后退有惩罚', () => {
+  it('retreat has penalty', () => {
     var board = createBoard();
     placePieces(board, RED);
-    // 找一个向远离目标方向移动的走法
+    // Find a move that goes away from target
     var from = START_POSITIONS[RED][0];
     var neighbors = ADJACENT[from];
     for (var i = 0; i < neighbors.length; i++) {
@@ -566,20 +566,20 @@ describe('evaluateMove', () => {
         var posFrom = POSITION_SCORES[RED][from];
         var posTo = POSITION_SCORES[RED][neighbors[i]];
         if (posTo < posFrom) {
-          // 后退应该有惩罚分
+          // Retreat should have penalty score
           expect(score).toBeLessThan(AI_WEIGHTS.RETREAT_PENALTY + AI_WEIGHTS.PROGRESS * posTo + 100);
         }
       }
     }
   });
-  it('跳跃比相邻移动得分更高（距离因素）', () => {
+  it('jump scores higher than adjacent move (distance factor)', () => {
     var board = createBoard();
-    // 构造一个有跳板的场景
+    // Construct a scenario with a springboard
     board[60] = RED;
     var neighbors = ADJACENT[60];
     if (neighbors.length > 0) {
       board[neighbors[0]] = BLUE;
-      // 跳越得分
+      // Jump score
       var p1 = positions[60];
       var p2 = positions[neighbors[0]];
       var dstX = p2.x + (p2.x - p1.x);
@@ -589,7 +589,7 @@ describe('evaluateMove', () => {
         var dstIdx = posKey[dstKey];
         if (board[dstIdx] === EMPTY) {
           var jumpScore = evaluateMove(board, RED, 60, dstIdx, [RED, BLUE]);
-          // 邻接移动得分
+          // Adjacent move score
           var adjTarget = null;
           for (var i = 1; i < neighbors.length; i++) {
             if (board[neighbors[i]] === EMPTY) {
@@ -599,7 +599,7 @@ describe('evaluateMove', () => {
           }
           if (adjTarget !== null) {
             var adjScore = evaluateMove(board, RED, 60, adjTarget, [RED, BLUE]);
-            // 跳跃效率加分使得跳跃得分更高
+            // Jump efficiency bonus makes jump score higher
             expect(jumpScore).toBeGreaterThanOrEqual(adjScore);
           }
         }
@@ -609,25 +609,25 @@ describe('evaluateMove', () => {
 });
 
 // ============================================================
-// 补充测试：getBestAIMove 决策质量
+// Additional tests: getBestAIMove decision quality
 // ============================================================
 
-describe('getBestAIMove (补充)', () => {
-  it('AI会选择向目标区域移动', () => {
+describe('getBestAIMove (supplementary)', () => {
+  it('AI chooses to move toward target area', () => {
     var board = createBoard();
     placePieces(board, RED);
     placePieces(board, BLUE);
     var move = getBestAIMove(board, BLUE, [RED, BLUE]);
     expect(move).not.toBeNull();
-    // 移动后位置分数应该比移动前高或持平
+    // Position score after move should be higher or equal
     var scoreBefore = POSITION_SCORES[BLUE][move.from];
     var scoreAfter = POSITION_SCORES[BLUE][move.to];
-    // AI应该不会选择大幅后退的走法
+    // AI should not choose a move that retreats significantly
     expect(scoreAfter).toBeGreaterThanOrEqual(scoreBefore - 50);
   });
-  it('有跳跃机会时AI会选择跳跃', () => {
+  it('AI chooses jump when jump opportunity exists', () => {
     var board = createBoard();
-    // 构造一个有利于跳跃的局面
+    // Construct a scenario favorable for jumping
     board[60] = BLUE;
     var neighbors = ADJACENT[60];
     if (neighbors.length > 0) {
@@ -639,18 +639,18 @@ describe('getBestAIMove (补充)', () => {
       expect(typeof move.to).toBe('number');
     }
   });
-  it('无合法移动时返回null', () => {
+  it('returns null when no legal moves', () => {
     var board = createBoard();
-    // 只放一个棋子在角落，被完全包围
+    // Place only one piece in corner, completely surrounded
     board[0] = RED;
     var neighbors = ADJACENT[0];
     for (var i = 0; i < neighbors.length; i++) {
       board[neighbors[i]] = BLUE;
     }
-    // RED在角落被包围，可能有跳板也可能没有
+    // RED in corner is surrounded, may or may not have springboard
     var move = getBestAIMove(board, RED, [RED, BLUE]);
-    // 如果有跳板可能返回非null，否则null
-    // 这个测试主要验证不会抛异常
+    // If springboard exists may return non-null, otherwise null
+    // This test mainly verifies no exception is thrown
     expect(move === null || (typeof move.from === 'number' && typeof move.to === 'number')).toBe(true);
   });
 });

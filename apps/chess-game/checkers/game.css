@@ -1,5 +1,5 @@
 /* ============================================================
-   国际跳棋 (Checkers) - 游戏样式
+   Checkers - Game Styles
    ============================================================ */
 
 :root {
@@ -26,7 +26,7 @@ body {
   color: #333;
 }
 
-/* ---- 通用按钮 ---- */
+/* ---- Common Buttons ---- */
 .btn {
   padding: 12px 32px;
   font-size: 18px;
@@ -46,7 +46,7 @@ body {
   transform: translateY(0);
 }
 
-/* ---- 遮罩层 ---- */
+/* ---- Overlay ---- */
 .overlay {
   position: fixed;
   top: 0;
@@ -70,7 +70,7 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-/* ---- 模式选择界面 ---- */
+/* ---- Mode Selection ---- */
 .game-title {
   font-size: 42px;
   margin-bottom: 4px;
@@ -100,7 +100,7 @@ body {
   border: 2px solid #333;
 }
 
-/* ---- 石头剪刀布界面 ---- */
+/* ---- Rock Paper Scissors ---- */
 #rps-section h2 {
   margin-bottom: 24px;
   color: #333;
@@ -153,7 +153,7 @@ body {
   min-height: 28px;
 }
 
-/* ---- 游戏区域 ---- */
+/* ---- Game Area ---- */
 #game-area {
   padding: 16px;
   display: flex;
@@ -170,7 +170,7 @@ body {
   justify-content: center;
 }
 
-/* ---- 状态栏 ---- */
+/* ---- Status Bar ---- */
 #status-bar {
   display: flex;
   flex-wrap: wrap;
@@ -204,7 +204,7 @@ body {
   color: #95a5a6;
 }
 
-/* ---- 棋盘 ---- */
+/* ---- Board ---- */
 #board-canvas {
   display: block;
   border-radius: 6px;
@@ -214,7 +214,7 @@ body {
   height: auto;
 }
 
-/* ---- 规则面板 ---- */
+/* ---- Rules Panel ---- */
 #rules-panel {
   background: #fff;
   border-radius: 10px;
@@ -253,7 +253,7 @@ body {
   padding: 1px 0;
 }
 
-/* ---- 消息区域 ---- */
+/* ---- Message Area ---- */
 #message {
   margin-top: 12px;
   padding: 10px 20px;
@@ -278,7 +278,7 @@ body {
   background: rgba(76, 175, 80, 0.2);
 }
 
-/* ---- 游戏结束 ---- */
+/* ---- Game Over ---- */
 #game-over .overlay-content h2 {
   font-size: 28px;
   margin-bottom: 24px;
@@ -290,7 +290,7 @@ body {
   font-size: 18px;
 }
 
-/* ---- 响应式 ---- */
+/* ---- Responsive ---- */
 @media (max-width: 700px) {
   .overlay-content {
     padding: 24px 16px;

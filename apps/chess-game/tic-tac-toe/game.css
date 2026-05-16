@@ -1,5 +1,5 @@
 /* ============================================================
-   井字棋 (Tic-Tac-Toe) - 游戏样式
+   Tic-Tac-Toe - Game Styles
    ============================================================ */
 
 :root {
@@ -31,7 +31,7 @@ body {
   color: #333;
 }
 
-/* ---- 通用按钮 ---- */
+/* ---- Common Buttons ---- */
 .btn {
   padding: 12px 32px;
   font-size: 18px;
@@ -51,7 +51,7 @@ body {
   transform: translateY(0);
 }
 
-/* ---- 遮罩层 ---- */
+/* ---- Overlay ---- */
 .overlay {
   position: fixed;
   top: 0;
@@ -75,7 +75,7 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-/* ---- 模式选择界面 ---- */
+/* ---- Mode Selection ---- */
 .game-title {
   font-size: 42px;
   margin-bottom: 4px;
@@ -105,7 +105,7 @@ body {
   border: 2px solid #333;
 }
 
-/* ---- 石头剪刀布界面 ---- */
+/* ---- Rock Paper Scissors ---- */
 #rps-section h2 {
   margin-bottom: 24px;
   color: #333;
@@ -158,7 +158,7 @@ body {
   min-height: 28px;
 }
 
-/* ---- 游戏区域 ---- */
+/* ---- Game Area ---- */
 #game-area {
   padding: 16px;
   display: flex;
@@ -175,7 +175,7 @@ body {
   justify-content: center;
 }
 
-/* ---- 状态栏 ---- */
+/* ---- Status Bar ---- */
 #status-bar {
   display: flex;
   flex-wrap: wrap;
@@ -209,7 +209,7 @@ body {
   color: var(--o-color);
 }
 
-/* ---- 棋盘 3x3 ---- */
+/* ---- Board 3x3 ---- */
 #board {
   display: grid;
   grid-template-columns: repeat(3, var(--cell-size));
@@ -222,7 +222,7 @@ body {
   border: 4px solid var(--cell-border);
 }
 
-/* ---- 棋格 ---- */
+/* ---- Cell ---- */
 .cell {
   width: var(--cell-size);
   height: var(--cell-size);
@@ -263,7 +263,7 @@ body {
   to { box-shadow: 0 0 20px #ffd600; transform: scale(1.05); }
 }
 
-/* ---- 规则面板 ---- */
+/* ---- Rules Panel ---- */
 #rules-panel {
   background: #fff;
   border-radius: 10px;
@@ -302,7 +302,7 @@ body {
   padding: 1px 0;
 }
 
-/* ---- 消息区域 ---- */
+/* ---- Message Area ---- */
 #message {
   margin-top: 12px;
   padding: 10px 20px;
@@ -327,7 +327,7 @@ body {
   background: rgba(76, 175, 80, 0.2);
 }
 
-/* ---- 游戏结束 ---- */
+/* ---- Game Over ---- */
 #game-over .overlay-content h2 {
   font-size: 28px;
   margin-bottom: 24px;
@@ -339,7 +339,7 @@ body {
   font-size: 18px;
 }
 
-/* ---- 响应式 ---- */
+/* ---- Responsive ---- */
 @media (max-width: 700px) {
   :root {
     --cell-size: calc((100vw - 60px) / 3);

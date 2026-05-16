@@ -1,13 +1,13 @@
 // ============================================================
-// 刀杀鸡（扛刀扛枪版）- 游戏核心逻辑
+// Knife Kills Chicken (Carry Weapon Version) - Game Core Logic
 // ============================================================
 
-// 8种角色
+// 8 roles
 const ROLES = ['马蜂', '癞痢', '枪', '老虎', '人', '刀', '鸡', '火箭'];
 
-// 基础相克关系表：key 克制 value 中的角色
-// 注意：人克鸡需要扛刀（条件性），癞痢克老虎需要扛枪（条件性）
-// 刀和枪自身不能吃任何角色
+// Basic dominance table: key dominates roles in value
+// Note: human dominates chicken with knife (conditional), scalper dominates tiger with spear (conditional)
+// Knife and spear themselves cannot capture any role
 const BASE_DOMINANCE = {
   '马蜂': ['癞痢'],
   '老虎': ['人'],
@@ -15,7 +15,7 @@ const BASE_DOMINANCE = {
   '火箭': ['马蜂', '癞痢', '枪', '老虎', '人', '刀', '鸡']
 };
 
-// 角色名 → 图片文件名前缀映射
+// Role name -> image filename prefix mapping
 const IMAGE_MAP = {
   '马蜂': '胡蜂',
   '癞痢': '癞痢',
@@ -28,13 +28,13 @@ const IMAGE_MAP = {
 };
 
 /**
- * 获取角色图片路径
- * @param {string} role - 角色名
- * @param {string} team - 阵营 'red' | 'blue'
- * @returns {string} 图片路径
+ * Get role image path
+ * @param {string} role - role name
+ * @param {string} team - team 'red' | 'blue'
+ * @returns {string} image path
  */
 function getImagePath(role, team) {
-  // 特殊处理：红方"人"使用"人-人.png"
+  // Special handling: red "human" uses "human-human.png"
   if (role === '人' && team === 'red') {
     return 'images/人-人.png';
   }
@@ -44,10 +44,10 @@ function getImagePath(role, team) {
 }
 
 /**
- * 石头剪刀布判定
- * @param {string} choice1 - 第一方选择 'rock' | 'scissors' | 'paper'
- * @param {string} choice2 - 第二方选择 'rock' | 'scissors' | 'paper'
- * @returns {number} 1=第一方胜, -1=第二方胜, 0=平局
+ * Rock-Paper-Scissors judgment
+ * @param {string} choice1 - first player choice 'rock' | 'scissors' | 'paper'
+ * @param {string} choice2 - second player choice 'rock' | 'scissors' | 'paper'
+ * @returns {number} 1=first player wins, -1=second player wins, 0=draw
  */
 function judgeRPS(choice1, choice2) {
   if (choice1 === choice2) return 0;
@@ -62,57 +62,57 @@ function judgeRPS(choice1, choice2) {
 }
 
 /**
- * 判断攻击方卡牌是否克制防守方卡牌
- * 需要考虑扛刀/扛枪状态：
- * - 刀和枪自身不能吃任何角色
- * - 基础相克：查 BASE_DOMINANCE 表
- * - 扛刀人(carrying='刀')克鸡，未扛刀的人不能吃鸡
- * - 扛枪癞痢(carrying='枪')克老虎，未扛枪的癞痢不能吃老虎
- * - 火箭克所有其他角色（同归于尽在captureCard中处理）
- * @param {Card} attackerCard - 攻击方卡牌对象（需要role和carrying属性）
- * @param {Card} defenderCard - 防守方卡牌对象
- * @returns {boolean} 是否克制
+ * Check if attacker card dominates defender card
+ * Need to consider carry weapon state:
+ * - Knife and spear themselves cannot capture any role
+ * - Basic dominance: check BASE_DOMINANCE table
+ * - Knife carrier(carrying knife) dominates chicken, unarmed human cannot capture chicken
+ * - Spear carrier(carrying spear) dominates tiger, unarmed scalper cannot capture tiger
+ * - Rocket dominates all other roles (mutual destruction handled in captureCard)
+ * @param {Card} attackerCard - attacker card object (needs role and carrying properties)
+ * @param {Card} defenderCard - defender card object
+ * @returns {boolean} whether dominates
  */
 function canCapture(attackerCard, defenderCard) {
   const attRole = attackerCard.role;
   const defRole = defenderCard.role;
 
-  // 1. 刀和枪自身不能吃任何角色
+  // 1. Knife and spear themselves cannot capture any role
   if (attRole === '刀' || attRole === '枪') return false;
 
-  // 2. 基础相克：查 BASE_DOMINANCE 表
+  // 2. Basic dominance: check BASE_DOMINANCE table
   if (Array.isArray(BASE_DOMINANCE[attRole]) && BASE_DOMINANCE[attRole].includes(defRole)) {
     return true;
   }
 
-  // 3. 扛刀人克鸡
+  // 3. Knife carrier dominates chicken
   if (attRole === '人' && attackerCard.carrying === '刀' && defRole === '鸡') {
     return true;
   }
 
-  // 4. 扛枪癞痢克老虎
+  // 4. Spear carrier dominates tiger
   if (attRole === '癞痢' && attackerCard.carrying === '枪' && defRole === '老虎') {
     return true;
   }
 
-  // 5. 其他情况不克制
+  // 5. Other cases do not dominate
   return false;
 }
 
 /**
- * 创建初始游戏状态
+ * Create initial game state
  * @param {string} mode - 'pvp' | 'pve'
- * @returns {GameState} 初始状态
+ * @returns {GameState} initial state
  */
 function createGameState(mode) {
-  // 生成16张牌：红蓝各8张，每方8种角色各一张
+  // Generate 16 cards: 8 red + 8 blue, one of each role per side
   const cards = [];
   for (const role of ROLES) {
     cards.push({ role, team: 'red', faceUp: false, carrying: null });
     cards.push({ role, team: 'blue', faceUp: false, carrying: null });
   }
 
-  // Fisher-Yates 洗牌
+  // Fisher-Yates shuffle
   for (let i = cards.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     const temp = cards[i];
@@ -120,7 +120,7 @@ function createGameState(mode) {
     cards[j] = temp;
   }
 
-  // 放置到4×4棋盘 board[y][x]
+  // Place onto 4x4 board[y][x]
   const board = [];
   for (let y = 0; y < 4; y++) {
     const row = [];
@@ -149,7 +149,7 @@ function createGameState(mode) {
   };
 }
 
-// 四个相邻方向偏移量
+// Four adjacent direction offsets
 const DIRECTIONS = [
   { dx: -1, dy: 0 },
   { dx: 1, dy: 0 },
@@ -158,7 +158,7 @@ const DIRECTIONS = [
 ];
 
 /**
- * 判断坐标是否在棋盘范围内
+ * Check if coordinates are within board range
  * @param {number} x
  * @param {number} y
  * @returns {boolean}
@@ -168,16 +168,16 @@ function inBounds(x, y) {
 }
 
 /**
- * 获取指定棋子的所有合法移动目标（曼哈顿距离为1的空位）
- * @param {(Card|null)[][]} board - 棋盘状态
- * @param {number} x - 棋子x坐标
- * @param {number} y - 棋子y坐标
- * @returns {Array<{x: number, y: number}>} 合法移动目标列表
+ * Get all valid move targets for a piece (empty cells with Manhattan distance 1)
+ * @param {(Card|null)[][]} board - board state
+ * @param {number} x - piece x coordinate
+ * @param {number} y - piece y coordinate
+ * @returns {Array<{x: number, y: number}>} valid move target list
  */
 function getValidMoves(board, x, y) {
   const card = board[y][x];
   if (!card) return [];
-  // 刀和枪在未被扛起时不能移动
+  // Knife and spear cannot move when not carried
   if (card.role === '刀' || card.role === '枪') return [];
 
   const moves = [];
@@ -192,17 +192,17 @@ function getValidMoves(board, x, y) {
 }
 
 /**
- * 获取指定棋子的所有合法吃牌目标
- * @param {(Card|null)[][]} board - 棋盘状态
- * @param {number} x - 棋子x坐标
- * @param {number} y - 棋子y坐标
- * @param {string} team - 当前阵营 'red' | 'blue'
- * @returns {Array<{x: number, y: number}>} 合法吃牌目标列表
+ * Get all valid capture targets for a piece
+ * @param {(Card|null)[][]} board - board state
+ * @param {number} x - piece x coordinate
+ * @param {number} y - piece y coordinate
+ * @param {string} team - current team 'red' | 'blue'
+ * @returns {Array<{x: number, y: number}>} valid capture target list
  */
 function getValidCaptures(board, x, y, team) {
   const card = board[y][x];
   if (!card || !card.faceUp || card.team !== team) return [];
-  // 刀和枪自身不能吃任何角色
+  // Knife and spear themselves cannot capture any role
   if (card.role === '刀' || card.role === '枪') return [];
 
   const captures = [];
@@ -219,19 +219,19 @@ function getValidCaptures(board, x, y, team) {
 }
 
 /**
- * 获取指定棋子的所有合法扛刀/扛枪目标
- * 人可以扛己方的刀，癞痢可以扛己方的枪
- * @param {(Card|null)[][]} board - 棋盘状态
- * @param {number} x - 棋子x坐标
- * @param {number} y - 棋子y坐标
- * @param {string} team - 当前阵营
- * @returns {Array<{x: number, y: number}>} 合法扛刀/扛枪目标列表
+ * Get all valid carry weapon targets for a piece
+ * Human can carry own knife, scalper can carry own spear
+ * @param {(Card|null)[][]} board - board state
+ * @param {number} x - piece x coordinate
+ * @param {number} y - piece y coordinate
+ * @param {string} team - current team
+ * @returns {Array<{x: number, y: number}>} valid carry weapon target list
  */
 function getCarryTargets(board, x, y, team) {
   const card = board[y][x];
   if (!card || !card.faceUp || card.team !== team) return [];
   
-  // Only 人 can carry 刀, only 癞痢 can carry 枪
+  // Only human can carry knife, only scalper can carry spear
   let weaponRole = null;
   if (card.role === '人') weaponRole = '刀';
   else if (card.role === '癞痢') weaponRole = '枪';
@@ -255,23 +255,23 @@ function getCarryTargets(board, x, y, team) {
 }
 
 /**
- * 执行翻牌操作
- * @param {GameState} state - 当前状态（就地修改）
- * @param {number} x - 目标x坐标
- * @param {number} y - 目标y坐标
- * @returns {GameState|null} 修改后的状态，非法操作返回 null
+ * Execute flip operation
+ * @param {GameState} state - current state (modified in place)
+ * @param {number} x - target x coordinate
+ * @param {number} y - target y coordinate
+ * @returns {GameState|null} modified state, null on invalid operation
  */
 function flipCard(state, x, y) {
-  // 坐标越界
+  // Coordinates out of bounds
   if (!inBounds(x, y)) return null;
   const card = state.board[y][x];
-  // 空位或已翻开
+  // Empty or already face-up
   if (!card || card.faceUp) return null;
 
-  // 翻牌
+  // Flip
   card.faceUp = true;
 
-  // 第一张翻牌：确定阵营分配
+  // First flip: determine team assignment
   if (!state.teamAssigned) {
     state.teamAssigned = true;
     if (state.mode === 'pve') {
@@ -283,19 +283,19 @@ function flipCard(state, x, y) {
         state.aiTeam = card.team === 'red' ? 'blue' : 'red';
       }
     }
-    // 第一次翻牌后，切换到非翻牌者的阵营
-    // 翻牌者是 currentTeam（还未切换），翻牌者控制 card.team
-    // 所以下一个行动方应该是翻牌者控制的阵营的对方
-    // 但由于翻牌者的阵营可能和 currentTeam 不同，需要直接设置
+    // After first flip, switch to non-flipper team
+    // Flipper is currentTeam (not yet switched), flipper controls card.team
+    // So next team should be opponent of flipper team
+    // But since flipper team may differ from currentTeam, need to set directly
     if (state.mode === 'pve') {
-      // 翻牌者的阵营已确定，下一个行动方是对方阵营
+      // Flipper team determined, next team is opponent
       var flipperTeam = state.aiFirst ? state.aiTeam : state.playerTeam;
       state.currentTeam = flipperTeam === 'red' ? 'blue' : 'red';
     } else {
       state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
     }
   } else {
-    // 非第一次翻牌，正常切换
+    // Not first flip, normal switch
     state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
   }
   state.turnCount++;
@@ -304,27 +304,27 @@ function flipCard(state, x, y) {
 }
 
 /**
- * 执行走牌操作
- * @param {GameState} state - 当前状态（就地修改）
- * @param {{x: number, y: number}} from - 起始位置
- * @param {{x: number, y: number}} to - 目标位置
- * @returns {GameState|null} 修改后的状态，非法操作返回 null
+ * Execute move operation
+ * @param {GameState} state - current state (modified in place)
+ * @param {{x: number, y: number}} from - start position
+ * @param {{x: number, y: number}} to - target position
+ * @returns {GameState|null} modified state, null on invalid operation
  */
 function moveCard(state, from, to) {
   if (!inBounds(from.x, from.y) || !inBounds(to.x, to.y)) return null;
   const card = state.board[from.y][from.x];
-  // 起始位置必须有牌、已翻开、属于当前行动方
+  // Start position must have card, face-up, belong to current team
   if (!card || !card.faceUp || card.team !== state.currentTeam) return null;
-  // 目标位置必须为空
+  // Target position must be empty
   if (state.board[to.y][to.x] !== null) return null;
-  // 曼哈顿距离必须为1
+  // Manhattan distance must be 1
   if (Math.abs(from.x - to.x) + Math.abs(from.y - to.y) !== 1) return null;
 
-  // 移动
+  // Move
   state.board[to.y][to.x] = card;
   state.board[from.y][from.x] = null;
 
-  // 切换当前行动方
+  // Switch current team
   state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
   state.turnCount++;
 
@@ -332,48 +332,48 @@ function moveCard(state, from, to) {
 }
 
 /**
- * 执行吃牌操作
- * @param {GameState} state - 当前状态（就地修改）
- * @param {{x: number, y: number}} from - 攻击方位置
- * @param {{x: number, y: number}} to - 被吃方位置
- * @returns {GameState|null} 修改后的状态，非法操作返回 null
+ * Execute capture operation
+ * @param {GameState} state - current state (modified in place)
+ * @param {{x: number, y: number}} from - attacker position
+ * @param {{x: number, y: number}} to - defender position
+ * @returns {GameState|null} modified state, null on invalid operation
  */
 function captureCard(state, from, to) {
   if (!inBounds(from.x, from.y) || !inBounds(to.x, to.y)) return null;
   const attacker = state.board[from.y][from.x];
   const defender = state.board[to.y][to.x];
-  // 攻击方必须存在、已翻开、属于当前行动方
+  // Attacker must exist, face-up, belong to current team
   if (!attacker || !attacker.faceUp || attacker.team !== state.currentTeam) return null;
-  // 被吃方必须存在、已翻开、属于对方
+  // Defender must exist, face-up, belong to opponent
   if (!defender || !defender.faceUp || defender.team === state.currentTeam) return null;
-  // 曼哈顿距离必须为1
+  // Manhattan distance must be 1
   if (Math.abs(from.x - to.x) + Math.abs(from.y - to.y) !== 1) return null;
-  // 必须满足相克关系
+  // Must satisfy dominance relationship
   if (!canCapture(attacker, defender)) return null;
 
-  // 被吃角色加入对应阵营的被吃列表
+  // Captured role added to corresponding team captured list
   const defenderCapturedList = defender.team === 'red' ? 'capturedRed' : 'capturedBlue';
   state[defenderCapturedList].push(defender.role);
-  // 如果被吃方正在扛武器，武器也加入被吃列表
+  // If captured side is carrying weapon, weapon also added to captured list
   if (defender.carrying) {
     state[defenderCapturedList].push(defender.carrying);
   }
 
-  // 火箭吃牌时同归于尽
+  // Rocket capture results in mutual destruction
   if (attacker.role === '火箭') {
-    // 火箭自身也加入被吃列表
+    // Rocket itself also added to captured list
     const attackerCapturedList = attacker.team === 'red' ? 'capturedRed' : 'capturedBlue';
     state[attackerCapturedList].push('火箭');
-    // 两个位置都变为空
+    // Both positions become empty
     state.board[from.y][from.x] = null;
     state.board[to.y][to.x] = null;
   } else {
-    // 普通吃牌：攻击方移动到被吃方位置，原位置清空
+    // Normal capture: attacker moves to defender position, original cleared
     state.board[to.y][to.x] = attacker;
     state.board[from.y][from.x] = null;
   }
 
-  // 切换当前行动方
+  // Switch current team
   state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
   state.turnCount++;
 
@@ -381,26 +381,26 @@ function captureCard(state, from, to) {
 }
 
 /**
- * 执行扛刀/扛枪操作
- * 人移动到己方刀的位置合体，癞痢移动到己方枪的位置合体
- * @param {GameState} state - 当前状态（就地修改）
- * @param {{x: number, y: number}} from - 人/癞痢的位置
- * @param {{x: number, y: number}} to - 刀/枪的位置
- * @returns {GameState|null} 修改后的状态，非法操作返回 null
+ * Execute carry weapon operation
+ * Human moves to own knife position to merge, scalper moves to own spear position to merge
+ * @param {GameState} state - current state (modified in place)
+ * @param {{x: number, y: number}} from - human/scalper position
+ * @param {{x: number, y: number}} to - knife/spear position
+ * @returns {GameState|null} modified state, null on invalid operation
  */
 function carryWeapon(state, from, to) {
   if (!inBounds(from.x, from.y) || !inBounds(to.x, to.y)) return null;
   const carrier = state.board[from.y][from.x];
   const weapon = state.board[to.y][to.x];
-  // 扛者必须存在、已翻开、属于当前行动方
+  // Carrier must exist, face-up, belong to current team
   if (!carrier || !carrier.faceUp || carrier.team !== state.currentTeam) return null;
-  // 武器必须存在、已翻开、同阵营
+  // Weapon must exist, face-up, same team
   if (!weapon || !weapon.faceUp || weapon.team !== carrier.team) return null;
-  // 曼哈顿距离必须为1
+  // Manhattan distance must be 1
   if (Math.abs(from.x - to.x) + Math.abs(from.y - to.y) !== 1) return null;
-  // 已经在扛武器时不能再扛
+  // Cannot carry when already carrying weapon
   if (carrier.carrying) return null;
-  // 验证角色-武器匹配：人扛刀，癞痢扛枪
+  // Verify role-weapon match: human carries knife, scalper carries spear
   if (carrier.role === '人' && weapon.role === '刀') {
     carrier.carrying = '刀';
   } else if (carrier.role === '癞痢' && weapon.role === '枪') {
@@ -408,29 +408,29 @@ function carryWeapon(state, from, to) {
   } else {
     return null;
   }
-  // 扛者移动到武器位置，原位置变空
+  // Carrier moves to weapon position, original becomes empty
   state.board[to.y][to.x] = carrier;
   state.board[from.y][from.x] = null;
-  // 切换当前行动方
+  // Switch current team
   state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
   state.turnCount++;
   return state;
 }
 
 /**
- * 检查当前玩家是否有任何合法操作
- * @param {(Card|null)[][]} board - 棋盘状态
- * @param {string} team - 当前阵营
- * @returns {boolean} 是否有合法操作
+ * Check if current player has any legal action
+ * @param {(Card|null)[][]} board - board state
+ * @param {string} team - current team
+ * @returns {boolean} whether has legal actions
  */
 function hasAnyLegalAction(board, team) {
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x++) {
       const card = board[y][x];
-      // 翻牌：有任何未翻开的牌即可
+      // Flip: any face-down card on board
       if (card && !card.faceUp) return true;
 
-      // 走牌/吃牌/扛刀扛枪：己方已翻开的牌
+      // Move/capture/carry weapon: own face-up cards
       if (card && card.faceUp && card.team === team) {
         if (getValidMoves(board, x, y).length > 0) return true;
         if (getValidCaptures(board, x, y, team).length > 0) return true;
@@ -442,10 +442,10 @@ function hasAnyLegalAction(board, team) {
 }
 
 /**
- * 检查游戏是否结束
- * @param {(Card|null)[][]} board - 棋盘状态
- * @param {string} currentTeam - 当前行动方阵营
- * @returns {{ended: boolean, winner: string|null}} 游戏结束状态
+ * Check if game is over
+ * @param {(Card|null)[][]} board - board state
+ * @param {string} currentTeam - current team
+ * @returns {{ended: boolean, winner: string|null}} game over status
  */
 function checkGameOver(board, currentTeam) {
   let redCount = 0;
@@ -460,11 +460,11 @@ function checkGameOver(board, currentTeam) {
     }
   }
 
-  // 一方无牌 → 该方失败
+  // One side has no cards -> that side loses
   if (redCount === 0) return { ended: true, winner: 'blue' };
   if (blueCount === 0) return { ended: true, winner: 'red' };
 
-  // 当前行动方无合法操作 → 当前行动方失败
+  // Current team has no legal actions -> current team loses
   if (!hasAnyLegalAction(board, currentTeam)) {
     return { ended: true, winner: currentTeam === 'red' ? 'blue' : 'red' };
   }
@@ -473,15 +473,15 @@ function checkGameOver(board, currentTeam) {
 }
 
 /**
- * AI选择最优操作
- * @param {GameState} state - 当前游戏状态
- * @param {string} aiTeam - AI所属阵营
- * @returns {{type: string, from?: {x: number, y: number}, to?: {x: number, y: number}, x?: number, y?: number}|null} AI决策结果
+ * AI selects optimal action
+ * @param {GameState} state - current game state
+ * @param {string} aiTeam - AI team
+ * @returns {{type: string, from?: {x: number, y: number}, to?: {x: number, y: number}, x?: number, y?: number}|null} AI decision result
  */
 function aiDecide(state, aiTeam) {
   const board = state.board;
 
-  // 优先级1：存在吃牌机会时，优先执行吃牌
+  // Priority 1: when capture opportunity exists, prioritize capture
   const allCaptures = [];
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x++) {
@@ -498,7 +498,7 @@ function aiDecide(state, aiTeam) {
     return { type: 'capture', from: pick.from, to: pick.to };
   }
 
-  // 优先级2：人/癞痢与己方刀/枪相邻 → 执行扛刀/扛枪
+  // Priority 2: human/scalper adjacent to own knife/spear -> carry weapon
   const allCarries = [];
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x++) {
@@ -515,7 +515,7 @@ function aiDecide(state, aiTeam) {
     return { type: 'carry', from: pick.from, to: pick.to };
   }
 
-  // 优先级3：有未翻开的牌时，随机翻一张
+  // Priority 3: when face-down cards exist, flip one randomly
   const faceDownCells = [];
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x++) {
@@ -530,7 +530,7 @@ function aiDecide(state, aiTeam) {
     return { type: 'flip', x: pick.x, y: pick.y };
   }
 
-  // 优先级4：随机选一个己方棋子移动到合法位置
+  // Priority 4: randomly select own piece and move to legal position
   const allMoves = [];
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x++) {
@@ -547,11 +547,11 @@ function aiDecide(state, aiTeam) {
     return { type: 'move', from: pick.from, to: pick.to };
   }
 
-  // 无任何合法操作
+  // No legal actions
   return null;
 }
 
-// 导出供测试使用
+// Export for testing
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     ROLES,
@@ -575,7 +575,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 // ============================================================
-// UI 控制器（仅在浏览器环境中运行）
+// UI controller (runs only in browser environment)
 // ============================================================
 if (typeof document !== 'undefined') {
   let gameState = null;
@@ -599,7 +599,7 @@ if (typeof document !== 'undefined') {
   const $winnerText = document.getElementById('winner-text');
   const $btnRestart = document.getElementById('btn-restart');
 
-  // --- 渲染器函数 (Task 9.1) ---
+  // --- Renderer functions (Task 9.1) ---
 
   function getCell(x, y) {
     return $board.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
@@ -625,7 +625,7 @@ if (typeof document !== 'undefined') {
           cell.classList.add(card.team === 'red' ? 'cell-red' : 'cell-blue');
           
           if (card.carrying) {
-            // 扛刀人/扛枪癞痢 - 两层重叠卡片
+            // Knife carrier/spear carrier - two-layer overlapping cards
             cell.classList.add('cell-carry', 'cell-carry-glow');
             var bottom = document.createElement('div');
             bottom.className = 'carry-bottom';
@@ -683,7 +683,7 @@ if (typeof document !== 'undefined') {
   }
 
   function updateStatus(state) {
-    // 当前行动方
+    // Current team
     if (state.currentTeam) {
       const teamName = state.currentTeam === 'red' ? '红方' : '蓝方';
       $currentTeam.textContent = teamName;
@@ -692,10 +692,10 @@ if (typeof document !== 'undefined') {
       $currentTeam.textContent = '—';
     }
 
-    // 回合数
+    // Turn count
     $turnCount.textContent = state.turnCount;
 
-    // 剩余棋子
+    // Remaining pieces
     let redCount = 0, blueCount = 0;
     for (let y = 0; y < 4; y++) {
       for (let x = 0; x < 4; x++) {
@@ -709,7 +709,7 @@ if (typeof document !== 'undefined') {
     $redRemaining.textContent = redCount;
     $blueRemaining.textContent = blueCount;
 
-    // 被吃掉的牌
+    // Captured cards
     $capturedRed.innerHTML = '';
     for (const role of state.capturedRed) {
       const div = document.createElement('div');
@@ -797,7 +797,7 @@ if (typeof document !== 'undefined') {
   }
 
 
-  // --- 石头剪刀布逻辑 (Task 9.2) ---
+  // --- Rock-Paper-Scissors logic (Task 9.2) ---
   let rpsP1Choice = null;
   let rpsP2Choice = null;
 
@@ -807,8 +807,8 @@ if (typeof document !== 'undefined') {
     gameState.firstPlayer = firstTeam;
     renderBoard(gameState);
 
-    // PVE模式下，如果电脑先手，直接触发AI翻牌
-    // 此时阵营还未分配（teamAssigned=false），但第一步只能翻牌
+    // In PVE mode, if AI goes first, trigger AI flip directly
+    // Team not yet assigned (teamAssigned=false), but first step can only flip
     if (gameState.mode === 'pve' && gameState.aiFirst) {
       triggerAI();
     } else {
@@ -837,12 +837,12 @@ if (typeof document !== 'undefined') {
       // PVE
       const aiChoiceName = choiceNames[choice2];
       if (result === 1) {
-        // 玩家赢了石头剪刀布 → 玩家先手
+        // Player won RPS -> player goes first
         $rpsResult.textContent = '电脑出了' + aiChoiceName + '，你赢了！你先手';
         gameState.aiFirst = false;
         setTimeout(function() { startGame('red'); }, 1500);
       } else {
-        // 电脑赢了石头剪刀布 → 电脑先手
+        // Computer won RPS -> computer goes first
         $rpsResult.textContent = '电脑出了' + aiChoiceName + '，电脑赢了！电脑先手';
         gameState.aiFirst = true;
         setTimeout(function() { startGame('red'); }, 1500);
@@ -850,7 +850,7 @@ if (typeof document !== 'undefined') {
     }
   }
 
-  // PVP 石头剪刀布按钮
+  // PVP Rock-Paper-Scissors buttons
   document.querySelectorAll('#rps-pvp .btn-rps').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var player = btn.dataset.player;
@@ -874,7 +874,7 @@ if (typeof document !== 'undefined') {
     });
   });
 
-  // PVE 石头剪刀布按钮
+  // PVE Rock-Paper-Scissors buttons
   document.querySelectorAll('#rps-pve .btn-rps').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var playerChoice = btn.dataset.choice;
@@ -889,7 +889,7 @@ if (typeof document !== 'undefined') {
   });
 
 
-  // --- 模式选择 (Task 9.2) ---
+  // --- Mode selection (Task 9.2) ---
   document.getElementById('btn-pvp').addEventListener('click', function() {
     gameState = createGameState('pvp');
     showRPSSelection('pvp');
@@ -900,18 +900,18 @@ if (typeof document !== 'undefined') {
     showRPSSelection('pve');
   });
 
-  // --- 重新开始 ---
+  // --- Restart ---
   $btnRestart.addEventListener('click', function() {
     gameState = null;
     showModeSelection();
   });
 
-  // --- 棋盘点击事件处理 (Task 9.2) ---
+  // --- Board click event handler (Task 9.2) ---
   $board.addEventListener('click', function(e) {
     if (!gameState || gameState.gameOver) return;
     if (gameState.aiThinking) return;
 
-    // PVE模式下，只允许玩家在自己回合点击
+    // In PVE mode, only allow player to click on their turn
     if (gameState.mode === 'pve' && gameState.teamAssigned && gameState.currentTeam === gameState.aiTeam) return;
 
     var cell = e.target.closest('.cell');
@@ -922,11 +922,11 @@ if (typeof document !== 'undefined') {
     var card = gameState.board[y][x];
     var currentTeam = gameState.currentTeam;
 
-    // 已有选中棋子
+    // Already have selected piece
     if (gameState.selectedCell) {
       var sel = gameState.selectedCell;
 
-      // 点击同一格取消选中
+      // Click same cell to deselect
       if (sel.x === x && sel.y === y) {
         gameState.selectedCell = null;
         clearHighlights();
@@ -935,7 +935,7 @@ if (typeof document !== 'undefined') {
 
       var selCard = gameState.board[sel.y][sel.x];
 
-      // 点击己方已翻开的刀/枪 → 尝试扛刀/扛枪
+      // Click own face-up knife/spear -> try carry weapon
       if (card && card.faceUp && card.team === currentTeam && (card.role === '刀' || card.role === '枪')) {
         var carryTargets = getCarryTargets(gameState.board, sel.x, sel.y, currentTeam);
         if (carryTargets.some(function(t) { return t.x === x && t.y === y; })) {
@@ -950,7 +950,7 @@ if (typeof document !== 'undefined') {
         }
       }
 
-      // 点击对方已翻开的牌 → 尝试吃牌
+      // Click opponent face-up card -> try capture
       if (card && card.faceUp && card.team !== currentTeam) {
         if (getValidCaptures(gameState.board, sel.x, sel.y, currentTeam).some(function(t) { return t.x === x && t.y === y; })) {
           var result = captureCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
@@ -962,7 +962,7 @@ if (typeof document !== 'undefined') {
             return;
           }
         }
-        // 具体的非法吃牌提示
+        // Specific illegal capture message
         if (selCard.role === '人' && card.role === '鸡') {
           showMessage('需要先扛刀才能杀鸡', 'error');
         } else if (selCard.role === '癞痢' && card.role === '老虎') {
@@ -973,7 +973,7 @@ if (typeof document !== 'undefined') {
         return;
       }
 
-      // 点击空位 → 尝试走牌
+      // Click empty cell -> try move
       if (!card) {
         var moveResult = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
         if (moveResult) {
@@ -985,21 +985,21 @@ if (typeof document !== 'undefined') {
         }
       }
 
-      // 点击己方已翻开的牌 → 重新选中
+      // Click own face-up card -> reselect
       if (card && card.faceUp && card.team === currentTeam) {
         selectCard(x, y);
         return;
       }
 
-      // 无效目标
+      // Invalid target
       gameState.selectedCell = null;
       clearHighlights();
       return;
     }
 
-    // 没有选中棋子
+    // No piece selected
 
-    // 点击未翻开的牌 → 翻牌
+    // Click face-down card -> flip
     if (card && !card.faceUp) {
       var flipResult = flipCard(gameState, x, y);
       if (flipResult) {
@@ -1010,13 +1010,13 @@ if (typeof document !== 'undefined') {
       }
     }
 
-    // 点击己方已翻开的牌 → 选中
+    // Click own face-up card -> select
     if (card && card.faceUp && card.team === currentTeam) {
       selectCard(x, y);
       return;
     }
 
-    // 点击对方已翻开的牌（未选中状态）
+    // Click opponent face-up card (no selection)
     if (card && card.faceUp && card.team !== currentTeam) {
       showMessage('这不是你的棋子', 'error');
       return;
@@ -1029,7 +1029,7 @@ if (typeof document !== 'undefined') {
     var currentTeam = gameState.currentTeam;
     var card = gameState.board[y][x];
 
-    // 刀和枪不能移动
+    // Knife and spear cannot move
     if (card && (card.role === '刀' || card.role === '枪')) {
       showMessage('刀/枪不能主动移动', 'error');
       gameState.selectedCell = null;
@@ -1045,7 +1045,7 @@ if (typeof document !== 'undefined') {
   }
 
   function afterAction() {
-    // 检查游戏结束
+    // Check game over
     var result = checkGameOver(gameState.board, gameState.currentTeam);
     if (result.ended) {
       gameState.gameOver = true;
@@ -1055,13 +1055,13 @@ if (typeof document !== 'undefined') {
       return;
     }
 
-    // 更新提示信息
+    // Update message
     if (gameState.mode === 'pve') {
       if (gameState.teamAssigned && gameState.currentTeam === gameState.aiTeam) {
-        // 阵营已分配，轮到AI
+        // Team assigned, AI turn
         triggerAI();
       } else if (!gameState.teamAssigned && gameState.aiFirst) {
-        // 阵营未分配但电脑先手（第一次翻牌后轮到玩家翻牌）
+        // Team not assigned but computer first (player flips after first flip)
         showMessage('请翻开一张牌', '');
       } else if (!gameState.teamAssigned) {
         showMessage('请翻开一张牌', '');
@@ -1069,7 +1069,7 @@ if (typeof document !== 'undefined') {
         showMessage('你的回合', '');
       }
     } else {
-      // PVP 或阵营未分配
+      // PVP or team not assigned
       var teamName = gameState.currentTeam === 'red' ? '红方' : '蓝方';
       if (!gameState.teamAssigned) {
         showMessage('请翻开一张牌', '');
@@ -1080,7 +1080,7 @@ if (typeof document !== 'undefined') {
   }
 
 
-  // --- AI操作流程 (Task 9.3) ---
+  // --- AI action flow (Task 9.3) ---
   function triggerAI() {
     gameState.aiThinking = true;
     showMessage('电脑思考中...', 'info');
@@ -1089,7 +1089,7 @@ if (typeof document !== 'undefined') {
     setTimeout(function() {
       var decision = aiDecide(gameState, gameState.aiTeam);
       if (!decision) {
-        // AI无合法操作 → 游戏应已结束
+        // AI has no legal action -> game should be over
         gameState.aiThinking = false;
         afterAction();
         return;
@@ -1109,7 +1109,7 @@ if (typeof document !== 'undefined') {
       flipCard(gameState, decision.x, decision.y);
       renderBoard(gameState);
 
-      // 翻牌后重新获取cell并高亮
+      // Re-get cell and highlight after flip
       var cell2 = getCell(decision.x, decision.y);
       cell2.classList.add('cell-ai-highlight');
 
@@ -1179,6 +1179,6 @@ if (typeof document !== 'undefined') {
     }
   }
 
-  // 初始化：显示模式选择
+  // Initialize: show mode selection
   showModeSelection();
 }

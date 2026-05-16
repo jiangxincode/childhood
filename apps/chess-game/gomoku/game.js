@@ -1,16 +1,16 @@
 // ============================================================
-// 五子棋 (Gomoku) - 游戏核心逻辑
+// Gomoku (Five in a Row) - Game Core Logic
 // ============================================================
 
 var BOARD_SIZE = 15;
 var EMPTY = 0;
-var BLACK = 1;  // 先手
-var WHITE = 2;  // 后手
+var BLACK = 1;  // First player
+var WHITE = 2;  // Second player
 var WIN_COUNT = 5;
 
-// 预计算所有获胜线（共572条）
+// Pre-compute all winning lines (572 total)
 var WIN_LINES = [];
-var WINS_MAP = [];  // WINS_MAP[x][y] = [线ID数组]
+var WINS_MAP = [];  // WINS_MAP[x][y] = [line ID array]
 
 function initWinLines() {
   WIN_LINES = [];
@@ -23,7 +23,7 @@ function initWinLines() {
   }
   var lineId = 0;
 
-  // 横向
+  // Horizontal
   for (var y = 0; y < BOARD_SIZE; y++) {
     for (var x = 0; x <= BOARD_SIZE - WIN_COUNT; x++) {
       var line = [];
@@ -37,7 +37,7 @@ function initWinLines() {
     }
   }
 
-  // 纵向
+  // Vertical
   for (var x = 0; x < BOARD_SIZE; x++) {
     for (var y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
       var line = [];
@@ -51,7 +51,7 @@ function initWinLines() {
     }
   }
 
-  // 右下对角线 (\)
+  // Down-right diagonal (\) (\)
   for (var x = 0; x <= BOARD_SIZE - WIN_COUNT; x++) {
     for (var y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
       var line = [];
@@ -65,7 +65,7 @@ function initWinLines() {
     }
   }
 
-  // 左下对角线 (/)
+  // Down-left diagonal (/) (/)
   for (var x = WIN_COUNT - 1; x < BOARD_SIZE; x++) {
     for (var y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
       var line = [];
@@ -80,7 +80,7 @@ function initWinLines() {
   }
 }
 
-// 初始化获胜线
+// Initialize winning lines
 initWinLines();
 
 function createBoard() {
@@ -104,12 +104,12 @@ function getPlayerName(player) {
 }
 
 /**
- * 在棋盘上落子后检测是否获胜
+ * Check for win after placing a stone on the board
  * @param {number[][]} board
  * @param {number} x
  * @param {number} y
  * @param {number} player
- * @returns {Array|null} 获胜线坐标数组，或null
+ * @returns {Array|null} Winning line coordinate array, or null
  */
 function checkWinAt(board, x, y, player) {
   var lines = WINS_MAP[x][y];
@@ -148,7 +148,7 @@ function makeMove(board, x, y, player) {
 }
 
 // ============================================================
-// AI: 贪心评分策略 (参考 AiringGo)
+// AI: Greedy Scoring Strategy (based on AiringGo)
 // ============================================================
 
 var SCORE_HUMAN = [0, 200, 400, 2000, 10000];
@@ -167,7 +167,7 @@ function getBestAIMove(board, aiPlayer) {
     }
   }
 
-  // 遍历所有获胜线，计算每个空位的得分
+  // Iterate all winning lines, calculate score for each empty position
   for (var lid = 0; lid < WIN_LINES.length; lid++) {
     var line = WIN_LINES[lid];
     var aiCount = 0;
@@ -178,18 +178,18 @@ function getBestAIMove(board, aiPlayer) {
       else if (val === humanPlayer) humanCount++;
     }
 
-    // 如果这条线没有被双方都占，才考虑
+    // Only consider if this line is not occupied by both sides
     if (aiCount > 0 && humanCount > 0) continue;
 
     if (aiCount > 0 && humanCount === 0) {
-      // AI的线，给空位加分
+      // AI's line, add score to empty positions
       for (var k = 0; k < line.length; k++) {
         if (board[line[k].y][line[k].x] === EMPTY) {
           scoreAI[line[k].x][line[k].y] += SCORE_AI[aiCount];
         }
       }
     } else if (humanCount > 0 && aiCount === 0) {
-      // 人类的线，给空位加分（防守分）
+      // Human's line, add score to empty positions (defense score)
       for (var k = 0; k < line.length; k++) {
         if (board[line[k].y][line[k].x] === EMPTY) {
           scoreHuman[line[k].x][line[k].y] += SCORE_HUMAN[humanCount];
@@ -213,7 +213,7 @@ function getBestAIMove(board, aiPlayer) {
         bestX = x;
         bestY = y;
       } else if (s === maxScore) {
-        // 同分时优先进攻（AI分高的）
+        // On tie, prefer offense (higher AI score)
         if (scoreAI[x][y] > scoreAI[bestX][bestY]) {
           bestX = x;
           bestY = y;
@@ -222,7 +222,7 @@ function getBestAIMove(board, aiPlayer) {
     }
   }
 
-  // 棋盘全空时下天元
+  // Play center when board is empty
   if (bestX === -1) {
     var center = Math.floor(BOARD_SIZE / 2);
     return { x: center, y: center };
@@ -232,7 +232,7 @@ function getBestAIMove(board, aiPlayer) {
 }
 
 // ============================================================
-// 石头剪刀布
+// Rock-Paper-Scissors
 // ============================================================
 
 function judgeRPS(choice1, choice2) {
@@ -253,7 +253,7 @@ function getRPSName(choice) {
 }
 
 // ============================================================
-// 游戏状态
+// Game state
 // ============================================================
 
 function createGameState(mode) {
@@ -275,7 +275,7 @@ function createGameState(mode) {
 }
 
 // ============================================================
-// 导出供测试使用
+// Export for testing
 // ============================================================
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -302,7 +302,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 // ============================================================
-// 浏览器UI
+// Browser UI
 // ============================================================
 
 if (typeof document !== 'undefined') {
@@ -323,28 +323,28 @@ if (typeof document !== 'undefined') {
   }
 
   function drawBoard() {
-    // 背景
+    // Background
     context.fillStyle = '#f0d9b5';
     context.fillRect(0, 0, canvasSize, canvasSize);
 
-    // 网格线
+    // Grid lines
     context.strokeStyle = '#8b7355';
     context.lineWidth = 1;
     for (var i = 0; i < BOARD_SIZE; i++) {
       var pos = MARGIN + i * CELL_SIZE;
-      // 竖线
+      // Vertical lines
       context.beginPath();
       context.moveTo(pos, MARGIN);
       context.lineTo(pos, MARGIN + (BOARD_SIZE - 1) * CELL_SIZE);
       context.stroke();
-      // 横线
+      // Horizontal lines
       context.beginPath();
       context.moveTo(MARGIN, pos);
       context.lineTo(MARGIN + (BOARD_SIZE - 1) * CELL_SIZE, pos);
       context.stroke();
     }
 
-    // 天元和星位
+    // Center and star points
     var starPoints = [
       { x: 3, y: 3 }, { x: 3, y: 11 },
       { x: 7, y: 7 },
@@ -408,7 +408,7 @@ if (typeof document !== 'undefined') {
   function renderGame(state) {
     drawBoard();
 
-    // 绘制所有棋子
+    // Draw all stones
     for (var y = 0; y < BOARD_SIZE; y++) {
       for (var x = 0; x < BOARD_SIZE; x++) {
         if (state.board[y][x] !== EMPTY) {
@@ -417,17 +417,17 @@ if (typeof document !== 'undefined') {
       }
     }
 
-    // 标记最后一手
+    // Mark last move
     if (state.lastMove) {
       drawLastMoveMarker(state.lastMove.x, state.lastMove.y);
     }
 
-    // 绘制获胜线
+    // Draw winning line
     if (state.winLine) {
       drawWinLine(state.winLine);
     }
 
-    // 更新状态栏
+    // Update status bar
     document.getElementById('current-player').textContent = getPlayerName(state.currentPlayer);
     document.getElementById('current-player').className =
       'team-indicator ' + (state.currentPlayer === BLACK ? 'text-black' : 'text-white-stone');

@@ -1,11 +1,11 @@
-var DICE;   //骰子
-var nextDiceValue = 0;  // 下一次骰子目标索引
-var diceNum = 1;    //骰子所得数
-var sixTime = 0;    //连投6的次数
-var nextStep = false;   //是否可以执行下一步
+var DICE;   //Dice
+var nextDiceValue = 0;  // Next dice target index
+var diceNum = 1;    //Dice result
+var sixTime = 0;    //Consecutive 6 count
+var nextStep = false;   //Whether next step can be executed
 
 /**
- * 新建飞机
+ * Create planes
  * @param type   red/blue/yellow/green
  */
 function createPlane(type) {
@@ -32,7 +32,7 @@ function createPlane(type) {
 }
 
 /**
- * 添加飞机div
+ * Add plane div element
  * @param type
  * @param top
  * @param left
@@ -80,7 +80,7 @@ function addPlaneDiv(type, top, left) {
 }
 
 /**
- * 骰子投后事件
+ * Dice roll completion event
  * @param $el
  * @param active
  */
@@ -94,8 +94,8 @@ function onComplete($el, active) {
 }
 
 /**
- * 投骰子后给当前用户飞机添加事件
- * @param state 当前用户状态
+ * Add click events to current user's planes after dice roll
+ * @param state current user state
  */
 function addPlaneEvent(state) {
     var flag = false;
@@ -122,13 +122,13 @@ function addPlaneEvent(state) {
     });
     if (!flag) {
         setTimeout(nextUser(), 1000);
-    } else if (state == 'computer') {  //电脑执行
+    } else if (state == 'computer') {  //Computer executes
         computer.performing();
     }
 }
 
 /**
- * 点击飞机移动事件
+ * Plane click movement event
  * @param obj
  */
 function movePlane(obj) {
@@ -162,7 +162,7 @@ function movePlane(obj) {
             $j(obj).attr({'state': 'ready', 'coordId': coordId, 'step': step}).unbind('click').removeClass('pointer');
             if (diceNum != 6) {
                 nextUser();
-            } else {    //6可连续投骰
+            } else {    //6 allows continuous dice roll
                 addDiceEvent();
                 nextStep = true;
             }
@@ -177,7 +177,7 @@ function movePlane(obj) {
         moveCoord();
 
         function moveCoord() {
-            if (i > diceNum) {  //当走完最后一步时执行的
+            if (i > diceNum) {  //Execute when the last step is completed
                 if (coordValue.state != null && coordValue.state == 'win') {
                     rule.planeBack('win', $j(this).attr('type'), $j(this));
                     if (rule.victory()) {
@@ -199,7 +199,7 @@ function movePlane(obj) {
                     if (superTime == 1) {
                         moveCoord();
                         flyAttackFlag = false;
-                    } else {    //飞越后检测是否有攻击的飞机
+                    } else {    //Check for attackable planes after fly-across
                         rule.attactPlane(coordValue, obj, superFlag);
                         flyAttackFlag = true;
                     }
@@ -217,7 +217,7 @@ function movePlane(obj) {
                     if (coordValue.superCoord != null) {
                         moveCoord();
                         flyAttackFlag = false;
-                    } else {    //飞越后检测是否有攻击的飞机
+                    } else {    //Check for attackable planes after fly-across
                         rule.attactPlane(coordValue, obj, superFlag);
                         flyAttackFlag = true;
                     }
@@ -226,7 +226,7 @@ function movePlane(obj) {
                     $j(obj).attr({'coordId': coordValue.id, 'step': step}).unbind('click').removeClass('pointer');
                     if (diceNum != 6) {
                         nextUser();
-                    } else {    //6可连续投骰
+                    } else {    //6 allows continuous dice roll
                         addDiceEvent();
                         nextStep = true;
                     }
@@ -291,7 +291,7 @@ function movePlane(obj) {
 }
 
 /**
- * 根据coordId查询坐标数据
+ * Query coordinate data by coordId
  * @param coordId
  * @returns {{id: *, top: number, left: number, coordColor: string, superCoord: null, r: null}}
  */
@@ -322,7 +322,7 @@ function selectCoordValue(coordId) {
 }
 
 /**
- * 返回用户状态
+ * Get user state
  * @param color
  * @returns {*}
  */
@@ -337,7 +337,7 @@ function userState(color) {
 }
 
 /**
- * 下一位用户
+ * Switch to next user
  */
 function nextUser() {
     nextStep = false;
@@ -379,7 +379,7 @@ function nextUser() {
 }
 
 /**
- * 更新状态栏
+ * Update status bar
  */
 function updateStatusBar() {
     var COLOR_NAMES = {red: '红', blue: '蓝', yellow: '黄', green: '绿'};
@@ -395,7 +395,7 @@ function updateStatusBar() {
 }
 
 /**
- * 添加投骰子事件
+ * Add dice roll event
  */
 function addDiceEvent() {
     $j("#dice").unbind('click').click(function () {
@@ -410,16 +410,16 @@ function addDiceEvent() {
 }
 
 $j(function () {
-    //提示浏览器关闭事件
+    //Prompt on browser close event
     window.onbeforeunload = function (event) {
         var n = event.screenX - window.screenLeft;
         var b = n > document.documentElement.scrollWidth - 20;
         if (b && event.clientY < 0 || event.altKey) {
             return "确定关闭吗";
-            //event.returnValue = ""; //这里可以放置你想做的操作代码
+            //event.returnValue = ""; //You can place your custom action code here
         }
     };
-    //控制F5刷新键
+    //Handle F5 refresh key
     window.onkeydown = function (e) {
         if (e.which) {
             if (e.which == 116) {

@@ -51,7 +51,7 @@ describe('WINS_MAP', () => {
   it('every intersection has at least one line', () => {
     for (var y = 0; y < BOARD_SIZE; y++) {
       for (var x = 0; x < BOARD_SIZE; x++) {
-        // 中心区域应该有线
+        // Center area should have lines
         if (x >= 2 && x <= 12 && y >= 2 && y <= 12) {
           expect(WINS_MAP[x][y].length).toBeGreaterThan(0);
         }
@@ -61,7 +61,7 @@ describe('WINS_MAP', () => {
   it('center point participates in most lines', () => {
     var center = Math.floor(BOARD_SIZE / 2);
     var centerLines = WINS_MAP[center][center].length;
-    // 中心点应该参与4个方向各多条线
+    // Center point should participate in multiple lines across 4 directions
     expect(centerLines).toBeGreaterThanOrEqual(10);
   });
 });

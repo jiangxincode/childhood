@@ -1,5 +1,5 @@
 // ============================================================
-// 国际象棋 (International Chess) - 游戏核心逻辑
+// International Chess - Game Core Logic
 // ============================================================
 
 var BOARD_SIZE = 8;
@@ -12,7 +12,7 @@ var BLACK = 'black';
 
 var AI_DEPTH = 3;
 
-// Unicode棋子符号
+// Unicode piece symbols
 var PIECE_SYMBOLS = {};
 PIECE_SYMBOLS[W_PAWN] = '♙'; PIECE_SYMBOLS[W_KNIGHT] = '♘'; PIECE_SYMBOLS[W_BISHOP] = '♗';
 PIECE_SYMBOLS[W_ROOK] = '♖'; PIECE_SYMBOLS[W_QUEEN] = '♕'; PIECE_SYMBOLS[W_KING] = '♔';
@@ -31,7 +31,7 @@ PIECE_VALUES[W_ROOK] = 500; PIECE_VALUES[W_QUEEN] = 900; PIECE_VALUES[W_KING] = 
 PIECE_VALUES[B_PAWN] = 100; PIECE_VALUES[B_KNIGHT] = 320; PIECE_VALUES[B_BISHOP] = 330;
 PIECE_VALUES[B_ROOK] = 500; PIECE_VALUES[B_QUEEN] = 900; PIECE_VALUES[B_KING] = 20000;
 
-// 兵的位置附加值
+// Pawn position bonus values
 var PAWN_POS_WHITE = [
   [0, 0, 0, 0, 0, 0, 0, 0],
   [50, 50, 50, 50, 50, 50, 50, 50],
@@ -77,7 +77,7 @@ var BISHOP_POS = [
 ];
 
 // ============================================================
-// 棋子判定
+// Piece identification
 // ============================================================
 
 function isWhite(piece) { return piece >= W_PAWN && piece <= W_KING; }
@@ -98,7 +98,7 @@ function isQueen(piece) { return piece === W_QUEEN || piece === B_QUEEN; }
 function isKing(piece) { return piece === W_KING || piece === B_KING; }
 
 // ============================================================
-// 初始棋盘
+// Initial board
 // ============================================================
 
 function createBoard() {
@@ -108,11 +108,11 @@ function createBoard() {
     for (var r = 0; r < BOARD_SIZE; r++) col.push(EMPTY);
     board.push(col);
   }
-  // 黑方 (上方, row 0-1)
+  // Black (top, row 0-1)
   board[0][0] = B_ROOK; board[1][0] = B_KNIGHT; board[2][0] = B_BISHOP; board[3][0] = B_QUEEN;
   board[4][0] = B_KING; board[5][0] = B_BISHOP; board[6][0] = B_KNIGHT; board[7][0] = B_ROOK;
   for (var c = 0; c < 8; c++) board[c][1] = B_PAWN;
-  // 白方 (下方, row 6-7)
+  // White (bottom, row 6-7)
   board[0][7] = W_ROOK; board[1][7] = W_KNIGHT; board[2][7] = W_BISHOP; board[3][7] = W_QUEEN;
   board[4][7] = W_KING; board[5][7] = W_BISHOP; board[6][7] = W_KNIGHT; board[7][7] = W_ROOK;
   for (var c = 0; c < 8; c++) board[c][6] = W_PAWN;
@@ -120,7 +120,7 @@ function createBoard() {
 }
 
 // ============================================================
-// 棋盘操作
+// Board operations
 // ============================================================
 
 function copyBoard(board) {
@@ -133,18 +133,18 @@ function applyMove(board, move) {
   var newBoard = copyBoard(board);
   var piece = newBoard[move.fromC][move.fromR];
   newBoard[move.fromC][move.fromR] = EMPTY;
-  // 升变
+  // Promotion
   if (move.promotion) {
     newBoard[move.toC][move.toR] = move.promotion;
   } else {
     newBoard[move.toC][move.toR] = piece;
   }
-  // 王车易位：移动车
+  // Castling: move rook
   if (move.castling) {
-    if (move.toC === 6) { // 王翼易位
+    if (move.toC === 6) { // King-side castling
       newBoard[5][move.toR] = newBoard[7][move.toR];
       newBoard[7][move.toR] = EMPTY;
-    } else { // 后翼易位
+    } else { // Queen-side castling
       newBoard[3][move.toR] = newBoard[0][move.toR];
       newBoard[0][move.toR] = EMPTY;
     }
@@ -153,7 +153,7 @@ function applyMove(board, move) {
 }
 
 // ============================================================
-// 走法生成
+// Move generation
 // ============================================================
 
 function getValidMoves(board, c, r, hasMoved) {
@@ -169,7 +169,7 @@ function getValidMoves(board, c, r, hasMoved) {
   else if (isQueen(piece)) moves = getQueenMoves(board, c, r, color);
   else if (isKing(piece)) moves = getKingMoves(board, c, r, color, hasMoved);
 
-  // 过滤掉导致己方王被将的走法
+  // Filter moves that leave own king in check
   var validMoves = [];
   for (var i = 0; i < moves.length; i++) {
     var newBoard = applyMove(board, moves[i]);
@@ -181,7 +181,7 @@ function getValidMoves(board, c, r, hasMoved) {
 }
 
 function isInCheck(board, color) {
-  // 找到己方王
+  // Find own king
   var kingC = -1, kingR = -1;
   var kingPiece = color === WHITE ? W_KING : B_KING;
   for (var c = 0; c < BOARD_SIZE; c++) {
@@ -190,7 +190,7 @@ function isInCheck(board, color) {
     }
     if (kingC !== -1) break;
   }
-  if (kingC === -1) return true; // 王被吃了
+  if (kingC === -1) return true; // King was captured
   return isSquareAttacked(board, kingC, kingR, getOpponent(color));
 }
 
@@ -339,10 +339,10 @@ function getKingMoves(board, c, r, color, hasMoved) {
       moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
     }
   }
-  // 王车易位
+  // Castling
   if (hasMoved && !hasMoved.has(c + ',' + r)) {
     var row = r;
-    // 王翼易位 (king-side)
+    // King-side castling (king-side)
     var kRookMoved = hasMoved && hasMoved.has('7,' + row);
     var kPathClear = board[5][row] === EMPTY && board[6][row] === EMPTY;
     if (!kRookMoved && kPathClear && board[7][row] !== EMPTY && isRook(board[7][row]) && getOwner(board[7][row]) === color) {
@@ -352,7 +352,7 @@ function getKingMoves(board, c, r, color, hasMoved) {
         moves.push({ fromC: c, fromR: r, toC: 6, toR: row, castling: true });
       }
     }
-    // 后翼易位 (queen-side)
+    // Queen-side castling (queen-side)
     var qRookMoved = hasMoved && hasMoved.has('0,' + row);
     var qPathClear = board[1][row] === EMPTY && board[2][row] === EMPTY && board[3][row] === EMPTY;
     if (!qRookMoved && qPathClear && board[0][row] !== EMPTY && isRook(board[0][row]) && getOwner(board[0][row]) === color) {
@@ -372,7 +372,7 @@ function getPawnMoves(board, c, r, color, hasMoved) {
   var startRow = color === WHITE ? 6 : 1;
   var promoRow = color === WHITE ? 0 : 7;
 
-  // 前进一格
+  // Move forward one step
   if (inBounds(c, r + dir) && board[c][r + dir] === EMPTY) {
     if (r + dir === promoRow) {
       var promos = color === WHITE ? [W_QUEEN, W_ROOK, W_BISHOP, W_KNIGHT] : [B_QUEEN, B_ROOK, B_BISHOP, B_KNIGHT];
@@ -382,12 +382,12 @@ function getPawnMoves(board, c, r, color, hasMoved) {
     } else {
       moves.push({ fromC: c, fromR: r, toC: c, toR: r + dir });
     }
-    // 前进两格（初始位置）
+    // Move forward two steps (starting position)
     if (r === startRow && board[c][r + dir * 2] === EMPTY) {
       moves.push({ fromC: c, fromR: r, toC: c, toR: r + dir * 2 });
     }
   }
-  // 吃子（斜前方）
+  // Capture (diagonal forward)
   var diagDirs = [-1, 1];
   for (var d = 0; d < diagDirs.length; d++) {
     var nc = c + diagDirs[d], nr = r + dir;
@@ -419,7 +419,7 @@ function getAllMoves(board, color, hasMoved) {
 }
 
 // ============================================================
-// 胜负检测
+// Win/loss detection
 // ============================================================
 
 function checkGameOver(board, nextPlayer, hasMoved) {
@@ -428,7 +428,7 @@ function checkGameOver(board, nextPlayer, hasMoved) {
     if (isInCheck(board, nextPlayer)) return { winner: getOpponent(nextPlayer), reason: 'checkmate' };
     return { winner: null, reason: 'stalemate' };
   }
-  // 检查王是否被吃（简化判定）
+  // Check if king is captured (simplified check)
   var whiteKing = false, blackKing = false;
   for (var c = 0; c < BOARD_SIZE; c++) {
     for (var r = 0; r < BOARD_SIZE; r++) {
@@ -442,7 +442,7 @@ function checkGameOver(board, nextPlayer, hasMoved) {
 }
 
 // ============================================================
-// AI: Alpha-Beta 剪枝
+// AI: Alpha-Beta Pruning
 // ============================================================
 
 function getPositionValue(piece, c, r) {
@@ -473,7 +473,7 @@ function alphaBeta(board, depth, alpha, beta, aiColor, isAITurn, hasMoved) {
   var gameOver = checkGameOver(board, currentPlayer, hasMoved);
   if (gameOver) {
     if (gameOver.winner === aiColor) return 99999 + depth;
-    if (gameOver.winner === null) return 0; // 和棋
+    if (gameOver.winner === null) return 0; // Draw
     return -99999 - depth;
   }
   if (depth === 0) return evaluateBoard(board, aiColor);
@@ -498,7 +498,7 @@ function getBestAIMove(board, aiColor, hasMoved) {
   var bestMove = null;
   var bestScore = -Infinity;
 
-  // 优先搜索吃子和升变
+  // Prioritize captures and promotions
   moves.sort(function(a, b) {
     var scoreA = a.promotion ? 800 : (board[a.toC][a.toR] !== EMPTY ? PIECE_VALUES[board[a.toC][a.toR]] : 0);
     var scoreB = b.promotion ? 800 : (board[b.toC][b.toR] !== EMPTY ? PIECE_VALUES[board[b.toC][b.toR]] : 0);
@@ -517,7 +517,7 @@ function getBestAIMove(board, aiColor, hasMoved) {
 }
 
 // ============================================================
-// 游戏状态
+// Game state
 // ============================================================
 
 function createGameState(mode) {
@@ -540,7 +540,7 @@ function createGameState(mode) {
 }
 
 // ============================================================
-// 导出供测试使用
+// Export for testing
 // ============================================================
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -564,7 +564,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 // ============================================================
-// 浏览器UI
+// Browser UI
 // ============================================================
 
 if (typeof document !== 'undefined') {
@@ -610,7 +610,7 @@ if (typeof document !== 'undefined') {
         context.fillRect(toCanvasX(c), toCanvasY(r), CELL_SIZE, CELL_SIZE);
       }
     }
-    // 坐标标记
+    // Coordinate labels
     context.fillStyle = '#666';
     context.font = '11px sans-serif';
     context.textAlign = 'center';
@@ -633,13 +633,13 @@ if (typeof document !== 'undefined') {
     var color = getOwner(piece);
     var radius = CELL_SIZE * 0.4;
 
-    // 阴影
+    // Shadow
     context.fillStyle = 'rgba(0,0,0,0.2)';
     context.beginPath();
     context.arc(cx + 1, cy + 1, radius, 0, Math.PI * 2);
     context.fill();
 
-    // 棋子底色
+    // Piece base color
     var gradient = context.createRadialGradient(cx - 4, cy - 4, 2, cx, cy, radius);
     if (color === WHITE) {
       gradient.addColorStop(0, '#ffffff');
@@ -653,12 +653,12 @@ if (typeof document !== 'undefined') {
     context.arc(cx, cy, radius, 0, Math.PI * 2);
     context.fill();
 
-    // 边框
+    // Border
     context.strokeStyle = color === WHITE ? '#888' : '#000';
     context.lineWidth = 1.5;
     context.stroke();
 
-    // Unicode符号
+    // Unicode symbol
     context.fillStyle = color === WHITE ? '#000' : '#fff';
     context.font = 'bold ' + Math.floor(CELL_SIZE * 0.55) + 'px serif';
     context.textAlign = 'center';
@@ -838,11 +838,11 @@ if (typeof document !== 'undefined') {
   }
 
   function findMove(moves, toC, toR) {
-    // 优先找非升变走法，升变走法需要弹窗选择
+    // Prefer non-promotion moves, promotion moves need dialog
     for (var i = 0; i < moves.length; i++) {
       if (moves[i].toC === toC && moves[i].toR === toR && !moves[i].promotion) return moves[i];
     }
-    // 如果只有升变走法，返回第一个（会触发升变弹窗）
+    // If only promotion moves, return first (triggers promotion dialog)
     for (var i = 0; i < moves.length; i++) {
       if (moves[i].toC === toC && moves[i].toR === toR) return moves[i];
     }
@@ -903,7 +903,7 @@ if (typeof document !== 'undefined') {
 
   function startGame(mode, playerTeam) {
     gameState = createGameState(mode);
-    gameState.currentPlayer = WHITE; // 白方始终先走
+    gameState.currentPlayer = WHITE; // White always moves first
     gameState.boardFlipped = false;
     if (mode === 'pve') {
       gameState.playerTeam = playerTeam || WHITE;

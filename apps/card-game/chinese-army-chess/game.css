@@ -1,5 +1,5 @@
 /* ============================================================
-   军棋（翻翻棋）- 游戏样式
+   Army Chess (Flip Chess) - Game Styles
    ============================================================ */
 
 :root {
@@ -39,7 +39,7 @@ body {
   color: #333;
 }
 
-/* ---- 通用按钮 ---- */
+/* ---- Common Buttons ---- */
 .btn {
   padding: 12px 32px;
   font-size: 18px;
@@ -59,7 +59,7 @@ body {
   transform: translateY(0);
 }
 
-/* ---- 遮罩层/覆盖层 ---- */
+/* ---- Overlay ---- */
 .overlay {
   position: fixed;
   top: 0;
@@ -83,7 +83,7 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-/* ---- 模式选择界面 ---- */
+/* ---- Mode Selection ---- */
 .game-title {
   font-size: 42px;
   margin-bottom: 4px;
@@ -112,7 +112,7 @@ body {
   color: #fff;
 }
 
-/* ---- 石头剪刀布界面 ---- */
+/* ---- Rock Paper Scissors ---- */
 #rps-section h2 {
   margin-bottom: 24px;
   color: #333;
@@ -165,7 +165,7 @@ body {
   min-height: 28px;
 }
 
-/* ---- 游戏区域 ---- */
+/* ---- Game Area ---- */
 #game-area {
   padding: 16px;
   display: flex;
@@ -175,7 +175,7 @@ body {
   max-width: 1100px;
 }
 
-/* ---- 主游戏区域：棋盘 + 规则面板 ---- */
+/* ---- Main Game Area: Board + Rules Panel ---- */
 #game-main {
   display: flex;
   gap: 20px;
@@ -183,7 +183,7 @@ body {
   justify-content: center;
 }
 
-/* ---- 状态栏 ---- */
+/* ---- Status Bar ---- */
 #status-bar {
   display: flex;
   flex-wrap: wrap;
@@ -219,7 +219,7 @@ body {
   font-weight: bold;
 }
 
-/* ---- 棋盘 5×5 ---- */
+/* ---- Board 5x5 ---- */
 #board {
   display: grid;
   grid-template-columns: repeat(5, var(--cell-size));
@@ -231,7 +231,7 @@ body {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
-/* ---- 棋格 ---- */
+/* ---- Cell ---- */
 .cell {
   width: var(--cell-size);
   height: var(--cell-size);
@@ -250,7 +250,7 @@ body {
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
 }
 
-/* 牌背面 */
+/* Card back */
 .cell-back {
   background: var(--card-back);
   border-radius: 4px;
@@ -269,7 +269,7 @@ body {
   text-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
 }
 
-/* 牌正面 */
+/* Card front */
 .cell-face {
   width: 90%;
   height: 90%;
@@ -283,47 +283,47 @@ body {
   object-fit: contain;
 }
 
-/* 红方棋子边框 */
+/* Red side piece border */
 .cell-red {
   box-shadow: inset 0 0 0 2px var(--red-light);
 }
 
-/* 蓝方棋子边框 */
+/* Blue side piece border */
 .cell-blue {
   box-shadow: inset 0 0 0 2px var(--blue-light);
 }
 
-/* 军旗中立棋子 */
+/* Neutral flag piece */
 .cell-neutral {
   box-shadow: inset 0 0 0 2px var(--neutral-color),
               0 0 8px rgba(249, 168, 37, 0.4);
   border-color: var(--neutral-color) !important;
 }
 
-/* 空格 */
+/* Empty space */
 .cell-empty {
   background: var(--cell-bg);
 }
 
-/* 选中高亮 */
+/* Selected highlight */
 .cell-selected {
   border-color: var(--selected-color) !important;
   box-shadow: 0 0 12px var(--selected-color);
 }
 
-/* 合法走牌目标 */
+/* Valid move target */
 .cell-target {
   border-color: var(--target-color) !important;
   box-shadow: 0 0 10px var(--target-color);
 }
 
-/* 吃牌目标 */
+/* Capture target */
 .cell-capture-target {
   border-color: var(--capture-target-color) !important;
   box-shadow: 0 0 10px var(--capture-target-color);
 }
 
-/* 抱军旗目标（金色脉冲动画） */
+/* Flag capture target (gold pulse animation) */
 @keyframes flag-pulse {
   0%   { box-shadow: 0 0 8px var(--flag-target-color), 0 0 16px rgba(249, 168, 37, 0.4); }
   50%  { box-shadow: 0 0 16px var(--flag-target-color), 0 0 32px rgba(249, 168, 37, 0.7); }
@@ -335,13 +335,13 @@ body {
   animation: flag-pulse 1s ease-in-out infinite;
 }
 
-/* AI操作高亮 */
+/* AI action highlight */
 .cell-ai-highlight {
   border-color: var(--ai-highlight) !important;
   box-shadow: 0 0 14px var(--ai-highlight), 0 0 28px rgba(66, 165, 245, 0.3);
 }
 
-/* ---- 游戏规则面板 ---- */
+/* ---- Game Rules Panel ---- */
 #rules-panel {
   background: #fff;
   border-radius: 10px;
@@ -385,7 +385,7 @@ body {
   font-size: 12px;
 }
 
-/* ---- 被吃掉的牌展示区域 ---- */
+/* ---- Captured Cards Display ---- */
 #captured-area {
   display: flex;
   gap: 24px;
@@ -429,7 +429,7 @@ body {
   object-fit: contain;
 }
 
-/* ---- 操作提示信息 ---- */
+/* ---- Action Hint ---- */
 #message {
   margin-top: 12px;
   padding: 10px 20px;
@@ -454,7 +454,7 @@ body {
   background: var(--blue-light);
 }
 
-/* ---- 游戏结束界面 ---- */
+/* ---- Game Over Screen ---- */
 #game-over .overlay-content h2 {
   font-size: 28px;
   margin-bottom: 24px;
@@ -466,7 +466,7 @@ body {
   font-size: 18px;
 }
 
-/* ---- 响应式布局 ---- */
+/* ---- Responsive Layout ---- */
 @media (max-width: 900px) {
   #game-main {
     flex-direction: column;

@@ -1,32 +1,32 @@
 // ============================================================
-// 黑白棋（翻转棋）- 游戏核心逻辑
+// Reversi (Othello) - Game Core Logic
 // ============================================================
 
 // ============================================================
-// 任务 1.1：常量和基础工具函数
+// Task 1.1: Constants and Basic Utility Functions
 // ============================================================
 
-// 棋盘大小
+// Board size
 const BOARD_SIZE = 8;
 
-// 玩家颜色
+// Player colors
 const PLAYER_BLACK = 'black';
 const PLAYER_WHITE = 'white';
 
-// 八个方向：上、下、左、右、左上、右上、左下、右下
+// Eight directions: up, down, left, right, upper-left, upper-right, lower-left, lower-right
 const DIRECTIONS = [
-  { dx: -1, dy: 0 },   // 上
-  { dx: 1, dy: 0 },    // 下
-  { dx: 0, dy: -1 },   // 左
-  { dx: 0, dy: 1 },    // 右
-  { dx: -1, dy: -1 },  // 左上
-  { dx: -1, dy: 1 },   // 右上
-  { dx: 1, dy: -1 },   // 左下
-  { dx: 1, dy: 1 }     // 右下
+  { dx: -1, dy: 0 },   // Up
+  { dx: 1, dy: 0 },    // Down
+  { dx: 0, dy: -1 },   // Left
+  { dx: 0, dy: 1 },    // Right
+  { dx: -1, dy: -1 },  // Upper-left
+  { dx: -1, dy: 1 },   // Upper-right
+  { dx: 1, dy: -1 },   // Lower-left
+  { dx: 1, dy: 1 }     // Lower-right
 ];
 
 /**
- * 判断坐标是否在棋盘范围内
+ * Check if coordinates are within board bounds
  * @param {number} x - 0~7
  * @param {number} y - 0~7
  * @returns {boolean}
@@ -36,7 +36,7 @@ function inBounds(x, y) {
 }
 
 /**
- * 获取对手颜色
+ * Get opponent color
  * @param {string} player - 'black' | 'white'
  * @returns {string}
  */
@@ -45,13 +45,13 @@ function getOpponent(player) {
 }
 
 /**
- * 检查某个方向是否可以夹住对手棋子
- * @param {Board} board - 棋盘状态
- * @param {number} x - 落子位置x坐标
- * @param {number} y - 落子位置y坐标
- * @param {string} player - 当前玩家颜色
- * @param {Object} dir - 方向对象 {dx, dy}
- * @returns {Array<{x, y}>|null} - 可以翻转的棋子位置数组，如果不能夹住则返回null
+ * Check if a direction can flank opponent pieces
+ * @param {Board} board - Board state
+ * @param {number} x - Move position x coordinate
+ * @param {number} y - Move position y coordinate
+ * @param {string} player - Current player color
+ * @param {Object} dir - Direction object {dx, dy}
+ * @returns {Array<{x, y}>|null} - Array of flippable piece positions, or null if cannot flank
  */
 function checkDirection(board, x, y, player, dir) {
   const opponent = getOpponent(player);
@@ -59,54 +59,54 @@ function checkDirection(board, x, y, player, dir) {
   let nx = x + dir.dx;
   let ny = y + dir.dy;
   
-  // 检查相邻位置是否有对手棋子
+  // Check if adjacent position has opponent piece
   if (!inBounds(nx, ny) || board[ny][nx] !== opponent) {
     return null;
   }
   
-  // 继续沿着方向检查
+  // Continue checking along direction
   flipped.push({x: nx, y: ny});
   nx += dir.dx;
   ny += dir.dy;
   
   while (inBounds(nx, ny)) {
     if (board[ny][nx] === player) {
-      // 找到己方棋子，可以夹住
+      // Found own piece, can flank
       return flipped;
     } else if (board[ny][nx] === opponent) {
-      // 还是对手棋子，继续检查
+      // Still opponent piece, continue checking
       flipped.push({x: nx, y: ny});
       nx += dir.dx;
       ny += dir.dy;
     } else {
-      // 遇到空位，不能夹住
+      // Encountered empty spot, cannot flank
       return null;
     }
   }
   
-  // 到达棋盘边界，不能夹住
+  // Reached board boundary, cannot flank
   return null;
 }
 
 /**
- * 检查落子是否合法
- * @param {Board} board - 棋盘状态
- * @param {number} x - 落子位置x坐标
- * @param {number} y - 落子位置y坐标
- * @param {string} player - 当前玩家颜色
- * @returns {Array<{x, y}>|null} - 可以翻转的棋子位置数组，如果不合法则返回null
+ * Check if a move is valid
+ * @param {Board} board - Board state
+ * @param {number} x - Move position x coordinate
+ * @param {number} y - Move position y coordinate
+ * @param {string} player - Current player color
+ * @returns {Array<{x, y}>|null} - Array of flippable piece positions, or null if invalid
  */
 function isValidMove(board, x, y, player) {
-  // 位置必须在棋盘内
+  // Position must be within board
   if (!inBounds(x, y)) return null;
   
-  // 位置必须为空
+  // Position must be empty
   if (board[y][x] !== null) return null;
   
   const opponent = getOpponent(player);
   const allFlipped = [];
   
-  // 检查所有方向
+  // Check all directions
   for (const dir of DIRECTIONS) {
     const flipped = checkDirection(board, x, y, player, dir);
     if (flipped) {
@@ -114,17 +114,17 @@ function isValidMove(board, x, y, player) {
     }
   }
   
-  // 必须至少夹住一个对手棋子
+  // Must flank at least one opponent piece
   if (allFlipped.length === 0) return null;
   
   return allFlipped;
 }
 
 /**
- * 获取当前玩家的所有合法落子位置
- * @param {Board} board - 棋盘状态
- * @param {string} player - 当前玩家颜色
- * @returns {Array<{x, y, flipped: Array}>} - 合法落子位置及其可翻转的棋子
+ * Get all valid move positions for current player
+ * @param {Board} board - Board state
+ * @param {string} player - Current player color
+ * @returns {Array<{x, y, flipped: Array}>} - Valid move positions and their flippable pieces
  */
 function getValidMoves(board, player) {
   const validMoves = [];
@@ -144,21 +144,21 @@ function getValidMoves(board, player) {
 }
 
 /**
- * 执行落子操作
- * @param {Board} board - 棋盘状态
- * @param {number} x - 落子位置x坐标
- * @param {number} y - 落子位置y坐标
- * @param {string} player - 当前玩家颜色
- * @returns {Array<{x, y}>} - 被翻转的棋子位置数组
+ * Execute a move
+ * @param {Board} board - Board state
+ * @param {number} x - Move position x coordinate
+ * @param {number} y - Move position y coordinate
+ * @param {string} player - Current player color
+ * @returns {Array<{x, y}>} - Array of flipped piece positions
  */
 function makeMove(board, x, y, player) {
   const flipped = isValidMove(board, x, y, player);
   if (!flipped) return [];
   
-  // 放置新棋子
+  // Place new piece
   board[y][x] = player;
   
-  // 翻转被夹住的棋子
+  // Flip flanked pieces
   for (const pos of flipped) {
     board[pos.y][pos.x] = player;
   }
@@ -167,8 +167,8 @@ function makeMove(board, x, y, player) {
 }
 
 /**
- * 统计棋盘上各颜色棋子数量
- * @param {Board} board - 棋盘状态
+ * Count pieces of each color on board
+ * @param {Board} board - Board state
  * @returns {Object} - {black: number, white: number}
  */
 function countPieces(board) {
@@ -186,8 +186,8 @@ function countPieces(board) {
 }
 
 /**
- * 检查游戏是否结束
- * @param {Board} board - 棋盘状态
+ * Check if game is over
+ * @param {Board} board - Board state
  * @returns {boolean}
  */
 function isGameOver(board) {
@@ -198,8 +198,8 @@ function isGameOver(board) {
 }
 
 /**
- * 判断胜负
- * @param {Board} board - 棋盘状态
+ * Determine winner
+ * @param {Board} board - Board state
  * @returns {string|null} - 'black' | 'white' | 'draw'
  */
 function getWinner(board) {
@@ -211,16 +211,16 @@ function getWinner(board) {
 }
 
 // ============================================================
-// 任务 1.2：游戏状态创建函数
+// Task 1.2: Game State Creation Function
 // ============================================================
 
 /**
- * 创建初始游戏状态
+ * Create initial game state
  * @param {string} mode - 'pvp' | 'pve'
  * @returns {GameState}
  */
 function createGameState(mode) {
-  // 创建8x8空棋盘
+  // Create 8x8 empty board
   const board = [];
   for (let y = 0; y < BOARD_SIZE; y++) {
     const row = [];
@@ -230,7 +230,7 @@ function createGameState(mode) {
     board.push(row);
   }
   
-  // 设置初始棋子
+  // Set initial pieces
   const center = BOARD_SIZE / 2;
   board[center - 1][center - 1] = PLAYER_WHITE;  // d4
   board[center - 1][center] = PLAYER_BLACK;      // e4
@@ -240,7 +240,7 @@ function createGameState(mode) {
   return {
     mode,
     board,
-    currentPlayer: PLAYER_BLACK,  // 黑棋先行
+    currentPlayer: PLAYER_BLACK,  // Black goes first
     playerTeam: null,
     aiTeam: null,
     teamAssigned: false,
@@ -257,20 +257,20 @@ function createGameState(mode) {
 }
 
 // ============================================================
-// 任务 1.3：AI逻辑函数
+// Task 1.3: AI Logic Functions
 // ============================================================
 
 /**
- * 简单AI：选择可以翻转最多棋子的位置
- * @param {Board} board - 棋盘状态
- * @param {string} aiPlayer - AI玩家颜色
- * @returns {{x, y}|null} - 最佳落子位置
+ * Simple AI: select position that flips the most pieces
+ * @param {Board} board - Board state
+ * @param {string} aiPlayer - AI player color
+ * @returns {{x, y}|null} - Best move position
  */
 function getBestAIMove(board, aiPlayer) {
   const validMoves = getValidMoves(board, aiPlayer);
   if (validMoves.length === 0) return null;
   
-  // 选择可以翻转最多棋子的位置
+  // Select position that flips the most pieces
   let bestMove = validMoves[0];
   for (const move of validMoves) {
     if (move.flipped.length > bestMove.flipped.length) {
@@ -282,8 +282,8 @@ function getBestAIMove(board, aiPlayer) {
 }
 
 /**
- * AI执行回合
- * @param {GameState} state - 游戏状态
+ * AI executes turn
+ * @param {GameState} state - game state
  */
 function aiTurn(state) {
   if (state.gameOver || state.currentPlayer !== state.aiTeam) return;
@@ -291,30 +291,30 @@ function aiTurn(state) {
   state.aiThinking = true;
   updateMessage('AI正在思考...', 'info');
   
-  // 模拟AI思考时间
+  // Simulate AI thinking time
   setTimeout(() => {
     const bestMove = getBestAIMove(state.board, state.aiTeam);
     
     if (bestMove) {
-      // AI有合法落子位置
+      // AI has valid move position
       const flipped = makeMove(state.board, bestMove.x, bestMove.y, state.aiTeam);
       state.lastMove = {x: bestMove.x, y: bestMove.y};
       state.turnCount++;
 
-      // 更新合法落子位置
+      // Update valid move positions
       state.validMoves = getValidMoves(state.board, getOpponent(state.aiTeam));
       state.currentPlayer = getOpponent(state.aiTeam);
 
-      // 检查游戏是否结束
+      // Check if game is over
       if (state.validMoves.length === 0) {
-        // 对手无合法位置，AI继续
+        // Opponent has no valid moves, AI continues
         const nextMoves = getValidMoves(state.board, state.aiTeam);
         if (nextMoves.length === 0) {
-          // 双方都无法落子，游戏结束
+          // Neither side can move, game over
           state.gameOver = true;
           state.winner = getWinner(state.board);
         } else {
-          // 对手跳过，AI继续
+          // Opponent skipped, AI continues
           state.skippedTurn = true;
           state.currentPlayer = state.aiTeam;
           state.validMoves = nextMoves;
@@ -323,14 +323,14 @@ function aiTurn(state) {
         state.skippedTurn = false;
       }
     } else {
-      // AI无合法位置
+      // AI has no valid moves
       const opponentMoves = getValidMoves(state.board, getOpponent(state.aiTeam));
       if (opponentMoves.length === 0) {
-        // 双方都无法落子，游戏结束
+        // Neither side can move, game over
         state.gameOver = true;
         state.winner = getWinner(state.board);
       } else {
-        // AI跳过，对手继续
+        // AI skipped, opponent continues
         state.skippedTurn = true;
         state.currentPlayer = getOpponent(state.aiTeam);
         state.validMoves = opponentMoves;
@@ -340,24 +340,24 @@ function aiTurn(state) {
     state.aiThinking = false;
     renderGame(state);
 
-    // 如果游戏结束，显示结果
+    // If game over, show result
     if (state.gameOver) {
       setTimeout(() => showGameOver(state), 500);
     } else if (state.currentPlayer === state.aiTeam) {
-      // 对手被跳过，AI继续行动
+      // Opponent skipped, AI continues
       setTimeout(() => aiTurn(state), 1000);
     }
   }, 800);
 }
 
 // ============================================================
-// 任务 1.4：DOM操作和渲染函数
+// Task 1.4: DOM Operations and Rendering Functions
 // ============================================================
 
 let gameState = null;
 
 /**
- * 初始化棋盘DOM
+ * Initialize board DOM
  */
 function initBoard() {
   const boardElement = document.getElementById('board');
@@ -376,11 +376,11 @@ function initBoard() {
 }
 
 /**
- * 渲染游戏状态
- * @param {GameState} state - 游戏状态
+ * Render game state
+ * @param {GameState} state - game state
  */
 function renderGame(state) {
-  // 更新状态栏
+  // Update status bar
   document.getElementById('current-team').textContent = 
     state.currentPlayer === PLAYER_BLACK ? '黑棋' : '白棋';
   document.getElementById('current-team').className = 
@@ -393,17 +393,17 @@ function renderGame(state) {
   document.getElementById('white-count').textContent = counts.white;
   document.getElementById('valid-moves-count').textContent = state.validMoves.length;
   
-  // 渲染棋盘
+  // Render board
   const boardElement = document.getElementById('board');
   const cells = boardElement.querySelectorAll('.cell');
   
-  // 清除所有样式
+  // Clear all styles
   cells.forEach(cell => {
     cell.className = 'cell';
     cell.innerHTML = '';
   });
   
-  // 渲染棋子和合法落子点
+  // Render pieces and valid move indicators
   for (let y = 0; y < BOARD_SIZE; y++) {
     for (let x = 0; x < BOARD_SIZE; x++) {
       const cell = boardElement.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
@@ -415,14 +415,14 @@ function renderGame(state) {
         cell.appendChild(pieceDiv);
       }
       
-      // 标记最近落子位置
+      // Mark last move position
       if (state.lastMove && state.lastMove.x === x && state.lastMove.y === y) {
         cell.classList.add('cell-last-move');
       }
     }
   }
   
-  // 标记合法落子点
+  // Mark valid move positions
   for (const move of state.validMoves) {
     const cell = boardElement.querySelector(`.cell[data-x="${move.x}"][data-y="${move.y}"]`);
     const indicator = document.createElement('div');
@@ -430,7 +430,7 @@ function renderGame(state) {
     cell.appendChild(indicator);
   }
   
-  // 更新消息
+  // Update message
   if (state.gameOver) {
     updateMessage('游戏结束！', 'info');
   } else if (state.skippedTurn) {
@@ -445,9 +445,9 @@ function renderGame(state) {
 }
 
 /**
- * 更新消息显示
- * @param {string} text - 消息文本
- * @param {string} type - 消息类型 'info' | 'error'
+ * Update message display
+ * @param {string} text - Message text
+ * @param {string} type - Message type 'info' | 'error'
  */
 function updateMessage(text, type = 'info') {
   const messageElement = document.getElementById('message');
@@ -456,15 +456,15 @@ function updateMessage(text, type = 'info') {
 }
 
 /**
- * 显示游戏结束界面
- * @param {GameState} state - 游戏状态
+ * Show game over screen
+ * @param {GameState} state - game state
  */
 function showGameOver(state) {
   const winnerText = document.getElementById('winner-text');
   const counts = countPieces(state.board);
   
   if (state.winner === 'draw') {
-    winnerText.textContent = `游戏结束！平局！黑棋: ${counts.black} 白棋: ${counts.white}`;
+    winnerText.textContent = `游戏结束！Draw！黑棋: ${counts.black} 白棋: ${counts.white}`;
   } else {
     const winnerName = state.winner === PLAYER_BLACK ? '黑棋' : '白棋';
     winnerText.textContent = `游戏结束！${winnerName}获胜！黑棋: ${counts.black} 白棋: ${counts.white}`;
@@ -474,51 +474,51 @@ function showGameOver(state) {
 }
 
 // ============================================================
-// 任务 1.5：事件处理函数
+// Task 1.5: Event Handler Functions
 // ============================================================
 
 /**
- * 处理棋盘格子点击
- * @param {number} x - x坐标
- * @param {number} y - y坐标
+ * Handle board cell click
+ * @param {number} x - x coordinate
+ * @param {number} y - y coordinate
  */
 function handleCellClick(x, y) {
   if (!gameState || gameState.gameOver || gameState.aiThinking) return;
   
-  // 在人机对战模式下，如果是AI的回合，不允许玩家操作
+  // In PvE mode, player cannot act during AI turn
   if (gameState.mode === 'pve' && gameState.currentPlayer === gameState.aiTeam) return;
   
-  // 检查是否为合法落子位置
+  // Check if valid move position
   const isValid = gameState.validMoves.some(move => move.x === x && move.y === y);
   if (!isValid) {
     updateMessage('非法落子位置！', 'error');
     return;
   }
   
-  // 执行落子
+  // Execute move
   const flipped = makeMove(gameState.board, x, y, gameState.currentPlayer);
   gameState.lastMove = {x, y};
   gameState.turnCount++;
   
-  // 切换玩家
+  // Switch player
   const nextPlayer = getOpponent(gameState.currentPlayer);
   const nextMoves = getValidMoves(gameState.board, nextPlayer);
   
   if (nextMoves.length === 0) {
-    // 对手无合法位置，检查当前玩家是否还有合法位置
+    // Opponent has no valid moves, check if current player has any
     const currentMoves = getValidMoves(gameState.board, gameState.currentPlayer);
     if (currentMoves.length === 0) {
-      // 双方都无法落子，游戏结束
+      // Neither side can move, game over
       gameState.gameOver = true;
       gameState.winner = getWinner(gameState.board);
     } else {
-      // 对手跳过，当前玩家继续
+      // Opponent skipped, current player continues
       gameState.skippedTurn = true;
       gameState.validMoves = currentMoves;
-      // 当前玩家不变
+      // Current player unchanged
     }
   } else {
-    // 对手有合法位置
+    // Opponent has valid moves
     gameState.currentPlayer = nextPlayer;
     gameState.validMoves = nextMoves;
     gameState.skippedTurn = false;
@@ -526,35 +526,35 @@ function handleCellClick(x, y) {
   
   renderGame(gameState);
   
-  // 如果游戏结束，显示结果
+  // If game over, show result
   if (gameState.gameOver) {
     setTimeout(() => showGameOver(gameState), 500);
   } else if (gameState.mode === 'pve' && gameState.currentPlayer === gameState.aiTeam) {
-    // 如果是AI的回合，触发AI行动
+    // If AI turn, trigger AI action
     setTimeout(() => aiTurn(gameState), 500);
   }
 }
 
 /**
- * 开始游戏
+ * Start game
  * @param {string} mode - 'pvp' | 'pve'
- * @param {string} firstPlayer - 先手玩家 'black' | 'white'
+ * @param {string} firstPlayer - First player 'black' | 'white'
  */
 function startGame(mode, firstPlayer = PLAYER_BLACK) {
   gameState = createGameState(mode);
   gameState.currentPlayer = firstPlayer;
   gameState.validMoves = getValidMoves(gameState.board, firstPlayer);
   
-  // 设置人机对战模式下的玩家和AI
+  // Set player and AI for PvE mode
   if (mode === 'pve') {
-    // 石头剪刀布决定谁先手
+    // Rock-Paper-Scissors decides who goes first
     if (firstPlayer === PLAYER_BLACK) {
-      // 玩家先手（黑棋）
+      // Player goes first (black)
       gameState.playerTeam = PLAYER_BLACK;
       gameState.aiTeam = PLAYER_WHITE;
       gameState.aiFirst = false;
     } else {
-      // AI先手（白棋）
+      // AI goes first (white)
       gameState.playerTeam = PLAYER_WHITE;
       gameState.aiTeam = PLAYER_BLACK;
       gameState.aiFirst = true;
@@ -562,25 +562,25 @@ function startGame(mode, firstPlayer = PLAYER_BLACK) {
     gameState.teamAssigned = true;
   }
   
-  // 隐藏模式选择界面
+  // Hide mode selection screen
   document.getElementById('mode-selection').style.display = 'none';
   document.getElementById('rps-section').style.display = 'none';
   
-  // 显示游戏区域
+  // Show game area
   document.getElementById('game-area').style.display = 'flex';
   
-  // 初始化棋盘
+  // Initialize board
   initBoard();
   renderGame(gameState);
   
-  // 如果是人机对战且AI先手，触发AI行动
+  // If PvE and AI goes first, trigger AI action
   if (mode === 'pve' && gameState.aiFirst) {
     setTimeout(() => aiTurn(gameState), 500);
   }
 }
 
 /**
- * 重新开始游戏
+ * Restart game
  */
 function restartGame() {
   document.getElementById('game-over').style.display = 'none';
@@ -590,13 +590,13 @@ function restartGame() {
 }
 
 // ============================================================
-// 任务 1.6：石头剪刀布逻辑
+// Task 1.6: Rock-Paper-Scissors Logic
 // ============================================================
 
 let rpsChoices = { player1: null, player2: null, human: null };
 
 /**
- * 处理石头剪刀布选择
+ * Handle RPS choice
  * @param {string} player - '1' | '2' | 'human'
  * @param {string} choice - 'rock' | 'scissors' | 'paper'
  */
@@ -608,12 +608,12 @@ function handleRPSChoice(player, choice) {
     });
     event.target.classList.add('selected');
     
-    // AI随机选择
+    // AI random choice
     const choices = ['rock', 'scissors', 'paper'];
     const aiChoice = choices[Math.floor(Math.random() * 3)];
     rpsChoices.player2 = aiChoice;
     
-    // 显示结果
+    // Show result
     const resultElement = document.getElementById('rps-result');
     const humanWins = judgeRPS(choice, aiChoice);
     
@@ -624,7 +624,7 @@ function handleRPSChoice(player, choice) {
       resultElement.textContent = `你选择了${getRPSName(choice)}，AI选择了${getRPSName(aiChoice)}，你输了！AI先手。`;
       setTimeout(() => startGame('pve', PLAYER_WHITE), 1500);
     } else {
-      resultElement.textContent = `你选择了${getRPSName(choice)}，AI选择了${getRPSName(aiChoice)}，平局！重新选择。`;
+      resultElement.textContent = `你选择了${getRPSName(choice)}，AI选择了${getRPSName(aiChoice)}，Draw！重新选择。`;
       rpsChoices.human = null;
       rpsChoices.player2 = null;
     }
@@ -638,7 +638,7 @@ function handleRPSChoice(player, choice) {
     const statusElement = document.getElementById(`rps-p${player}-status`);
     statusElement.textContent = `已选择：${getRPSName(choice)}`;
     
-    // 检查双方是否都已选择
+    // Check if both sides have chosen
     if (rpsChoices.player1 && rpsChoices.player2) {
       const resultElement = document.getElementById('rps-result');
       const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
@@ -650,7 +650,7 @@ function handleRPSChoice(player, choice) {
         resultElement.textContent = `玩家1选择了${getRPSName(rpsChoices.player1)}，玩家2选择了${getRPSName(rpsChoices.player2)}，玩家2赢了！玩家2先手。`;
         setTimeout(() => startGame('pvp', PLAYER_WHITE), 1500);
       } else {
-        resultElement.textContent = `玩家1选择了${getRPSName(rpsChoices.player1)}，玩家2选择了${getRPSName(rpsChoices.player2)}，平局！重新选择。`;
+        resultElement.textContent = `玩家1选择了${getRPSName(rpsChoices.player1)}，玩家2选择了${getRPSName(rpsChoices.player2)}，Draw！重新选择。`;
         rpsChoices.player1 = null;
         rpsChoices.player2 = null;
         document.getElementById('rps-p1-status').textContent = '请选择';
@@ -664,10 +664,10 @@ function handleRPSChoice(player, choice) {
 }
 
 /**
- * 石头剪刀布判定
+ * RPS judgment
  * @param {string} choice1 - 'rock' | 'scissors' | 'paper'
  * @param {string} choice2 - 'rock' | 'scissors' | 'paper'
- * @returns {number} 1=第一方胜, -1=第二方胜, 0=平局
+ * @returns {number} 1=First player wins, -1=Second player wins, 0=Draw
  */
 function judgeRPS(choice1, choice2) {
   if (choice1 === choice2) return 0;
@@ -682,7 +682,7 @@ function judgeRPS(choice1, choice2) {
 }
 
 /**
- * 获取石头剪刀布选择的中文名称
+ * Get Chinese name for RPS choice
  * @param {string} choice - 'rock' | 'scissors' | 'paper'
  * @returns {string}
  */
@@ -695,7 +695,7 @@ function getRPSName(choice) {
   return names[choice] || choice;
 }
 
-// 导出供测试使用
+// Export for testing
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     BOARD_SIZE,
@@ -717,12 +717,12 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 // ============================================================
-// 任务 1.7：初始化事件监听器（仅浏览器环境）
+// Task 1.7: Initialize Event Listeners (Browser Environment Only)
 // ============================================================
 
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
-    // 模式选择按钮
+    // Mode selection buttons
     document.getElementById('btn-pvp').addEventListener('click', () => {
       document.getElementById('mode-selection').style.display = 'none';
       document.getElementById('rps-section').style.display = 'flex';
@@ -739,7 +739,7 @@ if (typeof document !== 'undefined') {
       rpsChoices = { player1: null, player2: null, human: null };
     });
 
-    // 石头剪刀布按钮
+    // RPS buttons
     document.querySelectorAll('.btn-rps').forEach(button => {
       button.addEventListener('click', (event) => {
         const player = event.target.dataset.player;
@@ -748,10 +748,10 @@ if (typeof document !== 'undefined') {
       });
     });
 
-    // 重新开始按钮
+    // Restart button
     document.getElementById('btn-restart').addEventListener('click', restartGame);
 
-    // 初始显示模式选择界面
+    // Initially show mode selection screen
     document.getElementById('mode-selection').style.display = 'flex';
     document.getElementById('rps-section').style.display = 'none';
     document.getElementById('game-area').style.display = 'none';

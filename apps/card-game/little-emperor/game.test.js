@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 const { PIECE_NAMES, RANK_MAP, DIRECTIONS, getImagePath, judgeRPS, inBounds, canCapture, isMutualDestruction, createGameState, getValidMoves, getValidCaptures, flipCard, moveCard, captureCard, hasAnyLegalAction, checkGameOver, aiDecide } = require('./game.js');
 
 // ============================================================
-// 辅助函数
+// Helper Functions
 // ============================================================
 function emptyBoard() {
   return Array.from({ length: 4 }, () => Array(4).fill(null));
@@ -24,7 +24,7 @@ function makeState(board, currentTeam, opts = {}) {
 }
 
 // ============================================================
-// constants - 常量定义
+// constants - constant definitions
 // ============================================================
 describe('constants - 常量定义', () => {
   it('PIECE_NAMES 应包含8个棋子名称', () => {
@@ -54,7 +54,7 @@ describe('constants - 常量定义', () => {
 });
 
 // ============================================================
-// getImagePath - 图片路径
+// getImagePath - image path
 // ============================================================
 describe('getImagePath - 图片路径', () => {
   it('红方棋子图片路径正确', () => {
@@ -71,10 +71,10 @@ describe('getImagePath - 图片路径', () => {
 });
 
 // ============================================================
-// judgeRPS - 石头剪刀布判定（9种组合穷举）
+// judgeRPS - Rock-Paper-Scissors judgment (9 combinations)
 // ============================================================
-describe('judgeRPS - 石头剪刀布判定', () => {
-  // 平局
+describe('judgeRPS - Rock-Paper-Scissors判定', () => {
+  // Draw
   it('rock vs rock = 0（平局）', () => {
     expect(judgeRPS('rock', 'rock')).toBe(0);
   });
@@ -85,7 +85,7 @@ describe('judgeRPS - 石头剪刀布判定', () => {
     expect(judgeRPS('paper', 'paper')).toBe(0);
   });
 
-  // 第一方胜
+  // First player wins
   it('rock vs scissors = 1（第一方胜）', () => {
     expect(judgeRPS('rock', 'scissors')).toBe(1);
   });
@@ -96,7 +96,7 @@ describe('judgeRPS - 石头剪刀布判定', () => {
     expect(judgeRPS('paper', 'rock')).toBe(1);
   });
 
-  // 第二方胜
+  // Second player wins
   it('rock vs paper = -1（第二方胜）', () => {
     expect(judgeRPS('rock', 'paper')).toBe(-1);
   });
@@ -109,10 +109,10 @@ describe('judgeRPS - 石头剪刀布判定', () => {
 });
 
 // ============================================================
-// inBounds - 边界判定
+// inBounds - boundary check
 // ============================================================
 describe('inBounds - 边界判定', () => {
-  it('棋盘内坐标返回 true', () => {
+  it('board内坐标返回 true', () => {
     expect(inBounds(0, 0)).toBe(true);
     expect(inBounds(3, 3)).toBe(true);
     expect(inBounds(1, 2)).toBe(true);
@@ -120,7 +120,7 @@ describe('inBounds - 边界判定', () => {
     expect(inBounds(3, 0)).toBe(true);
   });
 
-  it('棋盘外坐标返回 false', () => {
+  it('board外坐标返回 false', () => {
     expect(inBounds(-1, 0)).toBe(false);
     expect(inBounds(0, -1)).toBe(false);
     expect(inBounds(4, 0)).toBe(false);
@@ -131,7 +131,7 @@ describe('inBounds - 边界判定', () => {
 });
 
 // ============================================================
-// canCapture - 吃牌判定（重点测试循环克制）
+// canCapture - capture check (focus on cycle restraint)
 // ============================================================
 describe('canCapture - 吃牌判定', () => {
   it('高等级吃低等级: 爷爷(1)吃奶奶(2) → true', () => {
@@ -191,8 +191,8 @@ describe('canCapture - 吃牌判定', () => {
   it('小皇帝(8)吃妹妹(7) → true（rank数值大吃rank数值小但8>7不成立，8<7不成立）', () => {
     const attacker = { name: '小皇帝', team: 'red', rank: 8, faceUp: true };
     const defender = { name: '妹妹', team: 'blue', rank: 7, faceUp: true };
-    // 小皇帝rank=8, 妹妹rank=7, 8<7为false, 8===7为false, 8===8&&7===1为false, 1===8&&8===8为false
-    // 所以返回false — 小皇帝只能吃爷爷
+    // Emperor rank=8, sister rank=7, 8<7 is false, 8===7 is false, 8===8&&7===1 is false, 1===8&&8===8 is false
+    // So returns false -- emperor can only capture grandpa
     expect(canCapture(attacker, defender)).toBe(false);
   });
 
@@ -204,7 +204,7 @@ describe('canCapture - 吃牌判定', () => {
 });
 
 // ============================================================
-// isMutualDestruction - 同归于尽判定
+// isMutualDestruction - mutual destruction check
 // ============================================================
 describe('isMutualDestruction - 同归于尽判定', () => {
   it('同级棋子返回 true（同归于尽）', () => {
@@ -227,10 +227,10 @@ describe('isMutualDestruction - 同归于尽判定', () => {
 });
 
 // ============================================================
-// createGameState - 初始游戏状态
+// createGameState - initial game state
 // ============================================================
-describe('createGameState - 初始游戏状态', () => {
-  it('PVP模式应返回包含所有必要字段的游戏状态对象', () => {
+describe('createGameState - 初始Game state', () => {
+  it('PVP模式应返回包含所有必要字段的Game state对象', () => {
     const state = createGameState('pvp');
     expect(state.mode).toBe('pvp');
     expect(state.currentTeam).toBeNull();
@@ -247,7 +247,7 @@ describe('createGameState - 初始游戏状态', () => {
     expect(state.aiThinking).toBe(false);
   });
 
-  it('棋盘应为4x4，包含恰好16张牌', () => {
+  it('board应为4x4，包含恰好16张牌', () => {
     const state = createGameState('pvp');
     expect(state.board.length).toBe(4);
     let cardCount = 0;
@@ -307,7 +307,7 @@ describe('createGameState - 初始游戏状态', () => {
 });
 
 // ============================================================
-// getValidMoves - 合法移动检测
+// getValidMoves - valid move detection
 // ============================================================
 describe('getValidMoves - 合法移动检测', () => {
   it('中间位置四周都为空时返回4个合法目标', () => {
@@ -370,7 +370,7 @@ describe('getValidMoves - 合法移动检测', () => {
 });
 
 // ============================================================
-// getValidCaptures - 合法吃牌检测
+// getValidCaptures - valid capture detection
 // ============================================================
 describe('getValidCaptures - 合法吃牌检测', () => {
   it('相邻有可吃的对方已翻开的牌时返回该目标', () => {
@@ -443,7 +443,7 @@ describe('getValidCaptures - 合法吃牌检测', () => {
 });
 
 // ============================================================
-// flipCard - 翻牌操作
+// flipCard - flip operation
 // ============================================================
 describe('flipCard - 翻牌操作', () => {
   it('翻开一张背面朝上的牌', () => {
@@ -522,7 +522,7 @@ describe('flipCard - 翻牌操作', () => {
 });
 
 // ============================================================
-// moveCard - 走牌操作
+// moveCard - move operation
 // ============================================================
 describe('moveCard - 走牌操作', () => {
   it('正常移动到相邻空位', () => {
@@ -595,7 +595,7 @@ describe('moveCard - 走牌操作', () => {
 });
 
 // ============================================================
-// captureCard - 吃牌操作
+// captureCard - capture operation
 // ============================================================
 describe('captureCard - 吃牌操作', () => {
   it('普通吃牌: 攻击方移到被吃方位置，原位置清空', () => {
@@ -739,7 +739,7 @@ describe('captureCard - 吃牌操作', () => {
 });
 
 // ============================================================
-// hasAnyLegalAction - 合法操作检测
+// hasAnyLegalAction - legal action detection
 // ============================================================
 describe('hasAnyLegalAction - 合法操作检测', () => {
   it('有未翻开的牌时返回 true', () => {
@@ -761,11 +761,11 @@ describe('hasAnyLegalAction - 合法操作检测', () => {
     board[1][0] = makeCard('爸爸', 'red');
     board[0][1] = makeCard('妈妈', 'red');
     board[2][1] = makeCard('哥哥', 'red');
-    // 爷爷被包围但可以吃奶奶
+    // Grandpa is surrounded but can capture grandma
     expect(hasAnyLegalAction(board, 'red')).toBe(true);
   });
 
-  it('棋盘上无己方牌且无未翻开的牌时返回 false', () => {
+  it('board上无己方牌且无未翻开的牌时返回 false', () => {
     const board = emptyBoard();
     board[0][0] = makeCard('爷爷', 'blue');
     expect(hasAnyLegalAction(board, 'red')).toBe(false);
@@ -773,23 +773,23 @@ describe('hasAnyLegalAction - 合法操作检测', () => {
 
   it('己方牌被完全包围且无吃牌机会且无未翻开的牌时返回 false', () => {
     const board = emptyBoard();
-    // 红方小皇帝(rank=8)在中间，四周全是蓝方高等级牌且小皇帝只能吃爷爷
+    // Red emperor(rank=8) in center, surrounded by blue high-rank pieces, emperor can only capture grandpa
     board[1][1] = makeCard('小皇帝', 'red');
-    board[1][0] = makeCard('爸爸', 'blue');    // rank=3, 小皇帝不能吃
-    board[1][2] = makeCard('妈妈', 'blue');    // rank=4, 小皇帝不能吃
-    board[0][1] = makeCard('哥哥', 'blue');    // rank=5, 小皇帝不能吃
-    board[2][1] = makeCard('姐姐', 'blue');    // rank=6, 小皇帝不能吃
+    board[1][0] = makeCard('爸爸', 'blue');    // rank=3, emperor cannot capture
+    board[1][2] = makeCard('妈妈', 'blue');    // rank=4, emperor cannot capture
+    board[0][1] = makeCard('哥哥', 'blue');    // rank=5, emperor cannot capture
+    board[2][1] = makeCard('姐姐', 'blue');    // rank=6, emperor cannot capture
     expect(hasAnyLegalAction(board, 'red')).toBe(false);
   });
 
-  it('空棋盘返回 false', () => {
+  it('空board返回 false', () => {
     const board = emptyBoard();
     expect(hasAnyLegalAction(board, 'red')).toBe(false);
   });
 });
 
 // ============================================================
-// checkGameOver - 游戏结束判定
+// checkGameOver - game over check
 // ============================================================
 describe('checkGameOver - 游戏结束判定', () => {
   it('红方无牌时蓝方获胜', () => {
@@ -810,7 +810,7 @@ describe('checkGameOver - 游戏结束判定', () => {
 
   it('当前行动方无合法操作时对方获胜', () => {
     const board = emptyBoard();
-    // 红方小皇帝被完全包围且无法吃任何牌
+    // Red emperor is completely surrounded and cannot capture any card
     board[1][1] = makeCard('小皇帝', 'red');
     board[1][0] = makeCard('爸爸', 'blue');
     board[1][2] = makeCard('妈妈', 'blue');
@@ -839,7 +839,7 @@ describe('checkGameOver - 游戏结束判定', () => {
     expect(result.winner).toBeNull();
   });
 
-  it('空棋盘时双方都无牌，红方先判定为0 → 蓝方获胜', () => {
+  it('空board时双方都无牌，红方先判定为0 → 蓝方获胜', () => {
     const board = emptyBoard();
     const result = checkGameOver(board, 'red');
     expect(result.ended).toBe(true);
@@ -848,7 +848,7 @@ describe('checkGameOver - 游戏结束判定', () => {
 });
 
 // ============================================================
-// aiDecide - AI决策函数
+// aiDecide - AI decision function
 // ============================================================
 describe('aiDecide - AI决策函数', () => {
   it('存在吃牌机会时优先返回 capture 操作', () => {
@@ -865,7 +865,7 @@ describe('aiDecide - AI决策函数', () => {
 
   it('优先吃高等级棋子（rank数值小）', () => {
     const board = emptyBoard();
-    // 红方爷爷可以吃蓝方奶奶(rank=2)和蓝方妹妹(rank=7)
+    // Red grandpa can capture blue grandma(rank=2) and blue sister(rank=7)
     board[1][1] = makeCard('爷爷', 'red');
     board[1][0] = makeCard('妹妹', 'blue');
     board[1][2] = makeCard('奶奶', 'blue');
@@ -873,13 +873,13 @@ describe('aiDecide - AI决策函数', () => {
     const decision = aiDecide(state, 'red');
     expect(decision).not.toBeNull();
     expect(decision.type).toBe('capture');
-    // 应优先吃奶奶(rank=2)而非妹妹(rank=7)
+    // Should prefer capturing grandma(rank=2) over sister(rank=7)
     expect(decision.to).toEqual({ x: 2, y: 1 });
   });
 
   it('避免同归于尽: 有非同归于尽的吃牌时优先选择', () => {
     const board = emptyBoard();
-    // 红方爷爷可以吃蓝方爷爷(同归于尽)和蓝方奶奶(普通吃)
+    // Red grandpa can capture blue grandpa(mutual destruction) and blue grandma(normal capture)
     board[1][1] = makeCard('爷爷', 'red');
     board[1][0] = makeCard('爷爷', 'blue');
     board[1][2] = makeCard('奶奶', 'blue');
@@ -887,17 +887,17 @@ describe('aiDecide - AI决策函数', () => {
     const decision = aiDecide(state, 'red');
     expect(decision).not.toBeNull();
     expect(decision.type).toBe('capture');
-    // 应优先吃奶奶(非同归于尽)
+    // Should prefer capturing grandma (non-mutual destruction)
     expect(decision.to).toEqual({ x: 2, y: 1 });
   });
 
   it('只有未翻开的牌可用时返回 flip 操作', () => {
     const board = emptyBoard();
-    // 红方小皇帝被包围且无法吃任何牌
+    // Red emperor is surrounded and cannot capture any card
     board[0][0] = makeCard('小皇帝', 'red');
     board[0][1] = makeCard('爸爸', 'blue');
     board[1][0] = makeCard('妈妈', 'blue');
-    // 有一张未翻开的牌
+    // There is one face-down card
     board[3][3] = makeCard('爸爸', 'red', false);
     const state = makeState(board, 'red');
     const decision = aiDecide(state, 'red');
@@ -910,7 +910,7 @@ describe('aiDecide - AI决策函数', () => {
   it('只有走牌可用时返回 move 操作', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('爸爸', 'red');
-    // 四周有空位，无对方牌可吃，无未翻开的牌
+    // Surrounding has empty cells, no opponent cards to capture, no face-down cards
     const state = makeState(board, 'red');
     const decision = aiDecide(state, 'red');
     expect(decision).not.toBeNull();
@@ -924,7 +924,7 @@ describe('aiDecide - AI决策函数', () => {
 
   it('无任何合法操作时返回 null', () => {
     const board = emptyBoard();
-    // 红方小皇帝被完全包围且无法吃任何牌，无未翻开的牌
+    // Red emperor is completely surrounded and cannot capture any card, no face-down cards
     board[1][1] = makeCard('小皇帝', 'red');
     board[1][0] = makeCard('爸爸', 'blue');
     board[1][2] = makeCard('妈妈', 'blue');
@@ -938,7 +938,7 @@ describe('aiDecide - AI决策函数', () => {
   it('翻牌优先于走牌', () => {
     const board = emptyBoard();
     board[0][0] = makeCard('爸爸', 'red');
-    // 爸爸四周有空位可走，但也有未翻开的牌
+    // Dad has empty cells around, but also has face-down cards nearby
     board[3][3] = makeCard('妈妈', 'blue', false);
     const state = makeState(board, 'red');
     const decision = aiDecide(state, 'red');
@@ -959,7 +959,7 @@ describe('aiDecide - AI决策函数', () => {
 
   it('使用低等级棋子吃牌优先（保留高等级棋子）', () => {
     const board = emptyBoard();
-    // 红方爷爷(rank=1)和红方爸爸(rank=3)都可以吃蓝方奶奶(rank=2)
+    // Red grandpa(rank=1) and red dad(rank=3) can both capture blue grandma(rank=2)
     board[0][0] = makeCard('爷爷', 'red');
     board[0][1] = makeCard('奶奶', 'blue');
     board[2][2] = makeCard('爸爸', 'red');
@@ -968,9 +968,9 @@ describe('aiDecide - AI决策函数', () => {
     const decision = aiDecide(state, 'red');
     expect(decision).not.toBeNull();
     expect(decision.type).toBe('capture');
-    // 两个奶奶rank相同，优先用rank数值大的棋子吃（爸爸rank=3 > 爷爷rank=1）
-    // 但由于棋盘遍历顺序，爷爷(0,0)先被收集，稳定排序下同defenderRank同attackerRank时顺序不变
-    // 此处验证的是AI确实选择了capture操作，且目标是奶奶
+    // Both grandma have same rank, prefer capturing with higher rank value piece (dad rank=3 > grandpa rank=1)
+    // But due to board traversal order, grandpa(0,0) is collected first, stable sort keeps same order for same defenderRank and attackerRank
+    // This verifies AI chose capture action targeting grandma
     const validCaptures = [
       { from: { x: 0, y: 0 }, to: { x: 1, y: 0 } },
       { from: { x: 2, y: 2 }, to: { x: 3, y: 2 } }

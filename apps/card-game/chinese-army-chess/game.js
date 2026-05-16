@@ -1,29 +1,29 @@
 // ============================================================
-// 军棋（翻翻棋）- 游戏核心逻辑
+// Chinese Army Chess (Flip Chess) - Game Core Logic
 // ============================================================
 
 // ============================================================
-// 任务 1.1：常量和基础工具函数
+// Task 1.1: Constants and basic utility functions
 // ============================================================
 
-// 普通棋子名称列表（等级1-10，数值越小等级越高）
+// Normal piece name list (rank 1-10, lower value = higher rank)
 const NORMAL_PIECE_NAMES = ['司令', '军长', '师长', '旅长', '团长', '营长', '连长', '排长', '班长', '工兵'];
 
-// 特殊棋子名称
+// Special piece names
 const BOMB_NAME = '炸弹';
 const MINE_NAME = '地雷';
 const FLAG_NAME = '军旗';
 
-// 每方棋子名称列表（12张：10普通 + 炸弹 + 地雷）
+// Each side piece name list (12 cards: 10 normal + bomb + mine)
 const TEAM_PIECE_NAMES = [...NORMAL_PIECE_NAMES, BOMB_NAME, MINE_NAME];
 
-// 等级映射：棋子名 → 等级数值（1最高，10最低）
+// Rank mapping: piece name -> rank value (1=highest, 10=lowest)
 const RANK_MAP = {
   '司令': 1, '军长': 2, '师长': 3, '旅长': 4, '团长': 5,
   '营长': 6, '连长': 7, '排长': 8, '班长': 9, '工兵': 10
 };
 
-// 四个相邻方向偏移量
+// Four adjacent direction offsets
 const DIRECTIONS = [
   { dx: -1, dy: 0 },
   { dx: 1, dy: 0 },
@@ -32,7 +32,7 @@ const DIRECTIONS = [
 ];
 
 /**
- * 是否为普通棋子（参与等级排序的10种）
+ * Whether is a normal piece (10 types that participate in rank sorting)
  * @param {string} name
  * @returns {boolean}
  */
@@ -41,7 +41,7 @@ function isNormalPiece(name) {
 }
 
 /**
- * 是否为炸弹
+ * Whether is a bomb
  * @param {string} name
  * @returns {boolean}
  */
@@ -50,7 +50,7 @@ function isBomb(name) {
 }
 
 /**
- * 是否为地雷
+ * Whether is a mine
  * @param {string} name
  * @returns {boolean}
  */
@@ -59,7 +59,7 @@ function isMine(name) {
 }
 
 /**
- * 是否为军旗
+ * Whether is a flag
  * @param {string} name
  * @returns {boolean}
  */
@@ -68,7 +68,7 @@ function isFlag(name) {
 }
 
 /**
- * 是否可移动（地雷和军旗不可移动）
+ * Whether is movable (mine and flag cannot move)
  * @param {Piece} piece
  * @returns {boolean}
  */
@@ -77,7 +77,7 @@ function isMovable(piece) {
 }
 
 /**
- * 获取棋子图片路径
+ * Get piece image path
  * @param {Piece} piece
  * @returns {string}
  */
@@ -92,7 +92,7 @@ function getImagePath(piece) {
 }
 
 /**
- * 获取棋子等级（仅普通棋子有等级）
+ * Get piece rank (only normal pieces have rank)
  * @param {string} name
  * @returns {number|null}
  */
@@ -101,10 +101,10 @@ function getRank(name) {
 }
 
 /**
- * 石头剪刀布判定
+ * Rock-Paper-Scissors judgment
  * @param {string} choice1 - 'rock' | 'scissors' | 'paper'
  * @param {string} choice2 - 'rock' | 'scissors' | 'paper'
- * @returns {number} 1=第一方胜, -1=第二方胜, 0=平局
+ * @returns {number} 1=first player wins, -1=second player wins, 0=draw
  */
 function judgeRPS(choice1, choice2) {
   if (choice1 === choice2) return 0;
@@ -119,7 +119,7 @@ function judgeRPS(choice1, choice2) {
 }
 
 /**
- * 判断坐标是否在5×5棋盘范围内
+ * Check if coordinates are within 5x5 board range
  * @param {number} x - 0~4
  * @param {number} y - 0~4
  * @returns {boolean}
@@ -129,41 +129,41 @@ function inBounds(x, y) {
 }
 
 // ============================================================
-// 任务 1.2：战斗判定函数
+// Task 1.2: Combat resolution function
 // ============================================================
 
 /**
- * 判断攻击方棋子是否可以对目标棋子发起吃牌/碰撞操作
- * @param {Piece} attacker - 攻击方棋子
- * @param {Piece} defender - 防守方棋子
+ * Check if attacker can capture/collide with target piece
+ * @param {Piece} attacker - attacker piece
+ * @param {Piece} defender - defender piece
  * @returns {boolean}
  */
 function canCapture(attacker, defender) {
-  // 军旗不可被吃
+  // Flag cannot be captured
   if (isFlag(defender.name)) return false;
 
-  // 地雷不能主动攻击
+  // Mine cannot actively attack
   if (isMine(attacker.name)) return false;
 
-  // 军旗不能主动攻击
+  // Flag cannot actively attack
   if (isFlag(attacker.name)) return false;
 
-  // 同阵营不能互吃
+  // Same team cannot capture each other
   if (attacker.team === defender.team) return false;
 
-  // 炸弹碰任何对方棋子（除军旗，已在上面排除）→ 可以
+  // Bomb vs any opponent piece (except flag, already excluded) -> allowed
   if (isBomb(attacker.name)) return true;
 
-  // 任何可移动棋子碰对方炸弹 → 可以（炸弹同归于尽）
+  // Any movable piece vs opponent bomb -> allowed (mutual destruction)
   if (isBomb(defender.name)) return true;
 
-  // 工兵碰地雷 → 可以（工兵存活）
+  // Engineer vs mine -> allowed (engineer survives)
   if (attacker.name === '工兵' && isMine(defender.name)) return true;
 
-  // 其他普通棋子碰地雷 → 可以（同归于尽）
+  // Other normal piece vs mine -> allowed (mutual destruction)
   if (isMine(defender.name) && isNormalPiece(attacker.name)) return true;
 
-  // 普通棋子之间：高等级（数值小）吃低等级（数值大），或同级
+  // Normal pieces: higher rank (lower value) captures lower rank (higher value), or same rank
   if (isNormalPiece(attacker.name) && isNormalPiece(defender.name)) {
     return attacker.rank <= defender.rank;
   }
@@ -172,27 +172,27 @@ function canCapture(attacker, defender) {
 }
 
 /**
- * 解析战斗结果
- * @param {Piece} attacker - 攻击方棋子
- * @param {Piece} defender - 防守方棋子
+ * Resolve combat result
+ * @param {Piece} attacker - attacker piece
+ * @param {Piece} defender - defender piece
  * @returns {'attacker_wins' | 'mutual_destruction' | 'invalid'}
  */
 function resolveCombat(attacker, defender) {
   if (!canCapture(attacker, defender)) return 'invalid';
 
-  // 炸弹攻击 → 同归于尽
+  // Bomb attacks -> mutual destruction
   if (isBomb(attacker.name)) return 'mutual_destruction';
 
-  // 被炸弹防守 → 同归于尽
+  // Defended by bomb -> mutual destruction
   if (isBomb(defender.name)) return 'mutual_destruction';
 
-  // 工兵碰地雷 → 工兵存活
+  // Engineer vs mine -> engineer survives
   if (attacker.name === '工兵' && isMine(defender.name)) return 'attacker_wins';
 
-  // 其他普通棋子碰地雷 → 同归于尽
+  // Other normal piece vs mine -> mutual destruction
   if (isMine(defender.name)) return 'mutual_destruction';
 
-  // 普通棋子之间
+  // Between normal pieces
   if (attacker.rank === defender.rank) return 'mutual_destruction';
   if (attacker.rank < defender.rank) return 'attacker_wins';
 
@@ -200,18 +200,18 @@ function resolveCombat(attacker, defender) {
 }
 
 // ============================================================
-// 任务 1.3：游戏状态创建函数
+// Task 1.3: Game state creation function
 // ============================================================
 
 /**
- * 创建初始游戏状态
+ * Create initial game state
  * @param {string} mode - 'pvp' | 'pve'
  * @returns {GameState}
  */
 function createGameState(mode) {
   const pieces = [];
 
-  // 红方12张
+  // Red team 12 pieces
   for (const name of TEAM_PIECE_NAMES) {
     pieces.push({
       name,
@@ -221,7 +221,7 @@ function createGameState(mode) {
     });
   }
 
-  // 蓝方12张
+  // Blue team 12 pieces
   for (const name of TEAM_PIECE_NAMES) {
     pieces.push({
       name,
@@ -231,7 +231,7 @@ function createGameState(mode) {
     });
   }
 
-  // 1张中立军旗
+  // 1 neutral flag
   pieces.push({
     name: FLAG_NAME,
     team: 'neutral',
@@ -239,13 +239,13 @@ function createGameState(mode) {
     faceUp: false
   });
 
-  // Fisher-Yates 洗牌
+  // Fisher-Yates shuffle
   for (let i = pieces.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
   }
 
-  // 放置到 5×5 棋盘 board[y][x]
+  // Place onto 5x5 board board[y][x]
   const board = [];
   for (let y = 0; y < 5; y++) {
     const row = [];
@@ -275,11 +275,11 @@ function createGameState(mode) {
 }
 
 // ============================================================
-// 任务 1.4：棋子操作函数
+// Task 1.4: Piece operation functions
 // ============================================================
 
 /**
- * 获取指定阵营场上存活的最小普通棋子（等级数值最大的普通棋子）
+ * Get smallest normal piece alive on field for a team (highest rank value normal piece)
  * @param {Board} board
  * @param {string} team - 'red' | 'blue'
  * @returns {Piece|null}
@@ -300,7 +300,7 @@ function getLowestNormalPiece(board, team) {
 }
 
 /**
- * 判断指定棋子是否可以执行抱军旗操作
+ * Check if specified piece can capture flag
  * @param {Board} board
  * @param {number} x
  * @param {number} y
@@ -313,11 +313,11 @@ function canCaptureFlag(board, x, y, team) {
   if (piece.team !== team) return null;
   if (!isNormalPiece(piece.name)) return null;
 
-  // 检查是否为己方最小普通棋子
+  // Check if own smallest normal piece
   const lowest = getLowestNormalPiece(board, team);
   if (!lowest || piece.name !== lowest.name) return null;
 
-  // 检查相邻位置是否有已翻开的军旗
+  // Check if adjacent position has face-up flag
   for (const { dx, dy } of DIRECTIONS) {
     const nx = x + dx;
     const ny = y + dy;
@@ -332,7 +332,7 @@ function canCaptureFlag(board, x, y, team) {
 }
 
 /**
- * 获取合法移动目标（相邻空位 + 可抱军旗的位置）
+ * Get valid move targets (adjacent empty cells + capturable flag positions)
  * @param {Board} board
  * @param {number} x
  * @param {number} y
@@ -346,7 +346,7 @@ function getValidMoves(board, x, y, team) {
 
   const moves = [];
 
-  // 检查是否可以抱军旗
+  // Check if can capture flag
   const flagCapture = canCaptureFlag(board, x, y, team);
 
   for (const { dx, dy } of DIRECTIONS) {
@@ -357,7 +357,7 @@ function getValidMoves(board, x, y, team) {
     if (target === null) {
       moves.push({ x: nx, y: ny, type: 'move' });
     } else if (target && isFlag(target.name) && target.faceUp) {
-      // 军旗位置：只有可以抱军旗时才加入
+      // Flag position: only add when can capture flag
       if (flagCapture && flagCapture.flagX === nx && flagCapture.flagY === ny) {
         moves.push({ x: nx, y: ny, type: 'capture_flag' });
       }
@@ -368,7 +368,7 @@ function getValidMoves(board, x, y, team) {
 }
 
 /**
- * 获取合法吃牌目标
+ * Get valid capture targets
  * @param {Board} board
  * @param {number} x
  * @param {number} y
@@ -387,7 +387,7 @@ function getValidCaptures(board, x, y, team) {
     const target = board[ny][nx];
     if (!target || !target.faceUp) continue;
     if (target.team === team) continue;
-    if (isFlag(target.name)) continue; // 军旗不能被 captureCard 吃
+    if (isFlag(target.name)) continue; // Flag cannot be captured by captureCard
     if (!canCapture(piece, target)) continue;
     captures.push({ x: nx, y: ny });
   }
@@ -396,7 +396,7 @@ function getValidCaptures(board, x, y, team) {
 }
 
 /**
- * 执行翻牌操作（就地修改state）
+ * Execute flip operation (modifies state in place)
  * @param {GameState} state
  * @param {number} x
  * @param {number} y
@@ -409,27 +409,27 @@ function flipCard(state, x, y) {
 
   card.faceUp = true;
 
-  // 若翻开的是军旗，不分配阵营
+  // If flipped card is flag, do not assign team
   if (isFlag(card.name)) {
     state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
     state.turnCount++;
     return state;
   }
 
-  // 若翻开的不是军旗且阵营未分配
+  // If flipped card is not flag and team not assigned
   if (!state.teamAssigned) {
     if (state.mode === 'pve') {
       if (state.aiFirst) {
-        // AI 翻牌：aiTeam = card.team，playerTeam = 另一方
+        // AI flip: aiTeam = card.team, playerTeam = other side
         state.aiTeam = card.team;
         state.playerTeam = card.team === 'red' ? 'blue' : 'red';
       } else {
-        // 玩家翻牌：playerTeam = card.team，aiTeam = 另一方
+        // Player flip: playerTeam = card.team, aiTeam = other side
         state.playerTeam = card.team;
         state.aiTeam = card.team === 'red' ? 'blue' : 'red';
       }
     }
-    // PVP 模式不需要设置 playerTeam/aiTeam
+    // PVP mode does not need to set playerTeam/aiTeam
     state.teamAssigned = true;
   }
 
@@ -439,7 +439,7 @@ function flipCard(state, x, y) {
 }
 
 /**
- * 执行走牌操作（就地修改state），包含抱军旗判定
+ * Execute move operation (modifies state in place), includes flag capture check
  * @param {GameState} state
  * @param {{x,y}} from
  * @param {{x,y}} to
@@ -456,12 +456,12 @@ function moveCard(state, from, to) {
 
   const target = state.board[to.y][to.x];
 
-  // 若目标位置是已翻开的军旗
+  // If target position is face-up flag
   if (target && isFlag(target.name) && target.faceUp) {
     const flagResult = canCaptureFlag(state.board, from.x, from.y, state.currentTeam);
-    if (!flagResult) return null; // 只有最小棋子才能抱军旗
+    if (!flagResult) return null; // Only smallest piece can capture flag
 
-    // 抱军旗获胜
+    // Capture flag to win
     state.board[to.y][to.x] = card;
     state.board[from.y][from.x] = null;
     state.gameOver = true;
@@ -470,7 +470,7 @@ function moveCard(state, from, to) {
     return state;
   }
 
-  // 若目标位置为空
+  // If target position is empty
   if (target === null) {
     state.board[to.y][to.x] = card;
     state.board[from.y][from.x] = null;
@@ -479,15 +479,15 @@ function moveCard(state, from, to) {
     return state;
   }
 
-  // 其他情况（目标有棋子但不是军旗）
+  // Other cases (target has piece but not flag)
   return null;
 }
 
 /**
- * 执行吃牌操作（就地修改state）
+ * Execute capture operation (modifies state in place)
  * @param {GameState} state
- * @param {{x,y}} from - 攻击方位置
- * @param {{x,y}} to - 防守方位置
+ * @param {{x,y}} from - attacker position
+ * @param {{x,y}} to - defender position
  * @returns {GameState|null}
  */
 function captureCard(state, from, to) {
@@ -506,7 +506,7 @@ function captureCard(state, from, to) {
   const result = resolveCombat(attacker, defender);
 
   if (result === 'attacker_wins') {
-    // 将被吃棋子加入对应 captured 列表
+    // Add captured piece to corresponding captured list
     if (defender.team === 'red') {
       state.capturedRed.push(defender.name);
     } else {
@@ -515,7 +515,7 @@ function captureCard(state, from, to) {
     state.board[to.y][to.x] = attacker;
     state.board[from.y][from.x] = null;
   } else if (result === 'mutual_destruction') {
-    // 双方均移除
+    // Both sides removed
     if (attacker.team === 'red') {
       state.capturedRed.push(attacker.name);
     } else {
@@ -538,11 +538,11 @@ function captureCard(state, from, to) {
 }
 
 // ============================================================
-// 任务 1.5：游戏结束判定和 AI 决策
+// Task 1.5: Game over check and AI decision
 // ============================================================
 
 /**
- * 检查指定阵营是否有任何合法操作（翻牌/走牌/吃牌）
+ * Check if a team has any legal action (flip/move/capture)
  * @param {Board} board
  * @param {string} team - 'red' | 'blue'
  * @returns {boolean}
@@ -551,9 +551,9 @@ function hasAnyLegalAction(board, team) {
   for (let y = 0; y < 5; y++) {
     for (let x = 0; x < 5; x++) {
       const piece = board[y][x];
-      // 翻牌：有任何未翻开的棋子即可
+      // Flip: any face-down piece on board
       if (piece && !piece.faceUp) return true;
-      // 走牌/吃牌：己方已翻开的棋子
+      // Move/capture: own face-up pieces
       if (piece && piece.faceUp && piece.team === team) {
         if (getValidMoves(board, x, y, team).length > 0) return true;
         if (getValidCaptures(board, x, y, team).length > 0) return true;
@@ -564,17 +564,17 @@ function hasAnyLegalAction(board, team) {
 }
 
 /**
- * 检查游戏是否结束
+ * Check if game is over
  * @param {GameState} state
  * @returns {{ended: boolean, winner: string|null}}
  */
 function checkGameOver(state) {
-  // 若已通过抱军旗获胜
+  // If already won by capturing flag
   if (state.gameOver) {
     return { ended: true, winner: state.winner };
   }
 
-  // 若当前行动方无合法操作
+  // If current team has no legal actions
   if (state.currentTeam && !hasAnyLegalAction(state.board, state.currentTeam)) {
     const opponent = state.currentTeam === 'red' ? 'blue' : 'red';
     return { ended: true, winner: opponent };
@@ -584,16 +584,16 @@ function checkGameOver(state) {
 }
 
 /**
- * AI决策：选择最优操作
- * 优先级：抱军旗 > 吃牌（优先吃高等级）> 翻牌（随机）> 走牌（随机）
+ * AI decision: select optimal action
+ * Priority: capture flag > capture (prefer high rank) > flip (random) > move (random)
  * @param {GameState} state
- * @param {string} aiTeam - AI阵营 'red' | 'blue'
+ * @param {string} aiTeam - AI team 'red' | 'blue'
  * @returns {{type, from?, to?, x?, y?}|null}
  */
 function aiDecide(state, aiTeam) {
   const board = state.board;
 
-  // 优先级1：抱军旗（最高优先级）
+  // Priority 1: capture flag (highest priority)
   for (let y = 0; y < 5; y++) {
     for (let x = 0; x < 5; x++) {
       const piece = board[y][x];
@@ -605,7 +605,7 @@ function aiDecide(state, aiTeam) {
     }
   }
 
-  // 优先级2：吃牌（优先吃高等级，避免高等级同归于尽）
+  // Priority 2: capture (prefer high rank, avoid high-rank mutual destruction)
   const allCaptures = [];
   for (let y = 0; y < 5; y++) {
     for (let x = 0; x < 5; x++) {
@@ -628,7 +628,7 @@ function aiDecide(state, aiTeam) {
   }
 
   if (allCaptures.length > 0) {
-    // non-mutual first，然后 defenderRank 升序（等级数值小=高等级），attackerRank 降序（用低价值棋子）
+    // non-mutual first, then defenderRank ascending (low value = high rank), attackerRank descending (use low value piece)
     allCaptures.sort((a, b) => {
       if (a.mutual !== b.mutual) return a.mutual ? 1 : -1;
       if (a.defenderRank !== b.defenderRank) return a.defenderRank - b.defenderRank;
@@ -637,7 +637,7 @@ function aiDecide(state, aiTeam) {
     return { type: 'capture', from: allCaptures[0].from, to: allCaptures[0].to };
   }
 
-  // 优先级3：翻牌（随机）
+  // Priority 3: flip (random)
   const faceDownCells = [];
   for (let y = 0; y < 5; y++) {
     for (let x = 0; x < 5; x++) {
@@ -650,7 +650,7 @@ function aiDecide(state, aiTeam) {
     return { type: 'flip', x: pick.x, y: pick.y };
   }
 
-  // 优先级4：走牌（随机）
+  // Priority 4: move (random)
   const allMoves = [];
   for (let y = 0; y < 5; y++) {
     for (let x = 0; x < 5; x++) {
@@ -671,7 +671,7 @@ function aiDecide(state, aiTeam) {
 }
 
 // ============================================================
-// 任务 1.6：模块导出
+// Task 1.6: Module exports
 // ============================================================
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -688,13 +688,13 @@ if (typeof module !== 'undefined' && module.exports) {
 
 
 // ============================================================
-// UI 控制器（仅浏览器环境）
-// 任务 5.1、5.2、5.3
+// UI controller (browser environment only)
+// Task 5.1, 5.2, 5.3
 // ============================================================
 if (typeof document !== 'undefined') {
   var gameState = null;
 
-  // DOM 元素
+  // DOM elements
   var $modeSelection = document.getElementById('mode-selection');
   var $rpsSection    = document.getElementById('rps-section');
   var $rpsPvp        = document.getElementById('rps-pvp');
@@ -714,7 +714,7 @@ if (typeof document !== 'undefined') {
   var $btnRestart    = document.getElementById('btn-restart');
 
   // ============================================================
-  // 任务 5.1：渲染器和事件处理
+  // Task 5.1: Renderer and event handling
   // ============================================================
 
   function getCell(x, y) {
@@ -738,13 +738,13 @@ if (typeof document !== 'undefined') {
           back.className = 'cell-back';
           cell.appendChild(back);
         } else {
-          // 正面
+          // Face-up
           if (piece.team === 'red') {
             cell.classList.add('cell-red');
           } else if (piece.team === 'blue') {
             cell.classList.add('cell-blue');
           } else {
-            // neutral（军旗）
+            // neutral (flag)
             cell.classList.add('cell-neutral');
           }
           var face = document.createElement('div');
@@ -761,7 +761,7 @@ if (typeof document !== 'undefined') {
   }
 
   function updateStatus(state) {
-    // 当前行动方
+    // Current team
     if (state.currentTeam) {
       if (state.currentTeam === 'red') {
         $currentTeam.textContent = '红方';
@@ -775,10 +775,10 @@ if (typeof document !== 'undefined') {
       $currentTeam.className = 'team-indicator';
     }
 
-    // 回合数
+    // Turn count
     $turnCount.textContent = state.turnCount;
 
-    // 统计红方/蓝方剩余棋子数（不含军旗）
+    // Count red/blue remaining pieces (excluding flag)
     var redCount = 0, blueCount = 0;
     for (var y = 0; y < 5; y++) {
       for (var x = 0; x < 5; x++) {
@@ -792,7 +792,7 @@ if (typeof document !== 'undefined') {
     $redRemaining.textContent = redCount;
     $blueRemaining.textContent = blueCount;
 
-    // 被吃棋子图片
+    // Captured piece images
     $capturedRed.innerHTML = '';
     for (var i = 0; i < state.capturedRed.length; i++) {
       var name = state.capturedRed[i];
@@ -880,11 +880,11 @@ if (typeof document !== 'undefined') {
     showMessage('', '');
   }
 
-  // 棋盘点击事件
+  // Board click event
   $board.addEventListener('click', function(e) {
     if (!gameState || gameState.gameOver) return;
     if (gameState.aiThinking) return;
-    // PVE 模式且阵营已分配且当前是 AI 回合：忽略
+    // PVE mode and team assigned and current is AI turn: ignore
     if (gameState.mode === 'pve' && gameState.teamAssigned && gameState.currentTeam === gameState.aiTeam) return;
 
     var cell = e.target.closest('.cell');
@@ -895,18 +895,18 @@ if (typeof document !== 'undefined') {
     var piece = gameState.board[y][x];
     var currentTeam = gameState.currentTeam;
 
-    // 已有选中棋子
+    // Already have selected piece
     if (gameState.selectedCell) {
       var sel = gameState.selectedCell;
 
-      // 点击同一格：取消选中
+      // Click same cell: deselect
       if (sel.x === x && sel.y === y) {
         gameState.selectedCell = null;
         clearHighlights();
         return;
       }
 
-      // 点击已翻开的军旗：尝试抱军旗（moveCard）
+      // Click face-up flag: try to capture flag (moveCard)
       if (piece && piece.faceUp && isFlag(piece.name)) {
         var result = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
         if (result) {
@@ -920,7 +920,7 @@ if (typeof document !== 'undefined') {
         return;
       }
 
-      // 点击对方已翻开棋子（非军旗）：尝试吃牌
+      // Click opponent face-up piece (not flag): try capture
       if (piece && piece.faceUp && piece.team !== currentTeam && !isFlag(piece.name)) {
         var captures = getValidCaptures(gameState.board, sel.x, sel.y, currentTeam);
         var canDo = captures.some(function(t) { return t.x === x && t.y === y; });
@@ -938,7 +938,7 @@ if (typeof document !== 'undefined') {
         return;
       }
 
-      // 点击空位：尝试走牌
+      // Click empty cell: try move
       if (!piece) {
         var result = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
         if (result) {
@@ -952,21 +952,21 @@ if (typeof document !== 'undefined') {
         return;
       }
 
-      // 点击己方已翻开棋子：重新选中
+      // Click own face-up piece: reselect
       if (piece && piece.faceUp && piece.team === currentTeam) {
         selectCard(x, y);
         return;
       }
 
-      // 其他：取消选中
+      // Other: deselect
       gameState.selectedCell = null;
       clearHighlights();
       return;
     }
 
-    // 无选中棋子
+    // No piece selected
     if (piece && !piece.faceUp) {
-      // 点击未翻开棋子：翻牌
+      // Click face-down piece: flip
       var result = flipCard(gameState, x, y);
       if (result) {
         clearHighlights();
@@ -993,7 +993,7 @@ if (typeof document !== 'undefined') {
   });
 
   // ============================================================
-  // 任务 5.2：模式选择和石头剪刀布流程
+  // Task 5.2: Mode selection and Rock-Paper-Scissors flow
   // ============================================================
 
   function showModeSelection() {
@@ -1069,12 +1069,12 @@ if (typeof document !== 'undefined') {
       // PVE
       var aiChoiceName = choiceNames[choice2];
       if (result === 1) {
-        // 玩家赢：玩家先手
+        // Player won: player goes first
         $rpsResult.textContent = '电脑出了' + aiChoiceName + '，你赢了！你先手';
         gameState.aiFirst = false;
         setTimeout(function() { startGame('red'); }, 1500);
       } else {
-        // 电脑赢：电脑先手
+        // Computer won: computer goes first
         $rpsResult.textContent = '电脑出了' + aiChoiceName + '，电脑赢了！电脑先手';
         gameState.aiFirst = true;
         setTimeout(function() { startGame('red'); }, 1500);
@@ -1082,7 +1082,7 @@ if (typeof document !== 'undefined') {
     }
   }
 
-  // PVP 石头剪刀布按钮
+  // PVP Rock-Paper-Scissors buttons
   document.querySelectorAll('#rps-pvp .btn-rps').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var player = btn.dataset.player;
@@ -1104,7 +1104,7 @@ if (typeof document !== 'undefined') {
     });
   });
 
-  // PVE 石头剪刀布按钮
+  // PVE Rock-Paper-Scissors buttons
   document.querySelectorAll('#rps-pve .btn-rps').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var playerChoice = btn.dataset.choice;
@@ -1116,7 +1116,7 @@ if (typeof document !== 'undefined') {
     });
   });
 
-  // 模式选择按钮
+  // Mode selection buttons
   document.getElementById('btn-pvp').addEventListener('click', function() {
     gameState = createGameState('pvp');
     showRPSSelection('pvp');
@@ -1127,14 +1127,14 @@ if (typeof document !== 'undefined') {
     showRPSSelection('pve');
   });
 
-  // 重新开始按钮
+  // Restart button
   $btnRestart.addEventListener('click', function() {
     gameState = null;
     showModeSelection();
   });
 
   // ============================================================
-  // 任务 5.3：AI 操作执行与动画
+  // Task 5.3: AI action execution and animation
   // ============================================================
 
   function afterAction() {
@@ -1241,6 +1241,6 @@ if (typeof document !== 'undefined') {
     }
   }
 
-  // 初始化
+  // Initialize
   showModeSelection();
 }

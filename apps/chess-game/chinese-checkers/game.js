@@ -1,8 +1,8 @@
 // ============================================================
-// 中国跳棋 (Chinese Checkers) - 游戏核心逻辑
+// Chinese Checkers - Game core logic
 // ============================================================
-// 参考 anchengjian/chinese_checkers 实现
-// 17×17轴向坐标系，121个有效位置形成六角星
+// Reference: anchengjian/chinese_checkers implementation
+// 17x17 axial coordinate system, 121 valid positions forming a hexagram
 
 var EMPTY = 0;
 var RED = 1;
@@ -22,30 +22,30 @@ var PLAYER_COLORS = {
 };
 
 // ============================================================
-// 棋盘定义 - 17列轴向坐标，posRegions定义每列的有效行范围
+// Board definition - 17-column axial coordinates, posRegions defines valid row range per column
 // ============================================================
 
 var BOARD_ROWS = 17;
 
-// 每列(x)对应的行(y)范围 [yMin, yMax]（1-based）
+// Row (y) range [yMin, yMax] for each column (x) (1-based)
 var POS_REGIONS = [
-  [5, 5],   // x=1:  1格
-  [5, 6],   // x=2:  2格
-  [5, 7],   // x=3:  3格
-  [5, 8],   // x=4:  4格
-  [1, 13],  // x=5:  13格
-  [2, 13],  // x=6:  12格
-  [3, 13],  // x=7:  11格
-  [4, 13],  // x=8:  10格
-  [5, 13],  // x=9:  9格
-  [5, 14],  // x=10: 10格
-  [5, 15],  // x=11: 11格
-  [5, 16],  // x=12: 12格
-  [5, 17],  // x=13: 13格
-  [10, 13], // x=14: 4格
-  [11, 13], // x=15: 3格
-  [12, 13], // x=16: 2格
-  [13, 13]  // x=17: 1格
+  [5, 5],   // x=1:  1 cell
+  [5, 6],   // x=2:  2 cells
+  [5, 7],   // x=3:  3 cells
+  [5, 8],   // x=4:  4 cells
+  [1, 13],  // x=5:  13 cells
+  [2, 13],  // x=6:  12 cells
+  [3, 13],  // x=7:  11 cells
+  [4, 13],  // x=8:  10 cells
+  [5, 13],  // x=9:  9 cells
+  [5, 14],  // x=10: 10 cells
+  [5, 15],  // x=11: 11 cells
+  [5, 16],  // x=12: 12 cells
+  [5, 17],  // x=13: 13 cells
+  [10, 13], // x=14: 4 cells
+  [11, 13], // x=15: 3 cells
+  [12, 13], // x=16: 2 cells
+  [13, 13]  // x=17: 1 cell
 ];
 
 var TOTAL_POSITIONS = 121;
@@ -75,27 +75,27 @@ function initBoard() {
 initBoard();
 
 // ============================================================
-// 邻接关系 - 轴向坐标6个固定方向
+// Adjacency - 6 fixed directions in axial coordinates
 // ============================================================
 
 var DIRECTION_VECTORS = [
-  { x: -1, y: -1 },  // 左上
-  { x: 0,  y: -1 },  // 上
-  { x: 1,  y: 0  },  // 右
-  { x: 1,  y: 1  },  // 右下
-  { x: 0,  y: 1  },  // 下
-  { x: -1, y: 0  }   // 左
+  { x: -1, y: -1 },  // Upper-left
+  { x: 0,  y: -1 },  // Up
+  { x: 1,  y: 0  },  // Right
+  { x: 1,  y: 1  },  // Lower-right
+  { x: 0,  y: 1  },  // Down
+  { x: -1, y: 0  }   // Left
 ];
 
-// AI 评分权重常量
+// AI scoring weight constants
 var AI_WEIGHTS = {
-  PROGRESS: 100,           // 前进得分权重
-  JUMP_EFFICIENCY: 30,     // 跳跃效率权重（每格）
-  TARGET_ENTRY: 500,       // 进入目标区域奖励
-  TARGET_DEPTH: 200,       // 目标区域深度奖励
-  BLOCKING: 80,            // 阻挡对手权重
-  FORMATION: 20,           // 阵型协作权重
-  RETREAT_PENALTY: -150    // 后退惩罚
+  PROGRESS: 100,           // Progress score weight
+  JUMP_EFFICIENCY: 30,     // Jump efficiency weight (per cell)
+  TARGET_ENTRY: 500,       // Target area entry bonus
+  TARGET_DEPTH: 200,       // Target area depth bonus
+  BLOCKING: 80,            // Blocking opponent weight
+  FORMATION: 20,           // Formation cooperation weight
+  RETREAT_PENALTY: -150    // Retreat penalty
 };
 
 var ADJACENT = [];
@@ -130,14 +130,14 @@ function initAdjacency() {
 initAdjacency();
 
 // ============================================================
-// 玩家起始和目标位置
+// Player start and target positions
 // ============================================================
 
 var START_POSITIONS = {};
 var TARGET_POSITIONS = {};
 
 function initPlayerPositions() {
-  // 玩家A (红方): 顶部三角 area x=5,y=1 non-special
+  // Player A (Red): top triangle area x=5,y=1 non-special
   START_POSITIONS[RED] = [];
   for (var i = 0; i < 4; i++) {
     for (var j = i; j < 4; j++) {
@@ -145,7 +145,7 @@ function initPlayerPositions() {
     }
   }
 
-  // 玩家C (蓝方): 右下三角 area x=14,y=10 non-special
+  // Player C (Blue): bottom-right triangle area x=14,y=10 non-special
   START_POSITIONS[BLUE] = [];
   for (var i = 0; i < 4; i++) {
     for (var j = i; j < 4; j++) {
@@ -153,7 +153,7 @@ function initPlayerPositions() {
     }
   }
 
-  // 玩家E (绿方): 左上三角 area x=1,y=5 special
+  // Player E (Green): upper-left triangle area x=1,y=5 special
   START_POSITIONS[GREEN] = [];
   for (var i = 0; i < 4; i++) {
     for (var j = 0; j <= i; j++) {
@@ -161,7 +161,7 @@ function initPlayerPositions() {
     }
   }
 
-  // 玩家B (黄方): 右侧三角 area x=10,y=5 special
+  // Player B (Yellow): right triangle area x=10,y=5 special
   START_POSITIONS[YELLOW] = [];
   for (var i = 0; i < 4; i++) {
     for (var j = 0; j <= i; j++) {
@@ -169,7 +169,7 @@ function initPlayerPositions() {
     }
   }
 
-  // 玩家D (紫方): 底部三角 area x=10,y=14 special
+  // Player D (Purple): bottom triangle area x=10,y=14 special
   START_POSITIONS[PURPLE] = [];
   for (var i = 0; i < 4; i++) {
     for (var j = 0; j <= i; j++) {
@@ -177,7 +177,7 @@ function initPlayerPositions() {
     }
   }
 
-  // 玩家F (橙方): 左侧三角 area x=5,y=10 non-special
+  // Player F (Orange): left triangle area x=5,y=10 non-special
   START_POSITIONS[ORANGE] = [];
   for (var i = 0; i < 4; i++) {
     for (var j = i; j < 4; j++) {
@@ -185,7 +185,7 @@ function initPlayerPositions() {
     }
   }
 
-  // 目标位置: 对角位置
+  // Target positions: opposite diagonal positions
   TARGET_POSITIONS[RED] = START_POSITIONS[BLUE].slice();
   TARGET_POSITIONS[BLUE] = START_POSITIONS[RED].slice();
   TARGET_POSITIONS[GREEN] = START_POSITIONS[ORANGE].slice();
@@ -197,7 +197,7 @@ function initPlayerPositions() {
 initPlayerPositions();
 
 // ============================================================
-// AI: 预计算位置评分
+// AI: Pre-computed position scores
 // ============================================================
 
 var POSITION_SCORES = {};
@@ -211,7 +211,7 @@ function initPositionScores() {
       targetSet[targets[i]] = true;
     }
 
-    // 计算目标区域质心
+    // Calculate target area centroid
     var cx = 0, cy = 0;
     for (var i = 0; i < targets.length; i++) {
       cx += positions[targets[i]].x;
@@ -220,7 +220,7 @@ function initPositionScores() {
     cx /= targets.length;
     cy /= targets.length;
 
-    // 计算目标区域深度参考点（最远的顶点）
+    // Calculate target area depth reference point (farthest vertex)
     var maxDistFromCenter = 0;
     var tipIdx = targets[0];
     for (var i = 0; i < targets.length; i++) {
@@ -237,11 +237,11 @@ function initPositionScores() {
     for (var cell = 0; cell < TOTAL_POSITIONS; cell++) {
       var pos = positions[cell];
       if (targetSet[cell]) {
-        // 目标区域内：高基础分 + 深度奖励
+        // Inside target area: high base score + depth bonus
         var depthDist = Math.abs(pos.x - tipPos.x) + Math.abs(pos.y - tipPos.y);
         POSITION_SCORES[player][cell] = 2000 + (maxDistFromCenter - depthDist) * 100;
       } else {
-        // 目标区域外：基于到目标质心的距离
+        // Outside target area: based on distance to target centroid
         var distToTarget = Math.abs(pos.x - cx) + Math.abs(pos.y - cy);
         POSITION_SCORES[player][cell] = 1000 - distToTarget * 50;
       }
@@ -252,7 +252,7 @@ function initPositionScores() {
 initPositionScores();
 
 // ============================================================
-// 棋盘操作
+// Board operations
 // ============================================================
 
 function createBoard() {
@@ -332,7 +332,7 @@ function makeMove(board, from, to) {
 }
 
 // ============================================================
-// 胜负判定
+// Win/loss determination
 // ============================================================
 
 function checkWin(board, player) {
@@ -355,7 +355,7 @@ function checkGameOver(board, players) {
 }
 
 // ============================================================
-// AI: 多因子贪心策略
+// AI: Multi-factor greedy strategy
 // ============================================================
 
 function isInTargetArea(cell, player) {
@@ -372,7 +372,7 @@ function calculateBlockingScore(board, player, position) {
   for (var i = 0; i < neighbors.length; i++) {
     var neighborCell = neighbors[i];
     if (board[neighborCell] !== EMPTY && board[neighborCell] !== player) {
-      // 对手棋子在目标位置旁边，形成阻挡
+      // Opponent piece next to target position, forming a block
       var opponent = board[neighborCell];
       if (!isInTargetArea(position, opponent)) {
         score += 1;
@@ -398,11 +398,11 @@ function evaluateMove(board, player, from, to, allPlayers) {
   var fromPos = positions[from];
   var toPos = positions[to];
 
-  // Factor 1: 前进得分（基于预计算位置评分）
+  // Factor 1: Progress score (based on pre-computed position scores)
   var progressScore = POSITION_SCORES[player][to] - POSITION_SCORES[player][from];
   score += progressScore * AI_WEIGHTS.PROGRESS;
 
-  // Factor 2: 跳跃效率
+  // Factor 2: Jump efficiency
   var xDiff = Math.abs(toPos.x - fromPos.x);
   var yDiff = Math.abs(toPos.y - fromPos.y);
   var jumpDistance = Math.max(xDiff, yDiff);
@@ -410,14 +410,14 @@ function evaluateMove(board, player, from, to, allPlayers) {
     score += jumpDistance * AI_WEIGHTS.JUMP_EFFICIENCY;
   }
 
-  // Factor 3: 进入目标区域奖励
+  // Factor 3: Target area entry bonus
   var wasInTarget = isInTargetArea(from, player);
   var nowInTarget = isInTargetArea(to, player);
   if (!wasInTarget && nowInTarget) {
     score += AI_WEIGHTS.TARGET_ENTRY;
   }
 
-  // Factor 4: 目标区域深度奖励
+  // Factor 4: Target area depth bonus
   if (nowInTarget) {
     var depthBefore = POSITION_SCORES[player][from];
     var depthAfter = POSITION_SCORES[player][to];
@@ -426,7 +426,7 @@ function evaluateMove(board, player, from, to, allPlayers) {
     }
   }
 
-  // Factor 5: 阻挡对手
+  // Factor 5: Blocking opponents
   var opponents = [];
   if (allPlayers) {
     for (var i = 0; i < allPlayers.length; i++) {
@@ -440,11 +440,11 @@ function evaluateMove(board, player, from, to, allPlayers) {
   var blockingScore = calculateBlockingScore(board, player, to);
   score += blockingScore * AI_WEIGHTS.BLOCKING;
 
-  // Factor 6: 阵型协作
+  // Factor 6: Formation cooperation
   var formationScore = calculateFormationScore(board, player, to);
   score += formationScore * AI_WEIGHTS.FORMATION;
 
-  // Factor 7: 后退惩罚
+  // Factor 7: Retreat penalty
   if (progressScore < 0) {
     score += AI_WEIGHTS.RETREAT_PENALTY;
   }
@@ -473,7 +473,7 @@ function getBestAIMove(board, player, allPlayers) {
 }
 
 // ============================================================
-// 游戏状态
+// Game state
 // ============================================================
 
 function createGameState(mode, playerCount) {
@@ -506,7 +506,7 @@ function initGame(state) {
 }
 
 // ============================================================
-// 石头剪刀布
+// Rock-Paper-Scissors
 // ============================================================
 
 function judgeRPS(choice1, choice2) {
@@ -527,7 +527,7 @@ function getRPSName(choice) {
 }
 
 // ============================================================
-// 浏览器 UI
+// Browser UI
 // ============================================================
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -576,7 +576,7 @@ if (typeof document !== 'undefined') {
   var CELL_SIZE = 28;
   var PADDING = 60;
 
-  // 颜色分区
+  // Color zones
   var AREA_COLORS = {
     red: '#e53935',
     green: '#2e7d32',
@@ -587,7 +587,7 @@ if (typeof document !== 'undefined') {
     center: '#f5f0e1'
   };
 
-  // 判断位置属于哪个颜色区域 - 只给起始位置上色
+  // Determine which color zone a position belongs to - only color start positions
   function getAreaColor(cell) {
     for (var p = 1; p <= 6; p++) {
       if (START_POSITIONS[p].indexOf(cell) !== -1) {
@@ -597,7 +597,7 @@ if (typeof document !== 'undefined') {
     return AREA_COLORS.center;
   }
 
-  // 轴向坐标转像素坐标（参考 anchengjian 实现）
+  // Convert axial coordinates to pixel coordinates (reference: anchengjian implementation)
   function cellToPixel(cell) {
     var p = positions[cell];
     var x = p.x;
@@ -619,7 +619,7 @@ if (typeof document !== 'undefined') {
     var svg = document.getElementById('board-svg');
     svg.innerHTML = '';
 
-    // 计算画布尺寸
+    // Calculate canvas size
     var maxPx = 0;
     var maxPy = 0;
     for (var i = 0; i < TOTAL_POSITIONS; i++) {
@@ -634,7 +634,7 @@ if (typeof document !== 'undefined') {
     svg.setAttribute('height', height);
     svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
 
-    // 创建旋转容器
+    // Create rotation container
     var rotation = gameState.boardRotation || 0;
     var centerX = width / 2;
     var centerY = height / 2;
@@ -642,7 +642,7 @@ if (typeof document !== 'undefined') {
     g.setAttribute('transform', 'rotate(' + rotation + ' ' + centerX + ' ' + centerY + ')');
     svg.appendChild(g);
 
-    // 背景
+    // Background
     var bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     bg.setAttribute('width', width);
     bg.setAttribute('height', height);
@@ -650,7 +650,7 @@ if (typeof document !== 'undefined') {
     bg.setAttribute('rx', '15');
     g.appendChild(bg);
 
-    // 绘制所有有效位置 (带区域颜色)
+    // Draw all valid positions (with area colors)
     for (var cell = 0; cell < TOTAL_POSITIONS; cell++) {
       var pos = cellToPixel(cell);
       var areaColor = getAreaColor(cell);
@@ -666,7 +666,7 @@ if (typeof document !== 'undefined') {
       hex.style.cursor = 'pointer';
       g.appendChild(hex);
 
-      // 白色内圈
+      // White inner circle
       var inner = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       inner.setAttribute('cx', pos.x);
       inner.setAttribute('cy', pos.y);
@@ -678,14 +678,14 @@ if (typeof document !== 'undefined') {
       g.appendChild(inner);
     }
 
-    // 绘制棋子
+    // Draw pieces
     for (var cell = 0; cell < TOTAL_POSITIONS; cell++) {
       if (gameState.board[cell] !== EMPTY) {
         drawPiece(g, cell, gameState.board[cell]);
       }
     }
 
-    // 绘制有效移动位置
+    // Draw valid move positions
     if (gameState.validMoves.length > 0) {
       for (var i = 0; i < gameState.validMoves.length; i++) {
         var moveCell = gameState.validMoves[i];
@@ -833,21 +833,21 @@ if (typeof document !== 'undefined') {
     }, 500);
   }
 
-  // 获取玩家对应的棋盘旋转角度（让玩家起始区域在底部）
+  // Get board rotation angle for player (to place player's start area at bottom)
   function getPlayerRotation(player) {
-    // 红方在顶部，需要旋转180度
-    // 绿方在左上，需要旋转120度
-    // 黄方在右上，需要旋转240度
-    // 蓝方在右下，不需要旋转
-    // 橙方在左下，不需要旋转
-    // 紫方在底部，不需要旋转
+    // Red is at top, needs 180-degree rotation
+    // Green is at upper-left, needs 120-degree rotation
+    // Yellow is at upper-right, needs 240-degree rotation
+    // Blue is at bottom-right, no rotation needed
+    // Orange is at bottom-left, no rotation needed
+    // Purple is at bottom, no rotation needed
     var rotations = {
-      1: 180,  // 红方
-      2: 0,    // 蓝方
-      3: 120,  // 绿方
-      4: 240,  // 黄方
-      5: 0,    // 紫方（底部）
-      6: 0     // 橙方（左下）
+      1: 180,  // Red
+      2: 0,    // Blue
+      3: 120,  // Green
+      4: 240,  // Yellow
+      5: 0,    // Purple (bottom)
+      6: 0     // Orange (bottom-left)
     };
     return rotations[player] || 0;
   }
@@ -861,25 +861,25 @@ if (typeof document !== 'undefined') {
     }
 
     if (mode === 'pve') {
-      // 确定玩家和AI的阵营
+      // Determine player and AI teams
       if (firstPlayer) {
         gameState.playerTeam = firstPlayer;
-        // AI 获得其他玩家
+        // AI gets other players
         var aiPlayers = [];
         for (var i = 0; i < gameState.players.length; i++) {
           if (gameState.players[i] !== firstPlayer) {
             aiPlayers.push(gameState.players[i]);
           }
         }
-        gameState.aiTeam = aiPlayers[0]; // 主要对手
+        gameState.aiTeam = aiPlayers[0]; // Primary opponent
       } else {
         gameState.playerTeam = RED;
         gameState.aiTeam = BLUE;
       }
-      // 设置棋盘旋转，让玩家在底部
+      // Set board rotation to place player at bottom
       gameState.boardRotation = getPlayerRotation(gameState.playerTeam);
     } else {
-      // PVP模式，根据先手玩家旋转
+      // PVP mode, rotate based on first player
       gameState.boardRotation = firstPlayer ? getPlayerRotation(firstPlayer) : 0;
     }
 
@@ -903,7 +903,7 @@ if (typeof document !== 'undefined') {
     var svg = document.getElementById('board-svg');
     svg.onclick = handleSvgClick;
 
-    // 如果AI先手，触发AI行动
+    // If AI goes first, trigger AI action
     if (mode === 'pve' && gameState.currentPlayer !== gameState.playerTeam) {
       triggerAI();
     }
@@ -979,7 +979,7 @@ if (typeof document !== 'undefined') {
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-    // PVP 模式按钮
+    // PVP mode buttons
     document.getElementById('btn-2p').addEventListener('click', function() {
       currentMode = 'pvp';
       currentPlayerCount = 2;
@@ -1017,7 +1017,7 @@ if (typeof document !== 'undefined') {
       rpsChoices = { player1: null, player2: null, human: null };
     });
 
-    // PVE 模式按钮
+    // PVE mode buttons
     document.getElementById('btn-pve').addEventListener('click', function() {
       currentMode = 'pve';
       currentPlayerCount = 2;
@@ -1028,7 +1028,7 @@ if (typeof document !== 'undefined') {
       rpsChoices = { player1: null, player2: null, human: null };
     });
 
-    // 石头剪刀布按钮事件
+    // Rock-Paper-Scissors button events
     document.querySelectorAll('.btn-rps').forEach(function(button) {
       button.addEventListener('click', function(ev) {
         var player = ev.target.dataset.player;

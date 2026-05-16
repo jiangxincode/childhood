@@ -1,9 +1,9 @@
 // ============================================================
-// 军棋（明棋）- 游戏核心逻辑
+// Army Chess (Open) - Game Core Logic
 // ============================================================
 
 // ============================================================
-// 常量定义
+// Constants
 // ============================================================
 
 var NORMAL_PIECE_NAMES = ['工兵', '排长', '连长', '营长', '团长', '旅长', '师长', '军长', '司令'];
@@ -11,36 +11,36 @@ var BOMB_NAME = '炸弹';
 var MINE_NAME = '地雷';
 var FLAG_NAME = '军旗';
 
-// 等级映射：数值越大等级越高（与 LifeLikeChess flag 一致）
+// Rank mapping: higher value = higher rank (consistent with LifeLikeChess flag)
 var RANK_MAP = {
   '工兵': 0, '排长': 1, '连长': 2, '营长': 3, '团长': 4,
   '旅长': 5, '师长': 6, '军长': 7, '司令': 8
 };
 
-// 每种棋子的数量
+// Count of each piece type
 var PIECE_COUNTS = {
   '工兵': 3, '排长': 3, '连长': 3, '营长': 2, '团长': 2,
   '旅长': 2, '师长': 2, '军长': 1, '司令': 1,
   '炸弹': 2, '地雷': 3, '军旗': 1
 };
 
-// 棋盘尺寸
+// Board dimensions
 var COLS = 5;
-var ROWS = 12; // 数组行数（视觉上有 gap row，共 13 行）
+var ROWS = 12; // Array row count (visual gap row, 13 rows total)
 
-// 阵营
+// Teams
 var RED = 'red';
 var BLUE = 'blue';
 
-// 棋子状态
+// Piece states
 var STATE_FACE_UP = 'face_up';
 var STATE_FACE_DOWN = 'face_down';
 
 // ============================================================
-// 棋盘布局常量
+// Board Layout Constants
 // ============================================================
 
-// 行营位置（数组坐标）
+// Camp positions (array coordinates)
 var CAMPS = [
   { x: 1, y: 2 }, { x: 3, y: 2 }, { x: 2, y: 3 },
   { x: 1, y: 4 }, { x: 3, y: 4 },
@@ -48,21 +48,21 @@ var CAMPS = [
   { x: 1, y: 9 }, { x: 3, y: 9 }
 ];
 
-// 大本营位置（数组坐标）
+// Base camp positions (array coordinates)
 var BASE_CAMPS = [
   { x: 1, y: 0 }, { x: 3, y: 0 },
   { x: 1, y: 11 }, { x: 3, y: 11 }
 ];
 
-// 水平铁路行（数组 y 坐标）
+// Horizontal railway rows (array y coordinates)
 var H_RAILWAYS = [1, 5, 6, 10];
 
-// 垂直铁路列和范围
+// Vertical railway columns and ranges
 var V_RAILWAY_LEFT_RIGHT = { x: [0, 4], yMin: 1, yMax: 10 };
 var V_RAILWAY_MIDDLE = { x: 2, yMin: 5, yMax: 6 };
 
 // ============================================================
-// 工具函数
+// Utility Functions
 // ============================================================
 
 function isNormalPiece(name) {
@@ -99,19 +99,19 @@ function isBaseCamp(x, y) {
   return false;
 }
 
-// 获取视觉行号（跳过 gap row）
+// Get visual row number (skip gap row)
 function getBoardRow(y) {
   return y > 5 ? y + 1 : y;
 }
 
-// 判断位置是否有对角线连接资格（用于行营进出）
+// Check if position has diagonal eligibility (for camp entry/exit)
 function hasDiagonalEligibility(x, y) {
   if (!inBounds(x, y)) return false;
   var boardRow = getBoardRow(y);
   return (x + boardRow) % 2 === 1;
 }
 
-// 判断是否在铁路上
+// Check if on railway
 function isOnHRailway(y) {
   return H_RAILWAYS.indexOf(y) !== -1;
 }
@@ -126,18 +126,18 @@ function isOnRailway(x, y) {
   return isOnHRailway(y) || isOnVRailway(x, y);
 }
 
-// 判断两个位置是否通过铁路连接（相邻且都在铁路上）
+// Check if two positions are connected by railway (adjacent and both on railway)
 function areOnSameRailway(x1, y1, x2, y2) {
-  // 水平相邻
+  // Horizontally adjacent
   if (y1 === y2 && Math.abs(x1 - x2) === 1) {
     return isOnHRailway(y1);
   }
-  // 垂直相邻
+  // Vertically adjacent
   if (x1 === x2 && Math.abs(y1 - y2) === 1) {
-    // 跨越 gap row (y=5 ↔ y=6)：只有中间列 (x=2) 可以跨越
+    // Cross gap row (y=5 <-> y=6): only middle column (x=2) can cross
     if ((y1 === 5 && y2 === 6) || (y1 === 6 && y2 === 5)) {
       if (x1 === 2) return true;
-      // 侧边铁路 (x=0,4) 直接跨越 gap，不需要特殊检查
+      // Side railways (x=0,4) cross gap directly, no special check needed
       return isOnVRailway(x1, y1) && isOnVRailway(x1, y2);
     }
     return isOnVRailway(x1, y1) && isOnVRailway(x1, y2);
@@ -145,14 +145,14 @@ function areOnSameRailway(x1, y1, x2, y2) {
   return false;
 }
 
-// 获取图片路径
+// Get image path
 function getImagePath(piece) {
   if (isFlag(piece.name)) return 'images/军旗.png';
   if (piece.team === RED) return 'images/红-' + piece.name + '.png';
   return 'images/蓝-' + piece.name + '.png';
 }
 
-// 石头剪刀布判定
+// RPS judgment
 function judgeRPS(choice1, choice2) {
   if (choice1 === choice2) return 0;
   if (
@@ -166,7 +166,7 @@ function judgeRPS(choice1, choice2) {
 }
 
 // ============================================================
-// 战斗判定
+// Combat Resolution
 // ============================================================
 
 function canCapture(attacker, defender) {
@@ -196,7 +196,7 @@ function resolveCombat(attacker, defender) {
 }
 
 // ============================================================
-// 创建游戏状态
+// Create Game State
 // ============================================================
 
 function createGameState(mode) {
@@ -205,7 +205,7 @@ function createGameState(mode) {
 
   var pieces = [];
 
-  // 红方 25 颗
+  // Red team 25 pieces
   var redNames = [];
   for (var name in PIECE_COUNTS) {
     for (var i = 0; i < PIECE_COUNTS[name]; i++) {
@@ -221,7 +221,7 @@ function createGameState(mode) {
     });
   }
 
-  // 蓝方 25 颗
+  // Blue team 25 pieces
   for (var i = 0; i < redNames.length; i++) {
     pieces.push({
       name: redNames[i],
@@ -231,7 +231,7 @@ function createGameState(mode) {
     });
   }
 
-  // 放置棋子
+  // Place pieces
   var board = [];
   for (var y = 0; y < ROWS; y++) {
     board[y] = [];
@@ -241,14 +241,14 @@ function createGameState(mode) {
   }
 
   if (gameType === 'flip') {
-    // 翻棋：50颗随机放满全棋盘，全部面朝下
+    // Flip mode: 50 pieces randomly placed on full board, all face down
     placePiecesRandom(board, pieces);
   } else {
-    // 明棋/暗棋：分半约束放置
-    placePiecesForTeam(board, pieces.slice(0, 25), 0);  // 红方 → y 6-11
-    placePiecesForTeam(board, pieces.slice(25, 50), 1);  // 蓝方 → y 0-5
+    // Open/hidden mode: constrained placement in halves
+    placePiecesForTeam(board, pieces.slice(0, 25), 0);  // Red -> y 6-11
+    placePiecesForTeam(board, pieces.slice(25, 50), 1);  // Blue -> y 0-5
 
-    // 暗棋：对方棋子面朝下
+    // Hidden mode: opponent pieces face down
     if (gameType === 'hidden') {
       for (var y = 0; y < ROWS; y++) {
         for (var x = 0; x < COLS; x++) {
@@ -278,10 +278,9 @@ function createGameState(mode) {
 }
 
 function placePiecesForTeam(board, pieces, halfIndex) {
-  // halfIndex: 0 = bottom half (y 6-11), 1 = top half (y 0-5)
   var yStart = halfIndex === 0 ? 6 : 0;
 
-  // 分类棋子
+  // Classify pieces
   var flags = [];
   var mines = [];
   var bombs = [];
@@ -295,7 +294,7 @@ function placePiecesForTeam(board, pieces, halfIndex) {
     else others.push(p);
   }
 
-  // 收集该半区所有位置（排除行营）
+  // Collect all positions in this half (excluding camps)
   var allPositions = [];
   for (var y = yStart; y < yStart + 6; y++) {
     for (var x = 0; x < COLS; x++) {
@@ -305,12 +304,12 @@ function placePiecesForTeam(board, pieces, halfIndex) {
     }
   }
 
-  // 标记已占用的位置
+  // Mark occupied positions
   var occupied = {};
   function occupy(x, y) { occupied[x + ',' + y] = true; }
   function isOccupied(x, y) { return !!occupied[x + ',' + y]; }
 
-  // 1. 放置军旗：必须在大本营
+  // 1. Place flag: must be in base camp
   var baseCampPositions = [];
   for (var i = 0; i < BASE_CAMPS.length; i++) {
     var bc = BASE_CAMPS[i];
@@ -325,7 +324,7 @@ function placePiecesForTeam(board, pieces, halfIndex) {
     occupy(pos.x, pos.y);
   }
 
-  // 2. 放置地雷：只能在最后两行（排除行营）
+  // 2. Place mines: only in last two rows (excluding camps)
   var mineRows = [];
   for (var y = yStart + 4; y < yStart + 6; y++) {
     for (var x = 0; x < COLS; x++) {
@@ -339,11 +338,11 @@ function placePiecesForTeam(board, pieces, halfIndex) {
     occupy(pos.x, pos.y);
   }
 
-  // 3. 放置炸弹：不能在第一行（排除行营）
+  // 3. Place bombs: not in first row (excluding camps)
   var bombPositions = [];
   for (var i = 0; i < allPositions.length; i++) {
     var pos = allPositions[i];
-    if (pos.y === yStart) continue; // 排除第一行
+    if (pos.y === yStart) continue; // Exclude first row
     if (!isOccupied(pos.x, pos.y)) bombPositions.push(pos);
   }
   shuffle(bombPositions);
@@ -353,7 +352,7 @@ function placePiecesForTeam(board, pieces, halfIndex) {
     occupy(pos.x, pos.y);
   }
 
-  // 4. 放置其余棋子（排除行营）
+  // 4. Place remaining pieces (excluding camps)
   var remaining = [];
   for (var i = 0; i < allPositions.length; i++) {
     var pos = allPositions[i];
@@ -368,7 +367,7 @@ function placePiecesForTeam(board, pieces, halfIndex) {
 }
 
 function placePiecesRandom(board, pieces) {
-  // 收集全部位置（排除行营）
+  // Collect all positions (excluding camps)
   var allPositions = [];
   for (var y = 0; y < ROWS; y++) {
     for (var x = 0; x < COLS; x++) {
@@ -379,12 +378,12 @@ function placePiecesRandom(board, pieces) {
   }
   shuffle(allPositions);
 
-  // 所有棋子面朝下
+  // All pieces face down
   for (var i = 0; i < pieces.length; i++) {
     pieces[i].state = STATE_FACE_DOWN;
   }
 
-  // 随机放置
+  // Place randomly
   for (var i = 0; i < pieces.length; i++) {
     var pos = allPositions[i];
     board[pos.y][pos.x] = pieces[i];
@@ -400,28 +399,28 @@ function shuffle(arr) {
 }
 
 // ============================================================
-// 移动验证
+// Move Validation
 // ============================================================
 
 function getValidMoves(board, x, y, team, gameType) {
   var piece = board[y][x];
   if (!piece || piece.team !== team) return [];
   if (!isMovable(piece)) return [];
-  // 面朝下的棋子不能移动
+  // Face-down pieces cannot move
   if (piece.state === STATE_FACE_DOWN) return [];
 
   var isEngineer = piece.name === '工兵';
   var moves = [];
 
   if (isEngineer) {
-    // 工兵：BFS 沿铁路无限移动 + 普通移动 + 对角线移动
+    // Engineer: BFS along railway unlimited + normal + diagonal moves
     moves = getEngineerMoves(board, x, y, team);
   } else {
-    // 普通棋子：一步移动
+    // Normal piece: one step move
     moves = getNormalMoves(board, x, y, team);
   }
 
-  // 添加对角线移动（行营进出）
+  // Add diagonal moves (camp entry/exit)
   var diagMoves = getDiagonalMoves(board, x, y, team);
   for (var i = 0; i < diagMoves.length; i++) {
     var dm = diagMoves[i];
@@ -444,20 +443,20 @@ function getNormalMoves(board, x, y, team) {
     var ny = y + dirs[d].dy;
     if (!inBounds(nx, ny)) continue;
 
-    // 跨越 gap row 检查：只有中间列(x=2)或侧边垂直铁路(x=0,4)可以跨越
+    // Gap row crossing: only middle column(x=2) or side vertical railways(x=0,4) can cross
     if ((y === 5 && ny === 6) || (y === 6 && ny === 5)) {
       if (x !== 2 && !isOnVRailway(x, y)) continue;
     }
 
-    // 普通棋子可以向相邻位置移动一步
+    // Normal piece can move one step to adjacent position
     var target = board[ny][nx];
     if (target === null) {
       moves.push({ x: nx, y: ny, type: 'move' });
     } else if (target.team !== team) {
-      // 检查行营保护
+      // Check camp protection
       if (isCamp(nx, ny)) continue;
       if (isBaseCamp(nx, ny)) continue;
-      // 面朝下的棋子不能被攻击
+      // Face-down pieces cannot be attacked
       if (target.state === STATE_FACE_DOWN) continue;
       if (canCapture(board[y][x], target)) {
         moves.push({ x: nx, y: ny, type: 'capture' });
@@ -465,7 +464,7 @@ function getNormalMoves(board, x, y, team) {
     }
   }
 
-  // 铁路上的非工兵棋子：沿铁路额外移动一步
+  // Non-engineer pieces on railway: extra step along railway
   if (isOnRailway(x, y)) {
     for (var d = 0; d < dirs.length; d++) {
       var nx = x + dirs[d].dx;
@@ -473,7 +472,7 @@ function getNormalMoves(board, x, y, team) {
       if (!inBounds(nx, ny)) continue;
       if (!areOnSameRailway(x, y, nx, ny)) continue;
 
-      // 检查是否已经包含
+      // Check if already included
       var dup = false;
       for (var j = 0; j < moves.length; j++) {
         if (moves[j].x === nx && moves[j].y === ny) { dup = true; break; }
@@ -504,18 +503,18 @@ function getEngineerMoves(board, x, y, team) {
   var queue = [{ x: x, y: y }];
   var dirs = [{ dx: 0, dy: -1 }, { dx: 0, dy: 1 }, { dx: -1, dy: 0 }, { dx: 1, dy: 0 }];
 
-  // 一步正交移动（到达相邻的非铁路格，如行营）
+  // One orthogonal step (to adjacent non-railway cell, like camp)
   for (var d = 0; d < dirs.length; d++) {
     var nx = x + dirs[d].dx;
     var ny = y + dirs[d].dy;
     if (!inBounds(nx, ny)) continue;
 
-    // 跨越 gap row 检查
+    // Gap row crossing check
     if ((y === 5 && ny === 6) || (y === 6 && ny === 5)) {
       if (x !== 2 && !isOnVRailway(x, y)) continue;
     }
 
-    // 跳过铁路上的格子，留给 BFS 处理
+    // Skip railway cells, leave for BFS
     if (isOnRailway(nx, ny)) continue;
 
     var key = nx + ',' + ny;
@@ -542,7 +541,7 @@ function getEngineerMoves(board, x, y, team) {
       if (visited[key]) continue;
       if (!inBounds(nx, ny)) continue;
 
-      // 检查铁路连接
+      // Check railway connection
       if (!areOnSameRailway(cur.x, cur.y, nx, ny)) continue;
 
       visited[key] = true;
@@ -551,9 +550,9 @@ function getEngineerMoves(board, x, y, team) {
         moves.push({ x: nx, y: ny, type: 'move' });
         queue.push({ x: nx, y: ny });
       } else if (target.team !== team) {
-        // 面朝下的棋子不能被攻击
+        // Face-down pieces cannot be attacked
         if (target.state === STATE_FACE_DOWN) continue;
-        // 行营/大本营保护：但军旗可以被工兵扛走
+        // Camp/base camp protection: but flag can be captured by engineer
         if (isFlag(target.name)) {
           moves.push({ x: nx, y: ny, type: 'capture_flag' });
         } else if (!isCamp(nx, ny) && !isBaseCamp(nx, ny)) {
@@ -561,9 +560,9 @@ function getEngineerMoves(board, x, y, team) {
             moves.push({ x: nx, y: ny, type: 'capture' });
           }
         }
-        // 被阻挡，不继续（军旗除外，已处理）
+        // Blocked, do not continue (except flag, already handled)
         if (!isFlag(target.name)) {
-          // 非军旗棋子阻挡，不继续探索
+          // Non-flag piece blocks, stop exploration
         }
       }
     }
@@ -587,13 +586,13 @@ function getDiagonalMoves(board, x, y, team) {
     if (!inBounds(nx, ny)) continue;
 
     if (inCamp) {
-      // 在行营中：沿对角线方向移动，可经过空的非行营格子到达另一个行营
+      // In camp: move diagonally, can pass through empty non-camp cells to reach another camp
       var cx = x + diagDirs[d].dx;
       var cy = y + diagDirs[d].dy;
       while (inBounds(cx, cy)) {
         var target = board[cy][cx];
         if (isCamp(cx, cy)) {
-          // 到达另一个行营
+          // Reached another camp
           if (target === null) {
             moves.push({ x: cx, y: cy, type: 'move' });
           }
@@ -601,10 +600,10 @@ function getDiagonalMoves(board, x, y, team) {
         }
         if (isBaseCamp(cx, cy)) break;
         if (target === null) {
-          // 空的非行营格子，可以经过并继续
+          // Empty non-camp cell, can pass through and continue
           moves.push({ x: cx, y: cy, type: 'move' });
         } else if (target.team !== team) {
-          // 遇到敌方棋子，可以吃但不能继续前进
+          // Encountered enemy piece, can capture but cannot continue
           if (target.state === STATE_FACE_DOWN) break;
           if (isFlag(target.name) && piece.name === '工兵') {
             moves.push({ x: cx, y: cy, type: 'capture_flag' });
@@ -615,14 +614,14 @@ function getDiagonalMoves(board, x, y, team) {
           }
           break;
         } else {
-          // 遇到己方棋子，不能经过
+          // Encountered own piece, cannot pass through
           break;
         }
         cx += diagDirs[d].dx;
         cy += diagDirs[d].dy;
       }
     } else {
-      // 不在行营：只能进入行营或大本营
+      // Not in camp: can only enter camp or base camp
       if (isCamp(nx, ny) || isBaseCamp(nx, ny)) {
         var target = board[ny][nx];
         if (target === null) {
@@ -638,7 +637,7 @@ function getDiagonalMoves(board, x, y, team) {
 }
 
 // ============================================================
-// 棋子操作
+// Piece Operations
 // ============================================================
 
 function moveCard(state, from, to) {
@@ -659,7 +658,7 @@ function moveCard(state, from, to) {
   var target = state.board[to.y][to.x];
 
   if (valid.type === 'capture_flag') {
-    // 工兵扛旗获胜
+    // Engineer captures flag for victory
     state.board[to.y][to.x] = piece;
     state.board[from.y][from.x] = null;
     state.gameOver = true;
@@ -672,7 +671,7 @@ function moveCard(state, from, to) {
     var result = resolveCombat(piece, target);
     if (result === 'attacker_wins') {
       addCaptured(state, target);
-      // 暗棋模式：司令被吃，暴露对方军旗
+      // Hidden mode: commander captured, reveal opponent flag
       if (state.gameType === 'hidden' && target.name === '司令') {
         revealFlag(state, target.team);
       }
@@ -681,7 +680,7 @@ function moveCard(state, from, to) {
     } else if (result === 'mutual_destruction') {
       addCaptured(state, piece);
       addCaptured(state, target);
-      // 暗棋模式：司令同归于尽，暴露双方军旗
+      // Hidden mode: commanders mutual destruction, reveal both flags
       if (state.gameType === 'hidden') {
         if (piece.name === '司令') revealFlag(state, piece.team);
         if (target.name === '司令') revealFlag(state, target.team);
@@ -692,7 +691,7 @@ function moveCard(state, from, to) {
       return null;
     }
   } else {
-    // 普通移动
+    // Normal move
     state.board[to.y][to.x] = piece;
     state.board[from.y][from.x] = null;
   }
@@ -734,7 +733,7 @@ function addCaptured(state, piece) {
 }
 
 // ============================================================
-// 游戏结束判定
+// Game Over Detection
 // ============================================================
 
 function hasAnyLegalAction(board, team, gameType) {
@@ -743,10 +742,10 @@ function hasAnyLegalAction(board, team, gameType) {
       var piece = board[y][x];
       if (!piece || piece.team !== team) continue;
 
-      // 翻棋模式：面朝下的棋子可以翻开
+      // Flip mode: face-down pieces can be flipped
       if (gameType === 'flip' && piece.state === STATE_FACE_DOWN) return true;
 
-      // 面朝上的可移动棋子
+      // Face-up movable pieces
       if (piece.state === STATE_FACE_UP && isMovable(piece)) {
         if (getValidMoves(board, x, y, team, gameType).length > 0) return true;
       }
@@ -758,7 +757,7 @@ function hasAnyLegalAction(board, team, gameType) {
 function checkGameOver(state) {
   if (state.gameOver) return { ended: true, winner: state.winner };
 
-  // 检查是否有可移动棋子
+  // Check if there are movable pieces
   var hasRed = false, hasBlue = false;
   for (var y = 0; y < ROWS; y++) {
     for (var x = 0; x < COLS; x++) {
@@ -768,11 +767,11 @@ function checkGameOver(state) {
     }
   }
 
-  if (!hasRed && !hasBlue) return { ended: true, winner: null }; // 平局
+  if (!hasRed && !hasBlue) return { ended: true, winner: null }; // Draw
   if (!hasRed) return { ended: true, winner: BLUE };
   if (!hasBlue) return { ended: true, winner: RED };
 
-  // 检查当前方是否有合法操作
+  // Check if current side has legal actions
   if (state.currentTeam && !hasAnyLegalAction(state.board, state.currentTeam, state.gameType)) {
     var opponent = state.currentTeam === RED ? BLUE : RED;
     return { ended: true, winner: opponent };
@@ -782,14 +781,14 @@ function checkGameOver(state) {
 }
 
 // ============================================================
-// AI 决策
+// AI Decision
 // ============================================================
 
 function aiDecide(state, aiTeam) {
   var board = state.board;
   var gameType = state.gameType;
 
-  // 翻棋模式：优先翻开棋子
+  // Flip mode: prioritize flipping pieces
   if (gameType === 'flip') {
     var faceDown = [];
     for (var y = 0; y < ROWS; y++) {
@@ -801,13 +800,13 @@ function aiDecide(state, aiTeam) {
       }
     }
     if (faceDown.length > 0) {
-      // 优先翻开己方棋子附近的，或随机翻开
+      // Prioritize flipping near own pieces, or flip randomly
       var pick = faceDown[Math.floor(Math.random() * faceDown.length)];
       return { type: 'flip', from: { x: pick.x, y: pick.y }, to: { x: pick.x, y: pick.y } };
     }
   }
 
-  // 优先级1：工兵扛旗
+  // Priority 1: engineer captures flag
   for (var y = 0; y < ROWS; y++) {
     for (var x = 0; x < COLS; x++) {
       var piece = board[y][x];
@@ -822,7 +821,7 @@ function aiDecide(state, aiTeam) {
     }
   }
 
-  // 优先级2：有利吃子
+  // Priority 2: favorable captures
   var bestCapture = null;
   var bestScore = -999;
   for (var y = 0; y < ROWS; y++) {
@@ -853,7 +852,7 @@ function aiDecide(state, aiTeam) {
     return { type: 'move', from: bestCapture.from, to: bestCapture.to };
   }
 
-  // 优先级3：普通移动
+  // Priority 3: normal moves
   var allMoves = [];
   for (var y = 0; y < ROWS; y++) {
     for (var x = 0; x < COLS; x++) {
@@ -868,7 +867,7 @@ function aiDecide(state, aiTeam) {
       }
     }
   }
-  // 铁路上的移动优先
+  // Railway moves preferred
   var railwayMoves = [];
   var normalMoves = [];
   for (var i = 0; i < allMoves.length; i++) {
@@ -885,7 +884,7 @@ function aiDecide(state, aiTeam) {
     return { type: 'move', from: pick.from, to: pick.to };
   }
 
-  // 优先级4：同归于尽的吃子
+  // Priority 4: mutual destruction captures
   if (bestCapture) {
     return { type: 'move', from: bestCapture.from, to: bestCapture.to };
   }
@@ -894,7 +893,7 @@ function aiDecide(state, aiTeam) {
 }
 
 // ============================================================
-// 模块导出
+// Module Exports
 // ============================================================
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -914,21 +913,21 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 // ============================================================
-// 浏览器 UI（SVG + DOM 渲染，参考 junqi-master 风格）
+// Browser UI (SVG + DOM rendering, junqi-master style)
 // ============================================================
 if (typeof document !== 'undefined') {
   var gameState = null;
 
-  // 棋盘 SVG 视图坐标系
+  // Board SVG view coordinate system
   var SVG_W = 480;
   var SVG_H = 780;
   var PAD = 36;
   var COL_SPACE = (SVG_W - 2 * PAD) / (COLS - 1); // = 102
   var GAP = 20;
-  // 13 个视觉行 (0-12)，gap 在第 5 和第 7 行之间
+  // 13 visual rows (0-12), gap between row 5 and row 7
   var ROW_SPACE = (SVG_H - 2 * PAD - GAP) / 12; // ≈ 59.7
 
-  // 数组坐标 → SVG 坐标
+  // Array coordinates -> SVG coordinates
   function svgX(x) { return PAD + x * COL_SPACE; }
   function svgY(y) {
     var vr = getBoardRow(y);
@@ -936,7 +935,7 @@ if (typeof document !== 'undefined') {
     return PAD + GAP + vr * ROW_SPACE;
   }
 
-  // DOM 元素
+  // DOM elements
   var $modeSelection = document.getElementById('mode-selection');
   var $gameArea = document.getElementById('game-area');
   var $boardContainer = document.getElementById('board-container');
@@ -953,12 +952,12 @@ if (typeof document !== 'undefined') {
 
   var boardScale = 1;
 
-  // 石头剪刀布状态
+  // RPS state
   var rpsChoices = { player1: null, player2: null, human: null };
-  var pendingMode = null; // 等待 RPS 结束后开始的游戏模式
+  var pendingMode = null; // Game mode pending RPS completion
 
   // ============================================================
-  // SVG 棋盘构建（只执行一次）
+  // SVG Board Construction (execute once)
   // ============================================================
   function buildBoardSVG() {
     var ns = 'http://www.w3.org/2000/svg';
@@ -967,7 +966,7 @@ if (typeof document !== 'undefined') {
     svg.setAttribute('width', '100%');
     svg.style.display = 'block';
 
-    // 铁路条纹图案
+    // Railway stripe pattern
     var defs = document.createElementNS(ns, 'defs');
     var pat = document.createElementNS(ns, 'pattern');
     pat.setAttribute('id', 'rail-stripe');
@@ -990,32 +989,32 @@ if (typeof document !== 'undefined') {
     var gDiag = document.createElementNS(ns, 'g');
     var gStation = document.createElementNS(ns, 'g');
 
-    // ---- 公路（灰色细线）----
-    // 水平公路
+    // ---- Highways (gray thin lines) ----
+    // Horizontal highways
     var hHighwayRows = [0, 2, 3, 4, 7, 8, 9, 11];
     for (var i = 0; i < hHighwayRows.length; i++) {
       var y = hHighwayRows[i];
       addSVGLine(gHighway, ns, svgX(0), svgY(y), svgX(4), svgY(y), 'gray', 1);
     }
-    // 垂直公路
+    // Vertical highways
     for (var x = 0; x < COLS; x++) {
       addSVGLine(gHighway, ns, svgX(x), svgY(0), svgX(x), svgY(5), 'gray', 1);
       addSVGLine(gHighway, ns, svgX(x), svgY(6), svgX(x), svgY(11), 'gray', 1);
     }
 
-    // ---- 铁路（金色/黑色条纹粗线）----
-    // 水平铁路
+    // ---- Railways (gold/black striped thick lines) ----
+    // Horizontal railways
     var hRailRows = [1, 5, 6, 10];
     for (var i = 0; i < hRailRows.length; i++) {
       var y = hRailRows[i];
       addSVGLine(gRailway, ns, svgX(0), svgY(y), svgX(4), svgY(y), 'url(#rail-stripe)', 4);
     }
-    // 垂直铁路
+    // Vertical railways
     addSVGLine(gRailway, ns, svgX(0), svgY(1), svgX(0), svgY(10), 'url(#rail-stripe)', 4);
     addSVGLine(gRailway, ns, svgX(4), svgY(1), svgX(4), svgY(10), 'url(#rail-stripe)', 4);
     addSVGLine(gRailway, ns, svgX(2), svgY(5), svgX(2), svgY(6), 'url(#rail-stripe)', 4);
 
-    // ---- 对角线（灰色虚线）----
+    // ---- Diagonals (gray dashed lines) ----
     var drawn = {};
     for (var y = 0; y < ROWS; y++) {
       for (var x = 0; x < COLS; x++) {
@@ -1039,7 +1038,7 @@ if (typeof document !== 'undefined') {
       }
     }
 
-    // ---- 站点标记 ----
+    // ---- Station markers ----
     var STATION_W = 60;
     var STATION_H = 40;
     var CAMP_RX = 38;
@@ -1050,7 +1049,7 @@ if (typeof document !== 'undefined') {
         var cx = svgX(x), cy = svgY(y);
         var label = '兵 站';
         if (isCamp(x, y)) {
-          // 行营：椭圆
+          // Camp: ellipse
           label = '行 营';
           var ellipse = document.createElementNS(ns, 'ellipse');
           ellipse.setAttribute('cx', cx); ellipse.setAttribute('cy', cy);
@@ -1060,7 +1059,7 @@ if (typeof document !== 'undefined') {
           ellipse.classList.add('station-xingying');
           gStation.appendChild(ellipse);
         } else {
-          // 兵站 / 大本营：矩形
+          // Station / Base camp: rectangle
           if (isBaseCamp(x, y)) label = '大本营';
           var rect = document.createElementNS(ns, 'rect');
           rect.setAttribute('x', cx - STATION_W / 2);
@@ -1072,7 +1071,7 @@ if (typeof document !== 'undefined') {
           rect.classList.add(isBaseCamp(x, y) ? 'station-dabenying' : 'station');
           gStation.appendChild(rect);
         }
-        // 站点文字
+        // Station text
         var text = document.createElementNS(ns, 'text');
         text.setAttribute('x', cx); text.setAttribute('y', cy);
         text.setAttribute('text-anchor', 'middle');
@@ -1090,7 +1089,7 @@ if (typeof document !== 'undefined') {
     svg.appendChild(gDiag);
     svg.appendChild(gStation);
 
-    // 清空容器并添加 SVG + 棋子层
+    // Clear container and add SVG + pieces layer
     $boardContainer.innerHTML = '';
     $boardContainer.appendChild(svg);
 
@@ -1103,7 +1102,7 @@ if (typeof document !== 'undefined') {
     piecesLayer.style.height = '100%';
     $boardContainer.appendChild(piecesLayer);
 
-    // 计算缩放比例
+    // Calculate scale ratio
     updateScale();
   }
 
@@ -1124,7 +1123,7 @@ if (typeof document !== 'undefined') {
   }
 
   // ============================================================
-  // 棋子渲染（DOM div 元素）
+  // Piece Rendering (DOM div elements)
   // ============================================================
   function renderPieces() {
     var layer = document.getElementById('pieces-layer');
@@ -1145,7 +1144,7 @@ if (typeof document !== 'undefined') {
         var div = document.createElement('div');
         div.className = 'chess-piece';
 
-        // 判断是否显示棋子内容
+        // Determine whether to show piece content
         var showContent = piece.state === STATE_FACE_UP;
         if (gameType === 'hidden' && piece.team !== gameState.playerTeam) {
           showContent = false;
@@ -1163,7 +1162,7 @@ if (typeof document !== 'undefined') {
         div.style.height = PIECE_H + 'px';
         div.style.fontSize = Math.round(PIECE_W / 3) + 'px';
 
-        // 定位：SVG 坐标 → 像素坐标
+        // Positioning: SVG coordinates -> pixel coordinates
         var px = svgX(x) * boardScale - PIECE_W / 2;
         var py = svgY(y) * boardScale - PIECE_H / 2;
         div.style.left = px + 'px';
@@ -1176,7 +1175,7 @@ if (typeof document !== 'undefined') {
       }
     }
 
-    // 高亮选中棋子
+    // Highlight selected piece
     if (gameState.selectedCell) {
       var sel = gameState.selectedCell;
       var selDiv = layer.querySelector('[data-x="' + sel.x + '"][data-y="' + sel.y + '"]');
@@ -1188,7 +1187,7 @@ if (typeof document !== 'undefined') {
     var layer = document.getElementById('pieces-layer');
     if (!layer) return;
 
-    // 移除旧的高亮
+    // Remove old highlights
     var old = layer.querySelectorAll('.move-highlight');
     for (var i = 0; i < old.length; i++) old[i].remove();
 
@@ -1216,7 +1215,7 @@ if (typeof document !== 'undefined') {
     if (!layer) return;
     var old = layer.querySelectorAll('.move-highlight');
     for (var i = 0; i < old.length; i++) old[i].remove();
-    // 移除选中状态
+    // Remove selection state
     var selDiv = layer.querySelector('.chess-selected');
     if (selDiv) selDiv.classList.remove('chess-selected');
   }
@@ -1226,7 +1225,7 @@ if (typeof document !== 'undefined') {
   }
 
   // ============================================================
-  // 事件处理（点击棋子层）
+  // Event Handling (click on pieces layer)
   // ============================================================
   function onBoardClick(e) {
     if (!gameState || gameState.gameOver || gameState.aiThinking) return;
@@ -1241,7 +1240,7 @@ if (typeof document !== 'undefined') {
     var team = gameState.currentTeam;
     var gameType = gameState.gameType;
 
-    // 翻棋模式：点击面朝下棋子翻开
+    // Flip mode: click face-down piece to flip
     if (gameType === 'flip' && piece && piece.state === STATE_FACE_DOWN) {
       var result = flipPiece(gameState, x, y);
       if (result) {
@@ -1252,7 +1251,7 @@ if (typeof document !== 'undefined') {
       }
     }
 
-    // 点击高亮目标（移动/吃子）
+    // Click highlight target (move/capture)
     if (target.classList.contains('move-highlight')) {
       if (gameState.selectedCell) {
         var sel = gameState.selectedCell;
@@ -1267,11 +1266,11 @@ if (typeof document !== 'undefined') {
       }
     }
 
-    // 已有选中棋子
+    // Already has selected piece
     if (gameState.selectedCell) {
       var sel = gameState.selectedCell;
 
-      // 点击同一格：取消选中
+      // Click same cell: deselect
       if (sel.x === x && sel.y === y) {
         gameState.selectedCell = null;
         clearHighlights();
@@ -1279,7 +1278,7 @@ if (typeof document !== 'undefined') {
         return;
       }
 
-      // 尝试移动/吃子
+      // Try move/capture
       var result = moveCard(gameState, sel, { x: x, y: y });
       if (result) {
         gameState.selectedCell = null;
@@ -1289,7 +1288,7 @@ if (typeof document !== 'undefined') {
         return;
       }
 
-      // 选中另一个己方棋子
+      // Select another own piece
       if (piece && piece.team === team && piece.state === STATE_FACE_UP) {
         gameState.selectedCell = { x: x, y: y };
         clearHighlights();
@@ -1303,7 +1302,7 @@ if (typeof document !== 'undefined') {
       return;
     }
 
-    // 无选中：选中己方棋子（必须面朝上）
+    // No selection: select own piece (must be face up)
     if (piece && piece.team === team && piece.state === STATE_FACE_UP) {
       gameState.selectedCell = { x: x, y: y };
       clearHighlights();
@@ -1319,7 +1318,7 @@ if (typeof document !== 'undefined') {
   }
 
   // ============================================================
-  // 状态更新
+  // Status Update
   // ============================================================
   function updateStatus() {
     if (!gameState) return;
@@ -1378,7 +1377,7 @@ if (typeof document !== 'undefined') {
   }
 
   // ============================================================
-  // 游戏流程
+  // Game Flow
   // ============================================================
   function showModeSelection() {
     $modeSelection.style.display = 'flex';
@@ -1410,7 +1409,7 @@ if (typeof document !== 'undefined') {
     gameState = createGameState(mode);
     buildBoardSVG();
 
-    // 切换规则面板
+    // Switch rules panel
     document.querySelectorAll('.rules-content').forEach(function (el) {
       el.style.display = 'none';
     });
@@ -1418,7 +1417,7 @@ if (typeof document !== 'undefined') {
     var rulesEl = document.getElementById(rulesId);
     if (rulesEl) rulesEl.style.display = 'block';
 
-    // 绑定点击事件
+    // Bind click event
     var layer = document.getElementById('pieces-layer');
     if (layer) layer.addEventListener('click', onBoardClick);
 
@@ -1487,7 +1486,7 @@ if (typeof document !== 'undefined') {
   }
 
   function executeAIAction(decision) {
-    // 高亮 AI 操作的起始位置
+    // Highlight AI action start position
     var layer = document.getElementById('pieces-layer');
     if (layer) {
       var fromDiv = layer.querySelector('[data-x="' + decision.from.x + '"][data-y="' + decision.from.y + '"]');
@@ -1501,7 +1500,7 @@ if (typeof document !== 'undefined') {
       clearHighlights();
       drawBoard();
 
-      // 高亮目标位置
+      // Highlight target position
       if (layer) {
         var toDiv = layer.querySelector('[data-x="' + decision.to.x + '"][data-y="' + decision.to.y + '"]');
         if (toDiv && toDiv.classList.contains('chess-piece')) {
@@ -1542,7 +1541,7 @@ if (typeof document !== 'undefined') {
   }
 
   // ============================================================
-  // 石头剪刀布
+  // Rock-Paper-Scissors
   // ============================================================
   function getRPSName(c) {
     return { 'rock': '石头', 'scissors': '剪刀', 'paper': '布' }[c] || c;
@@ -1618,7 +1617,7 @@ if (typeof document !== 'undefined') {
   }
 
   // ============================================================
-  // 事件绑定
+  // Event Binding
   // ============================================================
   var modeButtons = document.querySelectorAll('.mode-section .btn');
   for (var i = 0; i < modeButtons.length; i++) {
@@ -1643,7 +1642,7 @@ if (typeof document !== 'undefined') {
     showModeSelection();
   });
 
-  // 窗口缩放时重新计算
+  // Recalculate on window resize
   window.addEventListener('resize', function () {
     if (gameState) {
       updateScale();
@@ -1651,6 +1650,6 @@ if (typeof document !== 'undefined') {
     }
   });
 
-  // 初始化
+  // Initialize
   showModeSelection();
 }

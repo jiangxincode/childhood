@@ -2,7 +2,7 @@ body {
     background: #f5f0e1;
 }
 
-/* ---- 设置界面（参考龙虎斗 overlay 样式） ---- */
+/* ---- Settings (ref: Dragon Tiger Fight overlay) ---- */
 .option-panel {
     position: fixed;
     top: 0;
@@ -118,7 +118,7 @@ body {
     transform: translateY(0);
 }
 
-/* ---- 主游戏区域：棋盘 + 规则面板 ---- */
+/* ---- Main Game Area: Board + Rules Panel ---- */
 #game-main {
     display: none;
     gap: 20px;
@@ -127,7 +127,7 @@ body {
     margin: 0 auto;
 }
 
-/* ---- 状态栏 ---- */
+/* ---- Status Bar ---- */
 #status-bar {
     display: flex;
     flex-wrap: wrap;
@@ -270,7 +270,7 @@ body {
     min-height: 900px;
 }
 
-/* ---- 游戏规则面板 ---- */
+/* ---- Game Rules Panel ---- */
 #rules-panel {
     background: #fff;
     border-radius: 10px;
@@ -314,7 +314,7 @@ body {
     background: none;
 }
 
-/* ---- 响应式布局 ---- */
+/* ---- Responsive Layout ---- */
 @media (max-width: 1300px) {
     #game-main {
         flex-direction: column;

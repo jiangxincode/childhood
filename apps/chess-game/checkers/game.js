@@ -1,23 +1,23 @@
 // ============================================================
-// 国际跳棋 (Checkers) - 游戏核心逻辑
+// Checkers (Draughts) - Game Core Logic
 // ============================================================
 
 var BOARD_SIZE = 8;
 var EMPTY = 0;
-var RED = 1;       // 红方（先手，上方）
-var WHITE = 2;     // 白方（后手，下方）
+var RED = 1;       // Red (first player, top)
+var WHITE = 2;     // White (second player, bottom)
 var RED_KING = 3;
 var WHITE_KING = 4;
 
-// AI搜索深度
+// AI search depth
 var AI_DEPTH = 4;
 
-// 评估权重
+// Evaluation weights
 var WEIGHT_PIECE = 100;
 var WEIGHT_KING = 250;
-var WEIGHT_ADVANCE = 3;      // 普通棋子前进奖励
-var WEIGHT_CENTER = 5;       // 中心位置奖励
-var WEIGHT_THREATENED = -20; // 被威胁的棋子惩罚
+var WEIGHT_ADVANCE = 3;      // Regular piece advance bonus
+var WEIGHT_CENTER = 5;       // Center position bonus
+var WEIGHT_THREATENED = -20; // Threatened piece penalty
 
 function createBoard() {
   var board = [];
@@ -73,24 +73,24 @@ function inBounds(r, c) {
 }
 
 // ============================================================
-// 移动生成
+// Move generation
 // ============================================================
 
-// 获取某棋子的普通移动方向
+// Get normal move directions for a piece
 function getMoveDirs(piece) {
-  if (piece === RED) return [[1, -1], [1, 1]];           // 红方向下
-  if (piece === WHITE) return [[-1, -1], [-1, 1]];       // 白方向上
-  return [[-1, -1], [-1, 1], [1, -1], [1, 1]];           // 王四方向
+  if (piece === RED) return [[1, -1], [1, 1]];           // Red moves down
+  if (piece === WHITE) return [[-1, -1], [-1, 1]];       // White moves up
+  return [[-1, -1], [-1, 1], [1, -1], [1, 1]];           // King moves in all 4 directions
 }
 
-// 获取某棋子的吃子方向
+// Get capture directions for a piece
 function getCaptureDirs(piece) {
-  return getMoveDirs(piece); // 吃子方向与移动方向相同
+  return getMoveDirs(piece); // Capture directions same as move directions
 }
 
 /**
- * 获取某个棋子的所有可能移动（不含吃子）
- * 返回 [{fromR, fromC, toR, toC}]
+ * Get all possible moves for a piece (excluding captures)
+ * Returns [{fromR, fromC, toR, toC}]
  */
 function getSimpleMoves(board, r, c) {
   var piece = board[r][c];
@@ -107,17 +107,17 @@ function getSimpleMoves(board, r, c) {
 }
 
 /**
- * 获取某个棋子的所有吃子移动
- * 返回 [{fromR, fromC, toR, toC, capturedR, capturedC}]
+ * Get all capture moves for a piece
+ * Returns [{fromR, fromC, toR, toC, capturedR, capturedC}]
  */
 function getCaptureMoves(board, r, c) {
   var piece = board[r][c];
   var moves = [];
   var dirs = getCaptureDirs(piece);
   for (var i = 0; i < dirs.length; i++) {
-    var mr = r + dirs[i][0]; // 被吃棋子位置
+    var mr = r + dirs[i][0]; // Captured piece position
     var mc = c + dirs[i][1];
-    var nr = r + dirs[i][0] * 2; // 落点
+    var nr = r + dirs[i][0] * 2; // Landing position
     var nc = c + dirs[i][1] * 2;
     if (inBounds(nr, nc) && board[nr][nc] === EMPTY) {
       var mid = board[mr][mc];
@@ -130,8 +130,8 @@ function getCaptureMoves(board, r, c) {
 }
 
 /**
- * 获取某方所有合法移动（强制吃子规则）
- * 返回 [{fromR, fromC, toR, toC, capturedR?, capturedC?, chainCaptures?}]
+ * Get all legal moves for a side (forced capture rule)
+ * Returns [{fromR, fromC, toR, toC, capturedR?, capturedC?, chainCaptures?}]
  */
 function getAllMoves(board, player) {
   var allCaptures = [];
@@ -152,9 +152,9 @@ function getAllMoves(board, player) {
     }
   }
 
-  // 强制吃子：有吃子时必须吃
+  // Forced capture: must capture when available
   if (allCaptures.length > 0) {
-    // 展开多跳：对每个吃子检查是否能继续跳
+    // Expand multi-jump: check if each capture can continue
     var expanded = [];
     for (var i = 0; i < allCaptures.length; i++) {
       expandChainCaptures(board, allCaptures[i], player, expanded);
@@ -165,20 +165,20 @@ function getAllMoves(board, player) {
 }
 
 /**
- * 递归展开连续吃子
+ * Recursively expand chain captures
  */
 function expandChainCaptures(board, move, player, result) {
   var newBoard = applyMove(board, move);
   var piece = newBoard[move.toR][move.toC];
-  // 检查是否升王
+  // Check if promoted to king
   var promoted = promote(piece, move.toR);
   if (promoted !== piece) {
     newBoard[move.toR][move.toC] = promoted;
-    // 升王后不能继续吃（国际跳棋规则：升王后回合结束）
+    // Cannot continue after promotion (checkers rule: turn ends on promotion)
     result.push(move);
     return;
   }
-  // 检查是否能继续吃
+  // Check if can continue capturing
   var nextCaps = getCaptureMoves(newBoard, move.toR, move.toC);
   if (nextCaps.length === 0) {
     result.push(move);
@@ -190,7 +190,7 @@ function expandChainCaptures(board, move, player, result) {
 }
 
 /**
- * 应用移动到棋盘（返回新棋盘）
+ * Apply move to board (returns new board)
  */
 function applyMove(board, move) {
   var newBoard = copyBoard(board);
@@ -198,7 +198,7 @@ function applyMove(board, move) {
   newBoard[move.fromR][move.fromC] = EMPTY;
   var promoted = promote(piece, move.toR);
   newBoard[move.toR][move.toC] = promoted;
-  // 如果是吃子，移除被吃的棋子
+  // If capture, remove captured piece
   if (move.capturedR !== undefined) {
     newBoard[move.capturedR][move.capturedC] = EMPTY;
   }
@@ -206,7 +206,7 @@ function applyMove(board, move) {
 }
 
 // ============================================================
-// 胜负检测
+// Win/loss detection
 // ============================================================
 
 function checkGameOver(board, currentPlayer) {
@@ -220,7 +220,7 @@ function checkGameOver(board, currentPlayer) {
   if (redCount === 0) return { winner: WHITE, reason: 'capture' };
   if (whiteCount === 0) return { winner: RED, reason: 'capture' };
 
-  // 检查当前方是否有合法移动
+  // Check if current side has legal moves
   var moves = getAllMoves(board, currentPlayer);
   if (moves.length === 0) {
     return { winner: getOpponent(currentPlayer), reason: 'no_moves' };
@@ -229,7 +229,7 @@ function checkGameOver(board, currentPlayer) {
 }
 
 // ============================================================
-// AI: Alpha-Beta 剪枝
+// AI: Alpha-Beta Pruning
 // ============================================================
 
 function evaluateBoard(board, aiPlayer) {
@@ -244,12 +244,12 @@ function evaluateBoard(board, aiPlayer) {
       var isAI = getOwner(piece) === aiPlayer;
       var sign = isAI ? 1 : -1;
 
-      // 基础分
+      // Base score
       if (isKing(piece)) {
         score += sign * WEIGHT_KING;
       } else {
         score += sign * WEIGHT_PIECE;
-        // 前进奖励
+        // Advance bonus
         if (isAI) {
           if (aiPlayer === RED) score += sign * r * WEIGHT_ADVANCE;
           else score += sign * (BOARD_SIZE - 1 - r) * WEIGHT_ADVANCE;
@@ -259,13 +259,13 @@ function evaluateBoard(board, aiPlayer) {
         }
       }
 
-      // 中心位置奖励
+      // Center position bonus
       var centerDist = Math.abs(r - 3.5) + Math.abs(c - 3.5);
       score += sign * (7 - centerDist) * WEIGHT_CENTER;
     }
   }
 
-  // 威胁评估
+  // Threat evaluation
   score += evaluateThreats(board, aiPlayer);
 
   return score;
@@ -274,7 +274,7 @@ function evaluateBoard(board, aiPlayer) {
 function evaluateThreats(board, player) {
   var score = 0;
   var opponent = getOpponent(player);
-  // 检查对方是否能吃我方棋子
+  // Check if opponent can capture our pieces
   for (var r = 0; r < BOARD_SIZE; r++) {
     for (var c = 0; c < BOARD_SIZE; c++) {
       if (getOwner(board[r][c]) === opponent) {
@@ -348,7 +348,7 @@ function getBestAIMove(board, aiPlayer) {
 }
 
 // ============================================================
-// 游戏状态
+// Game state
 // ============================================================
 
 function createGameState(mode) {
@@ -364,16 +364,16 @@ function createGameState(mode) {
     aiThinking: false,
     scoreRed: 0,
     scoreWhite: 0,
-    selectedPiece: null,    // {r, c} 当前选中的棋子
-    validMoves: [],          // 当前选中棋子的合法移动
-    mustCapture: false,      // 是否强制吃子
+    selectedPiece: null,    // {r, c} currently selected piece
+    validMoves: [],          // Valid moves for selected piece
+    mustCapture: false,      // Whether forced capture
     lastMove: null,
-    multiJumpPiece: null     // 连续吃子中的棋子位置
+    multiJumpPiece: null     // Piece position during chain capture
   };
 }
 
 // ============================================================
-// 导出供测试使用
+// Export for testing
 // ============================================================
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -409,7 +409,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 // ============================================================
-// 浏览器UI
+// Browser UI
 // ============================================================
 
 if (typeof document !== 'undefined') {
@@ -455,12 +455,12 @@ if (typeof document !== 'undefined') {
     context.arc(cx, cy, PIECE_RADIUS, 0, Math.PI * 2);
     context.fill();
 
-    // 边框
+    // Border
     context.strokeStyle = isRed(piece) ? '#922b21' : '#7f8c8d';
     context.lineWidth = 1.5;
     context.stroke();
 
-    // 王标记
+    // King marker
     if (isKing(piece)) {
       context.fillStyle = '#ffd700';
       context.font = 'bold 18px sans-serif';
@@ -499,16 +499,16 @@ if (typeof document !== 'undefined') {
   function renderGame(state) {
     drawBoard();
 
-    // 最后一步
+    // Last move
     if (state.lastMove) drawLastMove(state.lastMove);
 
-    // 选中高亮
+    // Selection highlight
     if (state.selectedPiece) {
       drawSelection(state.selectedPiece.r, state.selectedPiece.c);
       drawValidMoves(state.validMoves);
     }
 
-    // 所有棋子
+    // All pieces
     for (var r = 0; r < BOARD_SIZE; r++) {
       for (var c = 0; c < BOARD_SIZE; c++) {
         if (state.board[r][c] !== EMPTY) {
@@ -517,7 +517,7 @@ if (typeof document !== 'undefined') {
       }
     }
 
-    // 状态栏
+    // Status bar
     document.getElementById('current-player').textContent = getPlayerName(state.currentPlayer);
     document.getElementById('current-player').className =
       'team-indicator ' + (state.currentPlayer === RED ? 'text-red' : 'text-white-piece');
@@ -569,7 +569,7 @@ if (typeof document !== 'undefined') {
     document.getElementById('game-over').style.display = 'flex';
   }
 
-  // 获取某方所有合法移动，用于判断是否强制吃子
+  // Get all legal moves for a side to determine forced capture
   function getMustCapture(board, player) {
     for (var r = 0; r < BOARD_SIZE; r++) {
       for (var c = 0; c < BOARD_SIZE; c++) {
@@ -581,7 +581,7 @@ if (typeof document !== 'undefined') {
     return false;
   }
 
-  // 获取某棋子的合法移动（考虑强制吃子规则）
+  // Get legal moves for a piece (considering forced capture rule)
   function getLegalMovesForPiece(board, r, c, player) {
     var mustCapture = getMustCapture(board, player);
     if (mustCapture) {
@@ -593,7 +593,7 @@ if (typeof document !== 'undefined') {
   function handleCanvasClick(e) {
     if (!gameState || gameState.gameOver || gameState.aiThinking) return;
     if (gameState.mode === 'pve' && gameState.currentPlayer === gameState.aiTeam) return;
-    // 如果在连续吃子中，只允许点击当前棋子
+    // During chain capture, only allow clicking current piece
     if (gameState.multiJumpPiece) {
       var rect = canvas.getBoundingClientRect();
       var scaleX = canvas.width / rect.width;
@@ -618,7 +618,7 @@ if (typeof document !== 'undefined') {
 
     var piece = gameState.board[row][col];
 
-    // 如果点击了己方棋子，选中它
+    // If clicked own piece, select it
     if (getOwner(piece) === gameState.currentPlayer) {
       var moves = getLegalMovesForPiece(gameState.board, row, col, gameState.currentPlayer);
       if (moves.length > 0) {
@@ -631,7 +631,7 @@ if (typeof document !== 'undefined') {
       return;
     }
 
-    // 如果点击了空位且已选中棋子，尝试移动
+    // If clicked empty cell with selected piece, try to move
     if (piece === EMPTY && gameState.selectedPiece) {
       var move = findMove(gameState.validMoves, row, col);
       if (move) {
@@ -645,7 +645,7 @@ if (typeof document !== 'undefined') {
 
   function handleMultiJumpClick(row, col) {
     var mp = gameState.multiJumpPiece;
-    // 点击当前棋子本身，结束连续吃子
+    // Clicking current piece itself ends chain capture
     if (row === mp.r && col === mp.c) {
       gameState.multiJumpPiece = null;
       gameState.selectedPiece = null;
@@ -653,7 +653,7 @@ if (typeof document !== 'undefined') {
       endTurn();
       return;
     }
-    // 尝试继续吃子
+    // Try to continue capturing
     var move = findMove(gameState.validMoves, row, col);
     if (move) {
       doMultiJumpMove(move);
@@ -674,20 +674,20 @@ if (typeof document !== 'undefined') {
     gameState.validMoves = [];
     gameState.turnCount++;
 
-    // 检查是否升王后需要结束回合
+    // Check if promoted to king and need to end turn
     var piece = gameState.board[move.toR][move.toC];
     if (move.capturedR !== undefined) {
-      // 吃子后检查是否能继续吃
+      // After capture, check if can continue capturing
       var promoted = promote(gameState.board[move.toR][move.toC], move.toR);
       if (promoted !== piece) {
         gameState.board[move.toR][move.toC] = promoted;
-        // 升王后回合结束
+        // Turn ends after promotion
         endTurn();
         return;
       }
       var nextCaps = getCaptureMoves(gameState.board, move.toR, move.toC);
       if (nextCaps.length > 0) {
-        // 连续吃子
+        // Chain capture
         gameState.multiJumpPiece = { r: move.toR, c: move.toC };
         gameState.selectedPiece = { r: move.toR, c: move.toC };
         gameState.validMoves = nextCaps;
@@ -703,7 +703,7 @@ if (typeof document !== 'undefined') {
     gameState.lastMove = move;
     gameState.turnCount++;
 
-    // 检查是否升王
+    // Check if promoted to king
     var piece = gameState.board[move.toR][move.toC];
     var promoted = promote(piece, move.toR);
     if (promoted !== piece) {
@@ -758,7 +758,7 @@ if (typeof document !== 'undefined') {
         gameState.board = applyMove(gameState.board, move);
         gameState.lastMove = move;
         gameState.turnCount++;
-        // AI连续吃子
+        // AI chain capture
         simulateAIChainCaptures(move);
       } else {
         endTurn();
@@ -776,7 +776,7 @@ if (typeof document !== 'undefined') {
     }
     var nextCaps = getCaptureMoves(gameState.board, move.toR, move.toC);
     if (nextCaps.length > 0) {
-      // AI继续吃子（简单策略：选择第一个）
+      // AI continues capture (simple strategy: pick first)
       var nextMove = nextCaps[0];
       renderGame(gameState);
       setTimeout(function() {

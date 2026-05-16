@@ -3,11 +3,11 @@ import { describe, it, expect } from 'vitest';
 const { judgeRPS, getImagePath, IMAGE_MAP, ROLES, BASE_DOMINANCE, canCapture, createGameState, getValidMoves, getValidCaptures, getCarryTargets } = require('./game.js');
 
 // ============================================================
-// 石头剪刀布判定 - 9种组合穷举
+// Rock-Paper-Scissors judgment - 9 combinations exhaustive
 // Validates: Requirements 6.1, 10.1
 // ============================================================
-describe('judgeRPS - 石头剪刀布判定', () => {
-  // 平局
+describe('judgeRPS - Rock-Paper-Scissors判定', () => {
+  // Draw
   it('rock vs rock = 0 (平局)', () => {
     expect(judgeRPS('rock', 'rock')).toBe(0);
   });
@@ -18,7 +18,7 @@ describe('judgeRPS - 石头剪刀布判定', () => {
     expect(judgeRPS('paper', 'paper')).toBe(0);
   });
 
-  // 第一方胜
+  // First player wins
   it('rock vs scissors = 1 (第一方胜)', () => {
     expect(judgeRPS('rock', 'scissors')).toBe(1);
   });
@@ -29,7 +29,7 @@ describe('judgeRPS - 石头剪刀布判定', () => {
     expect(judgeRPS('paper', 'rock')).toBe(1);
   });
 
-  // 第二方胜
+  // Second player wins
   it('rock vs paper = -1 (第二方胜)', () => {
     expect(judgeRPS('rock', 'paper')).toBe(-1);
   });
@@ -42,21 +42,21 @@ describe('judgeRPS - 石头剪刀布判定', () => {
 });
 
 // ============================================================
-// 图片映射正确性 - 16种角色+阵营组合
+// Image mapping correctness - 16 role+team combinations
 // Validates: Requirements 6.1, 10.1
 // ============================================================
 describe('getImagePath - 图片映射正确性', () => {
-  // 特殊路径：红方"人"使用"人-人.png"
+  // Special path: red "human" uses "human-human.png"
   it('红方"人"应返回 images/人-人.png（特殊路径）', () => {
     expect(getImagePath('人', 'red')).toBe('images/人-人.png');
   });
 
-  // 蓝方"人"正常路径
+  // Blue "human" normal path
   it('蓝方"人"应返回 images/人-蓝.png', () => {
     expect(getImagePath('人', 'blue')).toBe('images/人-蓝.png');
   });
 
-  // 红方普通角色
+  // Red normal roles
   it('红方"马蜂"应返回 images/胡蜂-红.png', () => {
     expect(getImagePath('马蜂', 'red')).toBe('images/胡蜂-红.png');
   });
@@ -79,7 +79,7 @@ describe('getImagePath - 图片映射正确性', () => {
     expect(getImagePath('火箭', 'red')).toBe('images/火箭-红.png');
   });
 
-  // 蓝方普通角色
+  // Blue normal roles
   it('蓝方"马蜂"应返回 images/胡蜂-蓝.png', () => {
     expect(getImagePath('马蜂', 'blue')).toBe('images/胡蜂-蓝.png');
   });
@@ -105,22 +105,22 @@ describe('getImagePath - 图片映射正确性', () => {
 
 
 // ============================================================
-// canCapture - 相克判定函数（Card对象版本）
+// canCapture - dominance check function (Card object version)
 // Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.5, 6.6
 // ============================================================
 
-// 辅助函数：创建卡牌对象用于 canCapture 测试
+// Helper Functions: create card objects for canCapture testing
 function card(role, carrying = null) {
   return { role, team: 'red', faceUp: true, carrying };
 }
 
 describe('canCapture - 相克判定（Card对象）', () => {
-  // 基础相克关系（BASE_DOMINANCE 表）
+  // Basic dominance relationships (BASE_DOMINANCE table)
   it('马蜂克癞痢', () => expect(canCapture(card('马蜂'), card('癞痢'))).toBe(true));
   it('老虎克人', () => expect(canCapture(card('老虎'), card('人'))).toBe(true));
   it('鸡克马蜂', () => expect(canCapture(card('鸡'), card('马蜂'))).toBe(true));
 
-  // 火箭克所有其他角色
+  // Rocket dominates all other roles
   it('火箭克马蜂', () => expect(canCapture(card('火箭'), card('马蜂'))).toBe(true));
   it('火箭克癞痢', () => expect(canCapture(card('火箭'), card('癞痢'))).toBe(true));
   it('火箭克枪', () => expect(canCapture(card('火箭'), card('枪'))).toBe(true));
@@ -129,12 +129,12 @@ describe('canCapture - 相克判定（Card对象）', () => {
   it('火箭克刀', () => expect(canCapture(card('火箭'), card('刀'))).toBe(true));
   it('火箭克鸡', () => expect(canCapture(card('火箭'), card('鸡'))).toBe(true));
 
-  // 反向不克制（单向关系验证）
+  // Reverse does not dominate (one-way relationship verification)
   it('癞痢不克马蜂', () => expect(canCapture(card('癞痢'), card('马蜂'))).toBe(false));
   it('人不克老虎', () => expect(canCapture(card('人'), card('老虎'))).toBe(false));
   it('马蜂不克鸡', () => expect(canCapture(card('马蜂'), card('鸡'))).toBe(false));
 
-  // 刀和枪自身不能吃任何角色
+  // Knife and spear themselves cannot capture any role
   it('刀不能吃任何角色', () => {
     for (const role of ROLES) {
       expect(canCapture(card('刀'), card(role))).toBe(false);
@@ -146,43 +146,43 @@ describe('canCapture - 相克判定（Card对象）', () => {
     }
   });
 
-  // 扛刀人克鸡
+  // Knife carrier dominates chicken
   it('扛刀人克鸡', () => expect(canCapture(card('人', '刀'), card('鸡'))).toBe(true));
   it('未扛刀的人不能吃鸡', () => expect(canCapture(card('人'), card('鸡'))).toBe(false));
 
-  // 扛枪癞痢克老虎
+  // Spear carrier dominates tiger
   it('扛枪癞痢克老虎', () => expect(canCapture(card('癞痢', '枪'), card('老虎'))).toBe(true));
   it('未扛枪的癞痢不能吃老虎', () => expect(canCapture(card('癞痢'), card('老虎'))).toBe(false));
 
-  // 人不克火箭（新版删除了人克火箭）
+  // Human does not dominate rocket (new version removed human-rocket dominance)
   it('人不克火箭', () => expect(canCapture(card('人'), card('火箭'))).toBe(false));
   it('扛刀人也不克火箭', () => expect(canCapture(card('人', '刀'), card('火箭'))).toBe(false));
 
-  // 人不克刀（新版删除了人克刀）
+  // Human does not dominate knife (new version removed human-knife dominance)
   it('人不克刀', () => expect(canCapture(card('人'), card('刀'))).toBe(false));
 
-  // 同角色不克制
+  // Same role does not dominate
   it('同角色不克制', () => {
     for (const role of ROLES) {
-      if (role === '刀' || role === '枪') continue; // 刀枪已单独测试
+      if (role === '刀' || role === '枪') continue; // Knife/spear already tested separately
       expect(canCapture(card(role), card(role))).toBe(false);
     }
   });
 
-  // 扛枪癞痢对非老虎角色无额外克制
+  // Spear carrier has no extra dominance over non-tiger roles
   it('扛枪癞痢不克马蜂', () => expect(canCapture(card('癞痢', '枪'), card('马蜂'))).toBe(false));
 
-  // 扛刀人对非鸡角色无额外克制
+  // Knife carrier has no extra dominance over non-chicken roles
   it('扛刀人不克老虎', () => expect(canCapture(card('人', '刀'), card('老虎'))).toBe(false));
 });
 
 
 // ============================================================
-// createGameState - 初始游戏状态创建
+// createGameState - initial game state creation
 // Validates: Requirements 1.1, 1.2, 1.4, 1.5, 11.1
 // ============================================================
-describe('createGameState - 初始游戏状态', () => {
-  it('应返回包含所有必要字段的游戏状态对象', () => {
+describe('createGameState - 初始Game state', () => {
+  it('应返回包含所有必要字段的Game state对象', () => {
     const state = createGameState('pvp');
     expect(state.mode).toBe('pvp');
     expect(state.currentTeam).toBeNull();
@@ -204,7 +204,7 @@ describe('createGameState - 初始游戏状态', () => {
     expect(state.mode).toBe('pve');
   });
 
-  it('棋盘应为4×4，包含恰好16张牌', () => {
+  it('board应为4×4，包含恰好16张牌', () => {
     const state = createGameState('pvp');
     expect(state.board.length).toBe(4);
     let cardCount = 0;
@@ -269,7 +269,7 @@ describe('createGameState - 初始游戏状态', () => {
 
 
 // ============================================================
-// 辅助函数：创建测试用棋盘
+// Helper Functions: create test board
 // ============================================================
 function emptyBoard() {
   return Array.from({ length: 4 }, () => Array(4).fill(null));
@@ -281,7 +281,7 @@ function makeCard(role, team, faceUp = true, carrying = null) {
 
 
 // ============================================================
-// getValidMoves - 合法移动检测
+// getValidMoves - valid move detection
 // Validates: Requirements 4.1, 4.2, 4.3
 // ============================================================
 describe('getValidMoves - 合法移动检测', () => {
@@ -365,7 +365,7 @@ describe('getValidMoves - 合法移动检测', () => {
 
 
 // ============================================================
-// getValidCaptures - 合法吃牌检测
+// getValidCaptures - valid capture detection
 // Validates: Requirements 5.1, 5.5, 6.3
 // ============================================================
 describe('getValidCaptures - 合法吃牌检测', () => {
@@ -491,7 +491,7 @@ describe('getValidCaptures - 合法吃牌检测', () => {
 const { flipCard, moveCard, captureCard, carryWeapon, hasAnyLegalAction, checkGameOver } = require('./game.js');
 
 // ============================================================
-// getCarryTargets - 合法扛刀/扛枪目标检测
+// getCarryTargets - legal carry weapon target detection
 // Validates: Requirements 7.1, 7.2, 7.3, 7.4
 // ============================================================
 describe('getCarryTargets - 合法扛刀/扛枪目标检测', () => {
@@ -572,7 +572,7 @@ describe('getCarryTargets - 合法扛刀/扛枪目标检测', () => {
 
 
 // ============================================================
-// 辅助函数：创建带有指定 currentTeam 的测试状态
+// Helper Functions: create test state with specified currentTeam
 // ============================================================
 function makeState(board, currentTeam, opts = {}) {
   return {
@@ -596,7 +596,7 @@ function makeState(board, currentTeam, opts = {}) {
 
 
 // ============================================================
-// flipCard - 翻牌操作
+// flipCard - flip operation
 // Validates: Requirements 3.1, 3.3, 3.4, 11.2, 11.3, 11.4
 // ============================================================
 describe('flipCard - 翻牌操作', () => {
@@ -686,7 +686,7 @@ describe('flipCard - 翻牌操作', () => {
 
 
 // ============================================================
-// moveCard - 走牌操作
+// moveCard - move operation
 // Validates: Requirements 4.1, 4.4, 4.5, 4.6
 // ============================================================
 describe('moveCard - 走牌操作', () => {
@@ -761,7 +761,7 @@ describe('moveCard - 走牌操作', () => {
 
 
 // ============================================================
-// captureCard - 吃牌操作
+// captureCard - capture operation
 // Validates: Requirements 5.1, 5.2, 5.4
 // ============================================================
 describe('captureCard - 吃牌操作', () => {
@@ -790,7 +790,7 @@ describe('captureCard - 吃牌操作', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('癞痢', 'blue');
     board[1][2] = makeCard('马蜂', 'red');
-    // 蓝方回合：癞痢不克马蜂，换个能吃的
+    // Blue turn: scalper does not dominate bee, switch to capturable one
     board[1][1] = makeCard('鸡', 'blue');
     board[1][2] = makeCard('马蜂', 'red');
     const state = makeState(board, 'blue');
@@ -872,7 +872,7 @@ describe('captureCard - 吃牌操作', () => {
     expect(captureCard(state, { x: 1, y: 1 }, { x: 2, y: 1 })).toBeNull();
   });
 
-  // 火箭吃牌同归于尽
+  // Rocket capture mutual destruction
   it('火箭吃普通角色时同归于尽（两个位置都为null）', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('火箭', 'red');
@@ -894,7 +894,7 @@ describe('captureCard - 吃牌操作', () => {
     expect(state.capturedBlue).toContain('老虎');
   });
 
-  // 扛刀人/扛枪癞痢被吃时同时移除武器
+  // Knife carrier/spear carrier removed with weapon when captured
   it('扛刀人被吃时，人和刀都加入被吃列表', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('老虎', 'blue');
@@ -910,7 +910,7 @@ describe('captureCard - 吃牌操作', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('马蜂', 'blue');
     board[1][2] = makeCard('癞痢', 'red', true, '枪');
-    // 马蜂克癞痢
+    // Bee dominates scalper
     const state = makeState(board, 'blue');
     captureCard(state, { x: 1, y: 1 }, { x: 2, y: 1 });
     expect(state.capturedRed).toContain('癞痢');
@@ -918,7 +918,7 @@ describe('captureCard - 吃牌操作', () => {
     expect(state.capturedRed).toHaveLength(2);
   });
 
-  // 火箭吃扛刀人：三张牌都被移除
+  // Rocket captures knife carrier: all three cards removed
   it('火箭吃扛刀人时，三张牌都被移除（火箭+人+刀）', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('火箭', 'blue');
@@ -926,17 +926,17 @@ describe('captureCard - 吃牌操作', () => {
     const state = makeState(board, 'blue');
     const result = captureCard(state, { x: 1, y: 1 }, { x: 2, y: 1 });
     expect(result).not.toBeNull();
-    // 两个位置都为空
+    // Both positions empty
     expect(result.board[1][1]).toBeNull();
     expect(result.board[1][2]).toBeNull();
-    // 火箭加入蓝方被吃列表
+    // Rocket added to blue captured list
     expect(state.capturedBlue).toContain('火箭');
-    // 人和刀加入红方被吃列表
+    // Human and knife added to red captured list
     expect(state.capturedRed).toContain('人');
     expect(state.capturedRed).toContain('刀');
   });
 
-  // 扛刀人吃鸡成功
+  // Knife carrier captures chicken successfully
   it('扛刀人吃鸡成功', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('人', 'red', true, '刀');
@@ -953,7 +953,7 @@ describe('captureCard - 吃牌操作', () => {
 
 
 // ============================================================
-// carryWeapon - 扛刀/扛枪操作
+// carryWeapon - carry weapon operation
 // Validates: Requirements 7.1, 7.2, 7.3, 7.4, 7.5
 // ============================================================
 describe('carryWeapon - 扛刀/扛枪操作', () => {
@@ -1034,7 +1034,7 @@ describe('carryWeapon - 扛刀/扛枪操作', () => {
 
 
 // ============================================================
-// hasAnyLegalAction - 合法操作检测
+// hasAnyLegalAction - legal action detection
 // Validates: Requirements 8.1, 8.2
 // ============================================================
 describe('hasAnyLegalAction - 合法操作检测', () => {
@@ -1047,7 +1047,7 @@ describe('hasAnyLegalAction - 合法操作检测', () => {
   it('己方已翻开的牌有合法移动时返回 true', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('鸡', 'red');
-    // 四周有空位
+    // Surrounding has empty cells
     expect(hasAnyLegalAction(board, 'red')).toBe(true);
   });
 
@@ -1058,7 +1058,7 @@ describe('hasAnyLegalAction - 合法操作检测', () => {
     board[1][0] = makeCard('枪', 'red');
     board[0][1] = makeCard('老虎', 'red');
     board[2][1] = makeCard('人', 'red');
-    // 马蜂被包围但可以吃癞痢
+    // Bee surrounded but can capture scalper
     expect(hasAnyLegalAction(board, 'red')).toBe(true);
   });
 
@@ -1066,15 +1066,15 @@ describe('hasAnyLegalAction - 合法操作检测', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('人', 'red');
     board[1][2] = makeCard('火箭', 'blue');
-    // 人不能吃火箭，但人四周有空位可以移动
+    // Human cannot capture rocket, but has empty cells to move
     board[1][0] = makeCard('枪', 'red');
     board[0][1] = makeCard('老虎', 'red');
     board[2][1] = makeCard('鸡', 'red');
-    // 红方有多个棋子，鸡可以移动
+    // Red has multiple pieces, chicken can move
     expect(hasAnyLegalAction(board, 'red')).toBe(true);
   });
 
-  it('棋盘上无己方牌且无未翻开的牌时返回 false', () => {
+  it('board上无己方牌且无未翻开的牌时返回 false', () => {
     const board = emptyBoard();
     board[0][0] = makeCard('刀', 'blue');
     expect(hasAnyLegalAction(board, 'red')).toBe(false);
@@ -1082,16 +1082,16 @@ describe('hasAnyLegalAction - 合法操作检测', () => {
 
   it('己方牌被完全包围且无吃牌机会且无未翻开的牌时返回 false', () => {
     const board = emptyBoard();
-    // 红方刀在中间，四周全是蓝方牌且刀不能吃任何一个
+    // Red knife in center, surrounded by blue cards, knife cannot capture any
     board[1][1] = makeCard('刀', 'red');
-    board[1][0] = makeCard('马蜂', 'blue'); // 刀不克马蜂
-    board[1][2] = makeCard('枪', 'blue');   // 刀不克枪
-    board[0][1] = makeCard('老虎', 'blue'); // 刀不克老虎
-    board[2][1] = makeCard('人', 'blue');   // 刀不克人
+    board[1][0] = makeCard('马蜂', 'blue'); // Knife does not dominate bee
+    board[1][2] = makeCard('枪', 'blue');   // Knife does not dominate spear
+    board[0][1] = makeCard('老虎', 'blue'); // Knife does not dominate tiger
+    board[2][1] = makeCard('人', 'blue');   // Knife does not dominate human
     expect(hasAnyLegalAction(board, 'red')).toBe(false);
   });
 
-  it('空棋盘返回 false', () => {
+  it('空board返回 false', () => {
     const board = emptyBoard();
     expect(hasAnyLegalAction(board, 'red')).toBe(false);
   });
@@ -1103,14 +1103,14 @@ describe('hasAnyLegalAction - 合法操作检测', () => {
     board[1][2] = makeCard('马蜂', 'blue');
     board[0][1] = makeCard('老虎', 'blue');
     board[2][1] = makeCard('鸡', 'blue');
-    // 人被包围，不能移动，不能吃任何相邻牌，但可以扛刀
+    // Human surrounded, cannot move, cannot capture adjacent cards, but can carry knife
     expect(hasAnyLegalAction(board, 'red')).toBe(true);
   });
 });
 
 
 // ============================================================
-// checkGameOver - 游戏结束判定
+// checkGameOver - game over check
 // Validates: Requirements 8.1, 8.2
 // ============================================================
 describe('checkGameOver - 游戏结束判定', () => {
@@ -1132,7 +1132,7 @@ describe('checkGameOver - 游戏结束判定', () => {
 
   it('当前行动方无合法操作时对方获胜', () => {
     const board = emptyBoard();
-    // 红方刀被完全包围且无法吃任何牌
+    // Red knife completely surrounded and cannot capture any card
     board[1][1] = makeCard('刀', 'red');
     board[1][0] = makeCard('马蜂', 'blue');
     board[1][2] = makeCard('枪', 'blue');
@@ -1161,10 +1161,10 @@ describe('checkGameOver - 游戏结束判定', () => {
     expect(result.winner).toBeNull();
   });
 
-  it('空棋盘时双方都无牌，红方先判定为0 → 蓝方获胜', () => {
+  it('空board时双方都无牌，红方先判定为0 → 蓝方获胜', () => {
     const board = emptyBoard();
     const result = checkGameOver(board, 'red');
-    // 红方0张，蓝方也0张，但红方先检测到0 → 蓝方胜
+    // Red 0 cards, blue also 0, but red detected 0 first -> blue wins
     expect(result.ended).toBe(true);
     expect(result.winner).toBe('blue');
   });
@@ -1174,11 +1174,11 @@ describe('checkGameOver - 游戏结束判定', () => {
 const { aiDecide } = require('./game.js');
 
 // ============================================================
-// aiDecide - AI决策函数
+// aiDecide - AI decision function
 // Validates: Requirements 13.1, 13.2, 13.3, 13.4, 13.5, 13.6
 // ============================================================
 describe('aiDecide - AI决策函数', () => {
-  // 优先级1：存在吃牌机会时，优先执行吃牌
+  // Priority 1: when capture opportunity exists, prioritize capture
   it('存在吃牌机会时返回 capture 操作', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('马蜂', 'red');
@@ -1191,12 +1191,12 @@ describe('aiDecide - AI决策函数', () => {
     expect(decision.to).toEqual({ x: 2, y: 1 });
   });
 
-  // 优先级1：多个吃牌机会时返回其中之一
+  // Priority 1: when multiple capture opportunities, return one
   it('有吃牌机会时优先吃牌', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('老虎', 'blue');
     board[1][2] = makeCard('人', 'red');
-    // 蓝方老虎可以吃红方人（老虎克人）
+    // Blue tiger can capture red human (tiger dominates human)
     const state = makeState(board, 'blue');
     const decision = aiDecide(state, 'blue');
     expect(decision).not.toBeNull();
@@ -1205,14 +1205,14 @@ describe('aiDecide - AI决策函数', () => {
     expect(decision.to).toEqual({ x: 2, y: 1 });
   });
 
-  // 优先级3：只有翻牌可用时，返回 flip 操作
+  // Priority 3: when only flip available, return flip action
   it('只有未翻开的牌可用时返回 flip 操作', () => {
     const board = emptyBoard();
-    // 红方有一张已翻开的牌但被包围且无法吃任何牌
+    // Red has one face-up card but surrounded and cannot capture
     board[0][0] = makeCard('刀', 'red');
     board[0][1] = makeCard('马蜂', 'blue');
     board[1][0] = makeCard('枪', 'blue');
-    // 有一张未翻开的牌
+    // There is one face-down card
     board[3][3] = makeCard('鸡', 'red', false);
     const state = makeState(board, 'red');
     const decision = aiDecide(state, 'red');
@@ -1222,27 +1222,27 @@ describe('aiDecide - AI决策函数', () => {
     expect(decision.y).toBe(3);
   });
 
-  // 优先级4：只有走牌可用时，返回 move 操作
+  // Priority 4: when only move available, return move action
   it('只有走牌可用时返回 move 操作', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('鸡', 'red');
-    // 四周有空位，无对方牌可吃，无未翻开的牌
+    // Surrounding has empty cells, no opponent cards to capture, no face-down cards
     const state = makeState(board, 'red');
     const decision = aiDecide(state, 'red');
     expect(decision).not.toBeNull();
     expect(decision.type).toBe('move');
     expect(decision.from).toEqual({ x: 1, y: 1 });
-    // 目标应是相邻空位之一
+    // Target should be one of adjacent empty cells
     const validTargets = [
       { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 0 }, { x: 1, y: 2 }
     ];
     expect(validTargets).toContainEqual(decision.to);
   });
 
-  // 无任何合法操作时返回 null
+  // Return null when no legal actions
   it('无任何合法操作时返回 null', () => {
     const board = emptyBoard();
-    // 红方刀被完全包围且无法吃任何牌，无未翻开的牌
+    // Red knife completely surrounded and cannot capture any card, no face-down cards
     board[1][1] = makeCard('刀', 'red');
     board[1][0] = makeCard('马蜂', 'blue');
     board[1][2] = makeCard('枪', 'blue');
@@ -1253,7 +1253,7 @@ describe('aiDecide - AI决策函数', () => {
     expect(decision).toBeNull();
   });
 
-  // 多个吃牌选项时，返回的操作应在合法列表中
+  // When multiple capture options, returned action should be in legal list
   it('多个吃牌选项时返回的操作应在合法列表中', () => {
     const board = emptyBoard();
     board[0][0] = makeCard('马蜂', 'red');
@@ -1271,7 +1271,7 @@ describe('aiDecide - AI决策函数', () => {
     expect(validFromTo).toContainEqual({ from: decision.from, to: decision.to });
   });
 
-  // 优先级2：有扛刀机会时（无吃牌机会），返回 carry 操作
+  // Priority 2: when carry opportunity exists (no capture), return carry action
   it('有扛刀机会时（无吃牌机会）返回 carry 操作', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('人', 'red');
@@ -1284,7 +1284,7 @@ describe('aiDecide - AI决策函数', () => {
     expect(decision.to).toEqual({ x: 2, y: 1 });
   });
 
-  // 吃牌优先于扛刀
+  // Capture priority over carry weapon
   it('吃牌优先于扛刀', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('马蜂', 'red');
@@ -1297,7 +1297,7 @@ describe('aiDecide - AI决策函数', () => {
     expect(decision.type).toBe('capture');
   });
 
-  // 扛刀优先于翻牌
+  // Carry weapon priority over flip
   it('扛刀优先于翻牌', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('人', 'red');
@@ -1309,23 +1309,23 @@ describe('aiDecide - AI决策函数', () => {
     expect(decision.type).toBe('carry');
   });
 
-  // 吃牌优先于翻牌
+  // Capture priority over flip
   it('有吃牌机会时优先于翻牌', () => {
     const board = emptyBoard();
     board[1][1] = makeCard('马蜂', 'red');
     board[1][2] = makeCard('癞痢', 'blue');
-    board[3][3] = makeCard('枪', 'blue', false); // 未翻开的牌
+    board[3][3] = makeCard('枪', 'blue', false); // Face-down card
     const state = makeState(board, 'red');
     const decision = aiDecide(state, 'red');
     expect(decision).not.toBeNull();
     expect(decision.type).toBe('capture');
   });
 
-  // 翻牌优先于走牌
+  // Flip priority over move
   it('有翻牌机会时优先于走牌', () => {
     const board = emptyBoard();
     board[0][0] = makeCard('鸡', 'red');
-    // 鸡四周有空位可走，但也有未翻开的牌
+    // Chicken has empty cells to move, but also has face-down cards
     board[3][3] = makeCard('马蜂', 'blue', false);
     const state = makeState(board, 'red');
     const decision = aiDecide(state, 'red');

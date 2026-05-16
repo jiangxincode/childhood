@@ -1,6 +1,6 @@
-//坐标JSON  红色出口id为1  顺时针
+//Coordinate JSON  Red exit id is 1  Clockwise
 var COORD = [{
-    'id': 1,    //红色出口第一个
+    'id': 1,    //First red exit
     'top': '90',
     'left': '630',
     'color': 'green'

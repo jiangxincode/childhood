@@ -1,5 +1,5 @@
 // ============================================================
-// 黑白棋（翻转棋）- 单元测试
+// Reversi (Othello) - Unit Tests
 // ============================================================
 
 import { describe, it, expect } from 'vitest';
@@ -10,7 +10,7 @@ import {
   createGameState, judgeRPS, getBestAIMove
 } from './game.js';
 
-// ---- 辅助函数 ----
+// ---- Helper Functions ----
 function emptyBoard() {
   const board = [];
   for (let y = 0; y < BOARD_SIZE; y++) {
@@ -34,42 +34,42 @@ function standardBoard() {
 }
 
 // ============================================================
-describe('inBounds - 棋盘边界检查', () => {
-  it('原点 (0,0) 在边界内', () => {
+describe('inBounds - Board boundary check', () => {
+  it('Origin (0,0) is within bounds', () => {
     expect(inBounds(0, 0)).toBe(true);
   });
-  it('右下角 (7,7) 在边界内', () => {
+  it('Bottom-right corner (7,7) is within bounds', () => {
     expect(inBounds(7, 7)).toBe(true);
   });
-  it('负坐标 (-1,0) 越界', () => {
+  it('Negative coordinate (-1,0) is out of bounds', () => {
     expect(inBounds(-1, 0)).toBe(false);
   });
-  it('x 超出 (8,0) 越界', () => {
+  it('x exceeds (8,0) is out of bounds', () => {
     expect(inBounds(8, 0)).toBe(false);
   });
-  it('y 超出 (0,8) 越界', () => {
+  it('y exceeds (0,8) is out of bounds', () => {
     expect(inBounds(0, 8)).toBe(false);
   });
 });
 
 // ============================================================
-describe('getOpponent - 对手颜色', () => {
-  it('黑棋对手是白棋', () => {
+describe('getOpponent - Opponent color', () => {
+  it('Black\'s opponent is white', () => {
     expect(getOpponent(PLAYER_BLACK)).toBe(PLAYER_WHITE);
   });
-  it('白棋对手是黑棋', () => {
+  it('White\'s opponent is black', () => {
     expect(getOpponent(PLAYER_WHITE)).toBe(PLAYER_BLACK);
   });
 });
 
 // ============================================================
-describe('createGameState - 初始状态', () => {
-  it('棋盘大小为 8x8', () => {
+describe('createGameState - Initial state', () => {
+  it('Board size is 8x8', () => {
     const state = createGameState('pvp');
     expect(state.board.length).toBe(8);
     expect(state.board[0].length).toBe(8);
   });
-  it('中央四子正确放置', () => {
+  it('Center four pieces correctly placed', () => {
     const state = createGameState('pvp');
     const mid = BOARD_SIZE / 2;
     expect(state.board[mid - 1][mid - 1]).toBe(PLAYER_WHITE);
@@ -77,30 +77,30 @@ describe('createGameState - 初始状态', () => {
     expect(state.board[mid][mid - 1]).toBe(PLAYER_BLACK);
     expect(state.board[mid][mid]).toBe(PLAYER_WHITE);
   });
-  it('初始棋子数量为 2 黑 2 白', () => {
+  it('Initial piece count is 2 black 2 white', () => {
     const state = createGameState('pvp');
     const counts = countPieces(state.board);
     expect(counts.black).toBe(2);
     expect(counts.white).toBe(2);
   });
-  it('初始回合数为 0', () => {
+  it('Initial turn count is 0', () => {
     const state = createGameState('pvp');
     expect(state.turnCount).toBe(0);
   });
-  it('游戏未结束', () => {
+  it('Game is not over', () => {
     const state = createGameState('pvp');
     expect(state.gameOver).toBe(false);
   });
 });
 
 // ============================================================
-describe('countPieces - 棋子计数', () => {
-  it('空棋盘计数为 0', () => {
+describe('countPieces - Piece count', () => {
+  it('Empty board count is 0', () => {
     const counts = countPieces(emptyBoard());
     expect(counts.black).toBe(0);
     expect(counts.white).toBe(0);
   });
-  it('全黑棋盘', () => {
+  it('All-black board', () => {
     const board = emptyBoard();
     for (let y = 0; y < BOARD_SIZE; y++)
       for (let x = 0; x < BOARD_SIZE; x++)
@@ -112,42 +112,42 @@ describe('countPieces - 棋子计数', () => {
 });
 
 // ============================================================
-describe('isValidMove - 合法落子检查', () => {
-  it('标准开局 (2,3) 对黑棋合法', () => {
+describe('isValidMove - Valid move check', () => {
+  it('Standard opening (2,3) is valid for black', () => {
     const board = standardBoard();
     expect(isValidMove(board, 2, 3, PLAYER_BLACK)).not.toBeNull();
   });
-  it('标准开局 (4,2) 对白棋合法', () => {
+  it('Standard opening (4,2) is valid for white', () => {
     const board = standardBoard();
     expect(isValidMove(board, 4, 2, PLAYER_WHITE)).not.toBeNull();
   });
-  it('标准开局 (0,0) 对黑棋不合法', () => {
+  it('Standard opening (0,0) is invalid for black', () => {
     const board = standardBoard();
     expect(isValidMove(board, 0, 0, PLAYER_BLACK)).toBeNull();
   });
-  it('已有棋子的位置不合法', () => {
+  it('Position with existing piece is invalid', () => {
     const board = standardBoard();
     expect(isValidMove(board, 3, 3, PLAYER_BLACK)).toBeNull();
   });
-  it('越界位置不合法', () => {
+  it('Out-of-bounds position is invalid', () => {
     const board = standardBoard();
     expect(isValidMove(board, -1, 0, PLAYER_BLACK)).toBeNull();
   });
 });
 
 // ============================================================
-describe('getValidMoves - 获取所有合法落子', () => {
-  it('标准开局黑棋有合法落子', () => {
+describe('getValidMoves - Get all valid moves', () => {
+  it('Black has valid moves in standard opening', () => {
     const board = standardBoard();
     const moves = getValidMoves(board, PLAYER_BLACK);
     expect(moves.length).toBeGreaterThan(0);
   });
-  it('标准开局白棋有合法落子', () => {
+  it('White has valid moves in standard opening', () => {
     const board = standardBoard();
     const moves = getValidMoves(board, PLAYER_WHITE);
     expect(moves.length).toBeGreaterThan(0);
   });
-  it('空棋盘（无对手棋子）无合法落子', () => {
+  it('Empty board (no opponent pieces) has no valid moves', () => {
     const board = emptyBoard();
     board[0][0] = PLAYER_BLACK;
     const moves = getValidMoves(board, PLAYER_WHITE);
@@ -156,38 +156,38 @@ describe('getValidMoves - 获取所有合法落子', () => {
 });
 
 // ============================================================
-describe('makeMove - 落子操作', () => {
-  it('在 (2,3) 落黑棋翻转 1 颗白棋', () => {
+describe('makeMove - Move operation', () => {
+  it('Placing black at (2,3) flips 1 white piece', () => {
     const board = standardBoard();
     const flipped = makeMove(board, 2, 3, PLAYER_BLACK);
     expect(flipped.length).toBe(1);
     expect(board[3][2]).toBe(PLAYER_BLACK); // board[y][x]
   });
-  it('翻转后目标位置变为己方', () => {
+  it('Target position becomes own color after flip', () => {
     const board = standardBoard();
     const flipped = makeMove(board, 2, 3, PLAYER_BLACK);
     for (const pos of flipped) {
       expect(board[pos.y][pos.x]).toBe(PLAYER_BLACK);
     }
   });
-  it('落子后棋子数量增加', () => {
+  it('Piece count increases after move', () => {
     const board = standardBoard();
     const before = countPieces(board);
     makeMove(board, 2, 3, PLAYER_BLACK);
     const after = countPieces(board);
-    expect(after.black).toBe(before.black + 1 + 1); // +1 落子 +1 翻转
+    expect(after.black).toBe(before.black + 1 + 1); // +1 placement +1 flip
   });
 });
 
 // ============================================================
-describe('isGameOver - 游戏结束判断', () => {
-  it('空棋盘游戏结束', () => {
+describe('isGameOver - Game over check', () => {
+  it('Empty board game is over', () => {
     expect(isGameOver(emptyBoard())).toBe(true);
   });
-  it('标准棋盘游戏未结束', () => {
+  it('标准棋盘Game is not over', () => {
     expect(isGameOver(standardBoard())).toBe(false);
   });
-  it('仅一方有棋子游戏结束', () => {
+  it('Game over when only one side has pieces', () => {
     const board = emptyBoard();
     board[0][0] = PLAYER_BLACK;
     expect(isGameOver(board)).toBe(true);
@@ -195,29 +195,29 @@ describe('isGameOver - 游戏结束判断', () => {
 });
 
 // ============================================================
-describe('getWinner - 胜负判断', () => {
-  it('全黑棋盘黑棋胜', () => {
+describe('getWinner - Winner determination', () => {
+  it('All-black board黑棋胜', () => {
     const board = emptyBoard();
     for (let y = 0; y < BOARD_SIZE; y++)
       for (let x = 0; x < BOARD_SIZE; x++)
         board[y][x] = PLAYER_BLACK;
     expect(getWinner(board)).toBe(PLAYER_BLACK);
   });
-  it('全白棋盘白棋胜', () => {
+  it('All-white board white wins', () => {
     const board = emptyBoard();
     for (let y = 0; y < BOARD_SIZE; y++)
       for (let x = 0; x < BOARD_SIZE; x++)
         board[y][x] = PLAYER_WHITE;
     expect(getWinner(board)).toBe(PLAYER_WHITE);
   });
-  it('黑白各半平局', () => {
+  it('Half black half white is a draw', () => {
     const board = emptyBoard();
     for (let y = 0; y < BOARD_SIZE; y++)
       for (let x = 0; x < BOARD_SIZE; x++)
         board[y][x] = (x + y) % 2 === 0 ? PLAYER_BLACK : PLAYER_WHITE;
     expect(getWinner(board)).toBe('draw');
   });
-  it('黑多白少黑棋胜', () => {
+  it('More black than white black wins', () => {
     const board = emptyBoard();
     board[0][0] = PLAYER_BLACK;
     board[0][1] = PLAYER_BLACK;
@@ -227,29 +227,29 @@ describe('getWinner - 胜负判断', () => {
 });
 
 // ============================================================
-describe('judgeRPS - 石头剪刀布', () => {
-  it('相同出拳平局', () => {
+describe('judgeRPS - Rock-Paper-Scissors', () => {
+  it('Same choice is a draw', () => {
     expect(judgeRPS('rock', 'rock')).toBe(0);
     expect(judgeRPS('scissors', 'scissors')).toBe(0);
     expect(judgeRPS('paper', 'paper')).toBe(0);
   });
-  it('石头胜剪刀', () => {
+  it('Rock beats scissors', () => {
     expect(judgeRPS('rock', 'scissors')).toBe(1);
     expect(judgeRPS('scissors', 'rock')).toBe(-1);
   });
-  it('剪刀胜布', () => {
+  it('Scissors beats paper', () => {
     expect(judgeRPS('scissors', 'paper')).toBe(1);
     expect(judgeRPS('paper', 'scissors')).toBe(-1);
   });
-  it('布胜石头', () => {
+  it('Paper beats rock', () => {
     expect(judgeRPS('paper', 'rock')).toBe(1);
     expect(judgeRPS('rock', 'paper')).toBe(-1);
   });
 });
 
 // ============================================================
-describe('getBestAIMove - AI 落子', () => {
-  it('标准开局 AI 能找到合法落子', () => {
+describe('getBestAIMove - AI move', () => {
+  it('AI can find valid move in standard opening', () => {
     const board = standardBoard();
     const move = getBestAIMove(board, PLAYER_BLACK);
     expect(move).not.toBeNull();
@@ -258,7 +258,7 @@ describe('getBestAIMove - AI 落子', () => {
     expect(move.y).toBeGreaterThanOrEqual(0);
     expect(move.y).toBeLessThan(BOARD_SIZE);
   });
-  it('无合法落子时返回 null', () => {
+  it('Returns null when no valid moves', () => {
     const board = emptyBoard();
     board[0][0] = PLAYER_BLACK;
     const move = getBestAIMove(board, PLAYER_WHITE);
