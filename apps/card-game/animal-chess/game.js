@@ -1,4 +1,5 @@
 /* eslint-disable no-var */
+/* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, getValidCapturesCore:writable, flipCard:writable, moveCard:writable, createBaseState:writable */
 // ============================================================
 // Animal Chess - Game Core Logic
 // ============================================================
@@ -13,13 +14,13 @@ if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
 }
 if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
   const _core = require("../../common/card-game-core.js");
-  var DIRECTIONS = _core.DIRECTIONS;
-  var inBounds = _core.inBounds;
-  var getValidMoves = _core.getValidMoves;
-  var getValidCapturesCore = _core.getValidCaptures;
-  var flipCard = _core.flipCard;
-  var moveCard = _core.moveCard;
-  var createBaseState = _core.createBaseState;
+  DIRECTIONS = _core.DIRECTIONS;
+  inBounds = _core.inBounds;
+  getValidMoves = _core.getValidMoves;
+  getValidCapturesCore = _core.getValidCaptures;
+  flipCard = _core.flipCard;
+  moveCard = _core.moveCard;
+  createBaseState = _core.createBaseState;
 }
 
 // All animal names (shared by red/blue, rank 1-8, lower value = higher rank)

@@ -1,4 +1,5 @@
 /* eslint-disable no-var */
+/* global DIRECTIONS:writable, inBounds:writable, flipCard:writable, moveCard:writable, createBaseState:writable */
 // ============================================================
 // Knife Kills Chicken (Carry Weapon Version) - Game Core Logic
 // ============================================================
@@ -13,11 +14,11 @@ if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
 }
 if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
   const _core = require("../../common/card-game-core.js");
-  var DIRECTIONS = _core.DIRECTIONS;
-  var inBounds = _core.inBounds;
-  var flipCard = _core.flipCard;
-  var moveCard = _core.moveCard;
-  var createBaseState = _core.createBaseState;
+  DIRECTIONS = _core.DIRECTIONS;
+  inBounds = _core.inBounds;
+  flipCard = _core.flipCard;
+  moveCard = _core.moveCard;
+  createBaseState = _core.createBaseState;
 }
 
 // 8 roles

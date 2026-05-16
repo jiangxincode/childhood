@@ -1,4 +1,5 @@
 /* eslint-disable no-var */
+/* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable */
 // ============================================================
 // Dragon Tiger Fight - Game Core Logic
 // ============================================================
@@ -13,9 +14,9 @@ if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
 }
 if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
   const _core = require("../../common/card-game-core.js");
-  var DIRECTIONS = _core.DIRECTIONS;
-  var inBounds = _core.inBounds;
-  var getValidMoves = _core.getValidMoves;
+  DIRECTIONS = _core.DIRECTIONS;
+  inBounds = _core.inBounds;
+  getValidMoves = _core.getValidMoves;
 }
 
 // Dragon team 8 pieces (rank 1-8, lower value = higher rank)

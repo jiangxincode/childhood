@@ -1,4 +1,5 @@
 /* eslint-disable no-var */
+/* global DIRECTIONS:writable */
 // ============================================================
 // Chinese Army Chess (Flip Chess) - Game Core Logic
 // ============================================================
@@ -10,6 +11,10 @@ if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
   var judgeRPS = _gameUtils.judgeRPS;
   var shuffleArray = _gameUtils.shuffleArray;
+}
+if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
+  const _core = require("../../common/card-game-core.js");
+  DIRECTIONS = _core.DIRECTIONS;
 }
 
 // ============================================================
@@ -51,14 +56,6 @@ const RANK_MAP = {
   班长: 9,
   工兵: 10,
 };
-
-// Four adjacent direction offsets
-const DIRECTIONS = [
-  { dx: -1, dy: 0 },
-  { dx: 1, dy: 0 },
-  { dx: 0, dy: -1 },
-  { dx: 0, dy: 1 },
-];
 
 /**
  * Whether is a normal piece (10 types that participate in rank sorting)
