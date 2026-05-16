@@ -13,7 +13,7 @@ var Computer = function () {
             });
             if (planeList && planeList.length > 0) {
                 var randomNum = obtainRandomNum(planeList.length);
-                $j(planeList[randomNum]).click();
+                $j(planeList[randomNum]).trigger("click");
                 if (diceNum == 6) {
                     diceClick();
                 }
@@ -27,7 +27,7 @@ var Computer = function () {
     function diceClick() {
         var nextSt = setTimeout(function () {
             if (nextStep) {
-                $j("#dice").click();
+                $j("#dice").trigger("click");
                 clearTimeout(nextSt);
                 return;
             } else {

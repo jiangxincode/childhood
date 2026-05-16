@@ -105,14 +105,14 @@ function addPlaneEvent(state) {
             if (diceNum == 6) {
                 planeAudio.playRolledSixMusic();
                 if ($j(this).attr('state') != 'win') {
-                    currentUserPlane.click(function () {
+                    currentUserPlane.on('click', function () {
                         movePlane(this);
                     }).addClass('pointer');
                     flag = true;
                 }
             } else {
                 if ($j(this).attr('state') == 'ready' || $j(this).attr('state') == 'running') {
-                    currentUserPlane.click(function () {
+                    currentUserPlane.on('click', function () {
                         movePlane(this);
                     }).addClass('pointer');
                     flag = true;
@@ -133,7 +133,7 @@ function addPlaneEvent(state) {
  */
 function movePlane(obj) {
     var coordId = 0, step = 0;
-    $j(obj).siblings('[type=' + planeOption.currentUser + ']').unbind('click').removeClass('pointer');
+    $j(obj).siblings('[type=' + planeOption.currentUser + ']').off('click').removeClass('pointer');
     if ($j(obj).attr('state') == 'unready') {
         var unTop, unLeft;
         switch (planeOption.currentUser) {
@@ -159,7 +159,7 @@ function movePlane(obj) {
         }
         planeAudio.playOutMusic();
         $j(obj).animate({top: unTop, left: unLeft}, 1500, function () {
-            $j(obj).attr({'state': 'ready', 'coordId': coordId, 'step': step}).unbind('click').removeClass('pointer');
+            $j(obj).attr({'state': 'ready', 'coordId': coordId, 'step': step}).off('click').removeClass('pointer');
             if (diceNum != 6) {
                 nextUser();
             } else {    //6 allows continuous dice roll
@@ -223,7 +223,7 @@ function movePlane(obj) {
                     }
                 }
                 if (flyAttackFlag) {
-                    $j(obj).attr({'coordId': coordValue.id, 'step': step}).unbind('click').removeClass('pointer');
+                    $j(obj).attr({'coordId': coordValue.id, 'step': step}).off('click').removeClass('pointer');
                     if (diceNum != 6) {
                         nextUser();
                     } else {    //6 allows continuous dice roll
@@ -373,7 +373,7 @@ function nextUser() {
     addDiceEvent();
     if (computer) {
         setTimeout(function () {
-            $j("#dice").click();
+            $j("#dice").trigger("click");
         }, 1500);
     }
 }
@@ -398,8 +398,8 @@ function updateStatusBar() {
  * Add dice roll event
  */
 function addDiceEvent() {
-    $j("#dice").unbind('click').click(function () {
-        $j("#dice").unbind('click').removeClass('pointer');
+    $j("#dice").off('click').on('click', function () {
+        $j("#dice").off('click').removeClass('pointer');
         nextDiceValue = Math.floor(Math.random() * 6);
         DICE.nextActive = nextDiceValue;
         DICE.shuffle(3).then(function () {
@@ -447,7 +447,7 @@ $j(function () {
         }
     });
     addDiceEvent();
-    $j('#begin').click(function () {
+    $j('#begin').on('click', function () {
         planeOption.begin();
         updateStatusBar();
         setInterval(updateStatusBar, 500);
