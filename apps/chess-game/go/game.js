@@ -470,7 +470,7 @@ function evaluateMove(board, move, player) {
 function simulateGame(board, firstMove, aiPlayer, koPoint, capturesBlack, capturesWhite) {
   let simBoard = copyBoard(board);
   let current = aiPlayer;
-  let simKo = koPoint;
+  let simKo;
   let simCapturesBlack = capturesBlack;
   let simCapturesWhite = capturesWhite;
   let passCount = 0;

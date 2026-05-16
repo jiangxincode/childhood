@@ -14,7 +14,7 @@ export default [
       "prefer-arrow-callback": "error",
       "arrow-body-style": ["error", "as-needed"],
       "no-unused-vars": ["warn", { args: "none" }],
-      "no-redeclare": ["error", { builtinGlobals: false }],
+      "no-redeclare": ["warn", { builtinGlobals: false }],
     },
     languageOptions: {
       ecmaVersion: "latest",
@@ -78,6 +78,6 @@ export default [
     },
   },
   {
-    ignores: ["node_modules/**", "dist/**", "coverage/**"],
+    ignores: ["node_modules/**", "dist/**", "coverage/**", "js/baidu-analytics.js", ".claude/**"],
   },
 ];

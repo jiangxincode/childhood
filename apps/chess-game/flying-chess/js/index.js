@@ -194,8 +194,8 @@ function movePlane(obj) {
       stopFlag = false,
       superTime = 0,
       backStepFlag = false,
-      superFlag = false,
-      currentUser = planeOption.currentUser;
+      superFlag = false;
+    const currentUser = planeOption.currentUser;
     let flyAttackFlag = true;
     moveCoord();
 

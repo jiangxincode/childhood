@@ -199,7 +199,7 @@ function getCarryTargets(board, x, y, team) {
   if (!card || !card.faceUp || card.team !== team) return [];
 
   // Only human can carry knife, only scalper can carry spear
-  let weaponRole = null;
+  let weaponRole;
   if (card.role === "人") weaponRole = "刀";
   else if (card.role === "癞痢") weaponRole = "枪";
   else return [];

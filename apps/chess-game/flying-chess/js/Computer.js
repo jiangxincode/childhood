@@ -25,7 +25,7 @@ const Computer = function () {
    * Execute next step
    */
   function diceClick() {
-    let nextSt = setTimeout(() => {
+    const nextSt = setTimeout(() => {
       if (nextStep) {
         $j("#dice").trigger("click");
         clearTimeout(nextSt);
@@ -46,28 +46,24 @@ const Computer = function () {
     switch (leng) {
       case 1:
         return 0;
-        break;
       case 2:
         if (num == 0 || num == 1) {
           return num;
         } else {
           return obtainRandomNum(leng);
         }
-        break;
       case 3:
         if (num == 0 || num == 1 || num == 2) {
           return num;
         } else {
           return obtainRandomNum(leng);
         }
-        break;
       case 4:
         if (num == 0 || num == 1 || num == 2 || num == 3) {
           return num;
         } else {
           return obtainRandomNum(leng);
         }
-        break;
     }
   }
 };

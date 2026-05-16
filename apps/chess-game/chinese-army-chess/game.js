@@ -440,7 +440,7 @@ function getValidMoves(board, x, y, team, gameType) {
   if (piece.state === STATE_FACE_DOWN) return [];
 
   const isEngineer = piece.name === "工兵";
-  let moves = [];
+  let moves;
 
   if (isEngineer) {
     // Engineer: BFS along railway unlimited + normal + diagonal moves
