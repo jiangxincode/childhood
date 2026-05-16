@@ -420,6 +420,16 @@ if (typeof document !== "undefined") {
     document.getElementById("score-black").textContent = state.scoreBlack;
     document.getElementById("score-white").textContent = state.scoreWhite;
 
+    if (state.mode === "pve") {
+      const blackLabel = state.playerTeam === BLACK ? "玩家（黑棋）：" : "电脑（黑棋）：";
+      const whiteLabel = state.playerTeam === WHITE ? "玩家（白棋）：" : "电脑（白棋）：";
+      document.getElementById("label-black").textContent = blackLabel;
+      document.getElementById("label-white").textContent = whiteLabel;
+    } else {
+      document.getElementById("label-black").textContent = "黑棋：";
+      document.getElementById("label-white").textContent = "白棋：";
+    }
+
     if (state.gameOver) {
       updateMessage("游戏结束！", "info");
     } else if (state.aiThinking) {

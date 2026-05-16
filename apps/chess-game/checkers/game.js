@@ -565,6 +565,16 @@ if (typeof document !== "undefined") {
     document.getElementById("score-red").textContent = redCount;
     document.getElementById("score-white").textContent = whiteCount;
 
+    if (state.mode === "pve") {
+      const redLabel = state.playerTeam === RED ? "玩家（红方）：" : "电脑（红方）：";
+      const whiteLabel = state.playerTeam === WHITE ? "玩家（白方）：" : "电脑（白方）：";
+      document.getElementById("label-red").textContent = redLabel;
+      document.getElementById("label-white").textContent = whiteLabel;
+    } else {
+      document.getElementById("label-red").textContent = "红方：";
+      document.getElementById("label-white").textContent = "白方：";
+    }
+
     if (state.gameOver) {
       updateMessage("游戏结束！", "info");
     } else if (state.aiThinking) {

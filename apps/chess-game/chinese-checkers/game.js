@@ -880,7 +880,11 @@ if (typeof document !== "undefined") {
     for (var i = 0; i < gameState.players.length; i++) {
       const player = gameState.players[i];
       const config = PLAYER_COLORS[player];
-      colorRulesHtml += '<li style="color:' + config.color + '">' + config.name + "</li>";
+      let prefix = "";
+      if (mode === "pve") {
+        prefix = player === gameState.playerTeam ? "玩家 - " : "电脑 - ";
+      }
+      colorRulesHtml += '<li style="color:' + config.color + '">' + prefix + config.name + "</li>";
     }
     document.getElementById("color-rules").innerHTML = colorRulesHtml;
 

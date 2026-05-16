@@ -777,6 +777,16 @@ if (typeof document !== "undefined") {
     document.getElementById("captures-black").textContent = state.capturesBlack;
     document.getElementById("captures-white").textContent = state.capturesWhite;
 
+    if (state.mode === "pve") {
+      const blackLabel = state.playerTeam === BLACK ? "玩家（黑棋）提子：" : "电脑（黑棋）提子：";
+      const whiteLabel = state.playerTeam === WHITE ? "玩家（白棋）提子：" : "电脑（白棋）提子：";
+      document.getElementById("label-black").textContent = blackLabel;
+      document.getElementById("label-white").textContent = whiteLabel;
+    } else {
+      document.getElementById("label-black").textContent = "黑棋提子：";
+      document.getElementById("label-white").textContent = "白棋提子：";
+    }
+
     if (state.gameOver) {
       updateMessage("游戏结束！", "info");
     } else if (state.aiThinking) {

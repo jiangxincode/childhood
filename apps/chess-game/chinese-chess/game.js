@@ -707,10 +707,12 @@ if (typeof document !== "undefined") {
   }
 
   function toCanvasX(c) {
-    return PADDING + c * CELL_SIZE;
+    const col = gameState && gameState.boardFlipped ? COLS - 1 - c : c;
+    return PADDING + col * CELL_SIZE;
   }
   function toCanvasY(r) {
-    return PADDING + r * CELL_SIZE;
+    const row = gameState && gameState.boardFlipped ? ROWS - 1 - r : r;
+    return PADDING + row * CELL_SIZE;
   }
 
   function drawBoard() {
@@ -889,6 +891,16 @@ if (typeof document !== "undefined") {
     document.getElementById("score-red").textContent = redCount;
     document.getElementById("score-black").textContent = blackCount;
 
+    if (state.mode === "pve") {
+      const redLabel = state.playerTeam === RED ? "玩家（红方）：" : "电脑（红方）：";
+      const blackLabel = state.playerTeam === BLACK ? "玩家（黑方）：" : "电脑（黑方）：";
+      document.getElementById("label-red").textContent = redLabel;
+      document.getElementById("label-black").textContent = blackLabel;
+    } else {
+      document.getElementById("label-red").textContent = "红方：";
+      document.getElementById("label-black").textContent = "黑方：";
+    }
+
     if (state.gameOver) {
       updateMessage("游戏结束！", "info");
     } else if (state.aiThinking) {
@@ -937,8 +949,12 @@ if (typeof document !== "undefined") {
     const scaleY = (window.devicePixelRatio || 1) * (BOARD_H / rect.height);
     const px = (e.clientX - rect.left) * scaleX;
     const py = (e.clientY - rect.top) * scaleY;
-    const col = Math.round((px - PADDING) / CELL_SIZE);
-    const row = Math.round((py - PADDING) / CELL_SIZE);
+    let col = Math.round((px - PADDING) / CELL_SIZE);
+    let row = Math.round((py - PADDING) / CELL_SIZE);
+    if (gameState.boardFlipped) {
+      col = COLS - 1 - col;
+      row = ROWS - 1 - row;
+    }
 
     if (!inBounds(col, row)) return;
 
@@ -1024,6 +1040,7 @@ if (typeof document !== "undefined") {
   function startGame(mode, firstPlayer) {
     gameState = createGameState(mode);
     gameState.currentPlayer = firstPlayer || RED;
+    gameState.boardFlipped = false;
 
     if (mode === "pve") {
       if (firstPlayer === RED) {
@@ -1033,6 +1050,7 @@ if (typeof document !== "undefined") {
         gameState.playerTeam = BLACK;
         gameState.aiTeam = RED;
       }
+      gameState.boardFlipped = gameState.playerTeam === BLACK;
     }
 
     document.getElementById("mode-selection").style.display = "none";

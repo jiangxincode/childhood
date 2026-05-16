@@ -402,6 +402,16 @@ function renderGame(state) {
   document.getElementById("white-count").textContent = counts.white;
   document.getElementById("valid-moves-count").textContent = state.validMoves.length;
 
+  if (state.mode === "pve") {
+    const blackLabel = state.playerTeam === PLAYER_BLACK ? "玩家（黑棋）：" : "电脑（黑棋）：";
+    const whiteLabel = state.playerTeam === PLAYER_WHITE ? "玩家（白棋）：" : "电脑（白棋）：";
+    document.getElementById("label-black").textContent = blackLabel;
+    document.getElementById("label-white").textContent = whiteLabel;
+  } else {
+    document.getElementById("label-black").textContent = "黑棋：";
+    document.getElementById("label-white").textContent = "白棋：";
+  }
+
   // Render board
   const boardElement = document.getElementById("board");
   const cells = boardElement.querySelectorAll(".cell");
