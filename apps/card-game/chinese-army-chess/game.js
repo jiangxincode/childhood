@@ -1,3 +1,4 @@
+/* eslint-disable no-var */
 // ============================================================
 // Chinese Army Chess (Flip Chess) - Game Core Logic
 // ============================================================
@@ -5,8 +6,8 @@
 // ============================================================
 // Shared module loading (Node.js test environment)
 // ============================================================
-if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
-  var _gameUtils = require('../../common/game-utils.js');
+if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
+  const _gameUtils = require("../../common/game-utils.js");
   var judgeRPS = _gameUtils.judgeRPS;
   var shuffleArray = _gameUtils.shuffleArray;
 }
@@ -16,20 +17,39 @@ if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
 // ============================================================
 
 // Normal piece name list (rank 1-10, lower value = higher rank)
-const NORMAL_PIECE_NAMES = ['司令', '军长', '师长', '旅长', '团长', '营长', '连长', '排长', '班长', '工兵'];
+const NORMAL_PIECE_NAMES = [
+  "司令",
+  "军长",
+  "师长",
+  "旅长",
+  "团长",
+  "营长",
+  "连长",
+  "排长",
+  "班长",
+  "工兵",
+];
 
 // Special piece names
-const BOMB_NAME = '炸弹';
-const MINE_NAME = '地雷';
-const FLAG_NAME = '军旗';
+const BOMB_NAME = "炸弹";
+const MINE_NAME = "地雷";
+const FLAG_NAME = "军旗";
 
 // Each side piece name list (12 cards: 10 normal + bomb + mine)
 const TEAM_PIECE_NAMES = [...NORMAL_PIECE_NAMES, BOMB_NAME, MINE_NAME];
 
 // Rank mapping: piece name -> rank value (1=highest, 10=lowest)
 const RANK_MAP = {
-  '司令': 1, '军长': 2, '师长': 3, '旅长': 4, '团长': 5,
-  '营长': 6, '连长': 7, '排长': 8, '班长': 9, '工兵': 10
+  司令: 1,
+  军长: 2,
+  师长: 3,
+  旅长: 4,
+  团长: 5,
+  营长: 6,
+  连长: 7,
+  排长: 8,
+  班长: 9,
+  工兵: 10,
 };
 
 // Four adjacent direction offsets
@@ -37,7 +57,7 @@ const DIRECTIONS = [
   { dx: -1, dy: 0 },
   { dx: 1, dy: 0 },
   { dx: 0, dy: -1 },
-  { dx: 0, dy: 1 }
+  { dx: 0, dy: 1 },
 ];
 
 /**
@@ -92,9 +112,9 @@ function isMovable(piece) {
  */
 function getImagePath(piece) {
   if (isFlag(piece.name)) {
-    return 'images/军旗.png';
+    return "images/军旗.png";
   }
-  if (piece.team === 'red') {
+  if (piece.team === "red") {
     return `images/红-${piece.name}.png`;
   }
   return `images/蓝-${piece.name}.png`;
@@ -150,7 +170,7 @@ function canCapture(attacker, defender) {
   if (isBomb(defender.name)) return true;
 
   // Engineer vs mine -> allowed (engineer survives)
-  if (attacker.name === '工兵' && isMine(defender.name)) return true;
+  if (attacker.name === "工兵" && isMine(defender.name)) return true;
 
   // Other normal piece vs mine -> allowed (mutual destruction)
   if (isMine(defender.name) && isNormalPiece(attacker.name)) return true;
@@ -170,25 +190,25 @@ function canCapture(attacker, defender) {
  * @returns {'attacker_wins' | 'mutual_destruction' | 'invalid'}
  */
 function resolveCombat(attacker, defender) {
-  if (!canCapture(attacker, defender)) return 'invalid';
+  if (!canCapture(attacker, defender)) return "invalid";
 
   // Bomb attacks -> mutual destruction
-  if (isBomb(attacker.name)) return 'mutual_destruction';
+  if (isBomb(attacker.name)) return "mutual_destruction";
 
   // Defended by bomb -> mutual destruction
-  if (isBomb(defender.name)) return 'mutual_destruction';
+  if (isBomb(defender.name)) return "mutual_destruction";
 
   // Engineer vs mine -> engineer survives
-  if (attacker.name === '工兵' && isMine(defender.name)) return 'attacker_wins';
+  if (attacker.name === "工兵" && isMine(defender.name)) return "attacker_wins";
 
   // Other normal piece vs mine -> mutual destruction
-  if (isMine(defender.name)) return 'mutual_destruction';
+  if (isMine(defender.name)) return "mutual_destruction";
 
   // Between normal pieces
-  if (attacker.rank === defender.rank) return 'mutual_destruction';
-  if (attacker.rank < defender.rank) return 'attacker_wins';
+  if (attacker.rank === defender.rank) return "mutual_destruction";
+  if (attacker.rank < defender.rank) return "attacker_wins";
 
-  return 'invalid';
+  return "invalid";
 }
 
 // ============================================================
@@ -207,9 +227,9 @@ function createGameState(mode) {
   for (const name of TEAM_PIECE_NAMES) {
     pieces.push({
       name,
-      team: 'red',
+      team: "red",
       rank: getRank(name),
-      faceUp: false
+      faceUp: false,
     });
   }
 
@@ -217,18 +237,18 @@ function createGameState(mode) {
   for (const name of TEAM_PIECE_NAMES) {
     pieces.push({
       name,
-      team: 'blue',
+      team: "blue",
       rank: getRank(name),
-      faceUp: false
+      faceUp: false,
     });
   }
 
   // 1 neutral flag
   pieces.push({
     name: FLAG_NAME,
-    team: 'neutral',
+    team: "neutral",
     rank: null,
-    faceUp: false
+    faceUp: false,
   });
 
   shuffleArray(pieces);
@@ -258,7 +278,7 @@ function createGameState(mode) {
     gameOver: false,
     winner: null,
     aiThinking: false,
-    aiFirst: false
+    aiFirst: false,
   };
 }
 
@@ -343,11 +363,11 @@ function getValidMoves(board, x, y, team) {
     if (!inBounds(nx, ny)) continue;
     const target = board[ny][nx];
     if (target === null) {
-      moves.push({ x: nx, y: ny, type: 'move' });
+      moves.push({ x: nx, y: ny, type: "move" });
     } else if (target && isFlag(target.name) && target.faceUp) {
       // Flag position: only add when can capture flag
       if (flagCapture && flagCapture.flagX === nx && flagCapture.flagY === ny) {
-        moves.push({ x: nx, y: ny, type: 'capture_flag' });
+        moves.push({ x: nx, y: ny, type: "capture_flag" });
       }
     }
   }
@@ -399,29 +419,29 @@ function flipCard(state, x, y) {
 
   // If flipped card is flag, do not assign team
   if (isFlag(card.name)) {
-    state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
+    state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
     state.turnCount++;
     return state;
   }
 
   // If flipped card is not flag and team not assigned
   if (!state.teamAssigned) {
-    if (state.mode === 'pve') {
+    if (state.mode === "pve") {
       if (state.aiFirst) {
         // AI flip: aiTeam = card.team, playerTeam = other side
         state.aiTeam = card.team;
-        state.playerTeam = card.team === 'red' ? 'blue' : 'red';
+        state.playerTeam = card.team === "red" ? "blue" : "red";
       } else {
         // Player flip: playerTeam = card.team, aiTeam = other side
         state.playerTeam = card.team;
-        state.aiTeam = card.team === 'red' ? 'blue' : 'red';
+        state.aiTeam = card.team === "red" ? "blue" : "red";
       }
     }
     // PVP mode does not need to set playerTeam/aiTeam
     state.teamAssigned = true;
   }
 
-  state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
+  state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
   state.turnCount++;
   return state;
 }
@@ -462,7 +482,7 @@ function moveCard(state, from, to) {
   if (target === null) {
     state.board[to.y][to.x] = card;
     state.board[from.y][from.x] = null;
-    state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
+    state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
     state.turnCount++;
     return state;
   }
@@ -493,23 +513,23 @@ function captureCard(state, from, to) {
 
   const result = resolveCombat(attacker, defender);
 
-  if (result === 'attacker_wins') {
+  if (result === "attacker_wins") {
     // Add captured piece to corresponding captured list
-    if (defender.team === 'red') {
+    if (defender.team === "red") {
       state.capturedRed.push(defender.name);
     } else {
       state.capturedBlue.push(defender.name);
     }
     state.board[to.y][to.x] = attacker;
     state.board[from.y][from.x] = null;
-  } else if (result === 'mutual_destruction') {
+  } else if (result === "mutual_destruction") {
     // Both sides removed
-    if (attacker.team === 'red') {
+    if (attacker.team === "red") {
       state.capturedRed.push(attacker.name);
     } else {
       state.capturedBlue.push(attacker.name);
     }
-    if (defender.team === 'red') {
+    if (defender.team === "red") {
       state.capturedRed.push(defender.name);
     } else {
       state.capturedBlue.push(defender.name);
@@ -520,7 +540,7 @@ function captureCard(state, from, to) {
     return null;
   }
 
-  state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
+  state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
   state.turnCount++;
   return state;
 }
@@ -564,7 +584,7 @@ function checkGameOver(state) {
 
   // If current team has no legal actions
   if (state.currentTeam && !hasAnyLegalAction(state.board, state.currentTeam)) {
-    const opponent = state.currentTeam === 'red' ? 'blue' : 'red';
+    const opponent = state.currentTeam === "red" ? "blue" : "red";
     return { ended: true, winner: opponent };
   }
 
@@ -588,7 +608,7 @@ function aiDecide(state, aiTeam) {
       if (!piece || !piece.faceUp || piece.team !== aiTeam) continue;
       const flagResult = canCaptureFlag(board, x, y, aiTeam);
       if (flagResult) {
-        return { type: 'move', from: { x, y }, to: { x: flagResult.flagX, y: flagResult.flagY } };
+        return { type: "move", from: { x, y }, to: { x: flagResult.flagX, y: flagResult.flagY } };
       }
     }
   }
@@ -603,13 +623,13 @@ function aiDecide(state, aiTeam) {
       for (const t of targets) {
         const target = board[t.y][t.x];
         const combatResult = resolveCombat(piece, target);
-        const mutual = combatResult === 'mutual_destruction';
+        const mutual = combatResult === "mutual_destruction";
         allCaptures.push({
           from: { x, y },
           to: t,
           defenderRank: target.rank !== null ? target.rank : 999,
           attackerRank: piece.rank !== null ? piece.rank : 999,
-          mutual
+          mutual,
         });
       }
     }
@@ -622,7 +642,7 @@ function aiDecide(state, aiTeam) {
       if (a.defenderRank !== b.defenderRank) return a.defenderRank - b.defenderRank;
       return b.attackerRank - a.attackerRank;
     });
-    return { type: 'capture', from: allCaptures[0].from, to: allCaptures[0].to };
+    return { type: "capture", from: allCaptures[0].from, to: allCaptures[0].to };
   }
 
   // Priority 3: flip (random)
@@ -635,7 +655,7 @@ function aiDecide(state, aiTeam) {
   }
   if (faceDownCells.length > 0) {
     const pick = faceDownCells[Math.floor(Math.random() * faceDownCells.length)];
-    return { type: 'flip', x: pick.x, y: pick.y };
+    return { type: "flip", x: pick.x, y: pick.y };
   }
 
   // Priority 4: move (random)
@@ -652,7 +672,7 @@ function aiDecide(state, aiTeam) {
   }
   if (allMoves.length > 0) {
     const pick = allMoves[Math.floor(Math.random() * allMoves.length)];
-    return { type: 'move', from: pick.from, to: pick.to };
+    return { type: "move", from: pick.from, to: pick.to };
   }
 
   return null;
@@ -661,45 +681,64 @@ function aiDecide(state, aiTeam) {
 // ============================================================
 // Task 1.6: Module exports
 // ============================================================
-if (typeof module !== 'undefined' && module.exports) {
+if (typeof module !== "undefined" && module.exports) {
   module.exports = {
-    NORMAL_PIECE_NAMES, BOMB_NAME, MINE_NAME, FLAG_NAME,
-    TEAM_PIECE_NAMES, RANK_MAP,
-    isNormalPiece, isBomb, isMine, isFlag, isMovable,
-    getImagePath, getRank, judgeRPS, inBounds,
-    canCapture, resolveCombat, getLowestNormalPiece, canCaptureFlag,
-    createGameState, getValidMoves, getValidCaptures,
-    flipCard, moveCard, captureCard,
-    hasAnyLegalAction, checkGameOver, aiDecide
+    NORMAL_PIECE_NAMES,
+    BOMB_NAME,
+    MINE_NAME,
+    FLAG_NAME,
+    TEAM_PIECE_NAMES,
+    RANK_MAP,
+    isNormalPiece,
+    isBomb,
+    isMine,
+    isFlag,
+    isMovable,
+    getImagePath,
+    getRank,
+    judgeRPS,
+    inBounds,
+    canCapture,
+    resolveCombat,
+    getLowestNormalPiece,
+    canCaptureFlag,
+    createGameState,
+    getValidMoves,
+    getValidCaptures,
+    flipCard,
+    moveCard,
+    captureCard,
+    hasAnyLegalAction,
+    checkGameOver,
+    aiDecide,
   };
 }
-
 
 // ============================================================
 // UI controller (browser environment only)
 // Task 5.1, 5.2, 5.3
 // ============================================================
-if (typeof document !== 'undefined') {
-  var gameState = null;
+if (typeof document !== "undefined") {
+  let gameState = null;
 
   // DOM elements
-  var $modeSelection = document.getElementById('mode-selection');
-  var $rpsSection    = document.getElementById('rps-section');
-  var $rpsPvp        = document.getElementById('rps-pvp');
-  var $rpsPve        = document.getElementById('rps-pve');
-  var $rpsResult     = document.getElementById('rps-result');
-  var $gameArea      = document.getElementById('game-area');
-  var $board         = document.getElementById('board');
-  var $currentTeam   = document.getElementById('current-team');
-  var $turnCount     = document.getElementById('turn-count');
-  var $redRemaining  = document.getElementById('red-remaining');
-  var $blueRemaining = document.getElementById('blue-remaining');
-  var $capturedRed   = document.getElementById('captured-red');
-  var $capturedBlue  = document.getElementById('captured-blue');
-  var $message       = document.getElementById('message');
-  var $gameOver      = document.getElementById('game-over');
-  var $winnerText    = document.getElementById('winner-text');
-  var $btnRestart    = document.getElementById('btn-restart');
+  const $modeSelection = document.getElementById("mode-selection");
+  const $rpsSection = document.getElementById("rps-section");
+  const $rpsPvp = document.getElementById("rps-pvp");
+  const $rpsPve = document.getElementById("rps-pve");
+  const $rpsResult = document.getElementById("rps-result");
+  const $gameArea = document.getElementById("game-area");
+  const $board = document.getElementById("board");
+  const $currentTeam = document.getElementById("current-team");
+  const $turnCount = document.getElementById("turn-count");
+  const $redRemaining = document.getElementById("red-remaining");
+  const $blueRemaining = document.getElementById("blue-remaining");
+  const $capturedRed = document.getElementById("captured-red");
+  const $capturedBlue = document.getElementById("captured-blue");
+  const $message = document.getElementById("message");
+  const $gameOver = document.getElementById("game-over");
+  const $winnerText = document.getElementById("winner-text");
+  const $btnRestart = document.getElementById("btn-restart");
 
   // ============================================================
   // Task 5.1: Renderer and event handling
@@ -710,34 +749,34 @@ if (typeof document !== 'undefined') {
   }
 
   function renderBoard(state) {
-    for (var y = 0; y < 5; y++) {
-      for (var x = 0; x < 5; x++) {
-        var cell = getCell(x, y);
-        var piece = state.board[y][x];
-        cell.className = 'cell';
-        cell.innerHTML = '';
+    for (let y = 0; y < 5; y++) {
+      for (let x = 0; x < 5; x++) {
+        const cell = getCell(x, y);
+        const piece = state.board[y][x];
+        cell.className = "cell";
+        cell.innerHTML = "";
         cell.dataset.x = x;
         cell.dataset.y = y;
 
         if (!piece) {
-          cell.classList.add('cell-empty');
+          cell.classList.add("cell-empty");
         } else if (!piece.faceUp) {
-          var back = document.createElement('div');
-          back.className = 'cell-back';
+          const back = document.createElement("div");
+          back.className = "cell-back";
           cell.appendChild(back);
         } else {
           // Face-up
-          if (piece.team === 'red') {
-            cell.classList.add('cell-red');
-          } else if (piece.team === 'blue') {
-            cell.classList.add('cell-blue');
+          if (piece.team === "red") {
+            cell.classList.add("cell-red");
+          } else if (piece.team === "blue") {
+            cell.classList.add("cell-blue");
           } else {
             // neutral (flag)
-            cell.classList.add('cell-neutral');
+            cell.classList.add("cell-neutral");
           }
-          var face = document.createElement('div');
-          face.className = 'cell-face';
-          var img = document.createElement('img');
+          const face = document.createElement("div");
+          face.className = "cell-face";
+          const img = document.createElement("img");
           img.src = getImagePath(piece);
           img.alt = piece.name;
           face.appendChild(img);
@@ -751,29 +790,30 @@ if (typeof document !== 'undefined') {
   function updateStatus(state) {
     // Current team
     if (state.currentTeam) {
-      if (state.currentTeam === 'red') {
-        $currentTeam.textContent = '红方';
-        $currentTeam.className = 'team-indicator red-text';
+      if (state.currentTeam === "red") {
+        $currentTeam.textContent = "红方";
+        $currentTeam.className = "team-indicator red-text";
       } else {
-        $currentTeam.textContent = '蓝方';
-        $currentTeam.className = 'team-indicator blue-text';
+        $currentTeam.textContent = "蓝方";
+        $currentTeam.className = "team-indicator blue-text";
       }
     } else {
-      $currentTeam.textContent = '—';
-      $currentTeam.className = 'team-indicator';
+      $currentTeam.textContent = "—";
+      $currentTeam.className = "team-indicator";
     }
 
     // Turn count
     $turnCount.textContent = state.turnCount;
 
     // Count red/blue remaining pieces (excluding flag)
-    var redCount = 0, blueCount = 0;
-    for (var y = 0; y < 5; y++) {
-      for (var x = 0; x < 5; x++) {
-        var p = state.board[y][x];
+    let redCount = 0,
+      blueCount = 0;
+    for (let y = 0; y < 5; y++) {
+      for (let x = 0; x < 5; x++) {
+        const p = state.board[y][x];
         if (p && !isFlag(p.name)) {
-          if (p.team === 'red') redCount++;
-          else if (p.team === 'blue') blueCount++;
+          if (p.team === "red") redCount++;
+          else if (p.team === "blue") blueCount++;
         }
       }
     }
@@ -781,25 +821,25 @@ if (typeof document !== 'undefined') {
     $blueRemaining.textContent = blueCount;
 
     // Captured piece images
-    $capturedRed.innerHTML = '';
+    $capturedRed.innerHTML = "";
     for (var i = 0; i < state.capturedRed.length; i++) {
       var name = state.capturedRed[i];
-      var div = document.createElement('div');
-      div.className = 'captured-card';
-      var img = document.createElement('img');
-      img.src = getImagePath({ name: name, team: 'red', rank: getRank(name), faceUp: true });
+      var div = document.createElement("div");
+      div.className = "captured-card";
+      var img = document.createElement("img");
+      img.src = getImagePath({ name: name, team: "red", rank: getRank(name), faceUp: true });
       img.alt = name;
       div.appendChild(img);
       $capturedRed.appendChild(div);
     }
 
-    $capturedBlue.innerHTML = '';
+    $capturedBlue.innerHTML = "";
     for (var i = 0; i < state.capturedBlue.length; i++) {
       var name = state.capturedBlue[i];
-      var div = document.createElement('div');
-      div.className = 'captured-card';
-      var img = document.createElement('img');
-      img.src = getImagePath({ name: name, team: 'blue', rank: getRank(name), faceUp: true });
+      var div = document.createElement("div");
+      div.className = "captured-card";
+      var img = document.createElement("img");
+      img.src = getImagePath({ name: name, team: "blue", rank: getRank(name), faceUp: true });
       img.alt = name;
       div.appendChild(img);
       $capturedBlue.appendChild(div);
@@ -809,83 +849,94 @@ if (typeof document !== 'undefined') {
   }
 
   function updateTeamLabels(state) {
-    var $redLabel  = document.getElementById('red-label');
-    var $blueLabel = document.getElementById('blue-label');
-    if (state.mode === 'pve' && state.teamAssigned) {
-      if (state.playerTeam === 'red') {
-        $redLabel.textContent  = '玩家（红方）剩余：';
-        $blueLabel.textContent = '电脑（蓝方）剩余：';
+    const $redLabel = document.getElementById("red-label");
+    const $blueLabel = document.getElementById("blue-label");
+    if (state.mode === "pve" && state.teamAssigned) {
+      if (state.playerTeam === "red") {
+        $redLabel.textContent = "玩家（红方）剩余：";
+        $blueLabel.textContent = "电脑（蓝方）剩余：";
       } else {
-        $redLabel.textContent  = '电脑（红方）剩余：';
-        $blueLabel.textContent = '玩家（蓝方）剩余：';
+        $redLabel.textContent = "电脑（红方）剩余：";
+        $blueLabel.textContent = "玩家（蓝方）剩余：";
       }
     } else {
-      $redLabel.textContent  = '红方剩余：';
-      $blueLabel.textContent = '蓝方剩余：';
+      $redLabel.textContent = "红方剩余：";
+      $blueLabel.textContent = "蓝方剩余：";
     }
   }
 
   function clearHighlights() {
-    document.querySelectorAll('.cell').forEach(function(c) {
-      c.classList.remove('cell-selected', 'cell-target', 'cell-capture-target', 'cell-flag-target', 'cell-ai-highlight');
+    document.querySelectorAll(".cell").forEach((c) => {
+      c.classList.remove(
+        "cell-selected",
+        "cell-target",
+        "cell-capture-target",
+        "cell-flag-target",
+        "cell-ai-highlight"
+      );
     });
   }
 
   function highlightTargets(x, y, moveTargets, captureTargets) {
     clearHighlights();
-    var selected = getCell(x, y);
-    if (selected) selected.classList.add('cell-selected');
+    const selected = getCell(x, y);
+    if (selected) selected.classList.add("cell-selected");
 
     for (var i = 0; i < moveTargets.length; i++) {
-      var t = moveTargets[i];
+      const t = moveTargets[i];
       var tc = getCell(t.x, t.y);
       if (tc) {
-        if (t.type === 'capture_flag') {
-          tc.classList.add('cell-flag-target');
+        if (t.type === "capture_flag") {
+          tc.classList.add("cell-flag-target");
         } else {
-          tc.classList.add('cell-target');
+          tc.classList.add("cell-target");
         }
       }
     }
 
     for (var i = 0; i < captureTargets.length; i++) {
       var tc = getCell(captureTargets[i].x, captureTargets[i].y);
-      if (tc) tc.classList.add('cell-capture-target');
+      if (tc) tc.classList.add("cell-capture-target");
     }
   }
 
   function showMessage(text, type) {
     $message.textContent = text;
-    $message.className = type || '';
+    $message.className = type || "";
   }
 
   function selectCard(x, y) {
     gameState.selectedCell = { x: x, y: y };
-    var currentTeam = gameState.currentTeam;
-    var moves    = getValidMoves(gameState.board, x, y, currentTeam);
-    var captures = getValidCaptures(gameState.board, x, y, currentTeam);
+    const currentTeam = gameState.currentTeam;
+    const moves = getValidMoves(gameState.board, x, y, currentTeam);
+    const captures = getValidCaptures(gameState.board, x, y, currentTeam);
     highlightTargets(x, y, moves, captures);
-    showMessage('', '');
+    showMessage("", "");
   }
 
   // Board click event
-  $board.addEventListener('click', function(e) {
+  $board.addEventListener("click", (e) => {
     if (!gameState || gameState.gameOver) return;
     if (gameState.aiThinking) return;
     // PVE mode and team assigned and current is AI turn: ignore
-    if (gameState.mode === 'pve' && gameState.teamAssigned && gameState.currentTeam === gameState.aiTeam) return;
+    if (
+      gameState.mode === "pve" &&
+      gameState.teamAssigned &&
+      gameState.currentTeam === gameState.aiTeam
+    )
+      return;
 
-    var cell = e.target.closest('.cell');
+    const cell = e.target.closest(".cell");
     if (!cell) return;
 
-    var x = parseInt(cell.dataset.x);
-    var y = parseInt(cell.dataset.y);
-    var piece = gameState.board[y][x];
-    var currentTeam = gameState.currentTeam;
+    const x = parseInt(cell.dataset.x);
+    const y = parseInt(cell.dataset.y);
+    const piece = gameState.board[y][x];
+    const currentTeam = gameState.currentTeam;
 
     // Already have selected piece
     if (gameState.selectedCell) {
-      var sel = gameState.selectedCell;
+      const sel = gameState.selectedCell;
 
       // Click same cell: deselect
       if (sel.x === x && sel.y === y) {
@@ -903,15 +954,15 @@ if (typeof document !== 'undefined') {
           renderBoard(gameState);
           afterAction();
         } else {
-          showMessage('只有最小棋子才能抱军旗', 'error');
+          showMessage("只有最小棋子才能抱军旗", "error");
         }
         return;
       }
 
       // Click opponent face-up piece (not flag): try capture
       if (piece && piece.faceUp && piece.team !== currentTeam && !isFlag(piece.name)) {
-        var captures = getValidCaptures(gameState.board, sel.x, sel.y, currentTeam);
-        var canDo = captures.some(function(t) { return t.x === x && t.y === y; });
+        const captures = getValidCaptures(gameState.board, sel.x, sel.y, currentTeam);
+        const canDo = captures.some((t) => t.x === x && t.y === y);
         if (canDo) {
           var result = captureCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
           if (result) {
@@ -922,7 +973,7 @@ if (typeof document !== 'undefined') {
             return;
           }
         }
-        showMessage('无法吃掉该棋子', 'error');
+        showMessage("无法吃掉该棋子", "error");
         return;
       }
 
@@ -936,7 +987,7 @@ if (typeof document !== 'undefined') {
           afterAction();
           return;
         }
-        showMessage('无法移动到该位置', 'error');
+        showMessage("无法移动到该位置", "error");
         return;
       }
 
@@ -965,7 +1016,7 @@ if (typeof document !== 'undefined') {
     }
 
     if (piece && piece.faceUp && isFlag(piece.name)) {
-      showMessage('军旗不能被吃', 'error');
+      showMessage("军旗不能被吃", "error");
       return;
     }
 
@@ -975,7 +1026,7 @@ if (typeof document !== 'undefined') {
     }
 
     if (piece && piece.faceUp && piece.team !== currentTeam) {
-      showMessage('这不是你的棋子', 'error');
+      showMessage("这不是你的棋子", "error");
       return;
     }
   });
@@ -985,42 +1036,46 @@ if (typeof document !== 'undefined') {
   // ============================================================
 
   function showModeSelection() {
-    $modeSelection.style.display = 'flex';
-    $rpsSection.style.display   = 'none';
-    $gameArea.style.display     = 'none';
-    $gameOver.style.display     = 'none';
+    $modeSelection.style.display = "flex";
+    $rpsSection.style.display = "none";
+    $gameArea.style.display = "none";
+    $gameOver.style.display = "none";
   }
 
   function showRPSSelection(mode) {
-    $modeSelection.style.display = 'none';
-    $rpsSection.style.display   = 'flex';
-    $rpsResult.textContent = '';
-    if (mode === 'pvp') {
-      $rpsPvp.style.display = 'block';
-      $rpsPve.style.display = 'none';
+    $modeSelection.style.display = "none";
+    $rpsSection.style.display = "flex";
+    $rpsResult.textContent = "";
+    if (mode === "pvp") {
+      $rpsPvp.style.display = "block";
+      $rpsPve.style.display = "none";
       rpsP1Choice = null;
       rpsP2Choice = null;
-      document.getElementById('rps-p1-status').textContent = '请选择';
-      document.getElementById('rps-p2-status').textContent = '请选择';
-      document.querySelectorAll('#rps-pvp .btn-rps').forEach(function(b) { b.classList.remove('selected'); });
+      document.getElementById("rps-p1-status").textContent = "请选择";
+      document.getElementById("rps-p2-status").textContent = "请选择";
+      document.querySelectorAll("#rps-pvp .btn-rps").forEach((b) => {
+        b.classList.remove("selected");
+      });
     } else {
-      $rpsPvp.style.display = 'none';
-      $rpsPve.style.display = 'block';
-      document.querySelectorAll('#rps-pve .btn-rps').forEach(function(b) { b.classList.remove('selected'); });
+      $rpsPvp.style.display = "none";
+      $rpsPve.style.display = "block";
+      document.querySelectorAll("#rps-pve .btn-rps").forEach((b) => {
+        b.classList.remove("selected");
+      });
     }
   }
 
   function showGameArea() {
-    $modeSelection.style.display = 'none';
-    $rpsSection.style.display   = 'none';
-    $gameArea.style.display     = 'flex';
-    $gameOver.style.display     = 'none';
+    $modeSelection.style.display = "none";
+    $rpsSection.style.display = "none";
+    $gameArea.style.display = "flex";
+    $gameOver.style.display = "none";
   }
 
   function showGameOverScreen(winner) {
-    var winnerName = winner === 'red' ? '红方' : '蓝方';
-    $winnerText.textContent = winnerName + '获胜！';
-    $gameOver.style.display = 'flex';
+    const winnerName = winner === "red" ? "红方" : "蓝方";
+    $winnerText.textContent = winnerName + "获胜！";
+    $gameOver.style.display = "flex";
   }
 
   function startGame(firstTeam) {
@@ -1028,10 +1083,10 @@ if (typeof document !== 'undefined') {
     gameState.currentTeam = firstTeam;
     gameState.firstPlayer = firstTeam;
     renderBoard(gameState);
-    if (gameState.mode === 'pve' && gameState.aiFirst) {
+    if (gameState.mode === "pve" && gameState.aiFirst) {
       triggerAI();
     } else {
-      showMessage('请翻开一张牌', '');
+      showMessage("请翻开一张牌", "");
     }
   }
 
@@ -1039,84 +1094,98 @@ if (typeof document !== 'undefined') {
   var rpsP2Choice = null;
 
   function handleRPSResult(choice1, choice2, mode) {
-    var result = judgeRPS(choice1, choice2);
-    var choiceNames = { rock: '石头', scissors: '剪刀', paper: '布' };
+    const result = judgeRPS(choice1, choice2);
+    const choiceNames = { rock: "石头", scissors: "剪刀", paper: "布" };
 
     if (result === 0) {
-      $rpsResult.textContent = '双方都出了' + choiceNames[choice1] + '，平局！重新选择';
-      setTimeout(function() { showRPSSelection(mode); }, 1500);
+      $rpsResult.textContent = "双方都出了" + choiceNames[choice1] + "，平局！重新选择";
+      setTimeout(() => {
+        showRPSSelection(mode);
+      }, 1500);
       return;
     }
 
-    if (mode === 'pvp') {
-      var winner = result === 1 ? '玩家1' : '玩家2';
-      $rpsResult.textContent = winner + ' 获胜！' + winner + '先手';
-      var firstTeam = result === 1 ? 'red' : 'blue';
-      setTimeout(function() { startGame(firstTeam); }, 1500);
+    if (mode === "pvp") {
+      const winner = result === 1 ? "玩家1" : "玩家2";
+      $rpsResult.textContent = winner + " 获胜！" + winner + "先手";
+      const firstTeam = result === 1 ? "red" : "blue";
+      setTimeout(() => {
+        startGame(firstTeam);
+      }, 1500);
     } else {
       // PVE
-      var aiChoiceName = choiceNames[choice2];
+      const aiChoiceName = choiceNames[choice2];
       if (result === 1) {
         // Player won: player goes first
-        $rpsResult.textContent = '电脑出了' + aiChoiceName + '，你赢了！你先手';
+        $rpsResult.textContent = "电脑出了" + aiChoiceName + "，你赢了！你先手";
         gameState.aiFirst = false;
-        setTimeout(function() { startGame('red'); }, 1500);
+        setTimeout(() => {
+          startGame("red");
+        }, 1500);
       } else {
         // Computer won: computer goes first
-        $rpsResult.textContent = '电脑出了' + aiChoiceName + '，电脑赢了！电脑先手';
+        $rpsResult.textContent = "电脑出了" + aiChoiceName + "，电脑赢了！电脑先手";
         gameState.aiFirst = true;
-        setTimeout(function() { startGame('red'); }, 1500);
+        setTimeout(() => {
+          startGame("red");
+        }, 1500);
       }
     }
   }
 
   // PVP Rock-Paper-Scissors buttons
-  document.querySelectorAll('#rps-pvp .btn-rps').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var player = btn.dataset.player;
-      var choice = btn.dataset.choice;
-      if (player === '1') {
+  document.querySelectorAll("#rps-pvp .btn-rps").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const player = btn.dataset.player;
+      const choice = btn.dataset.choice;
+      if (player === "1") {
         rpsP1Choice = choice;
-        document.getElementById('rps-p1-status').textContent = '已选择';
-        document.querySelectorAll('#rps-p1-buttons .btn-rps').forEach(function(b) { b.classList.remove('selected'); });
-        btn.classList.add('selected');
+        document.getElementById("rps-p1-status").textContent = "已选择";
+        document.querySelectorAll("#rps-p1-buttons .btn-rps").forEach((b) => {
+          b.classList.remove("selected");
+        });
+        btn.classList.add("selected");
       } else {
         rpsP2Choice = choice;
-        document.getElementById('rps-p2-status').textContent = '已选择';
-        document.querySelectorAll('#rps-p2-buttons .btn-rps').forEach(function(b) { b.classList.remove('selected'); });
-        btn.classList.add('selected');
+        document.getElementById("rps-p2-status").textContent = "已选择";
+        document.querySelectorAll("#rps-p2-buttons .btn-rps").forEach((b) => {
+          b.classList.remove("selected");
+        });
+        btn.classList.add("selected");
       }
       if (rpsP1Choice && rpsP2Choice) {
-        handleRPSResult(rpsP1Choice, rpsP2Choice, 'pvp');
+        handleRPSResult(rpsP1Choice, rpsP2Choice, "pvp");
       }
     });
   });
 
   // PVE Rock-Paper-Scissors buttons
-  document.querySelectorAll('#rps-pve .btn-rps').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var playerChoice = btn.dataset.choice;
-      var choices = ['rock', 'scissors', 'paper'];
-      var aiChoice = choices[Math.floor(Math.random() * 3)];
-      document.querySelectorAll('#rps-pve .btn-rps').forEach(function(b) { b.classList.remove('selected'); });
-      btn.classList.add('selected');
-      handleRPSResult(playerChoice, aiChoice, 'pve');
+  document.querySelectorAll("#rps-pve .btn-rps").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const playerChoice = btn.dataset.choice;
+      const choices = ["rock", "scissors", "paper"];
+      const aiChoice = choices[Math.floor(Math.random() * 3)];
+      document.querySelectorAll("#rps-pve .btn-rps").forEach((b) => {
+        b.classList.remove("selected");
+      });
+      btn.classList.add("selected");
+      handleRPSResult(playerChoice, aiChoice, "pve");
     });
   });
 
   // Mode selection buttons
-  document.getElementById('btn-pvp').addEventListener('click', function() {
-    gameState = createGameState('pvp');
-    showRPSSelection('pvp');
+  document.getElementById("btn-pvp").addEventListener("click", () => {
+    gameState = createGameState("pvp");
+    showRPSSelection("pvp");
   });
 
-  document.getElementById('btn-pve').addEventListener('click', function() {
-    gameState = createGameState('pve');
-    showRPSSelection('pve');
+  document.getElementById("btn-pve").addEventListener("click", () => {
+    gameState = createGameState("pve");
+    showRPSSelection("pve");
   });
 
   // Restart button
-  $btnRestart.addEventListener('click', function() {
+  $btnRestart.addEventListener("click", () => {
     gameState = null;
     showModeSelection();
   });
@@ -1126,41 +1195,43 @@ if (typeof document !== 'undefined') {
   // ============================================================
 
   function afterAction() {
-    var result = checkGameOver(gameState);
+    const result = checkGameOver(gameState);
     if (result.ended) {
       gameState.gameOver = true;
       gameState.winner = result.winner;
-      setTimeout(function() { showGameOverScreen(result.winner); }, 500);
+      setTimeout(() => {
+        showGameOverScreen(result.winner);
+      }, 500);
       return;
     }
 
-    if (gameState.mode === 'pve') {
+    if (gameState.mode === "pve") {
       if (gameState.teamAssigned && gameState.currentTeam === gameState.aiTeam) {
         triggerAI();
       } else if (!gameState.teamAssigned && gameState.aiFirst) {
-        showMessage('请翻开一张牌', '');
+        showMessage("请翻开一张牌", "");
       } else if (!gameState.teamAssigned) {
-        showMessage('请翻开一张牌', '');
+        showMessage("请翻开一张牌", "");
       } else {
-        showMessage('你的回合', '');
+        showMessage("你的回合", "");
       }
     } else {
       // PVP
       if (!gameState.teamAssigned) {
-        showMessage('请翻开一张牌', '');
+        showMessage("请翻开一张牌", "");
       } else {
-        var teamName = gameState.currentTeam === 'red' ? '红方' : '蓝方';
-        showMessage(teamName + '的回合', '');
+        const teamName = gameState.currentTeam === "red" ? "红方" : "蓝方";
+        showMessage(teamName + "的回合", "");
       }
     }
   }
 
   function triggerAI() {
     gameState.aiThinking = true;
-    showMessage('电脑思考中...', 'info');
-    var delay = 500 + Math.random() * 1000;
-    setTimeout(function() {
-      var decision = aiDecide(gameState, gameState.aiTeam);
+    showMessage("电脑思考中...", "info");
+    const delay = 500 + Math.random() * 1000;
+    setTimeout(() => {
+      const decision = aiDecide(gameState, gameState.aiTeam);
       if (!decision) {
         gameState.aiThinking = false;
         afterAction();
@@ -1173,54 +1244,52 @@ if (typeof document !== 'undefined') {
   function executeAIAction(decision) {
     clearHighlights();
 
-    if (decision.type === 'flip') {
-      var cell = getCell(decision.x, decision.y);
-      if (cell) cell.classList.add('cell-ai-highlight');
+    if (decision.type === "flip") {
+      const cell = getCell(decision.x, decision.y);
+      if (cell) cell.classList.add("cell-ai-highlight");
 
       flipCard(gameState, decision.x, decision.y);
       renderBoard(gameState);
 
-      var cell2 = getCell(decision.x, decision.y);
-      if (cell2) cell2.classList.add('cell-ai-highlight');
+      const cell2 = getCell(decision.x, decision.y);
+      if (cell2) cell2.classList.add("cell-ai-highlight");
 
-      setTimeout(function() {
+      setTimeout(() => {
         clearHighlights();
         gameState.aiThinking = false;
         afterAction();
       }, 500);
+    } else if (decision.type === "move") {
+      const fromCell = getCell(decision.from.x, decision.from.y);
+      if (fromCell) fromCell.classList.add("cell-ai-highlight");
 
-    } else if (decision.type === 'move') {
-      var fromCell = getCell(decision.from.x, decision.from.y);
-      if (fromCell) fromCell.classList.add('cell-ai-highlight');
-
-      setTimeout(function() {
+      setTimeout(() => {
         moveCard(gameState, decision.from, decision.to);
         renderBoard(gameState);
 
-        var toCell = getCell(decision.to.x, decision.to.y);
-        if (toCell) toCell.classList.add('cell-ai-highlight');
+        const toCell = getCell(decision.to.x, decision.to.y);
+        if (toCell) toCell.classList.add("cell-ai-highlight");
 
-        setTimeout(function() {
+        setTimeout(() => {
           clearHighlights();
           gameState.aiThinking = false;
           afterAction();
         }, 500);
       }, 300);
+    } else if (decision.type === "capture") {
+      const fromCellCap = getCell(decision.from.x, decision.from.y);
+      const toCellCap = getCell(decision.to.x, decision.to.y);
+      if (fromCellCap) fromCellCap.classList.add("cell-ai-highlight");
+      if (toCellCap) toCellCap.classList.add("cell-ai-highlight");
 
-    } else if (decision.type === 'capture') {
-      var fromCellCap = getCell(decision.from.x, decision.from.y);
-      var toCellCap   = getCell(decision.to.x, decision.to.y);
-      if (fromCellCap) fromCellCap.classList.add('cell-ai-highlight');
-      if (toCellCap)   toCellCap.classList.add('cell-ai-highlight');
-
-      setTimeout(function() {
+      setTimeout(() => {
         captureCard(gameState, decision.from, decision.to);
         renderBoard(gameState);
 
-        var newCell = getCell(decision.to.x, decision.to.y);
-        if (newCell) newCell.classList.add('cell-ai-highlight');
+        const newCell = getCell(decision.to.x, decision.to.y);
+        if (newCell) newCell.classList.add("cell-ai-highlight");
 
-        setTimeout(function() {
+        setTimeout(() => {
           clearHighlights();
           gameState.aiThinking = false;
           afterAction();

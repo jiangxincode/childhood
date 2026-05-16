@@ -1,35 +1,51 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 import {
-  BOARD_SIZE, EMPTY, BLACK, WHITE, KOMI, DIRECTIONS,
-  createBoard, getOpponent, getPlayerName, isValidPosition,
-  getGroup, getLiberties, removeGroup, copyBoard,
-  playMove, isLegalMove, getLegalMoves,
-  calculateScore, judgeRPS, getRPSName, createGameState
-} from './game.js';
+  BOARD_SIZE,
+  EMPTY,
+  BLACK,
+  WHITE,
+  KOMI,
+  DIRECTIONS,
+  createBoard,
+  getOpponent,
+  getPlayerName,
+  isValidPosition,
+  getGroup,
+  getLiberties,
+  removeGroup,
+  copyBoard,
+  playMove,
+  isLegalMove,
+  getLegalMoves,
+  calculateScore,
+  judgeRPS,
+  getRPSName,
+  createGameState,
+} from "./game.js";
 
-describe('constants', () => {
-  it('BOARD_SIZE is 19', () => {
+describe("constants", () => {
+  it("BOARD_SIZE is 19", () => {
     expect(BOARD_SIZE).toBe(19);
   });
-  it('EMPTY is 0', () => {
+  it("EMPTY is 0", () => {
     expect(EMPTY).toBe(0);
   });
-  it('BLACK is 1', () => {
+  it("BLACK is 1", () => {
     expect(BLACK).toBe(1);
   });
-  it('WHITE is 2', () => {
+  it("WHITE is 2", () => {
     expect(WHITE).toBe(2);
   });
-  it('KOMI is 6.5', () => {
+  it("KOMI is 6.5", () => {
     expect(KOMI).toBe(6.5);
   });
-  it('DIRECTIONS has 4 directions', () => {
+  it("DIRECTIONS has 4 directions", () => {
     expect(DIRECTIONS.length).toBe(4);
   });
 });
 
-describe('createBoard', () => {
-  it('creates 19x19 empty board', () => {
+describe("createBoard", () => {
+  it("creates 19x19 empty board", () => {
     var board = createBoard();
     expect(board.length).toBe(19);
     expect(board[0].length).toBe(19);
@@ -42,31 +58,31 @@ describe('createBoard', () => {
   });
 });
 
-describe('getOpponent', () => {
-  it('BLACK -> WHITE', () => {
+describe("getOpponent", () => {
+  it("BLACK -> WHITE", () => {
     expect(getOpponent(BLACK)).toBe(WHITE);
   });
-  it('WHITE -> BLACK', () => {
+  it("WHITE -> BLACK", () => {
     expect(getOpponent(WHITE)).toBe(BLACK);
   });
 });
 
-describe('getPlayerName', () => {
-  it('BLACK is 黑棋', () => {
-    expect(getPlayerName(BLACK)).toBe('黑棋');
+describe("getPlayerName", () => {
+  it("BLACK is 黑棋", () => {
+    expect(getPlayerName(BLACK)).toBe("黑棋");
   });
-  it('WHITE is 白棋', () => {
-    expect(getPlayerName(WHITE)).toBe('白棋');
+  it("WHITE is 白棋", () => {
+    expect(getPlayerName(WHITE)).toBe("白棋");
   });
 });
 
-describe('isValidPosition', () => {
-  it('returns true for valid positions', () => {
+describe("isValidPosition", () => {
+  it("returns true for valid positions", () => {
     expect(isValidPosition(0, 0)).toBe(true);
     expect(isValidPosition(9, 9)).toBe(true);
     expect(isValidPosition(18, 18)).toBe(true);
   });
-  it('returns false for invalid positions', () => {
+  it("returns false for invalid positions", () => {
     expect(isValidPosition(-1, 0)).toBe(false);
     expect(isValidPosition(0, -1)).toBe(false);
     expect(isValidPosition(19, 0)).toBe(false);
@@ -74,8 +90,8 @@ describe('isValidPosition', () => {
   });
 });
 
-describe('getGroup', () => {
-  it('returns single stone group', () => {
+describe("getGroup", () => {
+  it("returns single stone group", () => {
     var board = createBoard();
     board[9][9] = BLACK;
     var group = getGroup(board, 9, 9);
@@ -83,7 +99,7 @@ describe('getGroup', () => {
     expect(group.stones.length).toBe(1);
     expect(group.stones[0]).toEqual({ x: 9, y: 9 });
   });
-  it('returns connected group', () => {
+  it("returns connected group", () => {
     var board = createBoard();
     board[9][9] = BLACK;
     board[9][10] = BLACK;
@@ -91,13 +107,13 @@ describe('getGroup', () => {
     var group = getGroup(board, 9, 9);
     expect(group.stones.length).toBe(3);
   });
-  it('returns empty group for empty position', () => {
+  it("returns empty group for empty position", () => {
     var board = createBoard();
     var group = getGroup(board, 9, 9);
     expect(group.color).toBe(EMPTY);
     expect(group.stones.length).toBe(0);
   });
-  it('does not include opponent stones', () => {
+  it("does not include opponent stones", () => {
     var board = createBoard();
     board[9][9] = BLACK;
     board[9][10] = WHITE;
@@ -106,29 +122,29 @@ describe('getGroup', () => {
   });
 });
 
-describe('getLiberties', () => {
-  it('single stone has 4 liberties', () => {
+describe("getLiberties", () => {
+  it("single stone has 4 liberties", () => {
     var board = createBoard();
     board[9][9] = BLACK;
     var group = getGroup(board, 9, 9);
     var liberties = getLiberties(board, group.stones);
     expect(liberties.length).toBe(4);
   });
-  it('corner stone has 2 liberties', () => {
+  it("corner stone has 2 liberties", () => {
     var board = createBoard();
     board[0][0] = BLACK;
     var group = getGroup(board, 0, 0);
     var liberties = getLiberties(board, group.stones);
     expect(liberties.length).toBe(2);
   });
-  it('edge stone has 3 liberties', () => {
+  it("edge stone has 3 liberties", () => {
     var board = createBoard();
     board[0][9] = BLACK; // y=0, x=9 (top edge)
     var group = getGroup(board, 9, 0); // x=9, y=0
     var liberties = getLiberties(board, group.stones);
     expect(liberties.length).toBe(3);
   });
-  it('group shares liberties', () => {
+  it("group shares liberties", () => {
     var board = createBoard();
     board[9][9] = BLACK;
     board[9][10] = BLACK;
@@ -136,7 +152,7 @@ describe('getLiberties', () => {
     var liberties = getLiberties(board, group.stones);
     expect(liberties.length).toBe(6);
   });
-  it('blocked stone has fewer liberties', () => {
+  it("blocked stone has fewer liberties", () => {
     var board = createBoard();
     board[9][9] = BLACK;
     board[8][9] = WHITE;
@@ -149,29 +165,29 @@ describe('getLiberties', () => {
   });
 });
 
-describe('playMove', () => {
-  it('places stone correctly', () => {
+describe("playMove", () => {
+  it("places stone correctly", () => {
     var board = createBoard();
     var result = playMove(board, 9, 9, BLACK);
     expect(result).not.toBeNull();
     expect(result.board[9][9]).toBe(BLACK);
     expect(result.captures).toBe(0);
   });
-  it('captures opponent stones', () => {
+  it("captures opponent stones", () => {
     var board = createBoard();
     // Setup: BLACK surrounds a WHITE stone at (9,9)
     // board[y][x] format
-    board[9][9] = WHITE;    // center
-    board[8][9] = BLACK;    // top
-    board[10][9] = BLACK;   // bottom
-    board[9][8] = BLACK;    // left
+    board[9][9] = WHITE; // center
+    board[8][9] = BLACK; // top
+    board[10][9] = BLACK; // bottom
+    board[9][8] = BLACK; // left
     // Last liberty is at (10, 9) -> x=10, y=9
     var result = playMove(board, 10, 9, BLACK);
     expect(result).not.toBeNull();
     expect(result.captures).toBe(1);
     expect(result.board[9][9]).toBe(EMPTY);
   });
-  it('captures multiple stones', () => {
+  it("captures multiple stones", () => {
     var board = createBoard();
     // Setup: BLACK surrounds two WHITE stones at (9,9) and (10,9)
     // board[y][x] format
@@ -189,7 +205,7 @@ describe('playMove', () => {
     expect(result.board[9][9]).toBe(EMPTY);
     expect(result.board[9][10]).toBe(EMPTY);
   });
-  it('returns null for suicide move', () => {
+  it("returns null for suicide move", () => {
     var board = createBoard();
     // Setup: WHITE surrounds a position
     board[8][9] = WHITE;
@@ -200,7 +216,7 @@ describe('playMove', () => {
     var result = playMove(board, 9, 9, BLACK);
     expect(result).toBeNull();
   });
-  it('allows suicide if it captures opponent', () => {
+  it("allows suicide if it captures opponent", () => {
     var board = createBoard();
     // Setup: Complex position where move captures and then has liberties
     board[9][9] = WHITE;
@@ -212,7 +228,7 @@ describe('playMove', () => {
     var result = playMove(board, 9, 10, BLACK);
     expect(result).not.toBeNull();
   });
-  it('detects ko', () => {
+  it("detects ko", () => {
     var board = createBoard();
     // Ko position: single WHITE stone with 1 liberty, BLACK captures it,
     // and the capturing stone ends up with exactly 1 liberty (the captured position).
@@ -315,17 +331,17 @@ describe('playMove', () => {
     // totalCaptures = 1 ✓
 
     // Place BLACK stones blocking WHITE at (1,1) on 3 sides
-    board[1][0] = BLACK;    // (0,1) - left of WHITE
-    board[0][1] = BLACK;    // (1,0) - above WHITE
-    board[2][1] = BLACK;    // (1,2) - below WHITE
+    board[1][0] = BLACK; // (0,1) - left of WHITE
+    board[0][1] = BLACK; // (1,0) - above WHITE
+    board[2][1] = BLACK; // (1,2) - below WHITE
 
     // Place WHITE stone with 1 liberty
-    board[1][1] = WHITE;    // (1,1) - liberty only at (2,1)
+    board[1][1] = WHITE; // (1,1) - liberty only at (2,1)
 
     // Place WHITE stones blocking the capturing position (2,1) on 3 sides
-    board[0][2] = WHITE;    // (2,0) - above capturing position
-    board[1][3] = WHITE;    // (3,1) - right of capturing position
-    board[2][2] = WHITE;    // (2,2) - below capturing position
+    board[0][2] = WHITE; // (2,0) - above capturing position
+    board[1][3] = WHITE; // (3,1) - right of capturing position
+    board[2][2] = WHITE; // (2,2) - below capturing position
 
     // Verify WHITE at (1,1) has exactly 1 liberty
     var whiteGroup = getGroup(board, 1, 1);
@@ -347,22 +363,22 @@ describe('playMove', () => {
   });
 });
 
-describe('isLegalMove', () => {
-  it('allows valid move', () => {
+describe("isLegalMove", () => {
+  it("allows valid move", () => {
     var board = createBoard();
     expect(isLegalMove(board, 9, 9, BLACK, null)).toBe(true);
   });
-  it('rejects occupied position', () => {
+  it("rejects occupied position", () => {
     var board = createBoard();
     board[9][9] = BLACK;
     expect(isLegalMove(board, 9, 9, WHITE, null)).toBe(false);
   });
-  it('rejects ko position', () => {
+  it("rejects ko position", () => {
     var board = createBoard();
     var koPoint = { x: 9, y: 9 };
     expect(isLegalMove(board, 9, 9, BLACK, koPoint)).toBe(false);
   });
-  it('rejects suicide', () => {
+  it("rejects suicide", () => {
     var board = createBoard();
     board[8][9] = WHITE;
     board[10][9] = WHITE;
@@ -372,19 +388,19 @@ describe('isLegalMove', () => {
   });
 });
 
-describe('getLegalMoves', () => {
-  it('returns all positions for empty board', () => {
+describe("getLegalMoves", () => {
+  it("returns all positions for empty board", () => {
     var board = createBoard();
     var moves = getLegalMoves(board, BLACK, null);
     expect(moves.length).toBe(BOARD_SIZE * BOARD_SIZE);
   });
-  it('excludes occupied positions', () => {
+  it("excludes occupied positions", () => {
     var board = createBoard();
     board[9][9] = BLACK;
     var moves = getLegalMoves(board, WHITE, null);
     expect(moves.length).toBe(BOARD_SIZE * BOARD_SIZE - 1);
   });
-  it('excludes ko position', () => {
+  it("excludes ko position", () => {
     var board = createBoard();
     var koPoint = { x: 9, y: 9 };
     var moves = getLegalMoves(board, BLACK, koPoint);
@@ -392,8 +408,8 @@ describe('getLegalMoves', () => {
   });
 });
 
-describe('calculateScore', () => {
-  it('counts stones on empty board', () => {
+describe("calculateScore", () => {
+  it("counts stones on empty board", () => {
     var board = createBoard();
     var score = calculateScore(board);
     expect(score.blackStones).toBe(0);
@@ -401,7 +417,7 @@ describe('calculateScore', () => {
     expect(score.black).toBe(0);
     expect(score.white).toBe(0);
   });
-  it('counts stones correctly', () => {
+  it("counts stones correctly", () => {
     var board = createBoard();
     board[9][9] = BLACK;
     board[9][10] = WHITE;
@@ -409,7 +425,7 @@ describe('calculateScore', () => {
     expect(score.blackStones).toBe(1);
     expect(score.whiteStones).toBe(1);
   });
-  it('calculates territory', () => {
+  it("calculates territory", () => {
     var board = createBoard();
     // Simple territory: BLACK controls top-left
     for (var y = 0; y < 9; y++) {
@@ -423,41 +439,41 @@ describe('calculateScore', () => {
   });
 });
 
-describe('judgeRPS', () => {
-  it('rock beats scissors', () => {
-    expect(judgeRPS('rock', 'scissors')).toBe(1);
-    expect(judgeRPS('scissors', 'rock')).toBe(-1);
+describe("judgeRPS", () => {
+  it("rock beats scissors", () => {
+    expect(judgeRPS("rock", "scissors")).toBe(1);
+    expect(judgeRPS("scissors", "rock")).toBe(-1);
   });
-  it('scissors beats paper', () => {
-    expect(judgeRPS('scissors', 'paper')).toBe(1);
-    expect(judgeRPS('paper', 'scissors')).toBe(-1);
+  it("scissors beats paper", () => {
+    expect(judgeRPS("scissors", "paper")).toBe(1);
+    expect(judgeRPS("paper", "scissors")).toBe(-1);
   });
-  it('paper beats rock', () => {
-    expect(judgeRPS('paper', 'rock')).toBe(1);
-    expect(judgeRPS('rock', 'paper')).toBe(-1);
+  it("paper beats rock", () => {
+    expect(judgeRPS("paper", "rock")).toBe(1);
+    expect(judgeRPS("rock", "paper")).toBe(-1);
   });
-  it('same choice is draw', () => {
-    expect(judgeRPS('rock', 'rock')).toBe(0);
-    expect(judgeRPS('scissors', 'scissors')).toBe(0);
-    expect(judgeRPS('paper', 'paper')).toBe(0);
-  });
-});
-
-describe('getRPSName', () => {
-  it('returns correct names', () => {
-    expect(getRPSName('rock')).toBe('石头');
-    expect(getRPSName('scissors')).toBe('剪刀');
-    expect(getRPSName('paper')).toBe('布');
-  });
-  it('returns original for unknown', () => {
-    expect(getRPSName('unknown')).toBe('unknown');
+  it("same choice is draw", () => {
+    expect(judgeRPS("rock", "rock")).toBe(0);
+    expect(judgeRPS("scissors", "scissors")).toBe(0);
+    expect(judgeRPS("paper", "paper")).toBe(0);
   });
 });
 
-describe('createGameState', () => {
-  it('creates correct initial state', () => {
-    var state = createGameState('pvp');
-    expect(state.mode).toBe('pvp');
+describe("getRPSName", () => {
+  it("returns correct names", () => {
+    expect(getRPSName("rock")).toBe("石头");
+    expect(getRPSName("scissors")).toBe("剪刀");
+    expect(getRPSName("paper")).toBe("布");
+  });
+  it("returns original for unknown", () => {
+    expect(getRPSName("unknown")).toBe("unknown");
+  });
+});
+
+describe("createGameState", () => {
+  it("creates correct initial state", () => {
+    var state = createGameState("pvp");
+    expect(state.mode).toBe("pvp");
     expect(state.currentPlayer).toBe(BLACK);
     expect(state.gameOver).toBe(false);
     expect(state.winner).toBeNull();
@@ -471,8 +487,8 @@ describe('createGameState', () => {
     expect(state.komi).toBe(6.5);
     expect(state.board.length).toBe(19);
   });
-  it('pve mode has null teams initially', () => {
-    var state = createGameState('pve');
+  it("pve mode has null teams initially", () => {
+    var state = createGameState("pve");
     expect(state.playerTeam).toBeNull();
     expect(state.aiTeam).toBeNull();
   });

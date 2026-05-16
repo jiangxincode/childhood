@@ -1,33 +1,34 @@
+/* eslint-disable no-var */
 // ============================================================
 // Gomoku (Five in a Row) - Game Core Logic
 // ============================================================
 
-if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
-  var _gameUtils = require('../../common/game-utils.js');
+if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
+  const _gameUtils = require("../../common/game-utils.js");
   var judgeRPS = _gameUtils.judgeRPS;
   var getRPSName = _gameUtils.getRPSName;
 }
 
-var BOARD_SIZE = 15;
-var EMPTY = 0;
-var BLACK = 1;  // First player
-var WHITE = 2;  // Second player
-var WIN_COUNT = 5;
+const BOARD_SIZE = 15;
+const EMPTY = 0;
+const BLACK = 1; // First player
+const WHITE = 2; // Second player
+const WIN_COUNT = 5;
 
 // Pre-compute all winning lines (572 total)
-var WIN_LINES = [];
-var WINS_MAP = [];  // WINS_MAP[x][y] = [line ID array]
+let WIN_LINES = [];
+let WINS_MAP = []; // WINS_MAP[x][y] = [line ID array]
 
 function initWinLines() {
   WIN_LINES = [];
   WINS_MAP = [];
-  for (var i = 0; i < BOARD_SIZE; i++) {
+  for (let i = 0; i < BOARD_SIZE; i++) {
     WINS_MAP[i] = [];
-    for (var j = 0; j < BOARD_SIZE; j++) {
+    for (let j = 0; j < BOARD_SIZE; j++) {
       WINS_MAP[i][j] = [];
     }
   }
-  var lineId = 0;
+  let lineId = 0;
 
   // Horizontal
   for (var y = 0; y < BOARD_SIZE; y++) {
@@ -90,10 +91,10 @@ function initWinLines() {
 initWinLines();
 
 function createBoard() {
-  var board = [];
-  for (var y = 0; y < BOARD_SIZE; y++) {
-    var row = [];
-    for (var x = 0; x < BOARD_SIZE; x++) {
+  const board = [];
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    const row = [];
+    for (let x = 0; x < BOARD_SIZE; x++) {
       row.push(EMPTY);
     }
     board.push(row);
@@ -106,7 +107,7 @@ function getOpponent(player) {
 }
 
 function getPlayerName(player) {
-  return player === BLACK ? '黑棋' : '白棋';
+  return player === BLACK ? "黑棋" : "白棋";
 }
 
 /**
@@ -118,12 +119,12 @@ function getPlayerName(player) {
  * @returns {Array|null} Winning line coordinate array, or null
  */
 function checkWinAt(board, x, y, player) {
-  var lines = WINS_MAP[x][y];
-  for (var i = 0; i < lines.length; i++) {
-    var lineId = lines[i];
-    var line = WIN_LINES[lineId];
-    var count = 0;
-    for (var k = 0; k < line.length; k++) {
+  const lines = WINS_MAP[x][y];
+  for (let i = 0; i < lines.length; i++) {
+    const lineId = lines[i];
+    const line = WIN_LINES[lineId];
+    let count = 0;
+    for (let k = 0; k < line.length; k++) {
       if (board[line[k].y][line[k].x] === player) {
         count++;
       }
@@ -136,8 +137,8 @@ function checkWinAt(board, x, y, player) {
 }
 
 function checkDraw(board) {
-  for (var y = 0; y < BOARD_SIZE; y++) {
-    for (var x = 0; x < BOARD_SIZE; x++) {
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
       if (board[y][x] === EMPTY) return false;
     }
   }
@@ -145,8 +146,8 @@ function checkDraw(board) {
 }
 
 function makeMove(board, x, y, player) {
-  var newBoard = [];
-  for (var r = 0; r < BOARD_SIZE; r++) {
+  const newBoard = [];
+  for (let r = 0; r < BOARD_SIZE; r++) {
     newBoard.push(board[r].slice());
   }
   newBoard[y][x] = player;
@@ -157,29 +158,29 @@ function makeMove(board, x, y, player) {
 // AI: Greedy Scoring Strategy (based on AiringGo)
 // ============================================================
 
-var SCORE_HUMAN = [0, 200, 400, 2000, 10000];
-var SCORE_AI = [0, 220, 420, 2100, 20000];
+const SCORE_HUMAN = [0, 200, 400, 2000, 10000];
+const SCORE_AI = [0, 220, 420, 2100, 20000];
 
 function getBestAIMove(board, aiPlayer) {
-  var humanPlayer = getOpponent(aiPlayer);
-  var scoreAI = [];
-  var scoreHuman = [];
-  for (var i = 0; i < BOARD_SIZE; i++) {
+  const humanPlayer = getOpponent(aiPlayer);
+  const scoreAI = [];
+  const scoreHuman = [];
+  for (let i = 0; i < BOARD_SIZE; i++) {
     scoreAI[i] = [];
     scoreHuman[i] = [];
-    for (var j = 0; j < BOARD_SIZE; j++) {
+    for (let j = 0; j < BOARD_SIZE; j++) {
       scoreAI[i][j] = 0;
       scoreHuman[i][j] = 0;
     }
   }
 
   // Iterate all winning lines, calculate score for each empty position
-  for (var lid = 0; lid < WIN_LINES.length; lid++) {
-    var line = WIN_LINES[lid];
-    var aiCount = 0;
-    var humanCount = 0;
+  for (let lid = 0; lid < WIN_LINES.length; lid++) {
+    const line = WIN_LINES[lid];
+    let aiCount = 0;
+    let humanCount = 0;
     for (var k = 0; k < line.length; k++) {
-      var val = board[line[k].y][line[k].x];
+      const val = board[line[k].y][line[k].x];
       if (val === aiPlayer) aiCount++;
       else if (val === humanPlayer) humanCount++;
     }
@@ -204,16 +205,16 @@ function getBestAIMove(board, aiPlayer) {
     }
   }
 
-  var maxScore = -1;
-  var bestX = -1;
-  var bestY = -1;
+  let maxScore = -1;
+  let bestX = -1;
+  let bestY = -1;
 
-  for (var y = 0; y < BOARD_SIZE; y++) {
-    for (var x = 0; x < BOARD_SIZE; x++) {
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
       if (board[y][x] !== EMPTY) continue;
       if (scoreAI[x][y] === 0 && scoreHuman[x][y] === 0) continue;
 
-      var s = scoreAI[x][y] + scoreHuman[x][y];
+      const s = scoreAI[x][y] + scoreHuman[x][y];
       if (s > maxScore) {
         maxScore = s;
         bestX = x;
@@ -230,7 +231,7 @@ function getBestAIMove(board, aiPlayer) {
 
   // Play center when board is empty
   if (bestX === -1) {
-    var center = Math.floor(BOARD_SIZE / 2);
+    const center = Math.floor(BOARD_SIZE / 2);
     return { x: center, y: center };
   }
 
@@ -255,7 +256,7 @@ function createGameState(mode) {
     aiThinking: false,
     scoreBlack: 0,
     scoreWhite: 0,
-    lastMove: null
+    lastMove: null,
   };
 }
 
@@ -263,7 +264,7 @@ function createGameState(mode) {
 // Export for testing
 // ============================================================
 
-if (typeof module !== 'undefined' && module.exports) {
+if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     BOARD_SIZE: BOARD_SIZE,
     EMPTY: EMPTY,
@@ -282,7 +283,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getBestAIMove: getBestAIMove,
     judgeRPS: judgeRPS,
     getRPSName: getRPSName,
-    createGameState: createGameState
+    createGameState: createGameState,
   };
 }
 
@@ -290,33 +291,33 @@ if (typeof module !== 'undefined' && module.exports) {
 // Browser UI
 // ============================================================
 
-if (typeof document !== 'undefined') {
-  var gameState = null;
-  var rpsChoices = { player1: null, player2: null, human: null };
-  var canvas, context;
-  var CELL_SIZE = 30;
-  var MARGIN = 15;
-  var STONE_RADIUS = 13;
-  var canvasSize = MARGIN * 2 + (BOARD_SIZE - 1) * CELL_SIZE;
+if (typeof document !== "undefined") {
+  let gameState = null;
+  let rpsChoices = { player1: null, player2: null, human: null };
+  let canvas, context;
+  const CELL_SIZE = 30;
+  const MARGIN = 15;
+  const STONE_RADIUS = 13;
+  const canvasSize = MARGIN * 2 + (BOARD_SIZE - 1) * CELL_SIZE;
 
   function initBoard() {
-    canvas = document.getElementById('board-canvas');
+    canvas = document.getElementById("board-canvas");
     canvas.width = canvasSize;
     canvas.height = canvasSize;
-    context = canvas.getContext('2d');
+    context = canvas.getContext("2d");
     drawBoard();
   }
 
   function drawBoard() {
     // Background
-    context.fillStyle = '#f0d9b5';
+    context.fillStyle = "#f0d9b5";
     context.fillRect(0, 0, canvasSize, canvasSize);
 
     // Grid lines
-    context.strokeStyle = '#8b7355';
+    context.strokeStyle = "#8b7355";
     context.lineWidth = 1;
     for (var i = 0; i < BOARD_SIZE; i++) {
-      var pos = MARGIN + i * CELL_SIZE;
+      const pos = MARGIN + i * CELL_SIZE;
       // Vertical lines
       context.beginPath();
       context.moveTo(pos, MARGIN);
@@ -330,15 +331,17 @@ if (typeof document !== 'undefined') {
     }
 
     // Center and star points
-    var starPoints = [
-      { x: 3, y: 3 }, { x: 3, y: 11 },
+    const starPoints = [
+      { x: 3, y: 3 },
+      { x: 3, y: 11 },
       { x: 7, y: 7 },
-      { x: 11, y: 3 }, { x: 11, y: 11 }
+      { x: 11, y: 3 },
+      { x: 11, y: 11 },
     ];
-    context.fillStyle = '#8b7355';
+    context.fillStyle = "#8b7355";
     for (var i = 0; i < starPoints.length; i++) {
-      var sx = MARGIN + starPoints[i].x * CELL_SIZE;
-      var sy = MARGIN + starPoints[i].y * CELL_SIZE;
+      const sx = MARGIN + starPoints[i].x * CELL_SIZE;
+      const sy = MARGIN + starPoints[i].y * CELL_SIZE;
       context.beginPath();
       context.arc(sx, sy, 3, 0, Math.PI * 2);
       context.fill();
@@ -346,18 +349,15 @@ if (typeof document !== 'undefined') {
   }
 
   function drawStone(x, y, player) {
-    var cx = MARGIN + x * CELL_SIZE;
-    var cy = MARGIN + y * CELL_SIZE;
-    var gradient = context.createRadialGradient(
-      cx + 2, cy - 2, 2,
-      cx, cy, STONE_RADIUS
-    );
+    const cx = MARGIN + x * CELL_SIZE;
+    const cy = MARGIN + y * CELL_SIZE;
+    const gradient = context.createRadialGradient(cx + 2, cy - 2, 2, cx, cy, STONE_RADIUS);
     if (player === BLACK) {
-      gradient.addColorStop(0, '#636766');
-      gradient.addColorStop(1, '#0A0A0A');
+      gradient.addColorStop(0, "#636766");
+      gradient.addColorStop(1, "#0A0A0A");
     } else {
-      gradient.addColorStop(0, '#F9F9F9');
-      gradient.addColorStop(1, '#D1D1D1');
+      gradient.addColorStop(0, "#F9F9F9");
+      gradient.addColorStop(1, "#D1D1D1");
     }
     context.fillStyle = gradient;
     context.beginPath();
@@ -366,9 +366,9 @@ if (typeof document !== 'undefined') {
   }
 
   function drawLastMoveMarker(x, y) {
-    var cx = MARGIN + x * CELL_SIZE;
-    var cy = MARGIN + y * CELL_SIZE;
-    context.strokeStyle = '#e53935';
+    const cx = MARGIN + x * CELL_SIZE;
+    const cy = MARGIN + y * CELL_SIZE;
+    context.strokeStyle = "#e53935";
     context.lineWidth = 2;
     context.beginPath();
     context.arc(cx, cy, 5, 0, Math.PI * 2);
@@ -376,15 +376,15 @@ if (typeof document !== 'undefined') {
   }
 
   function drawWinLine(line) {
-    context.strokeStyle = '#e53935';
+    context.strokeStyle = "#e53935";
     context.lineWidth = 3;
     context.beginPath();
-    var sx = MARGIN + line[0].x * CELL_SIZE;
-    var sy = MARGIN + line[0].y * CELL_SIZE;
+    const sx = MARGIN + line[0].x * CELL_SIZE;
+    const sy = MARGIN + line[0].y * CELL_SIZE;
     context.moveTo(sx, sy);
-    for (var i = 1; i < line.length; i++) {
-      var ex = MARGIN + line[i].x * CELL_SIZE;
-      var ey = MARGIN + line[i].y * CELL_SIZE;
+    for (let i = 1; i < line.length; i++) {
+      const ex = MARGIN + line[i].x * CELL_SIZE;
+      const ey = MARGIN + line[i].y * CELL_SIZE;
       context.lineTo(ex, ey);
     }
     context.stroke();
@@ -394,8 +394,8 @@ if (typeof document !== 'undefined') {
     drawBoard();
 
     // Draw all stones
-    for (var y = 0; y < BOARD_SIZE; y++) {
-      for (var x = 0; x < BOARD_SIZE; x++) {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
         if (state.board[y][x] !== EMPTY) {
           drawStone(x, y, state.board[y][x]);
         }
@@ -413,56 +413,56 @@ if (typeof document !== 'undefined') {
     }
 
     // Update status bar
-    document.getElementById('current-player').textContent = getPlayerName(state.currentPlayer);
-    document.getElementById('current-player').className =
-      'team-indicator ' + (state.currentPlayer === BLACK ? 'text-black' : 'text-white-stone');
-    document.getElementById('turn-count').textContent = state.turnCount;
-    document.getElementById('score-black').textContent = state.scoreBlack;
-    document.getElementById('score-white').textContent = state.scoreWhite;
+    document.getElementById("current-player").textContent = getPlayerName(state.currentPlayer);
+    document.getElementById("current-player").className =
+      "team-indicator " + (state.currentPlayer === BLACK ? "text-black" : "text-white-stone");
+    document.getElementById("turn-count").textContent = state.turnCount;
+    document.getElementById("score-black").textContent = state.scoreBlack;
+    document.getElementById("score-white").textContent = state.scoreWhite;
 
     if (state.gameOver) {
-      updateMessage('游戏结束！', 'info');
+      updateMessage("游戏结束！", "info");
     } else if (state.aiThinking) {
-      updateMessage('AI正在思考...', 'info');
-    } else if (state.mode === 'pve' && state.currentPlayer === state.aiTeam) {
-      updateMessage('轮到AI行动', 'info');
+      updateMessage("AI正在思考...", "info");
+    } else if (state.mode === "pve" && state.currentPlayer === state.aiTeam) {
+      updateMessage("轮到AI行动", "info");
     } else {
-      updateMessage('轮到 ' + getPlayerName(state.currentPlayer) + ' 落子', 'info');
+      updateMessage("轮到 " + getPlayerName(state.currentPlayer) + " 落子", "info");
     }
   }
 
   function updateMessage(text, type) {
-    var el = document.getElementById('message');
+    const el = document.getElementById("message");
     el.textContent = text;
-    el.className = type === 'error' ? 'error' : (type === 'info' ? 'info' : '');
+    el.className = type === "error" ? "error" : type === "info" ? "info" : "";
   }
 
   function showGameOver(state) {
-    var winnerText = document.getElementById('winner-text');
+    const winnerText = document.getElementById("winner-text");
     if (state.winner) {
-      winnerText.textContent = getPlayerName(state.winner) + ' 获胜！';
+      winnerText.textContent = getPlayerName(state.winner) + " 获胜！";
     } else {
-      winnerText.textContent = '平局！';
+      winnerText.textContent = "平局！";
     }
-    document.getElementById('game-over').style.display = 'flex';
+    document.getElementById("game-over").style.display = "flex";
   }
 
   function handleCanvasClick(e) {
     if (!gameState || gameState.gameOver || gameState.aiThinking) return;
-    if (gameState.mode === 'pve' && gameState.currentPlayer === gameState.aiTeam) return;
+    if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) return;
 
-    var rect = canvas.getBoundingClientRect();
-    var scaleX = canvas.width / rect.width;
-    var scaleY = canvas.height / rect.height;
-    var px = (e.clientX - rect.left) * scaleX;
-    var py = (e.clientY - rect.top) * scaleY;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const px = (e.clientX - rect.left) * scaleX;
+    const py = (e.clientY - rect.top) * scaleY;
 
-    var x = Math.round((px - MARGIN) / CELL_SIZE);
-    var y = Math.round((py - MARGIN) / CELL_SIZE);
+    const x = Math.round((px - MARGIN) / CELL_SIZE);
+    const y = Math.round((py - MARGIN) / CELL_SIZE);
 
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) return;
     if (gameState.board[y][x] !== EMPTY) {
-      updateMessage('此处已有棋子！', 'error');
+      updateMessage("此处已有棋子！", "error");
       return;
     }
 
@@ -474,7 +474,7 @@ if (typeof document !== 'undefined') {
     gameState.lastMove = { x: x, y: y };
     gameState.turnCount++;
 
-    var winLine = checkWinAt(gameState.board, x, y, gameState.currentPlayer);
+    const winLine = checkWinAt(gameState.board, x, y, gameState.currentPlayer);
     if (winLine) {
       gameState.gameOver = true;
       gameState.winner = gameState.currentPlayer;
@@ -482,21 +482,25 @@ if (typeof document !== 'undefined') {
       if (gameState.currentPlayer === BLACK) gameState.scoreBlack++;
       else gameState.scoreWhite++;
       renderGame(gameState);
-      setTimeout(function() { showGameOver(gameState); }, 500);
+      setTimeout(() => {
+        showGameOver(gameState);
+      }, 500);
       return;
     }
     if (checkDraw(gameState.board)) {
       gameState.gameOver = true;
       gameState.winner = null;
       renderGame(gameState);
-      setTimeout(function() { showGameOver(gameState); }, 500);
+      setTimeout(() => {
+        showGameOver(gameState);
+      }, 500);
       return;
     }
 
     gameState.currentPlayer = getOpponent(gameState.currentPlayer);
     renderGame(gameState);
 
-    if (gameState.mode === 'pve' && gameState.currentPlayer === gameState.aiTeam) {
+    if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) {
       triggerAI();
     }
   }
@@ -504,8 +508,8 @@ if (typeof document !== 'undefined') {
   function triggerAI() {
     gameState.aiThinking = true;
     renderGame(gameState);
-    setTimeout(function() {
-      var move = getBestAIMove(gameState.board, gameState.aiTeam);
+    setTimeout(() => {
+      const move = getBestAIMove(gameState.board, gameState.aiTeam);
       gameState.aiThinking = false;
       if (move) doMove(move.x, move.y);
     }, 500);
@@ -515,7 +519,7 @@ if (typeof document !== 'undefined') {
     gameState = createGameState(mode);
     gameState.currentPlayer = firstPlayer || BLACK;
 
-    if (mode === 'pve') {
+    if (mode === "pve") {
       if (firstPlayer === BLACK) {
         gameState.playerTeam = BLACK;
         gameState.aiTeam = WHITE;
@@ -525,118 +529,156 @@ if (typeof document !== 'undefined') {
       }
     }
 
-    document.getElementById('mode-selection').style.display = 'none';
-    document.getElementById('rps-section').style.display = 'none';
-    document.getElementById('game-area').style.display = 'flex';
-    document.getElementById('game-over').style.display = 'none';
+    document.getElementById("mode-selection").style.display = "none";
+    document.getElementById("rps-section").style.display = "none";
+    document.getElementById("game-area").style.display = "flex";
+    document.getElementById("game-over").style.display = "none";
 
     initBoard();
     renderGame(gameState);
 
     canvas.onclick = handleCanvasClick;
 
-    if (mode === 'pve' && gameState.currentPlayer === gameState.aiTeam) {
+    if (mode === "pve" && gameState.currentPlayer === gameState.aiTeam) {
       triggerAI();
     }
   }
 
   function restartGame() {
-    document.getElementById('game-over').style.display = 'none';
-    document.getElementById('game-area').style.display = 'none';
-    document.getElementById('mode-selection').style.display = 'flex';
+    document.getElementById("game-over").style.display = "none";
+    document.getElementById("game-area").style.display = "none";
+    document.getElementById("mode-selection").style.display = "flex";
     gameState = null;
   }
 
   function handleRPSChoice(player, choice) {
-    if (player === 'human') {
+    if (player === "human") {
       rpsChoices.human = choice;
-      document.querySelectorAll('#rps-player-buttons .btn-rps').forEach(function(btn) {
-        btn.classList.remove('selected');
+      document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
+        btn.classList.remove("selected");
       });
-      event.target.classList.add('selected');
+      event.target.classList.add("selected");
 
-      var choices = ['rock', 'scissors', 'paper'];
-      var aiChoice = choices[Math.floor(Math.random() * 3)];
+      const choices = ["rock", "scissors", "paper"];
+      const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      var resultEl = document.getElementById('rps-result');
-      var humanWins = judgeRPS(choice, aiChoice);
+      var resultEl = document.getElementById("rps-result");
+      const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
-        resultEl.textContent = '你选择了' + getRPSName(choice) + '，AI选择了' + getRPSName(aiChoice) + '，你赢了！你先手(黑棋)。';
-        setTimeout(function() { startGame('pve', BLACK); }, 1500);
+        resultEl.textContent =
+          "你选择了" +
+          getRPSName(choice) +
+          "，AI选择了" +
+          getRPSName(aiChoice) +
+          "，你赢了！你先手(黑棋)。";
+        setTimeout(() => {
+          startGame("pve", BLACK);
+        }, 1500);
       } else if (humanWins === -1) {
-        resultEl.textContent = '你选择了' + getRPSName(choice) + '，AI选择了' + getRPSName(aiChoice) + '，你输了！AI先手(黑棋)。';
-        setTimeout(function() { startGame('pve', WHITE); }, 1500);
+        resultEl.textContent =
+          "你选择了" +
+          getRPSName(choice) +
+          "，AI选择了" +
+          getRPSName(aiChoice) +
+          "，你输了！AI先手(黑棋)。";
+        setTimeout(() => {
+          startGame("pve", WHITE);
+        }, 1500);
       } else {
-        resultEl.textContent = '你选择了' + getRPSName(choice) + '，AI选择了' + getRPSName(aiChoice) + '，平局！重新选择。';
+        resultEl.textContent =
+          "你选择了" +
+          getRPSName(choice) +
+          "，AI选择了" +
+          getRPSName(aiChoice) +
+          "，平局！重新选择。";
         rpsChoices.human = null;
         rpsChoices.player2 = null;
       }
     } else {
-      rpsChoices['player' + player] = choice;
-      document.querySelectorAll('#rps-p' + player + '-buttons .btn-rps').forEach(function(btn) {
-        btn.classList.remove('selected');
+      rpsChoices["player" + player] = choice;
+      document.querySelectorAll("#rps-p" + player + "-buttons .btn-rps").forEach((btn) => {
+        btn.classList.remove("selected");
       });
-      event.target.classList.add('selected');
+      event.target.classList.add("selected");
 
-      var statusEl = document.getElementById('rps-p' + player + '-status');
-      statusEl.textContent = '已选择：' + getRPSName(choice);
+      const statusEl = document.getElementById("rps-p" + player + "-status");
+      statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById('rps-result');
-        var winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
+        var resultEl = document.getElementById("rps-result");
+        const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
-          resultEl.textContent = '玩家1选择了' + getRPSName(rpsChoices.player1) + '，玩家2选择了' + getRPSName(rpsChoices.player2) + '，玩家1赢了！玩家1先手(黑棋)。';
-          setTimeout(function() { startGame('pvp', BLACK); }, 1500);
+          resultEl.textContent =
+            "玩家1选择了" +
+            getRPSName(rpsChoices.player1) +
+            "，玩家2选择了" +
+            getRPSName(rpsChoices.player2) +
+            "，玩家1赢了！玩家1先手(黑棋)。";
+          setTimeout(() => {
+            startGame("pvp", BLACK);
+          }, 1500);
         } else if (winner === -1) {
-          resultEl.textContent = '玩家1选择了' + getRPSName(rpsChoices.player1) + '，玩家2选择了' + getRPSName(rpsChoices.player2) + '，玩家2赢了！玩家2先手(黑棋)。';
-          setTimeout(function() { startGame('pvp', WHITE); }, 1500);
+          resultEl.textContent =
+            "玩家1选择了" +
+            getRPSName(rpsChoices.player1) +
+            "，玩家2选择了" +
+            getRPSName(rpsChoices.player2) +
+            "，玩家2赢了！玩家2先手(黑棋)。";
+          setTimeout(() => {
+            startGame("pvp", WHITE);
+          }, 1500);
         } else {
-          resultEl.textContent = '玩家1选择了' + getRPSName(rpsChoices.player1) + '，玩家2选择了' + getRPSName(rpsChoices.player2) + '，平局！重新选择。';
+          resultEl.textContent =
+            "玩家1选择了" +
+            getRPSName(rpsChoices.player1) +
+            "，玩家2选择了" +
+            getRPSName(rpsChoices.player2) +
+            "，平局！重新选择。";
           rpsChoices.player1 = null;
           rpsChoices.player2 = null;
-          document.getElementById('rps-p1-status').textContent = '请选择';
-          document.getElementById('rps-p2-status').textContent = '请选择';
-          document.querySelectorAll('.btn-rps').forEach(function(btn) {
-            btn.classList.remove('selected');
+          document.getElementById("rps-p1-status").textContent = "请选择";
+          document.getElementById("rps-p2-status").textContent = "请选择";
+          document.querySelectorAll(".btn-rps").forEach((btn) => {
+            btn.classList.remove("selected");
           });
         }
       }
     }
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('btn-pvp').addEventListener('click', function() {
-      document.getElementById('mode-selection').style.display = 'none';
-      document.getElementById('rps-section').style.display = 'flex';
-      document.getElementById('rps-pvp').style.display = 'block';
-      document.getElementById('rps-pve').style.display = 'none';
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("btn-pvp").addEventListener("click", () => {
+      document.getElementById("mode-selection").style.display = "none";
+      document.getElementById("rps-section").style.display = "flex";
+      document.getElementById("rps-pvp").style.display = "block";
+      document.getElementById("rps-pve").style.display = "none";
       rpsChoices = { player1: null, player2: null, human: null };
     });
 
-    document.getElementById('btn-pve').addEventListener('click', function() {
-      document.getElementById('mode-selection').style.display = 'none';
-      document.getElementById('rps-section').style.display = 'flex';
-      document.getElementById('rps-pvp').style.display = 'none';
-      document.getElementById('rps-pve').style.display = 'block';
+    document.getElementById("btn-pve").addEventListener("click", () => {
+      document.getElementById("mode-selection").style.display = "none";
+      document.getElementById("rps-section").style.display = "flex";
+      document.getElementById("rps-pvp").style.display = "none";
+      document.getElementById("rps-pve").style.display = "block";
       rpsChoices = { player1: null, player2: null, human: null };
     });
 
-    document.querySelectorAll('.btn-rps').forEach(function(button) {
-      button.addEventListener('click', function(ev) {
-        var player = ev.target.dataset.player;
-        var choice = ev.target.dataset.choice;
+    document.querySelectorAll(".btn-rps").forEach((button) => {
+      button.addEventListener("click", (ev) => {
+        const player = ev.target.dataset.player;
+        const choice = ev.target.dataset.choice;
         handleRPSChoice(player, choice);
       });
     });
 
-    document.getElementById('btn-restart').addEventListener('click', restartGame);
+    document.getElementById("btn-restart").addEventListener("click", restartGame);
 
-    document.getElementById('mode-selection').style.display = 'flex';
-    document.getElementById('rps-section').style.display = 'none';
-    document.getElementById('game-area').style.display = 'none';
-    document.getElementById('game-over').style.display = 'none';
+    document.getElementById("mode-selection").style.display = "flex";
+    document.getElementById("rps-section").style.display = "none";
+    document.getElementById("game-area").style.display = "none";
+    document.getElementById("game-over").style.display = "none";
   });
 }

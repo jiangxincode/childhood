@@ -4,11 +4,19 @@
   "private": true,
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
     "fast-check": "^4.8.0",
     "gitnexus": "^1.6.4",
+    "lebab": "^3.2.9",
+    "prettier": "^3.8.3",
     "vitest": "^4.1.6",
     "vitest-sonar-reporter": "^3.0.0"
   }

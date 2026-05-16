@@ -1,9 +1,10 @@
+/* eslint-disable no-var */
 // ============================================================
 // Reversi (Othello) - Game Core Logic
 // ============================================================
 
-if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
-  var _gameUtils = require('../../common/game-utils.js');
+if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
+  const _gameUtils = require("../../common/game-utils.js");
   var judgeRPS = _gameUtils.judgeRPS;
   var getRPSName = _gameUtils.getRPSName;
 }
@@ -16,19 +17,19 @@ if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
 const BOARD_SIZE = 8;
 
 // Player colors
-const PLAYER_BLACK = 'black';
-const PLAYER_WHITE = 'white';
+const PLAYER_BLACK = "black";
+const PLAYER_WHITE = "white";
 
 // Eight directions: up, down, left, right, upper-left, upper-right, lower-left, lower-right
 const DIRECTIONS = [
-  { dx: -1, dy: 0 },   // Up
-  { dx: 1, dy: 0 },    // Down
-  { dx: 0, dy: -1 },   // Left
-  { dx: 0, dy: 1 },    // Right
-  { dx: -1, dy: -1 },  // Upper-left
-  { dx: -1, dy: 1 },   // Upper-right
-  { dx: 1, dy: -1 },   // Lower-left
-  { dx: 1, dy: 1 }     // Lower-right
+  { dx: -1, dy: 0 }, // Up
+  { dx: 1, dy: 0 }, // Down
+  { dx: 0, dy: -1 }, // Left
+  { dx: 0, dy: 1 }, // Right
+  { dx: -1, dy: -1 }, // Upper-left
+  { dx: -1, dy: 1 }, // Upper-right
+  { dx: 1, dy: -1 }, // Lower-left
+  { dx: 1, dy: 1 }, // Lower-right
 ];
 
 /**
@@ -64,24 +65,24 @@ function checkDirection(board, x, y, player, dir) {
   const flipped = [];
   let nx = x + dir.dx;
   let ny = y + dir.dy;
-  
+
   // Check if adjacent position has opponent piece
   if (!inBounds(nx, ny) || board[ny][nx] !== opponent) {
     return null;
   }
-  
+
   // Continue checking along direction
-  flipped.push({x: nx, y: ny});
+  flipped.push({ x: nx, y: ny });
   nx += dir.dx;
   ny += dir.dy;
-  
+
   while (inBounds(nx, ny)) {
     if (board[ny][nx] === player) {
       // Found own piece, can flank
       return flipped;
     } else if (board[ny][nx] === opponent) {
       // Still opponent piece, continue checking
-      flipped.push({x: nx, y: ny});
+      flipped.push({ x: nx, y: ny });
       nx += dir.dx;
       ny += dir.dy;
     } else {
@@ -89,7 +90,7 @@ function checkDirection(board, x, y, player, dir) {
       return null;
     }
   }
-  
+
   // Reached board boundary, cannot flank
   return null;
 }
@@ -105,13 +106,13 @@ function checkDirection(board, x, y, player, dir) {
 function isValidMove(board, x, y, player) {
   // Position must be within board
   if (!inBounds(x, y)) return null;
-  
+
   // Position must be empty
   if (board[y][x] !== null) return null;
-  
+
   const opponent = getOpponent(player);
   const allFlipped = [];
-  
+
   // Check all directions
   for (const dir of DIRECTIONS) {
     const flipped = checkDirection(board, x, y, player, dir);
@@ -119,10 +120,10 @@ function isValidMove(board, x, y, player) {
       allFlipped.push(...flipped);
     }
   }
-  
+
   // Must flank at least one opponent piece
   if (allFlipped.length === 0) return null;
-  
+
   return allFlipped;
 }
 
@@ -134,18 +135,18 @@ function isValidMove(board, x, y, player) {
  */
 function getValidMoves(board, player) {
   const validMoves = [];
-  
+
   for (let y = 0; y < BOARD_SIZE; y++) {
     for (let x = 0; x < BOARD_SIZE; x++) {
       if (board[y][x] === null) {
         const flipped = isValidMove(board, x, y, player);
         if (flipped) {
-          validMoves.push({x, y, flipped});
+          validMoves.push({ x, y, flipped });
         }
       }
     }
   }
-  
+
   return validMoves;
 }
 
@@ -160,15 +161,15 @@ function getValidMoves(board, player) {
 function makeMove(board, x, y, player) {
   const flipped = isValidMove(board, x, y, player);
   if (!flipped) return [];
-  
+
   // Place new piece
   board[y][x] = player;
-  
+
   // Flip flanked pieces
   for (const pos of flipped) {
     board[pos.y][pos.x] = player;
   }
-  
+
   return flipped;
 }
 
@@ -180,15 +181,15 @@ function makeMove(board, x, y, player) {
 function countPieces(board) {
   let black = 0;
   let white = 0;
-  
+
   for (let y = 0; y < BOARD_SIZE; y++) {
     for (let x = 0; x < BOARD_SIZE; x++) {
       if (board[y][x] === PLAYER_BLACK) black++;
       else if (board[y][x] === PLAYER_WHITE) white++;
     }
   }
-  
-  return {black, white};
+
+  return { black, white };
 }
 
 /**
@@ -199,7 +200,7 @@ function countPieces(board) {
 function isGameOver(board) {
   const blackMoves = getValidMoves(board, PLAYER_BLACK);
   const whiteMoves = getValidMoves(board, PLAYER_WHITE);
-  
+
   return blackMoves.length === 0 && whiteMoves.length === 0;
 }
 
@@ -209,11 +210,11 @@ function isGameOver(board) {
  * @returns {string|null} - 'black' | 'white' | 'draw'
  */
 function getWinner(board) {
-  const {black, white} = countPieces(board);
-  
+  const { black, white } = countPieces(board);
+
   if (black > white) return PLAYER_BLACK;
   else if (white > black) return PLAYER_WHITE;
-  else return 'draw';
+  else return "draw";
 }
 
 // ============================================================
@@ -235,18 +236,18 @@ function createGameState(mode) {
     }
     board.push(row);
   }
-  
+
   // Set initial pieces
   const center = BOARD_SIZE / 2;
-  board[center - 1][center - 1] = PLAYER_WHITE;  // d4
-  board[center - 1][center] = PLAYER_BLACK;      // e4
-  board[center][center - 1] = PLAYER_BLACK;       // d5
-  board[center][center] = PLAYER_WHITE;          // e5
-  
+  board[center - 1][center - 1] = PLAYER_WHITE; // d4
+  board[center - 1][center] = PLAYER_BLACK; // e4
+  board[center][center - 1] = PLAYER_BLACK; // d5
+  board[center][center] = PLAYER_WHITE; // e5
+
   return {
     mode,
     board,
-    currentPlayer: PLAYER_BLACK,  // Black goes first
+    currentPlayer: PLAYER_BLACK, // Black goes first
     playerTeam: null,
     aiTeam: null,
     teamAssigned: false,
@@ -258,7 +259,7 @@ function createGameState(mode) {
     aiThinking: false,
     aiFirst: false,
     lastMove: null,
-    skippedTurn: false
+    skippedTurn: false,
   };
 }
 
@@ -275,7 +276,7 @@ function createGameState(mode) {
 function getBestAIMove(board, aiPlayer) {
   const validMoves = getValidMoves(board, aiPlayer);
   if (validMoves.length === 0) return null;
-  
+
   // Select position that flips the most pieces
   let bestMove = validMoves[0];
   for (const move of validMoves) {
@@ -283,8 +284,8 @@ function getBestAIMove(board, aiPlayer) {
       bestMove = move;
     }
   }
-  
-  return {x: bestMove.x, y: bestMove.y};
+
+  return { x: bestMove.x, y: bestMove.y };
 }
 
 /**
@@ -293,18 +294,18 @@ function getBestAIMove(board, aiPlayer) {
  */
 function aiTurn(state) {
   if (state.gameOver || state.currentPlayer !== state.aiTeam) return;
-  
+
   state.aiThinking = true;
-  updateMessage('AI正在思考...', 'info');
-  
+  updateMessage("AI正在思考...", "info");
+
   // Simulate AI thinking time
   setTimeout(() => {
     const bestMove = getBestAIMove(state.board, state.aiTeam);
-    
+
     if (bestMove) {
       // AI has valid move position
       const flipped = makeMove(state.board, bestMove.x, bestMove.y, state.aiTeam);
-      state.lastMove = {x: bestMove.x, y: bestMove.y};
+      state.lastMove = { x: bestMove.x, y: bestMove.y };
       state.turnCount++;
 
       // Update valid move positions
@@ -366,16 +367,16 @@ let gameState = null;
  * Initialize board DOM
  */
 function initBoard() {
-  const boardElement = document.getElementById('board');
-  boardElement.innerHTML = '';
-  
+  const boardElement = document.getElementById("board");
+  boardElement.innerHTML = "";
+
   for (let y = 0; y < BOARD_SIZE; y++) {
     for (let x = 0; x < BOARD_SIZE; x++) {
-      const cell = document.createElement('div');
-      cell.className = 'cell';
+      const cell = document.createElement("div");
+      cell.className = "cell";
       cell.dataset.x = x;
       cell.dataset.y = y;
-      cell.addEventListener('click', () => handleCellClick(x, y));
+      cell.addEventListener("click", () => handleCellClick(x, y));
       boardElement.appendChild(cell);
     }
   }
@@ -387,66 +388,71 @@ function initBoard() {
  */
 function renderGame(state) {
   // Update status bar
-  document.getElementById('current-team').textContent = 
-    state.currentPlayer === PLAYER_BLACK ? '黑棋' : '白棋';
-  document.getElementById('current-team').className = 
-    state.currentPlayer === PLAYER_BLACK ? 'team-indicator black-text' : 'team-indicator white-text';
-  
-  document.getElementById('turn-count').textContent = state.turnCount;
-  
+  document.getElementById("current-team").textContent =
+    state.currentPlayer === PLAYER_BLACK ? "黑棋" : "白棋";
+  document.getElementById("current-team").className =
+    state.currentPlayer === PLAYER_BLACK
+      ? "team-indicator black-text"
+      : "team-indicator white-text";
+
+  document.getElementById("turn-count").textContent = state.turnCount;
+
   const counts = countPieces(state.board);
-  document.getElementById('black-count').textContent = counts.black;
-  document.getElementById('white-count').textContent = counts.white;
-  document.getElementById('valid-moves-count').textContent = state.validMoves.length;
-  
+  document.getElementById("black-count").textContent = counts.black;
+  document.getElementById("white-count").textContent = counts.white;
+  document.getElementById("valid-moves-count").textContent = state.validMoves.length;
+
   // Render board
-  const boardElement = document.getElementById('board');
-  const cells = boardElement.querySelectorAll('.cell');
-  
+  const boardElement = document.getElementById("board");
+  const cells = boardElement.querySelectorAll(".cell");
+
   // Clear all styles
-  cells.forEach(cell => {
-    cell.className = 'cell';
-    cell.innerHTML = '';
+  cells.forEach((cell) => {
+    cell.className = "cell";
+    cell.innerHTML = "";
   });
-  
+
   // Render pieces and valid move indicators
   for (let y = 0; y < BOARD_SIZE; y++) {
     for (let x = 0; x < BOARD_SIZE; x++) {
       const cell = boardElement.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
       const piece = state.board[y][x];
-      
+
       if (piece) {
-        const pieceDiv = document.createElement('div');
+        const pieceDiv = document.createElement("div");
         pieceDiv.className = `piece piece-${piece}`;
         cell.appendChild(pieceDiv);
       }
-      
+
       // Mark last move position
       if (state.lastMove && state.lastMove.x === x && state.lastMove.y === y) {
-        cell.classList.add('cell-last-move');
+        cell.classList.add("cell-last-move");
       }
     }
   }
-  
+
   // Mark valid move positions
   for (const move of state.validMoves) {
     const cell = boardElement.querySelector(`.cell[data-x="${move.x}"][data-y="${move.y}"]`);
-    const indicator = document.createElement('div');
-    indicator.className = 'valid-move-indicator';
+    const indicator = document.createElement("div");
+    indicator.className = "valid-move-indicator";
     cell.appendChild(indicator);
   }
-  
+
   // Update message
   if (state.gameOver) {
-    updateMessage('游戏结束！', 'info');
+    updateMessage("游戏结束！", "info");
   } else if (state.skippedTurn) {
-    updateMessage(`${state.currentPlayer === PLAYER_BLACK ? '黑棋' : '白棋'}无合法位置，跳过回合！`, 'info');
+    updateMessage(
+      `${state.currentPlayer === PLAYER_BLACK ? "黑棋" : "白棋"}无合法位置，跳过回合！`,
+      "info"
+    );
   } else if (state.aiThinking) {
-    updateMessage('AI正在思考...', 'info');
-  } else if (state.mode === 'pve' && state.currentPlayer === state.aiTeam) {
-    updateMessage('轮到AI行动', 'info');
+    updateMessage("AI正在思考...", "info");
+  } else if (state.mode === "pve" && state.currentPlayer === state.aiTeam) {
+    updateMessage("轮到AI行动", "info");
   } else {
-    updateMessage(`轮到${state.currentPlayer === PLAYER_BLACK ? '黑棋' : '白棋'}行动`, 'info');
+    updateMessage(`轮到${state.currentPlayer === PLAYER_BLACK ? "黑棋" : "白棋"}行动`, "info");
   }
 }
 
@@ -455,10 +461,10 @@ function renderGame(state) {
  * @param {string} text - Message text
  * @param {string} type - Message type 'info' | 'error'
  */
-function updateMessage(text, type = 'info') {
-  const messageElement = document.getElementById('message');
+function updateMessage(text, type = "info") {
+  const messageElement = document.getElementById("message");
   messageElement.textContent = text;
-  messageElement.className = type === 'error' ? 'error' : '';
+  messageElement.className = type === "error" ? "error" : "";
 }
 
 /**
@@ -466,17 +472,17 @@ function updateMessage(text, type = 'info') {
  * @param {GameState} state - game state
  */
 function showGameOver(state) {
-  const winnerText = document.getElementById('winner-text');
+  const winnerText = document.getElementById("winner-text");
   const counts = countPieces(state.board);
-  
-  if (state.winner === 'draw') {
+
+  if (state.winner === "draw") {
     winnerText.textContent = `游戏结束！Draw！黑棋: ${counts.black} 白棋: ${counts.white}`;
   } else {
-    const winnerName = state.winner === PLAYER_BLACK ? '黑棋' : '白棋';
+    const winnerName = state.winner === PLAYER_BLACK ? "黑棋" : "白棋";
     winnerText.textContent = `游戏结束！${winnerName}获胜！黑棋: ${counts.black} 白棋: ${counts.white}`;
   }
-  
-  document.getElementById('game-over').style.display = 'flex';
+
+  document.getElementById("game-over").style.display = "flex";
 }
 
 // ============================================================
@@ -490,26 +496,26 @@ function showGameOver(state) {
  */
 function handleCellClick(x, y) {
   if (!gameState || gameState.gameOver || gameState.aiThinking) return;
-  
+
   // In PvE mode, player cannot act during AI turn
-  if (gameState.mode === 'pve' && gameState.currentPlayer === gameState.aiTeam) return;
-  
+  if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) return;
+
   // Check if valid move position
-  const isValid = gameState.validMoves.some(move => move.x === x && move.y === y);
+  const isValid = gameState.validMoves.some((move) => move.x === x && move.y === y);
   if (!isValid) {
-    updateMessage('非法落子位置！', 'error');
+    updateMessage("非法落子位置！", "error");
     return;
   }
-  
+
   // Execute move
   const flipped = makeMove(gameState.board, x, y, gameState.currentPlayer);
-  gameState.lastMove = {x, y};
+  gameState.lastMove = { x, y };
   gameState.turnCount++;
-  
+
   // Switch player
   const nextPlayer = getOpponent(gameState.currentPlayer);
   const nextMoves = getValidMoves(gameState.board, nextPlayer);
-  
+
   if (nextMoves.length === 0) {
     // Opponent has no valid moves, check if current player has any
     const currentMoves = getValidMoves(gameState.board, gameState.currentPlayer);
@@ -529,13 +535,13 @@ function handleCellClick(x, y) {
     gameState.validMoves = nextMoves;
     gameState.skippedTurn = false;
   }
-  
+
   renderGame(gameState);
-  
+
   // If game over, show result
   if (gameState.gameOver) {
     setTimeout(() => showGameOver(gameState), 500);
-  } else if (gameState.mode === 'pve' && gameState.currentPlayer === gameState.aiTeam) {
+  } else if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) {
     // If AI turn, trigger AI action
     setTimeout(() => aiTurn(gameState), 500);
   }
@@ -550,9 +556,9 @@ function startGame(mode, firstPlayer = PLAYER_BLACK) {
   gameState = createGameState(mode);
   gameState.currentPlayer = firstPlayer;
   gameState.validMoves = getValidMoves(gameState.board, firstPlayer);
-  
+
   // Set player and AI for PvE mode
-  if (mode === 'pve') {
+  if (mode === "pve") {
     // Rock-Paper-Scissors decides who goes first
     if (firstPlayer === PLAYER_BLACK) {
       // Player goes first (black)
@@ -567,20 +573,20 @@ function startGame(mode, firstPlayer = PLAYER_BLACK) {
     }
     gameState.teamAssigned = true;
   }
-  
+
   // Hide mode selection screen
-  document.getElementById('mode-selection').style.display = 'none';
-  document.getElementById('rps-section').style.display = 'none';
-  
+  document.getElementById("mode-selection").style.display = "none";
+  document.getElementById("rps-section").style.display = "none";
+
   // Show game area
-  document.getElementById('game-area').style.display = 'flex';
-  
+  document.getElementById("game-area").style.display = "flex";
+
   // Initialize board
   initBoard();
   renderGame(gameState);
-  
+
   // If PvE and AI goes first, trigger AI action
-  if (mode === 'pve' && gameState.aiFirst) {
+  if (mode === "pve" && gameState.aiFirst) {
     setTimeout(() => aiTurn(gameState), 500);
   }
 }
@@ -589,9 +595,9 @@ function startGame(mode, firstPlayer = PLAYER_BLACK) {
  * Restart game
  */
 function restartGame() {
-  document.getElementById('game-over').style.display = 'none';
-  document.getElementById('mode-selection').style.display = 'flex';
-  document.getElementById('game-area').style.display = 'none';
+  document.getElementById("game-over").style.display = "none";
+  document.getElementById("mode-selection").style.display = "flex";
+  document.getElementById("game-area").style.display = "none";
   gameState = null;
 }
 
@@ -607,28 +613,28 @@ let rpsChoices = { player1: null, player2: null, human: null };
  * @param {string} choice - 'rock' | 'scissors' | 'paper'
  */
 function handleRPSChoice(player, choice) {
-  if (player === 'human') {
+  if (player === "human") {
     rpsChoices.human = choice;
-    document.querySelectorAll('#rps-player-buttons .btn-rps').forEach(btn => {
-      btn.classList.remove('selected');
+    document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
+      btn.classList.remove("selected");
     });
-    event.target.classList.add('selected');
-    
+    event.target.classList.add("selected");
+
     // AI random choice
-    const choices = ['rock', 'scissors', 'paper'];
+    const choices = ["rock", "scissors", "paper"];
     const aiChoice = choices[Math.floor(Math.random() * 3)];
     rpsChoices.player2 = aiChoice;
-    
+
     // Show result
-    const resultElement = document.getElementById('rps-result');
+    const resultElement = document.getElementById("rps-result");
     const humanWins = judgeRPS(choice, aiChoice);
-    
+
     if (humanWins === 1) {
       resultElement.textContent = `你选择了${getRPSName(choice)}，AI选择了${getRPSName(aiChoice)}，你赢了！你先手。`;
-      setTimeout(() => startGame('pve', PLAYER_BLACK), 1500);
+      setTimeout(() => startGame("pve", PLAYER_BLACK), 1500);
     } else if (humanWins === -1) {
       resultElement.textContent = `你选择了${getRPSName(choice)}，AI选择了${getRPSName(aiChoice)}，你输了！AI先手。`;
-      setTimeout(() => startGame('pve', PLAYER_WHITE), 1500);
+      setTimeout(() => startGame("pve", PLAYER_WHITE), 1500);
     } else {
       resultElement.textContent = `你选择了${getRPSName(choice)}，AI选择了${getRPSName(aiChoice)}，Draw！重新选择。`;
       rpsChoices.human = null;
@@ -636,33 +642,33 @@ function handleRPSChoice(player, choice) {
     }
   } else {
     rpsChoices[`player${player}`] = choice;
-    document.querySelectorAll(`#rps-p${player}-buttons .btn-rps`).forEach(btn => {
-      btn.classList.remove('selected');
+    document.querySelectorAll(`#rps-p${player}-buttons .btn-rps`).forEach((btn) => {
+      btn.classList.remove("selected");
     });
-    event.target.classList.add('selected');
-    
+    event.target.classList.add("selected");
+
     const statusElement = document.getElementById(`rps-p${player}-status`);
     statusElement.textContent = `已选择：${getRPSName(choice)}`;
-    
+
     // Check if both sides have chosen
     if (rpsChoices.player1 && rpsChoices.player2) {
-      const resultElement = document.getElementById('rps-result');
+      const resultElement = document.getElementById("rps-result");
       const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
-      
+
       if (winner === 1) {
         resultElement.textContent = `玩家1选择了${getRPSName(rpsChoices.player1)}，玩家2选择了${getRPSName(rpsChoices.player2)}，玩家1赢了！玩家1先手。`;
-        setTimeout(() => startGame('pvp', PLAYER_BLACK), 1500);
+        setTimeout(() => startGame("pvp", PLAYER_BLACK), 1500);
       } else if (winner === -1) {
         resultElement.textContent = `玩家1选择了${getRPSName(rpsChoices.player1)}，玩家2选择了${getRPSName(rpsChoices.player2)}，玩家2赢了！玩家2先手。`;
-        setTimeout(() => startGame('pvp', PLAYER_WHITE), 1500);
+        setTimeout(() => startGame("pvp", PLAYER_WHITE), 1500);
       } else {
         resultElement.textContent = `玩家1选择了${getRPSName(rpsChoices.player1)}，玩家2选择了${getRPSName(rpsChoices.player2)}，Draw！重新选择。`;
         rpsChoices.player1 = null;
         rpsChoices.player2 = null;
-        document.getElementById('rps-p1-status').textContent = '请选择';
-        document.getElementById('rps-p2-status').textContent = '请选择';
-        document.querySelectorAll('.btn-rps').forEach(btn => {
-          btn.classList.remove('selected');
+        document.getElementById("rps-p1-status").textContent = "请选择";
+        document.getElementById("rps-p2-status").textContent = "请选择";
+        document.querySelectorAll(".btn-rps").forEach((btn) => {
+          btn.classList.remove("selected");
         });
       }
     }
@@ -670,7 +676,7 @@ function handleRPSChoice(player, choice) {
 }
 
 // Export for testing
-if (typeof module !== 'undefined' && module.exports) {
+if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     BOARD_SIZE,
     PLAYER_BLACK,
@@ -686,7 +692,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getWinner,
     createGameState,
     judgeRPS,
-    getBestAIMove
+    getBestAIMove,
   };
 }
 
@@ -694,28 +700,28 @@ if (typeof module !== 'undefined' && module.exports) {
 // Task 1.7: Initialize Event Listeners (Browser Environment Only)
 // ============================================================
 
-if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', () => {
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", () => {
     // Mode selection buttons
-    document.getElementById('btn-pvp').addEventListener('click', () => {
-      document.getElementById('mode-selection').style.display = 'none';
-      document.getElementById('rps-section').style.display = 'flex';
-      document.getElementById('rps-pvp').style.display = 'block';
-      document.getElementById('rps-pve').style.display = 'none';
+    document.getElementById("btn-pvp").addEventListener("click", () => {
+      document.getElementById("mode-selection").style.display = "none";
+      document.getElementById("rps-section").style.display = "flex";
+      document.getElementById("rps-pvp").style.display = "block";
+      document.getElementById("rps-pve").style.display = "none";
       rpsChoices = { player1: null, player2: null, human: null };
     });
 
-    document.getElementById('btn-pve').addEventListener('click', () => {
-      document.getElementById('mode-selection').style.display = 'none';
-      document.getElementById('rps-section').style.display = 'flex';
-      document.getElementById('rps-pvp').style.display = 'none';
-      document.getElementById('rps-pve').style.display = 'block';
+    document.getElementById("btn-pve").addEventListener("click", () => {
+      document.getElementById("mode-selection").style.display = "none";
+      document.getElementById("rps-section").style.display = "flex";
+      document.getElementById("rps-pvp").style.display = "none";
+      document.getElementById("rps-pve").style.display = "block";
       rpsChoices = { player1: null, player2: null, human: null };
     });
 
     // RPS buttons
-    document.querySelectorAll('.btn-rps').forEach(button => {
-      button.addEventListener('click', (event) => {
+    document.querySelectorAll(".btn-rps").forEach((button) => {
+      button.addEventListener("click", (event) => {
         const player = event.target.dataset.player;
         const choice = event.target.dataset.choice;
         handleRPSChoice(player, choice);
@@ -723,12 +729,12 @@ if (typeof document !== 'undefined') {
     });
 
     // Restart button
-    document.getElementById('btn-restart').addEventListener('click', restartGame);
+    document.getElementById("btn-restart").addEventListener("click", restartGame);
 
     // Initially show mode selection screen
-    document.getElementById('mode-selection').style.display = 'flex';
-    document.getElementById('rps-section').style.display = 'none';
-    document.getElementById('game-area').style.display = 'none';
-    document.getElementById('game-over').style.display = 'none';
+    document.getElementById("mode-selection").style.display = "flex";
+    document.getElementById("rps-section").style.display = "none";
+    document.getElementById("game-area").style.display = "none";
+    document.getElementById("game-over").style.display = "none";
   });
 }

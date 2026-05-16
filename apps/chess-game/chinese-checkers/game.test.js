@@ -1,50 +1,95 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 import {
-  EMPTY, RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE,
+  EMPTY,
+  RED,
+  BLUE,
+  GREEN,
+  YELLOW,
+  PURPLE,
+  ORANGE,
   PLAYER_COLORS,
-  BOARD_ROWS, ROW_COLS, TOTAL_POSITIONS,
-  positions, posKey, ADJACENT,
-  START_POSITIONS, TARGET_POSITIONS,
-  AI_WEIGHTS, POSITION_SCORES, isInTargetArea,
-  createBoard, placePieces,
-  getAdjacentMoves, getJumpMoves, getLegalMoves,
-  makeMove, checkWin, checkGameOver,
-  evaluateMove, getBestAIMove,
-  judgeRPS, getRPSName,
-  createGameState, initGame
-} from './game.js';
+  BOARD_ROWS,
+  ROW_COLS,
+  TOTAL_POSITIONS,
+  positions,
+  posKey,
+  ADJACENT,
+  START_POSITIONS,
+  TARGET_POSITIONS,
+  AI_WEIGHTS,
+  POSITION_SCORES,
+  isInTargetArea,
+  createBoard,
+  placePieces,
+  getAdjacentMoves,
+  getJumpMoves,
+  getLegalMoves,
+  makeMove,
+  checkWin,
+  checkGameOver,
+  evaluateMove,
+  getBestAIMove,
+  judgeRPS,
+  getRPSName,
+  createGameState,
+  initGame,
+} from "./game.js";
 
-describe('constants', () => {
-  it('EMPTY is 0', () => { expect(EMPTY).toBe(0); });
-  it('RED is 1', () => { expect(RED).toBe(1); });
-  it('BLUE is 2', () => { expect(BLUE).toBe(2); });
-  it('GREEN is 3', () => { expect(GREEN).toBe(3); });
-  it('YELLOW is 4', () => { expect(YELLOW).toBe(4); });
-  it('PURPLE is 5', () => { expect(PURPLE).toBe(5); });
-  it('ORANGE is 6', () => { expect(ORANGE).toBe(6); });
-  it('TOTAL_POSITIONS is 121', () => { expect(TOTAL_POSITIONS).toBe(121); });
-  it('has 6 player color configs', () => { expect(Object.keys(PLAYER_COLORS).length).toBe(6); });
+describe("constants", () => {
+  it("EMPTY is 0", () => {
+    expect(EMPTY).toBe(0);
+  });
+  it("RED is 1", () => {
+    expect(RED).toBe(1);
+  });
+  it("BLUE is 2", () => {
+    expect(BLUE).toBe(2);
+  });
+  it("GREEN is 3", () => {
+    expect(GREEN).toBe(3);
+  });
+  it("YELLOW is 4", () => {
+    expect(YELLOW).toBe(4);
+  });
+  it("PURPLE is 5", () => {
+    expect(PURPLE).toBe(5);
+  });
+  it("ORANGE is 6", () => {
+    expect(ORANGE).toBe(6);
+  });
+  it("TOTAL_POSITIONS is 121", () => {
+    expect(TOTAL_POSITIONS).toBe(121);
+  });
+  it("has 6 player color configs", () => {
+    expect(Object.keys(PLAYER_COLORS).length).toBe(6);
+  });
 });
 
-describe('board layout', () => {
-  it('has 17 rows', () => { expect(BOARD_ROWS).toBe(17); });
-  it('row cols sum to 121', () => {
-    var sum = ROW_COLS.reduce(function(a, b) { return a + b; }, 0);
+describe("board layout", () => {
+  it("has 17 rows", () => {
+    expect(BOARD_ROWS).toBe(17);
+  });
+  it("row cols sum to 121", () => {
+    var sum = ROW_COLS.reduce((a, b) => a + b, 0);
     expect(sum).toBe(121);
   });
-  it('positions array has 121 entries', () => { expect(positions.length).toBe(121); });
+  it("positions array has 121 entries", () => {
+    expect(positions.length).toBe(121);
+  });
 });
 
-describe('ADJACENT', () => {
-  it('has 121 entries', () => { expect(ADJACENT.length).toBe(121); });
-  it('center cell has 6 neighbors', () => {
+describe("ADJACENT", () => {
+  it("has 121 entries", () => {
+    expect(ADJACENT.length).toBe(121);
+  });
+  it("center cell has 6 neighbors", () => {
     // Row 10, Col 10 is the center (position index 60)
     expect(ADJACENT[60].length).toBe(6);
   });
-  it('corner cell has fewer neighbors', () => {
+  it("corner cell has fewer neighbors", () => {
     expect(ADJACENT[0].length).toBeLessThan(6);
   });
-  it('adjacency is symmetric', () => {
+  it("adjacency is symmetric", () => {
     for (var i = 0; i < TOTAL_POSITIONS; i++) {
       for (var j = 0; j < ADJACENT[i].length; j++) {
         var neighbor = ADJACENT[i][j];
@@ -54,8 +99,8 @@ describe('ADJACENT', () => {
   });
 });
 
-describe('START_POSITIONS', () => {
-  it('each player has 10 start positions', () => {
+describe("START_POSITIONS", () => {
+  it("each player has 10 start positions", () => {
     expect(START_POSITIONS[RED].length).toBe(10);
     expect(START_POSITIONS[BLUE].length).toBe(10);
     expect(START_POSITIONS[GREEN].length).toBe(10);
@@ -63,7 +108,7 @@ describe('START_POSITIONS', () => {
     expect(START_POSITIONS[PURPLE].length).toBe(10);
     expect(START_POSITIONS[ORANGE].length).toBe(10);
   });
-  it('start positions do not overlap', () => {
+  it("start positions do not overlap", () => {
     var all = [];
     for (var p = 1; p <= 6; p++) {
       for (var i = 0; i < START_POSITIONS[p].length; i++) {
@@ -74,17 +119,17 @@ describe('START_POSITIONS', () => {
   });
 });
 
-describe('TARGET_POSITIONS', () => {
-  it('RED target is BLUE start', () => {
+describe("TARGET_POSITIONS", () => {
+  it("RED target is BLUE start", () => {
     expect(TARGET_POSITIONS[RED]).toEqual(START_POSITIONS[BLUE]);
   });
-  it('GREEN target is ORANGE start', () => {
+  it("GREEN target is ORANGE start", () => {
     expect(TARGET_POSITIONS[GREEN]).toEqual(START_POSITIONS[ORANGE]);
   });
 });
 
-describe('createBoard', () => {
-  it('creates empty board', () => {
+describe("createBoard", () => {
+  it("creates empty board", () => {
     var board = createBoard();
     expect(board.length).toBe(TOTAL_POSITIONS);
     for (var i = 0; i < TOTAL_POSITIONS; i++) {
@@ -93,8 +138,8 @@ describe('createBoard', () => {
   });
 });
 
-describe('placePieces', () => {
-  it('places pieces correctly', () => {
+describe("placePieces", () => {
+  it("places pieces correctly", () => {
     var board = createBoard();
     placePieces(board, RED);
     for (var i = 0; i < START_POSITIONS[RED].length; i++) {
@@ -103,13 +148,13 @@ describe('placePieces', () => {
   });
 });
 
-describe('getLegalMoves', () => {
-  it('returns legal moves from center', () => {
+describe("getLegalMoves", () => {
+  it("returns legal moves from center", () => {
     var board = createBoard();
     var moves = getLegalMoves(board, 60);
     expect(moves.length).toBe(6);
   });
-  it('includes jump moves', () => {
+  it("includes jump moves", () => {
     var board = createBoard();
     board[60] = RED;
     board[61] = BLUE;
@@ -118,15 +163,15 @@ describe('getLegalMoves', () => {
   });
 });
 
-describe('makeMove', () => {
-  it('moves piece correctly', () => {
+describe("makeMove", () => {
+  it("moves piece correctly", () => {
     var board = createBoard();
     board[0] = RED;
     var newBoard = makeMove(board, 0, 1);
     expect(newBoard[0]).toBe(EMPTY);
     expect(newBoard[1]).toBe(RED);
   });
-  it('does not modify original board', () => {
+  it("does not modify original board", () => {
     var board = createBoard();
     board[0] = RED;
     makeMove(board, 0, 1);
@@ -134,15 +179,15 @@ describe('makeMove', () => {
   });
 });
 
-describe('checkWin', () => {
-  it('detects win when all pieces in target', () => {
+describe("checkWin", () => {
+  it("detects win when all pieces in target", () => {
     var board = createBoard();
     for (var i = 0; i < TARGET_POSITIONS[RED].length; i++) {
       board[TARGET_POSITIONS[RED][i]] = RED;
     }
     expect(checkWin(board, RED)).toBe(true);
   });
-  it('returns false when not all pieces in target', () => {
+  it("returns false when not all pieces in target", () => {
     var board = createBoard();
     for (var i = 0; i < TARGET_POSITIONS[RED].length - 1; i++) {
       board[TARGET_POSITIONS[RED][i]] = RED;
@@ -151,12 +196,12 @@ describe('checkWin', () => {
   });
 });
 
-describe('checkGameOver', () => {
-  it('returns null when no winner', () => {
+describe("checkGameOver", () => {
+  it("returns null when no winner", () => {
     var board = createBoard();
     expect(checkGameOver(board, [RED, BLUE])).toBeNull();
   });
-  it('returns winner', () => {
+  it("returns winner", () => {
     var board = createBoard();
     for (var i = 0; i < TARGET_POSITIONS[RED].length; i++) {
       board[TARGET_POSITIONS[RED][i]] = RED;
@@ -165,22 +210,22 @@ describe('checkGameOver', () => {
   });
 });
 
-describe('getBestAIMove', () => {
-  it('returns a valid move', () => {
+describe("getBestAIMove", () => {
+  it("returns a valid move", () => {
     var board = createBoard();
     placePieces(board, RED);
     placePieces(board, BLUE);
     var move = getBestAIMove(board, BLUE);
     expect(move).not.toBeNull();
-    expect(typeof move.from).toBe('number');
-    expect(typeof move.to).toBe('number');
+    expect(typeof move.from).toBe("number");
+    expect(typeof move.to).toBe("number");
   });
 });
 
-describe('createGameState', () => {
-  it('creates correct initial state', () => {
-    var state = createGameState('pvp', 2);
-    expect(state.mode).toBe('pvp');
+describe("createGameState", () => {
+  it("creates correct initial state", () => {
+    var state = createGameState("pvp", 2);
+    expect(state.mode).toBe("pvp");
     expect(state.playerCount).toBe(2);
     expect(state.players).toEqual([1, 2]);
     expect(state.currentPlayer).toBe(RED);
@@ -188,9 +233,9 @@ describe('createGameState', () => {
   });
 });
 
-describe('initGame', () => {
-  it('places pieces for all players', () => {
-    var state = createGameState('pvp', 6);
+describe("initGame", () => {
+  it("places pieces for all players", () => {
+    var state = createGameState("pvp", 6);
     initGame(state);
     for (var p = 1; p <= 6; p++) {
       for (var i = 0; i < START_POSITIONS[p].length; i++) {
@@ -200,8 +245,8 @@ describe('initGame', () => {
   });
 });
 
-describe('AI_WEIGHTS', () => {
-  it('has all weight constants', () => {
+describe("AI_WEIGHTS", () => {
+  it("has all weight constants", () => {
     expect(AI_WEIGHTS.PROGRESS).toBe(100);
     expect(AI_WEIGHTS.JUMP_EFFICIENCY).toBe(30);
     expect(AI_WEIGHTS.TARGET_ENTRY).toBe(500);
@@ -212,54 +257,54 @@ describe('AI_WEIGHTS', () => {
   });
 });
 
-describe('POSITION_SCORES', () => {
-  it('has scores for all players', () => {
+describe("POSITION_SCORES", () => {
+  it("has scores for all players", () => {
     for (var p = RED; p <= ORANGE; p++) {
       expect(POSITION_SCORES[p]).toBeDefined();
       expect(POSITION_SCORES[p].length).toBe(TOTAL_POSITIONS);
     }
   });
-  it('target positions have higher scores than start positions', () => {
+  it("target positions have higher scores than start positions", () => {
     var targetScore = POSITION_SCORES[RED][TARGET_POSITIONS[RED][0]];
     var startScore = POSITION_SCORES[RED][START_POSITIONS[RED][0]];
     expect(targetScore).toBeGreaterThan(startScore);
   });
 });
 
-describe('isInTargetArea', () => {
-  it('returns true for target positions', () => {
+describe("isInTargetArea", () => {
+  it("returns true for target positions", () => {
     expect(isInTargetArea(TARGET_POSITIONS[RED][0], RED)).toBe(true);
   });
-  it('returns false for start positions', () => {
+  it("returns false for start positions", () => {
     expect(isInTargetArea(START_POSITIONS[RED][0], RED)).toBe(false);
   });
 });
 
-describe('judgeRPS', () => {
-  it('rock beats scissors', () => {
-    expect(judgeRPS('rock', 'scissors')).toBe(1);
-    expect(judgeRPS('scissors', 'rock')).toBe(-1);
+describe("judgeRPS", () => {
+  it("rock beats scissors", () => {
+    expect(judgeRPS("rock", "scissors")).toBe(1);
+    expect(judgeRPS("scissors", "rock")).toBe(-1);
   });
-  it('scissors beats paper', () => {
-    expect(judgeRPS('scissors', 'paper')).toBe(1);
-    expect(judgeRPS('paper', 'scissors')).toBe(-1);
+  it("scissors beats paper", () => {
+    expect(judgeRPS("scissors", "paper")).toBe(1);
+    expect(judgeRPS("paper", "scissors")).toBe(-1);
   });
-  it('paper beats rock', () => {
-    expect(judgeRPS('paper', 'rock')).toBe(1);
-    expect(judgeRPS('rock', 'paper')).toBe(-1);
+  it("paper beats rock", () => {
+    expect(judgeRPS("paper", "rock")).toBe(1);
+    expect(judgeRPS("rock", "paper")).toBe(-1);
   });
-  it('same choice is draw', () => {
-    expect(judgeRPS('rock', 'rock')).toBe(0);
-    expect(judgeRPS('scissors', 'scissors')).toBe(0);
-    expect(judgeRPS('paper', 'paper')).toBe(0);
+  it("same choice is draw", () => {
+    expect(judgeRPS("rock", "rock")).toBe(0);
+    expect(judgeRPS("scissors", "scissors")).toBe(0);
+    expect(judgeRPS("paper", "paper")).toBe(0);
   });
 });
 
-describe('getRPSName', () => {
-  it('returns Chinese names', () => {
-    expect(getRPSName('rock')).toBe('石头');
-    expect(getRPSName('scissors')).toBe('剪刀');
-    expect(getRPSName('paper')).toBe('布');
+describe("getRPSName", () => {
+  it("returns Chinese names", () => {
+    expect(getRPSName("rock")).toBe("石头");
+    expect(getRPSName("scissors")).toBe("剪刀");
+    expect(getRPSName("paper")).toBe("布");
   });
 });
 
@@ -267,13 +312,13 @@ describe('getRPSName', () => {
 // Additional tests: getAdjacentMoves
 // ============================================================
 
-describe('getAdjacentMoves (supplementary)', () => {
-  it('center position returns all empty adjacent cells', () => {
+describe("getAdjacentMoves (supplementary)", () => {
+  it("center position returns all empty adjacent cells", () => {
     var board = createBoard();
     var moves = getAdjacentMoves(board, 60);
     expect(moves.length).toBe(ADJACENT[60].length);
   });
-  it('adjacent cells occupied by pieces are not returned', () => {
+  it("adjacent cells occupied by pieces are not returned", () => {
     var board = createBoard();
     var neighbors = ADJACENT[60];
     board[neighbors[0]] = RED;
@@ -283,13 +328,13 @@ describe('getAdjacentMoves (supplementary)', () => {
     expect(moves).not.toContain(neighbors[0]);
     expect(moves).not.toContain(neighbors[1]);
   });
-  it('edge positions have fewer adjacent cells', () => {
+  it("edge positions have fewer adjacent cells", () => {
     var board = createBoard();
     var moves = getAdjacentMoves(board, 0);
     expect(moves.length).toBeLessThan(6);
     expect(moves.length).toBe(ADJACENT[0].length);
   });
-  it('returns empty array when all adjacent cells are occupied', () => {
+  it("returns empty array when all adjacent cells are occupied", () => {
     var board = createBoard();
     var neighbors = ADJACENT[60];
     for (var i = 0; i < neighbors.length; i++) {
@@ -304,8 +349,8 @@ describe('getAdjacentMoves (supplementary)', () => {
 // Additional tests: getJumpMoves
 // ============================================================
 
-describe('getJumpMoves (supplementary)', () => {
-  it('single jump: piece in middle and empty target', () => {
+describe("getJumpMoves (supplementary)", () => {
+  it("single jump: piece in middle and empty target", () => {
     var board = createBoard();
     var neighbors = ADJACENT[60];
     // Place piece in first adjacent cell to create a springboard
@@ -315,7 +360,7 @@ describe('getJumpMoves (supplementary)', () => {
     var p2 = positions[neighbors[0]];
     var dstX = p2.x + (p2.x - p1.x);
     var dstY = p2.y + (p2.y - p1.y);
-    var dstKey = dstX + ',' + dstY;
+    var dstKey = dstX + "," + dstY;
     if (posKey[dstKey] !== undefined) {
       var dstIdx = posKey[dstKey];
       var visited = {};
@@ -323,14 +368,14 @@ describe('getJumpMoves (supplementary)', () => {
       expect(moves).toContain(dstIdx);
     }
   });
-  it('returns empty array when no jump is possible', () => {
+  it("returns empty array when no jump is possible", () => {
     var board = createBoard();
     // No springboard on empty board
     var visited = {};
     var moves = getJumpMoves(board, 60, visited);
     expect(moves).toHaveLength(0);
   });
-  it('visited anti-loop mechanism: visited positions are not jumped again', () => {
+  it("visited anti-loop mechanism: visited positions are not jumped again", () => {
     var board = createBoard();
     var neighbors = ADJACENT[60];
     board[neighbors[0]] = RED;
@@ -340,14 +385,14 @@ describe('getJumpMoves (supplementary)', () => {
     var p2 = positions[neighbors[0]];
     var dstX = p2.x + (p2.x - p1.x);
     var dstY = p2.y + (p2.y - p1.y);
-    var dstKey = dstX + ',' + dstY;
+    var dstKey = dstX + "," + dstY;
     if (posKey[dstKey] !== undefined) {
       visited[posKey[dstKey]] = true;
       var moves = getJumpMoves(board, 60, visited);
       expect(moves).not.toContain(posKey[dstKey]);
     }
   });
-  it('multi-jump recursion: consecutive jump chain', () => {
+  it("multi-jump recursion: consecutive jump chain", () => {
     var board = createBoard();
     // Construct a scenario with consecutive jumps
     // Choose a position chain with enough neighbors
@@ -368,21 +413,21 @@ describe('getJumpMoves (supplementary)', () => {
 // Additional tests: getLegalMoves edge cases
 // ============================================================
 
-describe('getLegalMoves (supplementary)', () => {
-  it('legal moves from corner position', () => {
+describe("getLegalMoves (supplementary)", () => {
+  it("legal moves from corner position", () => {
     var board = createBoard();
     var moves = getLegalMoves(board, 0);
     // Corner positions only have adjacent moves, equals adjacent count without springboard
     expect(moves.length).toBe(ADJACENT[0].length);
   });
-  it('returns empty array for empty cell with no piece', () => {
+  it("returns empty array for empty cell with no piece", () => {
     var board = createBoard();
     // Calling getLegalMoves on empty cell should return empty (though not called this way in practice)
     var moves = getLegalMoves(board, 60);
     // Empty cell has no piece, but function still returns adjacent empty cells (this is by design)
     expect(moves.length).toBe(ADJACENT[60].length);
   });
-  it('returns empty array when board is full', () => {
+  it("returns empty array when board is full", () => {
     var board = createBoard();
     // Fill the entire board
     for (var i = 0; i < TOTAL_POSITIONS; i++) {
@@ -391,7 +436,7 @@ describe('getLegalMoves (supplementary)', () => {
     var moves = getLegalMoves(board, 60);
     expect(moves).toHaveLength(0);
   });
-  it('multi-jump paths are included in results', () => {
+  it("multi-jump paths are included in results", () => {
     var board = createBoard();
     board[60] = RED;
     var neighbors = ADJACENT[60];
@@ -406,22 +451,22 @@ describe('getLegalMoves (supplementary)', () => {
 // Additional tests: placePieces other players
 // ============================================================
 
-describe('placePieces (supplementary)', () => {
-  it('BLUE pieces placed correctly', () => {
+describe("placePieces (supplementary)", () => {
+  it("BLUE pieces placed correctly", () => {
     var board = createBoard();
     placePieces(board, BLUE);
     for (var i = 0; i < START_POSITIONS[BLUE].length; i++) {
       expect(board[START_POSITIONS[BLUE][i]]).toBe(BLUE);
     }
   });
-  it('GREEN pieces placed correctly', () => {
+  it("GREEN pieces placed correctly", () => {
     var board = createBoard();
     placePieces(board, GREEN);
     for (var i = 0; i < START_POSITIONS[GREEN].length; i++) {
       expect(board[START_POSITIONS[GREEN][i]]).toBe(GREEN);
     }
   });
-  it('all 6 players start positions do not overlap', () => {
+  it("all 6 players start positions do not overlap", () => {
     var board = createBoard();
     for (var p = RED; p <= ORANGE; p++) {
       placePieces(board, p);
@@ -440,8 +485,8 @@ describe('placePieces (supplementary)', () => {
 // Additional tests: checkWin edge cases
 // ============================================================
 
-describe('checkWin (supplementary)', () => {
-  it('wins immediately when last piece reaches target', () => {
+describe("checkWin (supplementary)", () => {
+  it("wins immediately when last piece reaches target", () => {
     var board = createBoard();
     var targets = TARGET_POSITIONS[RED];
     // Place 9 in target, last one at start position
@@ -454,7 +499,7 @@ describe('checkWin (supplementary)', () => {
     board[targets[targets.length - 1]] = RED;
     expect(checkWin(board, RED)).toBe(true);
   });
-  it('target area with other player pieces does not count as win', () => {
+  it("target area with other player pieces does not count as win", () => {
     var board = createBoard();
     var targets = TARGET_POSITIONS[RED];
     for (var i = 0; i < targets.length; i++) {
@@ -468,8 +513,8 @@ describe('checkWin (supplementary)', () => {
 // Additional tests: checkGameOver multiplayer scenarios
 // ============================================================
 
-describe('checkGameOver (supplementary)', () => {
-  it('only target player wins in 3-player game', () => {
+describe("checkGameOver (supplementary)", () => {
+  it("only target player wins in 3-player game", () => {
     var board = createBoard();
     for (var i = 0; i < TARGET_POSITIONS[RED].length; i++) {
       board[TARGET_POSITIONS[RED][i]] = RED;
@@ -477,7 +522,7 @@ describe('checkGameOver (supplementary)', () => {
     var winner = checkGameOver(board, [RED, BLUE, GREEN]);
     expect(winner).toBe(RED);
   });
-  it('returns null when no winner in 6-player game', () => {
+  it("returns null when no winner in 6-player game", () => {
     var board = createBoard();
     placePieces(board, RED);
     placePieces(board, BLUE);
@@ -490,20 +535,20 @@ describe('checkGameOver (supplementary)', () => {
 // Additional tests: createGameState pve mode
 // ============================================================
 
-describe('createGameState (supplementary)', () => {
-  it('pve mode creates correct state', () => {
-    var state = createGameState('pve', 2);
-    expect(state.mode).toBe('pve');
+describe("createGameState (supplementary)", () => {
+  it("pve mode creates correct state", () => {
+    var state = createGameState("pve", 2);
+    expect(state.mode).toBe("pve");
     expect(state.playerCount).toBe(2);
     expect(state.gameOver).toBe(false);
     expect(state.winner).toBeNull();
   });
-  it('different playerCount creates correct players array', () => {
-    var state2 = createGameState('pvp', 2);
+  it("different playerCount creates correct players array", () => {
+    var state2 = createGameState("pvp", 2);
     expect(state2.players).toEqual([1, 2]);
-    var state4 = createGameState('pvp', 4);
+    var state4 = createGameState("pvp", 4);
     expect(state4.players).toEqual([1, 2, 3, 4]);
-    var state6 = createGameState('pvp', 6);
+    var state6 = createGameState("pvp", 6);
     expect(state6.players).toEqual([1, 2, 3, 4, 5, 6]);
   });
 });
@@ -512,8 +557,8 @@ describe('createGameState (supplementary)', () => {
 // New tests: evaluateMove
 // ============================================================
 
-describe('evaluateMove', () => {
-  it('progress score: moving toward target scores higher than moving away', () => {
+describe("evaluateMove", () => {
+  it("progress score: moving toward target scores higher than moving away", () => {
     var board = createBoard();
     // Place a RED piece in middle position, leave surrounding empty
     board[60] = RED;
@@ -527,7 +572,7 @@ describe('evaluateMove', () => {
     // Should have at least some directions to move
     expect(scores.length).toBeGreaterThan(0);
     // Scores in different directions should differ (forward vs backward)
-    var allSame = scores.every(function(s) { return s === scores[0]; });
+    var allSame = scores.every((s) => s === scores[0]);
     // If position scores differ, scores in different directions should differ
     if (!allSame) {
       var max = Math.max.apply(null, scores);
@@ -535,7 +580,7 @@ describe('evaluateMove', () => {
       expect(max).toBeGreaterThan(min);
     }
   });
-  it('entering target area gives high bonus', () => {
+  it("entering target area gives high bonus", () => {
     var board = createBoard();
     // Place RED piece next to target area
     var target = TARGET_POSITIONS[RED][0];
@@ -554,7 +599,7 @@ describe('evaluateMove', () => {
       expect(score).toBeGreaterThan(0);
     }
   });
-  it('retreat has penalty', () => {
+  it("retreat has penalty", () => {
     var board = createBoard();
     placePieces(board, RED);
     // Find a move that goes away from target
@@ -567,12 +612,14 @@ describe('evaluateMove', () => {
         var posTo = POSITION_SCORES[RED][neighbors[i]];
         if (posTo < posFrom) {
           // Retreat should have penalty score
-          expect(score).toBeLessThan(AI_WEIGHTS.RETREAT_PENALTY + AI_WEIGHTS.PROGRESS * posTo + 100);
+          expect(score).toBeLessThan(
+            AI_WEIGHTS.RETREAT_PENALTY + AI_WEIGHTS.PROGRESS * posTo + 100
+          );
         }
       }
     }
   });
-  it('jump scores higher than adjacent move (distance factor)', () => {
+  it("jump scores higher than adjacent move (distance factor)", () => {
     var board = createBoard();
     // Construct a scenario with a springboard
     board[60] = RED;
@@ -584,7 +631,7 @@ describe('evaluateMove', () => {
       var p2 = positions[neighbors[0]];
       var dstX = p2.x + (p2.x - p1.x);
       var dstY = p2.y + (p2.y - p1.y);
-      var dstKey = dstX + ',' + dstY;
+      var dstKey = dstX + "," + dstY;
       if (posKey[dstKey] !== undefined) {
         var dstIdx = posKey[dstKey];
         if (board[dstIdx] === EMPTY) {
@@ -612,8 +659,8 @@ describe('evaluateMove', () => {
 // Additional tests: getBestAIMove decision quality
 // ============================================================
 
-describe('getBestAIMove (supplementary)', () => {
-  it('AI chooses to move toward target area', () => {
+describe("getBestAIMove (supplementary)", () => {
+  it("AI chooses to move toward target area", () => {
     var board = createBoard();
     placePieces(board, RED);
     placePieces(board, BLUE);
@@ -625,7 +672,7 @@ describe('getBestAIMove (supplementary)', () => {
     // AI should not choose a move that retreats significantly
     expect(scoreAfter).toBeGreaterThanOrEqual(scoreBefore - 50);
   });
-  it('AI chooses jump when jump opportunity exists', () => {
+  it("AI chooses jump when jump opportunity exists", () => {
     var board = createBoard();
     // Construct a scenario favorable for jumping
     board[60] = BLUE;
@@ -635,11 +682,11 @@ describe('getBestAIMove (supplementary)', () => {
     }
     var move = getBestAIMove(board, BLUE, [RED, BLUE]);
     if (move !== null) {
-      expect(typeof move.from).toBe('number');
-      expect(typeof move.to).toBe('number');
+      expect(typeof move.from).toBe("number");
+      expect(typeof move.to).toBe("number");
     }
   });
-  it('returns null when no legal moves', () => {
+  it("returns null when no legal moves", () => {
     var board = createBoard();
     // Place only one piece in corner, completely surrounded
     board[0] = RED;
@@ -651,6 +698,8 @@ describe('getBestAIMove (supplementary)', () => {
     var move = getBestAIMove(board, RED, [RED, BLUE]);
     // If springboard exists may return non-null, otherwise null
     // This test mainly verifies no exception is thrown
-    expect(move === null || (typeof move.from === 'number' && typeof move.to === 'number')).toBe(true);
+    expect(move === null || (typeof move.from === "number" && typeof move.to === "number")).toBe(
+      true
+    );
   });
 });

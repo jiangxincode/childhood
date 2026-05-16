@@ -1,3 +1,4 @@
+/* eslint-disable no-var */
 // ============================================================
 // Knife Kills Chicken (Carry Weapon Version) - Game Core Logic
 // ============================================================
@@ -5,13 +6,13 @@
 // ============================================================
 // Shared module loading (Node.js test environment)
 // ============================================================
-if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
-  var _gameUtils = require('../../common/game-utils.js');
+if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
+  const _gameUtils = require("../../common/game-utils.js");
   var judgeRPS = _gameUtils.judgeRPS;
   var shuffleArray = _gameUtils.shuffleArray;
 }
-if (typeof DIRECTIONS === 'undefined' && typeof require !== 'undefined') {
-  var _core = require('../../common/card-game-core.js');
+if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
+  const _core = require("../../common/card-game-core.js");
   var DIRECTIONS = _core.DIRECTIONS;
   var inBounds = _core.inBounds;
   var flipCard = _core.flipCard;
@@ -20,28 +21,28 @@ if (typeof DIRECTIONS === 'undefined' && typeof require !== 'undefined') {
 }
 
 // 8 roles
-const ROLES = ['马蜂', '癞痢', '枪', '老虎', '人', '刀', '鸡', '火箭'];
+const ROLES = ["马蜂", "癞痢", "枪", "老虎", "人", "刀", "鸡", "火箭"];
 
 // Basic dominance table: key dominates roles in value
 // Note: human dominates chicken with knife (conditional), scalper dominates tiger with spear (conditional)
 // Knife and spear themselves cannot capture any role
 const BASE_DOMINANCE = {
-  '马蜂': ['癞痢'],
-  '老虎': ['人'],
-  '鸡':   ['马蜂'],
-  '火箭': ['马蜂', '癞痢', '枪', '老虎', '人', '刀', '鸡']
+  马蜂: ["癞痢"],
+  老虎: ["人"],
+  鸡: ["马蜂"],
+  火箭: ["马蜂", "癞痢", "枪", "老虎", "人", "刀", "鸡"],
 };
 
 // Role name -> image filename prefix mapping
 const IMAGE_MAP = {
-  '马蜂': '胡蜂',
-  '癞痢': '癞痢',
-  '枪':   '洋枪',
-  '老虎': '老虎',
-  '人':   '人',
-  '刀':   '刀',
-  '鸡':   '鸡',
-  '火箭': '火箭'
+  马蜂: "胡蜂",
+  癞痢: "癞痢",
+  枪: "洋枪",
+  老虎: "老虎",
+  人: "人",
+  刀: "刀",
+  鸡: "鸡",
+  火箭: "火箭",
 };
 
 /**
@@ -52,11 +53,11 @@ const IMAGE_MAP = {
  */
 function getImagePath(role, team) {
   // Special handling: red "human" uses "human-human.png"
-  if (role === '人' && team === 'red') {
-    return 'images/人-人.png';
+  if (role === "人" && team === "red") {
+    return "images/人-人.png";
   }
   const prefix = IMAGE_MAP[role];
-  const color = team === 'red' ? '红' : '蓝';
+  const color = team === "red" ? "红" : "蓝";
   return `images/${prefix}-${color}.png`;
 }
 
@@ -77,7 +78,7 @@ function canCapture(attackerCard, defenderCard) {
   const defRole = defenderCard.role;
 
   // 1. Knife and spear themselves cannot capture any role
-  if (attRole === '刀' || attRole === '枪') return false;
+  if (attRole === "刀" || attRole === "枪") return false;
 
   // 2. Basic dominance: check BASE_DOMINANCE table
   if (Array.isArray(BASE_DOMINANCE[attRole]) && BASE_DOMINANCE[attRole].includes(defRole)) {
@@ -85,12 +86,12 @@ function canCapture(attackerCard, defenderCard) {
   }
 
   // 3. Knife carrier dominates chicken
-  if (attRole === '人' && attackerCard.carrying === '刀' && defRole === '鸡') {
+  if (attRole === "人" && attackerCard.carrying === "刀" && defRole === "鸡") {
     return true;
   }
 
   // 4. Spear carrier dominates tiger
-  if (attRole === '癞痢' && attackerCard.carrying === '枪' && defRole === '老虎') {
+  if (attRole === "癞痢" && attackerCard.carrying === "枪" && defRole === "老虎") {
     return true;
   }
 
@@ -104,24 +105,24 @@ function canCapture(attackerCard, defenderCard) {
  * @returns {GameState} initial state
  */
 function createGameState(mode) {
-  var state = createBaseState(mode);
+  const state = createBaseState(mode);
 
   // Generate 16 cards: 8 red + 8 blue, one of each role per side
-  var cards = [];
-  for (var i = 0; i < ROLES.length; i++) {
-    var role = ROLES[i];
-    cards.push({ role: role, team: 'red', faceUp: false, carrying: null });
-    cards.push({ role: role, team: 'blue', faceUp: false, carrying: null });
+  const cards = [];
+  for (let i = 0; i < ROLES.length; i++) {
+    const role = ROLES[i];
+    cards.push({ role: role, team: "red", faceUp: false, carrying: null });
+    cards.push({ role: role, team: "blue", faceUp: false, carrying: null });
   }
 
   // Fisher-Yates shuffle
   shuffleArray(cards);
 
   // Place onto 4x4 board
-  var board = [];
-  for (var y = 0; y < 4; y++) {
-    var row = [];
-    for (var x = 0; x < 4; x++) {
+  const board = [];
+  for (let y = 0; y < 4; y++) {
+    const row = [];
+    for (let x = 0; x < 4; x++) {
       row.push(cards[y * 4 + x]);
     }
     board.push(row);
@@ -143,7 +144,7 @@ function getValidMoves(board, x, y) {
   const card = board[y][x];
   if (!card) return [];
   // Knife and spear cannot move when not carried
-  if (card.role === '刀' || card.role === '枪') return [];
+  if (card.role === "刀" || card.role === "枪") return [];
 
   const moves = [];
   for (const { dx, dy } of DIRECTIONS) {
@@ -169,7 +170,7 @@ function getValidCaptures(board, x, y, team) {
   const card = board[y][x];
   if (!card || !card.faceUp || card.team !== team) return [];
   // Knife and spear themselves cannot capture any role
-  if (card.role === '刀' || card.role === '枪') return [];
+  if (card.role === "刀" || card.role === "枪") return [];
 
   const captures = [];
   for (const { dx, dy } of DIRECTIONS) {
@@ -199,8 +200,8 @@ function getCarryTargets(board, x, y, team) {
 
   // Only human can carry knife, only scalper can carry spear
   let weaponRole = null;
-  if (card.role === '人') weaponRole = '刀';
-  else if (card.role === '癞痢') weaponRole = '枪';
+  if (card.role === "人") weaponRole = "刀";
+  else if (card.role === "癞痢") weaponRole = "枪";
   else return [];
 
   // If already carrying, can't carry again
@@ -241,7 +242,7 @@ function captureCard(state, from, to) {
   if (!canCapture(attacker, defender)) return null;
 
   // Captured role added to corresponding team captured list
-  const defenderCapturedList = defender.team === 'red' ? 'capturedRed' : 'capturedBlue';
+  const defenderCapturedList = defender.team === "red" ? "capturedRed" : "capturedBlue";
   state[defenderCapturedList].push(defender.role);
   // If captured side is carrying weapon, weapon also added to captured list
   if (defender.carrying) {
@@ -249,10 +250,10 @@ function captureCard(state, from, to) {
   }
 
   // Rocket capture results in mutual destruction
-  if (attacker.role === '火箭') {
+  if (attacker.role === "火箭") {
     // Rocket itself also added to captured list
-    const attackerCapturedList = attacker.team === 'red' ? 'capturedRed' : 'capturedBlue';
-    state[attackerCapturedList].push('火箭');
+    const attackerCapturedList = attacker.team === "red" ? "capturedRed" : "capturedBlue";
+    state[attackerCapturedList].push("火箭");
     // Both positions become empty
     state.board[from.y][from.x] = null;
     state.board[to.y][to.x] = null;
@@ -263,7 +264,7 @@ function captureCard(state, from, to) {
   }
 
   // Switch current team
-  state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
+  state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
   state.turnCount++;
 
   return state;
@@ -290,10 +291,10 @@ function carryWeapon(state, from, to) {
   // Cannot carry when already carrying weapon
   if (carrier.carrying) return null;
   // Verify role-weapon match: human carries knife, scalper carries spear
-  if (carrier.role === '人' && weapon.role === '刀') {
-    carrier.carrying = '刀';
-  } else if (carrier.role === '癞痢' && weapon.role === '枪') {
-    carrier.carrying = '枪';
+  if (carrier.role === "人" && weapon.role === "刀") {
+    carrier.carrying = "刀";
+  } else if (carrier.role === "癞痢" && weapon.role === "枪") {
+    carrier.carrying = "枪";
   } else {
     return null;
   }
@@ -301,7 +302,7 @@ function carryWeapon(state, from, to) {
   state.board[to.y][to.x] = carrier;
   state.board[from.y][from.x] = null;
   // Switch current team
-  state.currentTeam = state.currentTeam === 'red' ? 'blue' : 'red';
+  state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
   state.turnCount++;
   return state;
 }
@@ -343,19 +344,19 @@ function checkGameOver(board, currentTeam) {
     for (let x = 0; x < 4; x++) {
       const card = board[y][x];
       if (card) {
-        if (card.team === 'red') redCount++;
+        if (card.team === "red") redCount++;
         else blueCount++;
       }
     }
   }
 
   // One side has no cards -> that side loses
-  if (redCount === 0) return { ended: true, winner: 'blue' };
-  if (blueCount === 0) return { ended: true, winner: 'red' };
+  if (redCount === 0) return { ended: true, winner: "blue" };
+  if (blueCount === 0) return { ended: true, winner: "red" };
 
   // Current team has no legal actions -> current team loses
   if (!hasAnyLegalAction(board, currentTeam)) {
-    return { ended: true, winner: currentTeam === 'red' ? 'blue' : 'red' };
+    return { ended: true, winner: currentTeam === "red" ? "blue" : "red" };
   }
 
   return { ended: false, winner: null };
@@ -384,7 +385,7 @@ function aiDecide(state, aiTeam) {
   }
   if (allCaptures.length > 0) {
     const pick = allCaptures[Math.floor(Math.random() * allCaptures.length)];
-    return { type: 'capture', from: pick.from, to: pick.to };
+    return { type: "capture", from: pick.from, to: pick.to };
   }
 
   // Priority 2: human/scalper adjacent to own knife/spear -> carry weapon
@@ -401,7 +402,7 @@ function aiDecide(state, aiTeam) {
   }
   if (allCarries.length > 0) {
     const pick = allCarries[Math.floor(Math.random() * allCarries.length)];
-    return { type: 'carry', from: pick.from, to: pick.to };
+    return { type: "carry", from: pick.from, to: pick.to };
   }
 
   // Priority 3: when face-down cards exist, flip one randomly
@@ -416,7 +417,7 @@ function aiDecide(state, aiTeam) {
   }
   if (faceDownCells.length > 0) {
     const pick = faceDownCells[Math.floor(Math.random() * faceDownCells.length)];
-    return { type: 'flip', x: pick.x, y: pick.y };
+    return { type: "flip", x: pick.x, y: pick.y };
   }
 
   // Priority 4: randomly select own piece and move to legal position
@@ -433,7 +434,7 @@ function aiDecide(state, aiTeam) {
   }
   if (allMoves.length > 0) {
     const pick = allMoves[Math.floor(Math.random() * allMoves.length)];
-    return { type: 'move', from: pick.from, to: pick.to };
+    return { type: "move", from: pick.from, to: pick.to };
   }
 
   // No legal actions
@@ -441,7 +442,7 @@ function aiDecide(state, aiTeam) {
 }
 
 // Export for testing
-if (typeof module !== 'undefined' && module.exports) {
+if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     ROLES,
     BASE_DOMINANCE,
@@ -459,34 +460,34 @@ if (typeof module !== 'undefined' && module.exports) {
     carryWeapon,
     hasAnyLegalAction,
     checkGameOver,
-    aiDecide
+    aiDecide,
   };
 }
 
 // ============================================================
 // UI controller (runs only in browser environment)
 // ============================================================
-if (typeof document !== 'undefined') {
+if (typeof document !== "undefined") {
   let gameState = null;
 
   // DOM elements
-  const $modeSelection = document.getElementById('mode-selection');
-  const $rpsSection = document.getElementById('rps-section');
-  const $rpsPvp = document.getElementById('rps-pvp');
-  const $rpsPve = document.getElementById('rps-pve');
-  const $rpsResult = document.getElementById('rps-result');
-  const $gameArea = document.getElementById('game-area');
-  const $board = document.getElementById('board');
-  const $currentTeam = document.getElementById('current-team');
-  const $turnCount = document.getElementById('turn-count');
-  const $redRemaining = document.getElementById('red-remaining');
-  const $blueRemaining = document.getElementById('blue-remaining');
-  const $capturedRed = document.getElementById('captured-red');
-  const $capturedBlue = document.getElementById('captured-blue');
-  const $message = document.getElementById('message');
-  const $gameOver = document.getElementById('game-over');
-  const $winnerText = document.getElementById('winner-text');
-  const $btnRestart = document.getElementById('btn-restart');
+  const $modeSelection = document.getElementById("mode-selection");
+  const $rpsSection = document.getElementById("rps-section");
+  const $rpsPvp = document.getElementById("rps-pvp");
+  const $rpsPve = document.getElementById("rps-pve");
+  const $rpsResult = document.getElementById("rps-result");
+  const $gameArea = document.getElementById("game-area");
+  const $board = document.getElementById("board");
+  const $currentTeam = document.getElementById("current-team");
+  const $turnCount = document.getElementById("turn-count");
+  const $redRemaining = document.getElementById("red-remaining");
+  const $blueRemaining = document.getElementById("blue-remaining");
+  const $capturedRed = document.getElementById("captured-red");
+  const $capturedBlue = document.getElementById("captured-blue");
+  const $message = document.getElementById("message");
+  const $gameOver = document.getElementById("game-over");
+  const $winnerText = document.getElementById("winner-text");
+  const $btnRestart = document.getElementById("btn-restart");
 
   // --- Renderer functions ---
 
@@ -499,42 +500,42 @@ if (typeof document !== 'undefined') {
       for (let x = 0; x < 4; x++) {
         const cell = getCell(x, y);
         const card = state.board[y][x];
-        cell.className = 'cell';
-        cell.innerHTML = '';
+        cell.className = "cell";
+        cell.innerHTML = "";
         cell.dataset.x = x;
         cell.dataset.y = y;
 
         if (!card) {
-          cell.classList.add('cell-empty');
+          cell.classList.add("cell-empty");
         } else if (!card.faceUp) {
-          const back = document.createElement('div');
-          back.className = 'cell-back';
+          const back = document.createElement("div");
+          back.className = "cell-back";
           cell.appendChild(back);
         } else {
-          cell.classList.add(card.team === 'red' ? 'cell-red' : 'cell-blue');
+          cell.classList.add(card.team === "red" ? "cell-red" : "cell-blue");
 
           if (card.carrying) {
             // Knife carrier/spear carrier - two-layer overlapping cards
-            cell.classList.add('cell-carry', 'cell-carry-glow');
-            var bottom = document.createElement('div');
-            bottom.className = 'carry-bottom';
-            var bottomImg = document.createElement('img');
+            cell.classList.add("cell-carry", "cell-carry-glow");
+            const bottom = document.createElement("div");
+            bottom.className = "carry-bottom";
+            const bottomImg = document.createElement("img");
             bottomImg.src = getImagePath(card.role, card.team);
             bottomImg.alt = card.role;
             bottom.appendChild(bottomImg);
             cell.appendChild(bottom);
 
-            var top = document.createElement('div');
-            top.className = 'carry-top';
-            var topImg = document.createElement('img');
+            const top = document.createElement("div");
+            top.className = "carry-top";
+            const topImg = document.createElement("img");
             topImg.src = getImagePath(card.carrying, card.team);
             topImg.alt = card.carrying;
             top.appendChild(topImg);
             cell.appendChild(top);
           } else {
-            var face = document.createElement('div');
-            face.className = 'cell-face';
-            var img = document.createElement('img');
+            const face = document.createElement("div");
+            face.className = "cell-face";
+            const img = document.createElement("img");
             img.src = getImagePath(card.role, card.team);
             img.alt = card.role;
             face.appendChild(img);
@@ -546,51 +547,58 @@ if (typeof document !== 'undefined') {
     updateStatus(state);
   }
 
-
   function clearHighlights() {
-    document.querySelectorAll('.cell').forEach(function(c) {
-      c.classList.remove('cell-selected', 'cell-target', 'cell-capture-target', 'cell-carry-target', 'cell-ai-highlight');
+    document.querySelectorAll(".cell").forEach((c) => {
+      c.classList.remove(
+        "cell-selected",
+        "cell-target",
+        "cell-capture-target",
+        "cell-carry-target",
+        "cell-ai-highlight"
+      );
     });
   }
 
   function highlightTargets(x, y, moveTargets, captureTargets, carryTargets) {
     clearHighlights();
-    var selected = getCell(x, y);
-    if (selected) selected.classList.add('cell-selected');
+    const selected = getCell(x, y);
+    if (selected) selected.classList.add("cell-selected");
     for (var i = 0; i < moveTargets.length; i++) {
       var tc = getCell(moveTargets[i].x, moveTargets[i].y);
-      if (tc) tc.classList.add('cell-target');
+      if (tc) tc.classList.add("cell-target");
     }
     for (var i = 0; i < captureTargets.length; i++) {
       var tc = getCell(captureTargets[i].x, captureTargets[i].y);
-      if (tc) tc.classList.add('cell-capture-target');
+      if (tc) tc.classList.add("cell-capture-target");
     }
     for (var i = 0; i < carryTargets.length; i++) {
       var tc = getCell(carryTargets[i].x, carryTargets[i].y);
-      if (tc) tc.classList.add('cell-carry-target');
+      if (tc) tc.classList.add("cell-carry-target");
     }
   }
 
   function updateStatus(state) {
     // Current team
     if (state.currentTeam) {
-      const teamName = state.currentTeam === 'red' ? '红方' : '蓝方';
+      const teamName = state.currentTeam === "red" ? "红方" : "蓝方";
       $currentTeam.textContent = teamName;
-      $currentTeam.className = 'team-indicator ' + (state.currentTeam === 'red' ? 'red-text' : 'blue-text');
+      $currentTeam.className =
+        "team-indicator " + (state.currentTeam === "red" ? "red-text" : "blue-text");
     } else {
-      $currentTeam.textContent = '—';
+      $currentTeam.textContent = "—";
     }
 
     // Turn count
     $turnCount.textContent = state.turnCount;
 
     // Remaining pieces
-    let redCount = 0, blueCount = 0;
+    let redCount = 0,
+      blueCount = 0;
     for (let y = 0; y < 4; y++) {
       for (let x = 0; x < 4; x++) {
         const card = state.board[y][x];
         if (card) {
-          if (card.team === 'red') redCount++;
+          if (card.team === "red") redCount++;
           else blueCount++;
         }
       }
@@ -599,23 +607,23 @@ if (typeof document !== 'undefined') {
     $blueRemaining.textContent = blueCount;
 
     // Captured cards
-    $capturedRed.innerHTML = '';
+    $capturedRed.innerHTML = "";
     for (const role of state.capturedRed) {
-      const div = document.createElement('div');
-      div.className = 'captured-card';
-      const img = document.createElement('img');
-      img.src = getImagePath(role, 'red');
+      const div = document.createElement("div");
+      div.className = "captured-card";
+      const img = document.createElement("img");
+      img.src = getImagePath(role, "red");
       img.alt = role;
       div.appendChild(img);
       $capturedRed.appendChild(div);
     }
 
-    $capturedBlue.innerHTML = '';
+    $capturedBlue.innerHTML = "";
     for (const role of state.capturedBlue) {
-      const div = document.createElement('div');
-      div.className = 'captured-card';
-      const img = document.createElement('img');
-      img.src = getImagePath(role, 'blue');
+      const div = document.createElement("div");
+      div.className = "captured-card";
+      const img = document.createElement("img");
+      img.src = getImagePath(role, "blue");
       img.alt = role;
       div.appendChild(img);
       $capturedBlue.appendChild(div);
@@ -625,66 +633,69 @@ if (typeof document !== 'undefined') {
   }
 
   function updateTeamLabels(state) {
-    var $redLabel = document.getElementById('red-label');
-    var $blueLabel = document.getElementById('blue-label');
-    if (state.mode === 'pve' && state.teamAssigned) {
-      if (state.playerTeam === 'red') {
-        $redLabel.textContent = '玩家（红方）剩余：';
-        $blueLabel.textContent = '电脑（蓝方）剩余：';
+    const $redLabel = document.getElementById("red-label");
+    const $blueLabel = document.getElementById("blue-label");
+    if (state.mode === "pve" && state.teamAssigned) {
+      if (state.playerTeam === "red") {
+        $redLabel.textContent = "玩家（红方）剩余：";
+        $blueLabel.textContent = "电脑（蓝方）剩余：";
       } else {
-        $redLabel.textContent = '电脑（红方）剩余：';
-        $blueLabel.textContent = '玩家（蓝方）剩余：';
+        $redLabel.textContent = "电脑（红方）剩余：";
+        $blueLabel.textContent = "玩家（蓝方）剩余：";
       }
     } else {
-      $redLabel.textContent = '红方剩余：';
-      $blueLabel.textContent = '蓝方剩余：';
+      $redLabel.textContent = "红方剩余：";
+      $blueLabel.textContent = "蓝方剩余：";
     }
   }
 
   function showMessage(text, type) {
     $message.textContent = text;
-    $message.className = type || '';
+    $message.className = type || "";
   }
 
   function showModeSelection() {
-    $modeSelection.style.display = 'flex';
-    $rpsSection.style.display = 'none';
-    $gameArea.style.display = 'none';
-    $gameOver.style.display = 'none';
+    $modeSelection.style.display = "flex";
+    $rpsSection.style.display = "none";
+    $gameArea.style.display = "none";
+    $gameOver.style.display = "none";
   }
 
   function showRPSSelection(mode) {
-    $modeSelection.style.display = 'none';
-    $rpsSection.style.display = 'flex';
-    $rpsResult.textContent = '';
-    if (mode === 'pvp') {
-      $rpsPvp.style.display = 'block';
-      $rpsPve.style.display = 'none';
+    $modeSelection.style.display = "none";
+    $rpsSection.style.display = "flex";
+    $rpsResult.textContent = "";
+    if (mode === "pvp") {
+      $rpsPvp.style.display = "block";
+      $rpsPve.style.display = "none";
       rpsP1Choice = null;
       rpsP2Choice = null;
-      document.getElementById('rps-p1-status').textContent = '请选择';
-      document.getElementById('rps-p2-status').textContent = '请选择';
-      document.querySelectorAll('#rps-pvp .btn-rps').forEach(function(b) { b.classList.remove('selected'); });
+      document.getElementById("rps-p1-status").textContent = "请选择";
+      document.getElementById("rps-p2-status").textContent = "请选择";
+      document.querySelectorAll("#rps-pvp .btn-rps").forEach((b) => {
+        b.classList.remove("selected");
+      });
     } else {
-      $rpsPvp.style.display = 'none';
-      $rpsPve.style.display = 'block';
-      document.querySelectorAll('#rps-pve .btn-rps').forEach(function(b) { b.classList.remove('selected'); });
+      $rpsPvp.style.display = "none";
+      $rpsPve.style.display = "block";
+      document.querySelectorAll("#rps-pve .btn-rps").forEach((b) => {
+        b.classList.remove("selected");
+      });
     }
   }
 
   function showGameArea() {
-    $modeSelection.style.display = 'none';
-    $rpsSection.style.display = 'none';
-    $gameArea.style.display = 'flex';
-    $gameOver.style.display = 'none';
+    $modeSelection.style.display = "none";
+    $rpsSection.style.display = "none";
+    $gameArea.style.display = "flex";
+    $gameOver.style.display = "none";
   }
 
   function showGameOverScreen(winner) {
-    const winnerName = winner === 'red' ? '红方' : '蓝方';
-    $winnerText.textContent = winnerName + ' 获胜！';
-    $gameOver.style.display = 'flex';
+    const winnerName = winner === "red" ? "红方" : "蓝方";
+    $winnerText.textContent = winnerName + " 获胜！";
+    $gameOver.style.display = "flex";
   }
-
 
   // --- Rock-Paper-Scissors logic ---
   let rpsP1Choice = null;
@@ -697,122 +708,138 @@ if (typeof document !== 'undefined') {
     renderBoard(gameState);
 
     // In PVE mode, if AI goes first, trigger AI flip directly
-    if (gameState.mode === 'pve' && gameState.aiFirst) {
+    if (gameState.mode === "pve" && gameState.aiFirst) {
       triggerAI();
     } else {
-      showMessage('请翻开一张牌', '');
+      showMessage("请翻开一张牌", "");
     }
   }
 
   function handleRPSResult(choice1, choice2, mode) {
     const result = judgeRPS(choice1, choice2);
-    const choiceNames = { rock: '石头', scissors: '剪刀', paper: '布' };
+    const choiceNames = { rock: "石头", scissors: "剪刀", paper: "布" };
 
     if (result === 0) {
-      $rpsResult.textContent = '双方都出了' + choiceNames[choice1] + '，平局！重新选择';
-      setTimeout(function() {
+      $rpsResult.textContent = "双方都出了" + choiceNames[choice1] + "，平局！重新选择";
+      setTimeout(() => {
         showRPSSelection(mode);
       }, 1500);
       return;
     }
 
-    if (mode === 'pvp') {
-      const winner = result === 1 ? '玩家1' : '玩家2';
-      $rpsResult.textContent = winner + ' 获胜！' + winner + '先手';
-      const firstTeam = result === 1 ? 'red' : 'blue';
-      setTimeout(function() { startGame(firstTeam); }, 1500);
+    if (mode === "pvp") {
+      const winner = result === 1 ? "玩家1" : "玩家2";
+      $rpsResult.textContent = winner + " 获胜！" + winner + "先手";
+      const firstTeam = result === 1 ? "red" : "blue";
+      setTimeout(() => {
+        startGame(firstTeam);
+      }, 1500);
     } else {
       // PVE
       const aiChoiceName = choiceNames[choice2];
       if (result === 1) {
         // Player won RPS -> player goes first
-        $rpsResult.textContent = '电脑出了' + aiChoiceName + '，你赢了！你先手';
+        $rpsResult.textContent = "电脑出了" + aiChoiceName + "，你赢了！你先手";
         gameState.aiFirst = false;
-        setTimeout(function() { startGame('red'); }, 1500);
+        setTimeout(() => {
+          startGame("red");
+        }, 1500);
       } else {
         // Computer won RPS -> computer goes first
-        $rpsResult.textContent = '电脑出了' + aiChoiceName + '，电脑赢了！电脑先手';
+        $rpsResult.textContent = "电脑出了" + aiChoiceName + "，电脑赢了！电脑先手";
         gameState.aiFirst = true;
-        setTimeout(function() { startGame('red'); }, 1500);
+        setTimeout(() => {
+          startGame("red");
+        }, 1500);
       }
     }
   }
 
   // PVP Rock-Paper-Scissors buttons
-  document.querySelectorAll('#rps-pvp .btn-rps').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var player = btn.dataset.player;
-      var choice = btn.dataset.choice;
+  document.querySelectorAll("#rps-pvp .btn-rps").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const player = btn.dataset.player;
+      const choice = btn.dataset.choice;
 
-      if (player === '1') {
+      if (player === "1") {
         rpsP1Choice = choice;
-        document.getElementById('rps-p1-status').textContent = '已选择';
-        document.querySelectorAll('#rps-p1-buttons .btn-rps').forEach(function(b) { b.classList.remove('selected'); });
-        btn.classList.add('selected');
+        document.getElementById("rps-p1-status").textContent = "已选择";
+        document.querySelectorAll("#rps-p1-buttons .btn-rps").forEach((b) => {
+          b.classList.remove("selected");
+        });
+        btn.classList.add("selected");
       } else {
         rpsP2Choice = choice;
-        document.getElementById('rps-p2-status').textContent = '已选择';
-        document.querySelectorAll('#rps-p2-buttons .btn-rps').forEach(function(b) { b.classList.remove('selected'); });
-        btn.classList.add('selected');
+        document.getElementById("rps-p2-status").textContent = "已选择";
+        document.querySelectorAll("#rps-p2-buttons .btn-rps").forEach((b) => {
+          b.classList.remove("selected");
+        });
+        btn.classList.add("selected");
       }
 
       if (rpsP1Choice && rpsP2Choice) {
-        handleRPSResult(rpsP1Choice, rpsP2Choice, 'pvp');
+        handleRPSResult(rpsP1Choice, rpsP2Choice, "pvp");
       }
     });
   });
 
   // PVE Rock-Paper-Scissors buttons
-  document.querySelectorAll('#rps-pve .btn-rps').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var playerChoice = btn.dataset.choice;
-      var choices = ['rock', 'scissors', 'paper'];
-      var aiChoice = choices[Math.floor(Math.random() * 3)];
+  document.querySelectorAll("#rps-pve .btn-rps").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const playerChoice = btn.dataset.choice;
+      const choices = ["rock", "scissors", "paper"];
+      const aiChoice = choices[Math.floor(Math.random() * 3)];
 
-      document.querySelectorAll('#rps-pve .btn-rps').forEach(function(b) { b.classList.remove('selected'); });
-      btn.classList.add('selected');
+      document.querySelectorAll("#rps-pve .btn-rps").forEach((b) => {
+        b.classList.remove("selected");
+      });
+      btn.classList.add("selected");
 
-      handleRPSResult(playerChoice, aiChoice, 'pve');
+      handleRPSResult(playerChoice, aiChoice, "pve");
     });
   });
 
-
   // --- Mode selection ---
-  document.getElementById('btn-pvp').addEventListener('click', function() {
-    gameState = createGameState('pvp');
-    showRPSSelection('pvp');
+  document.getElementById("btn-pvp").addEventListener("click", () => {
+    gameState = createGameState("pvp");
+    showRPSSelection("pvp");
   });
 
-  document.getElementById('btn-pve').addEventListener('click', function() {
-    gameState = createGameState('pve');
-    showRPSSelection('pve');
+  document.getElementById("btn-pve").addEventListener("click", () => {
+    gameState = createGameState("pve");
+    showRPSSelection("pve");
   });
 
   // --- Restart ---
-  $btnRestart.addEventListener('click', function() {
+  $btnRestart.addEventListener("click", () => {
     gameState = null;
     showModeSelection();
   });
 
   // --- Board click event handler ---
-  $board.addEventListener('click', function(e) {
+  $board.addEventListener("click", (e) => {
     if (!gameState || gameState.gameOver) return;
     if (gameState.aiThinking) return;
 
     // In PVE mode, only allow player to click on their turn
-    if (gameState.mode === 'pve' && gameState.teamAssigned && gameState.currentTeam === gameState.aiTeam) return;
+    if (
+      gameState.mode === "pve" &&
+      gameState.teamAssigned &&
+      gameState.currentTeam === gameState.aiTeam
+    )
+      return;
 
-    var cell = e.target.closest('.cell');
+    const cell = e.target.closest(".cell");
     if (!cell) return;
 
-    var x = parseInt(cell.dataset.x);
-    var y = parseInt(cell.dataset.y);
-    var card = gameState.board[y][x];
-    var currentTeam = gameState.currentTeam;
+    const x = parseInt(cell.dataset.x);
+    const y = parseInt(cell.dataset.y);
+    const card = gameState.board[y][x];
+    const currentTeam = gameState.currentTeam;
 
     // Already have selected piece
     if (gameState.selectedCell) {
-      var sel = gameState.selectedCell;
+      const sel = gameState.selectedCell;
 
       // Click same cell to deselect
       if (sel.x === x && sel.y === y) {
@@ -821,13 +848,18 @@ if (typeof document !== 'undefined') {
         return;
       }
 
-      var selCard = gameState.board[sel.y][sel.x];
+      const selCard = gameState.board[sel.y][sel.x];
 
       // Click own face-up knife/spear -> try carry weapon
-      if (card && card.faceUp && card.team === currentTeam && (card.role === '刀' || card.role === '枪')) {
-        var carryTargets = getCarryTargets(gameState.board, sel.x, sel.y, currentTeam);
-        if (carryTargets.some(function(t) { return t.x === x && t.y === y; })) {
-          var carryResult = carryWeapon(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
+      if (
+        card &&
+        card.faceUp &&
+        card.team === currentTeam &&
+        (card.role === "刀" || card.role === "枪")
+      ) {
+        const carryTargets = getCarryTargets(gameState.board, sel.x, sel.y, currentTeam);
+        if (carryTargets.some((t) => t.x === x && t.y === y)) {
+          const carryResult = carryWeapon(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
           if (carryResult) {
             gameState.selectedCell = null;
             clearHighlights();
@@ -840,8 +872,12 @@ if (typeof document !== 'undefined') {
 
       // Click opponent face-up card -> try capture
       if (card && card.faceUp && card.team !== currentTeam) {
-        if (getValidCaptures(gameState.board, sel.x, sel.y, currentTeam).some(function(t) { return t.x === x && t.y === y; })) {
-          var result = captureCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
+        if (
+          getValidCaptures(gameState.board, sel.x, sel.y, currentTeam).some(
+            (t) => t.x === x && t.y === y
+          )
+        ) {
+          const result = captureCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
           if (result) {
             gameState.selectedCell = null;
             clearHighlights();
@@ -851,19 +887,19 @@ if (typeof document !== 'undefined') {
           }
         }
         // Specific illegal capture message
-        if (selCard.role === '人' && card.role === '鸡') {
-          showMessage('需要先扛刀才能杀鸡', 'error');
-        } else if (selCard.role === '癞痢' && card.role === '老虎') {
-          showMessage('需要先扛枪才能杀老虎', 'error');
+        if (selCard.role === "人" && card.role === "鸡") {
+          showMessage("需要先扛刀才能杀鸡", "error");
+        } else if (selCard.role === "癞痢" && card.role === "老虎") {
+          showMessage("需要先扛枪才能杀老虎", "error");
         } else {
-          showMessage('无法吃掉该棋子', 'error');
+          showMessage("无法吃掉该棋子", "error");
         }
         return;
       }
 
       // Click empty cell -> try move
       if (!card) {
-        var moveResult = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
+        const moveResult = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
         if (moveResult) {
           gameState.selectedCell = null;
           clearHighlights();
@@ -889,7 +925,7 @@ if (typeof document !== 'undefined') {
 
     // Click face-down card -> flip
     if (card && !card.faceUp) {
-      var flipResult = flipCard(gameState, x, y);
+      const flipResult = flipCard(gameState, x, y);
       if (flipResult) {
         clearHighlights();
         renderBoard(gameState);
@@ -906,76 +942,76 @@ if (typeof document !== 'undefined') {
 
     // Click opponent face-up card (no selection)
     if (card && card.faceUp && card.team !== currentTeam) {
-      showMessage('这不是你的棋子', 'error');
+      showMessage("这不是你的棋子", "error");
       return;
     }
   });
 
-
   function selectCard(x, y) {
     gameState.selectedCell = { x: x, y: y };
-    var currentTeam = gameState.currentTeam;
-    var card = gameState.board[y][x];
+    const currentTeam = gameState.currentTeam;
+    const card = gameState.board[y][x];
 
     // Knife and spear cannot move
-    if (card && (card.role === '刀' || card.role === '枪')) {
-      showMessage('刀/枪不能主动移动', 'error');
+    if (card && (card.role === "刀" || card.role === "枪")) {
+      showMessage("刀/枪不能主动移动", "error");
       gameState.selectedCell = null;
       return;
     }
 
-    var moves = getValidMoves(gameState.board, x, y);
-    var captures = getValidCaptures(gameState.board, x, y, currentTeam);
-    var carries = getCarryTargets(gameState.board, x, y, currentTeam);
+    const moves = getValidMoves(gameState.board, x, y);
+    const captures = getValidCaptures(gameState.board, x, y, currentTeam);
+    const carries = getCarryTargets(gameState.board, x, y, currentTeam);
 
     highlightTargets(x, y, moves, captures, carries);
-    showMessage('', '');
+    showMessage("", "");
   }
 
   function afterAction() {
     // Check game over
-    var result = checkGameOver(gameState.board, gameState.currentTeam);
+    const result = checkGameOver(gameState.board, gameState.currentTeam);
     if (result.ended) {
       gameState.gameOver = true;
       gameState.winner = result.winner;
       renderBoard(gameState);
-      setTimeout(function() { showGameOverScreen(result.winner); }, 500);
+      setTimeout(() => {
+        showGameOverScreen(result.winner);
+      }, 500);
       return;
     }
 
     // Update message
-    if (gameState.mode === 'pve') {
+    if (gameState.mode === "pve") {
       if (gameState.teamAssigned && gameState.currentTeam === gameState.aiTeam) {
         // Team assigned, AI turn
         triggerAI();
       } else if (!gameState.teamAssigned && gameState.aiFirst) {
         // Team not assigned but computer first (player flips after first flip)
-        showMessage('请翻开一张牌', '');
+        showMessage("请翻开一张牌", "");
       } else if (!gameState.teamAssigned) {
-        showMessage('请翻开一张牌', '');
+        showMessage("请翻开一张牌", "");
       } else {
-        showMessage('你的回合', '');
+        showMessage("你的回合", "");
       }
     } else {
       // PVP or team not assigned
-      var teamName = gameState.currentTeam === 'red' ? '红方' : '蓝方';
+      const teamName = gameState.currentTeam === "red" ? "红方" : "蓝方";
       if (!gameState.teamAssigned) {
-        showMessage('请翻开一张牌', '');
+        showMessage("请翻开一张牌", "");
       } else {
-        showMessage(teamName + '的回合', '');
+        showMessage(teamName + "的回合", "");
       }
     }
   }
 
-
   // --- AI action flow ---
   function triggerAI() {
     gameState.aiThinking = true;
-    showMessage('电脑思考中...', 'info');
+    showMessage("电脑思考中...", "info");
 
-    var delay = 500 + Math.random() * 1000;
-    setTimeout(function() {
-      var decision = aiDecide(gameState, gameState.aiTeam);
+    const delay = 500 + Math.random() * 1000;
+    setTimeout(() => {
+      const decision = aiDecide(gameState, gameState.aiTeam);
       if (!decision) {
         // AI has no legal action -> game should be over
         gameState.aiThinking = false;
@@ -990,75 +1026,72 @@ if (typeof document !== 'undefined') {
   function executeAIAction(decision) {
     clearHighlights();
 
-    if (decision.type === 'flip') {
-      var cell = getCell(decision.x, decision.y);
-      cell.classList.add('cell-ai-highlight');
+    if (decision.type === "flip") {
+      const cell = getCell(decision.x, decision.y);
+      cell.classList.add("cell-ai-highlight");
 
       flipCard(gameState, decision.x, decision.y);
       renderBoard(gameState);
 
       // Re-get cell and highlight after flip
-      var cell2 = getCell(decision.x, decision.y);
-      cell2.classList.add('cell-ai-highlight');
+      const cell2 = getCell(decision.x, decision.y);
+      cell2.classList.add("cell-ai-highlight");
 
-      setTimeout(function() {
+      setTimeout(() => {
         clearHighlights();
         gameState.aiThinking = false;
         afterAction();
       }, 500);
+    } else if (decision.type === "move") {
+      const fromCell = getCell(decision.from.x, decision.from.y);
+      fromCell.classList.add("cell-ai-highlight");
 
-    } else if (decision.type === 'move') {
-      var fromCell = getCell(decision.from.x, decision.from.y);
-      fromCell.classList.add('cell-ai-highlight');
-
-      setTimeout(function() {
+      setTimeout(() => {
         moveCard(gameState, decision.from, decision.to);
         renderBoard(gameState);
 
-        var toCell = getCell(decision.to.x, decision.to.y);
-        toCell.classList.add('cell-ai-highlight');
+        const toCell = getCell(decision.to.x, decision.to.y);
+        toCell.classList.add("cell-ai-highlight");
 
-        setTimeout(function() {
+        setTimeout(() => {
           clearHighlights();
           gameState.aiThinking = false;
           afterAction();
         }, 500);
       }, 300);
+    } else if (decision.type === "capture") {
+      const fromCellCap = getCell(decision.from.x, decision.from.y);
+      const toCellCap = getCell(decision.to.x, decision.to.y);
+      fromCellCap.classList.add("cell-ai-highlight");
+      toCellCap.classList.add("cell-ai-highlight");
 
-    } else if (decision.type === 'capture') {
-      var fromCellCap = getCell(decision.from.x, decision.from.y);
-      var toCellCap = getCell(decision.to.x, decision.to.y);
-      fromCellCap.classList.add('cell-ai-highlight');
-      toCellCap.classList.add('cell-ai-highlight');
-
-      setTimeout(function() {
+      setTimeout(() => {
         captureCard(gameState, decision.from, decision.to);
         renderBoard(gameState);
 
-        var newCell = getCell(decision.to.x, decision.to.y);
-        newCell.classList.add('cell-ai-highlight');
+        const newCell = getCell(decision.to.x, decision.to.y);
+        newCell.classList.add("cell-ai-highlight");
 
-        setTimeout(function() {
+        setTimeout(() => {
           clearHighlights();
           gameState.aiThinking = false;
           afterAction();
         }, 500);
       }, 300);
+    } else if (decision.type === "carry") {
+      const fromCellCarry = getCell(decision.from.x, decision.from.y);
+      const toCellCarry = getCell(decision.to.x, decision.to.y);
+      fromCellCarry.classList.add("cell-ai-highlight");
+      toCellCarry.classList.add("cell-ai-highlight");
 
-    } else if (decision.type === 'carry') {
-      var fromCellCarry = getCell(decision.from.x, decision.from.y);
-      var toCellCarry = getCell(decision.to.x, decision.to.y);
-      fromCellCarry.classList.add('cell-ai-highlight');
-      toCellCarry.classList.add('cell-ai-highlight');
-
-      setTimeout(function() {
+      setTimeout(() => {
         carryWeapon(gameState, decision.from, decision.to);
         renderBoard(gameState);
 
-        var newCellCarry = getCell(decision.to.x, decision.to.y);
-        newCellCarry.classList.add('cell-ai-highlight');
+        const newCellCarry = getCell(decision.to.x, decision.to.y);
+        newCellCarry.classList.add("cell-ai-highlight");
 
-        setTimeout(function() {
+        setTimeout(() => {
           clearHighlights();
           gameState.aiThinking = false;
           afterAction();

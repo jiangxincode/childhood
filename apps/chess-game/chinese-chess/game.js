@@ -1,44 +1,87 @@
+/* eslint-disable no-var */
 // ============================================================
 // Chinese Chess (Xiangqi) - Game Core Logic
 // ============================================================
 
-if (typeof judgeRPS === 'undefined' && typeof require !== 'undefined') {
-  var _gameUtils = require('../../common/game-utils.js');
+if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
+  const _gameUtils = require("../../common/game-utils.js");
   var judgeRPS = _gameUtils.judgeRPS;
   var getRPSName = _gameUtils.getRPSName;
 }
 
-var COLS = 9;
-var ROWS = 10;
-var EMPTY = 0;
-var R_GENERAL = 1, R_ADVISOR = 2, R_ELEPHANT = 3, R_HORSE = 4, R_CHARIOT = 5, R_CANNON = 6, R_PAWN = 7;
-var B_GENERAL = 8, B_ADVISOR = 9, B_ELEPHANT = 10, B_HORSE = 11, B_CHARIOT = 12, B_CANNON = 13, B_PAWN = 14;
+const COLS = 9;
+const ROWS = 10;
+const EMPTY = 0;
+const R_GENERAL = 1,
+  R_ADVISOR = 2,
+  R_ELEPHANT = 3,
+  R_HORSE = 4,
+  R_CHARIOT = 5,
+  R_CANNON = 6,
+  R_PAWN = 7;
+const B_GENERAL = 8,
+  B_ADVISOR = 9,
+  B_ELEPHANT = 10,
+  B_HORSE = 11,
+  B_CHARIOT = 12,
+  B_CANNON = 13,
+  B_PAWN = 14;
 
-var RED = 'red';
-var BLACK = 'black';
+const RED = "red";
+const BLACK = "black";
 
-var AI_DEPTH = 3;
+const AI_DEPTH = 3;
 
-var PIECE_NAMES = {};
-PIECE_NAMES[R_GENERAL] = '帥'; PIECE_NAMES[R_ADVISOR] = '仕'; PIECE_NAMES[R_ELEPHANT] = '相';
-PIECE_NAMES[R_HORSE] = '馬'; PIECE_NAMES[R_CHARIOT] = '車'; PIECE_NAMES[R_CANNON] = '炮'; PIECE_NAMES[R_PAWN] = '兵';
-PIECE_NAMES[B_GENERAL] = '将'; PIECE_NAMES[B_ADVISOR] = '士'; PIECE_NAMES[B_ELEPHANT] = '象';
-PIECE_NAMES[B_HORSE] = '馬'; PIECE_NAMES[B_CHARIOT] = '車'; PIECE_NAMES[B_CANNON] = '炮'; PIECE_NAMES[B_PAWN] = '卒';
+const PIECE_NAMES = {};
+PIECE_NAMES[R_GENERAL] = "帥";
+PIECE_NAMES[R_ADVISOR] = "仕";
+PIECE_NAMES[R_ELEPHANT] = "相";
+PIECE_NAMES[R_HORSE] = "馬";
+PIECE_NAMES[R_CHARIOT] = "車";
+PIECE_NAMES[R_CANNON] = "炮";
+PIECE_NAMES[R_PAWN] = "兵";
+PIECE_NAMES[B_GENERAL] = "将";
+PIECE_NAMES[B_ADVISOR] = "士";
+PIECE_NAMES[B_ELEPHANT] = "象";
+PIECE_NAMES[B_HORSE] = "馬";
+PIECE_NAMES[B_CHARIOT] = "車";
+PIECE_NAMES[B_CANNON] = "炮";
+PIECE_NAMES[B_PAWN] = "卒";
 
-var PIECE_VALUES = {};
-PIECE_VALUES[R_GENERAL] = 10000; PIECE_VALUES[R_ADVISOR] = 250; PIECE_VALUES[R_ELEPHANT] = 250;
-PIECE_VALUES[R_HORSE] = 350; PIECE_VALUES[R_CHARIOT] = 500; PIECE_VALUES[R_CANNON] = 350; PIECE_VALUES[R_PAWN] = 100;
-PIECE_VALUES[B_GENERAL] = 10000; PIECE_VALUES[B_ADVISOR] = 250; PIECE_VALUES[B_ELEPHANT] = 250;
-PIECE_VALUES[B_HORSE] = 350; PIECE_VALUES[B_CHARIOT] = 500; PIECE_VALUES[B_CANNON] = 350; PIECE_VALUES[B_PAWN] = 100;
+const PIECE_VALUES = {};
+PIECE_VALUES[R_GENERAL] = 10000;
+PIECE_VALUES[R_ADVISOR] = 250;
+PIECE_VALUES[R_ELEPHANT] = 250;
+PIECE_VALUES[R_HORSE] = 350;
+PIECE_VALUES[R_CHARIOT] = 500;
+PIECE_VALUES[R_CANNON] = 350;
+PIECE_VALUES[R_PAWN] = 100;
+PIECE_VALUES[B_GENERAL] = 10000;
+PIECE_VALUES[B_ADVISOR] = 250;
+PIECE_VALUES[B_ELEPHANT] = 250;
+PIECE_VALUES[B_HORSE] = 350;
+PIECE_VALUES[B_CHARIOT] = 500;
+PIECE_VALUES[B_CANNON] = 350;
+PIECE_VALUES[B_PAWN] = 100;
 
-var FLEX_VALUES = {};
-FLEX_VALUES[R_GENERAL] = 0; FLEX_VALUES[R_ADVISOR] = 1; FLEX_VALUES[R_ELEPHANT] = 1;
-FLEX_VALUES[R_HORSE] = 12; FLEX_VALUES[R_CHARIOT] = 6; FLEX_VALUES[R_CANNON] = 6; FLEX_VALUES[R_PAWN] = 15;
-FLEX_VALUES[B_GENERAL] = 0; FLEX_VALUES[B_ADVISOR] = 1; FLEX_VALUES[B_ELEPHANT] = 1;
-FLEX_VALUES[B_HORSE] = 12; FLEX_VALUES[B_CHARIOT] = 6; FLEX_VALUES[B_CANNON] = 6; FLEX_VALUES[B_PAWN] = 15;
+const FLEX_VALUES = {};
+FLEX_VALUES[R_GENERAL] = 0;
+FLEX_VALUES[R_ADVISOR] = 1;
+FLEX_VALUES[R_ELEPHANT] = 1;
+FLEX_VALUES[R_HORSE] = 12;
+FLEX_VALUES[R_CHARIOT] = 6;
+FLEX_VALUES[R_CANNON] = 6;
+FLEX_VALUES[R_PAWN] = 15;
+FLEX_VALUES[B_GENERAL] = 0;
+FLEX_VALUES[B_ADVISOR] = 1;
+FLEX_VALUES[B_ELEPHANT] = 1;
+FLEX_VALUES[B_HORSE] = 12;
+FLEX_VALUES[B_CHARIOT] = 6;
+FLEX_VALUES[B_CANNON] = 6;
+FLEX_VALUES[B_PAWN] = 15;
 
 // Pawn position bonus values
-var SOLDIER_POS_RED = [
+const SOLDIER_POS_RED = [
   [0, 90, 90, 70, 70, 0, 0, 0, 0, 0],
   [0, 90, 90, 90, 70, 0, 0, 0, 0, 0],
   [0, 110, 110, 110, 70, 0, 0, 0, 0, 0],
@@ -47,10 +90,10 @@ var SOLDIER_POS_RED = [
   [0, 120, 120, 110, 70, 0, 0, 0, 0, 0],
   [0, 110, 110, 110, 70, 0, 0, 0, 0, 0],
   [0, 90, 90, 90, 70, 0, 0, 0, 0, 0],
-  [0, 90, 90, 70, 70, 0, 0, 0, 0, 0]
+  [0, 90, 90, 70, 70, 0, 0, 0, 0, 0],
 ];
 
-var SOLDIER_POS_BLACK = [
+const SOLDIER_POS_BLACK = [
   [0, 0, 0, 0, 0, 70, 70, 90, 90, 0],
   [0, 0, 0, 0, 0, 70, 90, 90, 90, 0],
   [0, 0, 0, 0, 0, 70, 110, 110, 110, 0],
@@ -59,7 +102,7 @@ var SOLDIER_POS_BLACK = [
   [0, 0, 0, 0, 0, 70, 110, 120, 120, 0],
   [0, 0, 0, 0, 0, 70, 110, 110, 110, 0],
   [0, 0, 0, 0, 0, 70, 90, 90, 90, 0],
-  [0, 0, 0, 0, 0, 70, 70, 90, 90, 0]
+  [0, 0, 0, 0, 0, 70, 70, 90, 90, 0],
 ];
 
 // ============================================================
@@ -67,26 +110,46 @@ var SOLDIER_POS_BLACK = [
 // ============================================================
 
 function createBoard() {
-  var board = [];
-  for (var c = 0; c < COLS; c++) {
-    var col = [];
-    for (var r = 0; r < ROWS; r++) col.push(EMPTY);
+  const board = [];
+  for (let c = 0; c < COLS; c++) {
+    const col = [];
+    for (let r = 0; r < ROWS; r++) col.push(EMPTY);
     board.push(col);
   }
   // Black (top, row 0-4)
-  board[0][0] = B_CHARIOT; board[1][0] = B_HORSE; board[2][0] = B_ELEPHANT;
-  board[3][0] = B_ADVISOR; board[4][0] = B_GENERAL; board[5][0] = B_ADVISOR;
-  board[6][0] = B_ELEPHANT; board[7][0] = B_HORSE; board[8][0] = B_CHARIOT;
-  board[1][2] = B_CANNON; board[7][2] = B_CANNON;
-  board[0][3] = B_PAWN; board[2][3] = B_PAWN; board[4][3] = B_PAWN;
-  board[6][3] = B_PAWN; board[8][3] = B_PAWN;
+  board[0][0] = B_CHARIOT;
+  board[1][0] = B_HORSE;
+  board[2][0] = B_ELEPHANT;
+  board[3][0] = B_ADVISOR;
+  board[4][0] = B_GENERAL;
+  board[5][0] = B_ADVISOR;
+  board[6][0] = B_ELEPHANT;
+  board[7][0] = B_HORSE;
+  board[8][0] = B_CHARIOT;
+  board[1][2] = B_CANNON;
+  board[7][2] = B_CANNON;
+  board[0][3] = B_PAWN;
+  board[2][3] = B_PAWN;
+  board[4][3] = B_PAWN;
+  board[6][3] = B_PAWN;
+  board[8][3] = B_PAWN;
   // Red (bottom, row 5-9)
-  board[0][9] = R_CHARIOT; board[1][9] = R_HORSE; board[2][9] = R_ELEPHANT;
-  board[3][9] = R_ADVISOR; board[4][9] = R_GENERAL; board[5][9] = R_ADVISOR;
-  board[6][9] = R_ELEPHANT; board[7][9] = R_HORSE; board[8][9] = R_CHARIOT;
-  board[1][7] = R_CANNON; board[7][7] = R_CANNON;
-  board[0][6] = R_PAWN; board[2][6] = R_PAWN; board[4][6] = R_PAWN;
-  board[6][6] = R_PAWN; board[8][6] = R_PAWN;
+  board[0][9] = R_CHARIOT;
+  board[1][9] = R_HORSE;
+  board[2][9] = R_ELEPHANT;
+  board[3][9] = R_ADVISOR;
+  board[4][9] = R_GENERAL;
+  board[5][9] = R_ADVISOR;
+  board[6][9] = R_ELEPHANT;
+  board[7][9] = R_HORSE;
+  board[8][9] = R_CHARIOT;
+  board[1][7] = R_CANNON;
+  board[7][7] = R_CANNON;
+  board[0][6] = R_PAWN;
+  board[2][6] = R_PAWN;
+  board[4][6] = R_PAWN;
+  board[6][6] = R_PAWN;
+  board[8][6] = R_PAWN;
   return board;
 }
 
@@ -94,39 +157,63 @@ function createBoard() {
 // Piece identification
 // ============================================================
 
-function isRed(piece) { return piece >= R_GENERAL && piece <= R_PAWN; }
-function isBlack(piece) { return piece >= B_GENERAL && piece <= B_PAWN; }
+function isRed(piece) {
+  return piece >= R_GENERAL && piece <= R_PAWN;
+}
+function isBlack(piece) {
+  return piece >= B_GENERAL && piece <= B_PAWN;
+}
 function getOwner(piece) {
   if (isRed(piece)) return RED;
   if (isBlack(piece)) return BLACK;
   return null;
 }
-function getOpponent(color) { return color === RED ? BLACK : RED; }
-function getPlayerName(color) { return color === RED ? '红方' : '黑方'; }
-function inBounds(c, r) { return c >= 0 && c < COLS && r >= 0 && r < ROWS; }
+function getOpponent(color) {
+  return color === RED ? BLACK : RED;
+}
+function getPlayerName(color) {
+  return color === RED ? "红方" : "黑方";
+}
+function inBounds(c, r) {
+  return c >= 0 && c < COLS && r >= 0 && r < ROWS;
+}
 
-function isGeneral(piece) { return piece === R_GENERAL || piece === B_GENERAL; }
-function isChariot(piece) { return piece === R_CHARIOT || piece === B_CHARIOT; }
-function isHorse(piece) { return piece === R_HORSE || piece === B_HORSE; }
-function isCannon(piece) { return piece === R_CANNON || piece === B_CANNON; }
-function isAdvisor(piece) { return piece === R_ADVISOR || piece === B_ADVISOR; }
-function isElephant(piece) { return piece === R_ELEPHANT || piece === B_ELEPHANT; }
-function isPawn(piece) { return piece === R_PAWN || piece === B_PAWN; }
+function isGeneral(piece) {
+  return piece === R_GENERAL || piece === B_GENERAL;
+}
+function isChariot(piece) {
+  return piece === R_CHARIOT || piece === B_CHARIOT;
+}
+function isHorse(piece) {
+  return piece === R_HORSE || piece === B_HORSE;
+}
+function isCannon(piece) {
+  return piece === R_CANNON || piece === B_CANNON;
+}
+function isAdvisor(piece) {
+  return piece === R_ADVISOR || piece === B_ADVISOR;
+}
+function isElephant(piece) {
+  return piece === R_ELEPHANT || piece === B_ELEPHANT;
+}
+function isPawn(piece) {
+  return piece === R_PAWN || piece === B_PAWN;
+}
 
 // ============================================================
 // Board operations
 // ============================================================
 
 function copyBoard(board) {
-  var newBoard = [];
-  for (var c = 0; c < COLS; c++) {
+  const newBoard = [];
+  for (let c = 0; c < COLS; c++) {
     newBoard.push(board[c].slice());
   }
   return newBoard;
 }
 
 function applyMove(board, move) {
-  var newBoard = copyBoard(board);
+  const newBoard = copyBoard(board);
   newBoard[move.toC][move.toR] = newBoard[move.fromC][move.fromR];
   newBoard[move.fromC][move.fromR] = EMPTY;
   return newBoard;
@@ -137,10 +224,10 @@ function applyMove(board, move) {
 // ============================================================
 
 function getValidMoves(board, c, r) {
-  var piece = board[c][r];
+  const piece = board[c][r];
   if (piece === EMPTY) return [];
-  var color = getOwner(piece);
-  var moves = [];
+  const color = getOwner(piece);
+  let moves = [];
 
   if (isGeneral(piece)) moves = getGeneralMoves(board, c, r, color);
   else if (isAdvisor(piece)) moves = getAdvisorMoves(board, c, r, color);
@@ -151,9 +238,9 @@ function getValidMoves(board, c, r) {
   else if (isPawn(piece)) moves = getPawnMoves(board, c, r, color);
 
   // General facing rule: illegal if own general faces opponent general after move
-  var validMoves = [];
-  for (var i = 0; i < moves.length; i++) {
-    var newBoard = applyMove(board, moves[i]);
+  const validMoves = [];
+  for (let i = 0; i < moves.length; i++) {
+    const newBoard = applyMove(board, moves[i]);
     if (!isGeneralFacing(newBoard, color)) {
       validMoves.push(moves[i]);
     }
@@ -162,24 +249,37 @@ function getValidMoves(board, c, r) {
 }
 
 function isGeneralFacing(board, myColor) {
-  var myGC = -1, myGR = -1, opGC = -1, opGR = -1;
-  for (var c = 3; c <= 5; c++) {
+  let myGC = -1,
+    myGR = -1,
+    opGC = -1,
+    opGR = -1;
+  for (let c = 3; c <= 5; c++) {
     for (var r = 0; r <= 2; r++) {
       if (board[c][r] !== EMPTY && isGeneral(board[c][r])) {
-        if (getOwner(board[c][r]) === myColor) { myGC = c; myGR = r; }
-        else { opGC = c; opGR = r; }
+        if (getOwner(board[c][r]) === myColor) {
+          myGC = c;
+          myGR = r;
+        } else {
+          opGC = c;
+          opGR = r;
+        }
       }
     }
     for (var r = 7; r <= 9; r++) {
       if (board[c][r] !== EMPTY && isGeneral(board[c][r])) {
-        if (getOwner(board[c][r]) === myColor) { myGC = c; myGR = r; }
-        else { opGC = c; opGR = r; }
+        if (getOwner(board[c][r]) === myColor) {
+          myGC = c;
+          myGR = r;
+        } else {
+          opGC = c;
+          opGR = r;
+        }
       }
     }
   }
   if (myGC === -1 || opGC === -1 || myGC !== opGC) return false;
-  var minR = Math.min(myGR, opGR);
-  var maxR = Math.max(myGR, opGR);
+  const minR = Math.min(myGR, opGR);
+  const maxR = Math.max(myGR, opGR);
   for (var r = minR + 1; r < maxR; r++) {
     if (board[myGC][r] !== EMPTY) return false;
   }
@@ -187,12 +287,17 @@ function isGeneralFacing(board, myColor) {
 }
 
 function getLineMoves(board, c, r, color) {
-  var moves = [];
-  var dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
-  for (var d = 0; d < dirs.length; d++) {
-    for (var i = 1; i < 10; i++) {
-      var nc = c + dirs[d][0] * i;
-      var nr = r + dirs[d][1] * i;
+  const moves = [];
+  const dirs = [
+    [0, -1],
+    [0, 1],
+    [-1, 0],
+    [1, 0],
+  ];
+  for (let d = 0; d < dirs.length; d++) {
+    for (let i = 1; i < 10; i++) {
+      const nc = c + dirs[d][0] * i;
+      const nr = r + dirs[d][1] * i;
       if (!inBounds(nc, nr)) break;
       if (board[nc][nr] === EMPTY) {
         moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -212,13 +317,18 @@ function getChariotMoves(board, c, r, color) {
 }
 
 function getCannonMoves(board, c, r, color) {
-  var moves = [];
-  var dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
-  for (var d = 0; d < dirs.length; d++) {
-    var jumped = false;
-    for (var i = 1; i < 10; i++) {
-      var nc = c + dirs[d][0] * i;
-      var nr = r + dirs[d][1] * i;
+  const moves = [];
+  const dirs = [
+    [0, -1],
+    [0, 1],
+    [-1, 0],
+    [1, 0],
+  ];
+  for (let d = 0; d < dirs.length; d++) {
+    let jumped = false;
+    for (let i = 1; i < 10; i++) {
+      const nc = c + dirs[d][0] * i;
+      const nr = r + dirs[d][1] * i;
       if (!inBounds(nc, nr)) break;
       if (!jumped) {
         if (board[nc][nr] === EMPTY) {
@@ -240,17 +350,23 @@ function getCannonMoves(board, c, r, color) {
 }
 
 function getHorseMoves(board, c, r, color) {
-  var moves = [];
-  var jumps = [
-    { bx: 0, by: -1, dx: -1, dy: -2 }, { bx: 0, by: -1, dx: 1, dy: -2 },
-    { bx: 0, by: 1, dx: -1, dy: 2 }, { bx: 0, by: 1, dx: 1, dy: 2 },
-    { bx: -1, by: 0, dx: -2, dy: -1 }, { bx: -1, by: 0, dx: -2, dy: 1 },
-    { bx: 1, by: 0, dx: 2, dy: -1 }, { bx: 1, by: 0, dx: 2, dy: 1 }
+  const moves = [];
+  const jumps = [
+    { bx: 0, by: -1, dx: -1, dy: -2 },
+    { bx: 0, by: -1, dx: 1, dy: -2 },
+    { bx: 0, by: 1, dx: -1, dy: 2 },
+    { bx: 0, by: 1, dx: 1, dy: 2 },
+    { bx: -1, by: 0, dx: -2, dy: -1 },
+    { bx: -1, by: 0, dx: -2, dy: 1 },
+    { bx: 1, by: 0, dx: 2, dy: -1 },
+    { bx: 1, by: 0, dx: 2, dy: 1 },
   ];
-  for (var i = 0; i < jumps.length; i++) {
-    var j = jumps[i];
-    var bc = c + j.bx, br = r + j.by;
-    var nc = c + j.dx, nr = r + j.dy;
+  for (let i = 0; i < jumps.length; i++) {
+    const j = jumps[i];
+    const bc = c + j.bx,
+      br = r + j.by;
+    const nc = c + j.dx,
+      nr = r + j.dy;
     if (!inBounds(nc, nr)) continue;
     if (!inBounds(bc, br) || board[bc][br] !== EMPTY) continue;
     if (board[nc][nr] === EMPTY || getOwner(board[nc][nr]) !== color) {
@@ -261,18 +377,22 @@ function getHorseMoves(board, c, r, color) {
 }
 
 function getElephantMoves(board, c, r, color) {
-  var moves = [];
-  var jumps = [
-    { bx: -1, by: -1, dx: -2, dy: -2 }, { bx: 1, by: -1, dx: 2, dy: -2 },
-    { bx: -1, by: 1, dx: -2, dy: 2 }, { bx: 1, by: 1, dx: 2, dy: 2 }
+  const moves = [];
+  const jumps = [
+    { bx: -1, by: -1, dx: -2, dy: -2 },
+    { bx: 1, by: -1, dx: 2, dy: -2 },
+    { bx: -1, by: 1, dx: -2, dy: 2 },
+    { bx: 1, by: 1, dx: 2, dy: 2 },
   ];
-  var minR = color === RED ? 5 : 0;
-  var maxR = color === RED ? 9 : 4;
-  for (var i = 0; i < jumps.length; i++) {
-    var j = jumps[i];
-    var nc = c + j.dx, nr = r + j.dy;
+  const minR = color === RED ? 5 : 0;
+  const maxR = color === RED ? 9 : 4;
+  for (let i = 0; i < jumps.length; i++) {
+    const j = jumps[i];
+    const nc = c + j.dx,
+      nr = r + j.dy;
     if (!inBounds(nc, nr) || nr < minR || nr > maxR) continue;
-    var bc = c + j.bx, br = r + j.by;
+    const bc = c + j.bx,
+      br = r + j.by;
     if (board[bc][br] !== EMPTY) continue;
     if (board[nc][nr] === EMPTY || getOwner(board[nc][nr]) !== color) {
       moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -282,12 +402,18 @@ function getElephantMoves(board, c, r, color) {
 }
 
 function getAdvisorMoves(board, c, r, color) {
-  var moves = [];
-  var dirs = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
-  var minR = color === RED ? 7 : 0;
-  var maxR = color === RED ? 9 : 2;
-  for (var i = 0; i < dirs.length; i++) {
-    var nc = c + dirs[i][0], nr = r + dirs[i][1];
+  const moves = [];
+  const dirs = [
+    [-1, -1],
+    [1, -1],
+    [-1, 1],
+    [1, 1],
+  ];
+  const minR = color === RED ? 7 : 0;
+  const maxR = color === RED ? 9 : 2;
+  for (let i = 0; i < dirs.length; i++) {
+    const nc = c + dirs[i][0],
+      nr = r + dirs[i][1];
     if (nc < 3 || nc > 5 || nr < minR || nr > maxR) continue;
     if (board[nc][nr] === EMPTY || getOwner(board[nc][nr]) !== color) {
       moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -297,12 +423,18 @@ function getAdvisorMoves(board, c, r, color) {
 }
 
 function getGeneralMoves(board, c, r, color) {
-  var moves = [];
-  var dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
-  var minR = color === RED ? 7 : 0;
-  var maxR = color === RED ? 9 : 2;
-  for (var i = 0; i < dirs.length; i++) {
-    var nc = c + dirs[i][0], nr = r + dirs[i][1];
+  const moves = [];
+  const dirs = [
+    [0, -1],
+    [0, 1],
+    [-1, 0],
+    [1, 0],
+  ];
+  const minR = color === RED ? 7 : 0;
+  const maxR = color === RED ? 9 : 2;
+  for (let i = 0; i < dirs.length; i++) {
+    const nc = c + dirs[i][0],
+      nr = r + dirs[i][1];
     if (nc < 3 || nc > 5 || nr < minR || nr > maxR) continue;
     if (board[nc][nr] === EMPTY || getOwner(board[nc][nr]) !== color) {
       moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -312,7 +444,7 @@ function getGeneralMoves(board, c, r, color) {
 }
 
 function getPawnMoves(board, c, r, color) {
-  var moves = [];
+  const moves = [];
   if (color === RED) {
     if (r - 1 >= 0 && (board[c][r - 1] === EMPTY || getOwner(board[c][r - 1]) !== color))
       moves.push({ fromC: c, fromR: r, toC: c, toR: r - 1 });
@@ -336,12 +468,12 @@ function getPawnMoves(board, c, r, color) {
 }
 
 function getAllMoves(board, color) {
-  var moves = [];
-  for (var c = 0; c < COLS; c++) {
-    for (var r = 0; r < ROWS; r++) {
+  const moves = [];
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
       if (board[c][r] !== EMPTY && getOwner(board[c][r]) === color) {
-        var pieceMoves = getValidMoves(board, c, r);
-        for (var i = 0; i < pieceMoves.length; i++) {
+        const pieceMoves = getValidMoves(board, c, r);
+        for (let i = 0; i < pieceMoves.length; i++) {
           moves.push(pieceMoves[i]);
         }
       }
@@ -355,8 +487,9 @@ function getAllMoves(board, color) {
 // ============================================================
 
 function checkGameOver(board, nextPlayer) {
-  var redGeneral = false, blackGeneral = false;
-  for (var c = 3; c <= 5; c++) {
+  let redGeneral = false,
+    blackGeneral = false;
+  for (let c = 3; c <= 5; c++) {
     for (var r = 0; r <= 2; r++) {
       if (board[c][r] === B_GENERAL) blackGeneral = true;
     }
@@ -364,11 +497,11 @@ function checkGameOver(board, nextPlayer) {
       if (board[c][r] === R_GENERAL) redGeneral = true;
     }
   }
-  if (!redGeneral) return { winner: BLACK, reason: 'capture' };
-  if (!blackGeneral) return { winner: RED, reason: 'capture' };
+  if (!redGeneral) return { winner: BLACK, reason: "capture" };
+  if (!blackGeneral) return { winner: RED, reason: "capture" };
 
-  var moves = getAllMoves(board, nextPlayer);
-  if (moves.length === 0) return { winner: getOpponent(nextPlayer), reason: 'no_moves' };
+  const moves = getAllMoves(board, nextPlayer);
+  if (moves.length === 0) return { winner: getOpponent(nextPlayer), reason: "no_moves" };
   return null;
 }
 
@@ -377,20 +510,21 @@ function checkGameOver(board, nextPlayer) {
 // ============================================================
 
 function evaluateBoard(board, aiColor) {
-  var aiScore = 0, oppScore = 0;
-  var oppColor = getOpponent(aiColor);
+  let aiScore = 0,
+    oppScore = 0;
+  const oppColor = getOpponent(aiColor);
 
-  var aiAttackPos = create2DArray(COLS, ROWS, 0);
-  var oppAttackPos = create2DArray(COLS, ROWS, 0);
+  const aiAttackPos = create2DArray(COLS, ROWS, 0);
+  const oppAttackPos = create2DArray(COLS, ROWS, 0);
 
   for (var c = 0; c < COLS; c++) {
     for (var r = 0; r < ROWS; r++) {
       var piece = board[c][r];
       if (piece === EMPTY) continue;
-      var moves = getValidMoves(board, c, r);
+      const moves = getValidMoves(board, c, r);
       var owner = getOwner(piece);
-      var attackMap = owner === aiColor ? aiAttackPos : oppAttackPos;
-      for (var i = 0; i < moves.length; i++) {
+      const attackMap = owner === aiColor ? aiAttackPos : oppAttackPos;
+      for (let i = 0; i < moves.length; i++) {
         attackMap[moves[i].toC][moves[i].toR]++;
       }
     }
@@ -400,7 +534,7 @@ function evaluateBoard(board, aiColor) {
     for (var r = 0; r < ROWS; r++) {
       var piece = board[c][r];
       if (piece === EMPTY) continue;
-      var val = PIECE_VALUES[piece];
+      let val = PIECE_VALUES[piece];
 
       if (piece === R_PAWN) val += SOLDIER_POS_RED[c][r];
       else if (piece === B_PAWN) val += SOLDIER_POS_BLACK[c][r];
@@ -419,30 +553,30 @@ function evaluateBoard(board, aiColor) {
 }
 
 function create2DArray(cols, rows, defaultVal) {
-  var arr = [];
-  for (var c = 0; c < cols; c++) {
-    var row = [];
-    for (var r = 0; r < rows; r++) row.push(defaultVal);
+  const arr = [];
+  for (let c = 0; c < cols; c++) {
+    const row = [];
+    for (let r = 0; r < rows; r++) row.push(defaultVal);
     arr.push(row);
   }
   return arr;
 }
 
 function alphaBeta(board, depth, alpha, beta, aiColor, isAITurn) {
-  var currentPlayer = isAITurn ? aiColor : getOpponent(aiColor);
-  var gameOver = checkGameOver(board, currentPlayer);
+  const currentPlayer = isAITurn ? aiColor : getOpponent(aiColor);
+  const gameOver = checkGameOver(board, currentPlayer);
   if (gameOver) {
     if (gameOver.winner === aiColor) return 99999 + depth;
     return -99999 - depth;
   }
   if (depth === 0) return evaluateBoard(board, aiColor);
 
-  var moves = getAllMoves(board, currentPlayer);
-  var bestScore = -Infinity;
+  const moves = getAllMoves(board, currentPlayer);
+  let bestScore = -Infinity;
 
-  for (var i = 0; i < moves.length; i++) {
-    var newBoard = applyMove(board, moves[i]);
-    var score = -alphaBeta(newBoard, depth - 1, -beta, -alpha, aiColor, !isAITurn);
+  for (let i = 0; i < moves.length; i++) {
+    const newBoard = applyMove(board, moves[i]);
+    const score = -alphaBeta(newBoard, depth - 1, -beta, -alpha, aiColor, !isAITurn);
     if (score > bestScore) bestScore = score;
     if (bestScore > alpha) alpha = bestScore;
     if (alpha >= beta) break;
@@ -451,15 +585,15 @@ function alphaBeta(board, depth, alpha, beta, aiColor, isAITurn) {
 }
 
 function getBestAIMove(board, aiColor) {
-  var moves = getAllMoves(board, aiColor);
+  const moves = getAllMoves(board, aiColor);
   if (moves.length === 0) return null;
 
-  var bestMove = null;
-  var bestScore = -Infinity;
+  let bestMove = null;
+  let bestScore = -Infinity;
 
-  for (var i = 0; i < moves.length; i++) {
-    var newBoard = applyMove(board, moves[i]);
-    var score = -alphaBeta(newBoard, AI_DEPTH - 1, -Infinity, Infinity, aiColor, false);
+  for (let i = 0; i < moves.length; i++) {
+    const newBoard = applyMove(board, moves[i]);
+    const score = -alphaBeta(newBoard, AI_DEPTH - 1, -Infinity, Infinity, aiColor, false);
     if (score > bestScore) {
       bestScore = score;
       bestMove = moves[i];
@@ -485,7 +619,7 @@ function createGameState(mode) {
     aiThinking: false,
     selectedPiece: null,
     validMoves: [],
-    lastMove: null
+    lastMove: null,
   };
 }
 
@@ -493,28 +627,52 @@ function createGameState(mode) {
 // Export for testing
 // ============================================================
 
-if (typeof module !== 'undefined' && module.exports) {
+if (typeof module !== "undefined" && module.exports) {
   module.exports = {
-    COLS: COLS, ROWS: ROWS, EMPTY: EMPTY,
-    R_GENERAL: R_GENERAL, R_ADVISOR: R_ADVISOR, R_ELEPHANT: R_ELEPHANT,
-    R_HORSE: R_HORSE, R_CHARIOT: R_CHARIOT, R_CANNON: R_CANNON, R_PAWN: R_PAWN,
-    B_GENERAL: B_GENERAL, B_ADVISOR: B_ADVISOR, B_ELEPHANT: B_ELEPHANT,
-    B_HORSE: B_HORSE, B_CHARIOT: B_CHARIOT, B_CANNON: B_CANNON, B_PAWN: B_PAWN,
-    RED: RED, BLACK: BLACK, AI_DEPTH: AI_DEPTH,
-    isRed: isRed, isBlack: isBlack, getOwner: getOwner, getOpponent: getOpponent,
-    getPlayerName: getPlayerName, inBounds: inBounds,
-    createBoard: createBoard, copyBoard: copyBoard, applyMove: applyMove,
-    getValidMoves: getValidMoves, getAllMoves: getAllMoves,
+    COLS: COLS,
+    ROWS: ROWS,
+    EMPTY: EMPTY,
+    R_GENERAL: R_GENERAL,
+    R_ADVISOR: R_ADVISOR,
+    R_ELEPHANT: R_ELEPHANT,
+    R_HORSE: R_HORSE,
+    R_CHARIOT: R_CHARIOT,
+    R_CANNON: R_CANNON,
+    R_PAWN: R_PAWN,
+    B_GENERAL: B_GENERAL,
+    B_ADVISOR: B_ADVISOR,
+    B_ELEPHANT: B_ELEPHANT,
+    B_HORSE: B_HORSE,
+    B_CHARIOT: B_CHARIOT,
+    B_CANNON: B_CANNON,
+    B_PAWN: B_PAWN,
+    RED: RED,
+    BLACK: BLACK,
+    AI_DEPTH: AI_DEPTH,
+    isRed: isRed,
+    isBlack: isBlack,
+    getOwner: getOwner,
+    getOpponent: getOpponent,
+    getPlayerName: getPlayerName,
+    inBounds: inBounds,
+    createBoard: createBoard,
+    copyBoard: copyBoard,
+    applyMove: applyMove,
+    getValidMoves: getValidMoves,
+    getAllMoves: getAllMoves,
     isGeneralFacing: isGeneralFacing,
-    getGeneralMoves: getGeneralMoves, getAdvisorMoves: getAdvisorMoves,
-    getElephantMoves: getElephantMoves, getHorseMoves: getHorseMoves,
-    getChariotMoves: getChariotMoves, getCannonMoves: getCannonMoves,
+    getGeneralMoves: getGeneralMoves,
+    getAdvisorMoves: getAdvisorMoves,
+    getElephantMoves: getElephantMoves,
+    getHorseMoves: getHorseMoves,
+    getChariotMoves: getChariotMoves,
+    getCannonMoves: getCannonMoves,
     getPawnMoves: getPawnMoves,
     checkGameOver: checkGameOver,
     evaluateBoard: evaluateBoard,
     alphaBeta: alphaBeta,
     getBestAIMove: getBestAIMove,
-    createGameState: createGameState
+    createGameState: createGameState,
   };
 }
 
@@ -522,48 +680,52 @@ if (typeof module !== 'undefined' && module.exports) {
 // Browser UI
 // ============================================================
 
-if (typeof document !== 'undefined') {
-  var gameState = null;
-  var rpsChoices = { player1: null, player2: null, human: null };
-  var canvas, context;
-  var CELL_SIZE = 57;
-  var PADDING = 30;
-  var BOARD_W = CELL_SIZE * (COLS - 1) + PADDING * 2;
-  var BOARD_H = CELL_SIZE * (ROWS - 1) + PADDING * 2;
-  var PIECE_RADIUS = 24;
+if (typeof document !== "undefined") {
+  let gameState = null;
+  let rpsChoices = { player1: null, player2: null, human: null };
+  let canvas, context;
+  const CELL_SIZE = 57;
+  const PADDING = 30;
+  const BOARD_W = CELL_SIZE * (COLS - 1) + PADDING * 2;
+  const BOARD_H = CELL_SIZE * (ROWS - 1) + PADDING * 2;
+  const PIECE_RADIUS = 24;
 
   function initBoard() {
-    canvas = document.getElementById('board-canvas');
+    canvas = document.getElementById("board-canvas");
     canvas.width = BOARD_W;
     canvas.height = BOARD_H;
     if (window.devicePixelRatio > 1) {
       canvas.width = BOARD_W * window.devicePixelRatio;
       canvas.height = BOARD_H * window.devicePixelRatio;
-      canvas.style.width = BOARD_W + 'px';
-      canvas.style.height = BOARD_H + 'px';
+      canvas.style.width = BOARD_W + "px";
+      canvas.style.height = BOARD_H + "px";
     }
-    context = canvas.getContext('2d');
-    var ratio = window.devicePixelRatio || 1;
+    context = canvas.getContext("2d");
+    const ratio = window.devicePixelRatio || 1;
     context.scale(ratio, ratio);
     drawBoard();
   }
 
-  function toCanvasX(c) { return PADDING + c * CELL_SIZE; }
-  function toCanvasY(r) { return PADDING + r * CELL_SIZE; }
+  function toCanvasX(c) {
+    return PADDING + c * CELL_SIZE;
+  }
+  function toCanvasY(r) {
+    return PADDING + r * CELL_SIZE;
+  }
 
   function drawBoard() {
-    context.fillStyle = '#f0d9b5';
+    context.fillStyle = "#f0d9b5";
     context.fillRect(0, 0, BOARD_W, BOARD_H);
-    context.strokeStyle = '#333';
+    context.strokeStyle = "#333";
     context.lineWidth = 1;
 
-    for (var r = 0; r < ROWS; r++) {
+    for (let r = 0; r < ROWS; r++) {
       context.beginPath();
       context.moveTo(toCanvasX(0), toCanvasY(r));
       context.lineTo(toCanvasX(COLS - 1), toCanvasY(r));
       context.stroke();
     }
-    for (var c = 0; c < COLS; c++) {
+    for (let c = 0; c < COLS; c++) {
       if (c === 0 || c === COLS - 1) {
         context.beginPath();
         context.moveTo(toCanvasX(c), toCanvasY(0));
@@ -600,34 +762,34 @@ if (typeof document !== 'undefined') {
     context.stroke();
 
     // Chu River Han Border
-    context.fillStyle = '#333';
+    context.fillStyle = "#333";
     context.font = 'bold 28px "KaiTi", "楷体", serif';
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    var riverY = (toCanvasY(4) + toCanvasY(5)) / 2;
-    context.fillText('楚 河', toCanvasX(2), riverY);
-    context.fillText('汉 界', toCanvasX(6), riverY);
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    const riverY = (toCanvasY(4) + toCanvasY(5)) / 2;
+    context.fillText("楚 河", toCanvasX(2), riverY);
+    context.fillText("汉 界", toCanvasX(6), riverY);
   }
 
   function drawPiece(c, r, piece) {
-    var cx = toCanvasX(c);
-    var cy = toCanvasY(r);
-    var color = getOwner(piece);
+    const cx = toCanvasX(c);
+    const cy = toCanvasY(r);
+    const color = getOwner(piece);
 
     // Shadow
-    context.fillStyle = 'rgba(0,0,0,0.25)';
+    context.fillStyle = "rgba(0,0,0,0.25)";
     context.beginPath();
     context.arc(cx + 2, cy + 2, PIECE_RADIUS, 0, Math.PI * 2);
     context.fill();
 
     // Piece base color
-    var gradient = context.createRadialGradient(cx - 6, cy - 6, 2, cx, cy, PIECE_RADIUS);
+    const gradient = context.createRadialGradient(cx - 6, cy - 6, 2, cx, cy, PIECE_RADIUS);
     if (color === RED) {
-      gradient.addColorStop(0, '#f5c6c6');
-      gradient.addColorStop(1, '#c0392b');
+      gradient.addColorStop(0, "#f5c6c6");
+      gradient.addColorStop(1, "#c0392b");
     } else {
-      gradient.addColorStop(0, '#d5d5d5');
-      gradient.addColorStop(1, '#2c3e50');
+      gradient.addColorStop(0, "#d5d5d5");
+      gradient.addColorStop(1, "#2c3e50");
     }
     context.fillStyle = gradient;
     context.beginPath();
@@ -635,47 +797,47 @@ if (typeof document !== 'undefined') {
     context.fill();
 
     // Outer ring
-    context.strokeStyle = color === RED ? '#922b21' : '#1a252f';
+    context.strokeStyle = color === RED ? "#922b21" : "#1a252f";
     context.lineWidth = 2;
     context.stroke();
 
     // Inner ring
-    context.strokeStyle = color === RED ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.3)';
+    context.strokeStyle = color === RED ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.3)";
     context.lineWidth = 1;
     context.beginPath();
     context.arc(cx, cy, PIECE_RADIUS - 4, 0, Math.PI * 2);
     context.stroke();
 
     // Text
-    context.fillStyle = '#fff';
+    context.fillStyle = "#fff";
     context.font = 'bold 22px "KaiTi", "楷体", "SimSun", "宋体", serif';
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
+    context.textAlign = "center";
+    context.textBaseline = "middle";
     context.fillText(PIECE_NAMES[piece], cx, cy + 1);
   }
 
   function drawSelection(c, r) {
-    context.strokeStyle = '#ffd600';
+    context.strokeStyle = "#ffd600";
     context.lineWidth = 3;
-    var x = toCanvasX(c) - PIECE_RADIUS - 2;
-    var y = toCanvasY(r) - PIECE_RADIUS - 2;
-    var size = (PIECE_RADIUS + 2) * 2;
+    const x = toCanvasX(c) - PIECE_RADIUS - 2;
+    const y = toCanvasY(r) - PIECE_RADIUS - 2;
+    const size = (PIECE_RADIUS + 2) * 2;
     context.strokeRect(x, y, size, size);
   }
 
   function drawValidMoves(moves) {
-    for (var i = 0; i < moves.length; i++) {
-      var m = moves[i];
-      var cx = toCanvasX(m.toC);
-      var cy = toCanvasY(m.toR);
+    for (let i = 0; i < moves.length; i++) {
+      const m = moves[i];
+      const cx = toCanvasX(m.toC);
+      const cy = toCanvasY(m.toR);
       if (gameState.board[m.toC][m.toR] !== EMPTY) {
-        context.strokeStyle = 'rgba(229, 57, 53, 0.7)';
+        context.strokeStyle = "rgba(229, 57, 53, 0.7)";
         context.lineWidth = 3;
         context.beginPath();
         context.arc(cx, cy, PIECE_RADIUS + 2, 0, Math.PI * 2);
         context.stroke();
       } else {
-        context.fillStyle = 'rgba(76, 175, 80, 0.6)';
+        context.fillStyle = "rgba(76, 175, 80, 0.6)";
         context.beginPath();
         context.arc(cx, cy, 8, 0, Math.PI * 2);
         context.fill();
@@ -685,15 +847,20 @@ if (typeof document !== 'undefined') {
 
   function drawLastMove(move) {
     if (!move) return;
-    context.strokeStyle = 'rgba(255, 152, 0, 0.7)';
+    context.strokeStyle = "rgba(255, 152, 0, 0.7)";
     context.lineWidth = 3;
-    var size = PIECE_RADIUS + 4;
-    context.strokeRect(toCanvasX(move.fromC) - size, toCanvasY(move.fromR) - size, size * 2, size * 2);
+    const size = PIECE_RADIUS + 4;
+    context.strokeRect(
+      toCanvasX(move.fromC) - size,
+      toCanvasY(move.fromR) - size,
+      size * 2,
+      size * 2
+    );
     context.strokeRect(toCanvasX(move.toC) - size, toCanvasY(move.toR) - size, size * 2, size * 2);
   }
 
   function renderGame(state) {
-    var ratio = window.devicePixelRatio || 1;
+    const ratio = window.devicePixelRatio || 1;
     context.setTransform(1, 0, 0, 1, 0, 0);
     context.scale(ratio, ratio);
     drawBoard();
@@ -704,39 +871,39 @@ if (typeof document !== 'undefined') {
       drawValidMoves(state.validMoves);
     }
 
-    for (var c = 0; c < COLS; c++) {
-      for (var r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      for (let r = 0; r < ROWS; r++) {
         if (state.board[c][r] !== EMPTY) {
           drawPiece(c, r, state.board[c][r]);
         }
       }
     }
 
-    document.getElementById('current-player').textContent = getPlayerName(state.currentPlayer);
-    document.getElementById('current-player').className =
-      'team-indicator ' + (state.currentPlayer === RED ? 'text-red' : 'text-black-side');
-    document.getElementById('turn-count').textContent = state.turnCount;
+    document.getElementById("current-player").textContent = getPlayerName(state.currentPlayer);
+    document.getElementById("current-player").className =
+      "team-indicator " + (state.currentPlayer === RED ? "text-red" : "text-black-side");
+    document.getElementById("turn-count").textContent = state.turnCount;
 
-    var redCount = countPieces(state.board, RED);
-    var blackCount = countPieces(state.board, BLACK);
-    document.getElementById('score-red').textContent = redCount;
-    document.getElementById('score-black').textContent = blackCount;
+    const redCount = countPieces(state.board, RED);
+    const blackCount = countPieces(state.board, BLACK);
+    document.getElementById("score-red").textContent = redCount;
+    document.getElementById("score-black").textContent = blackCount;
 
     if (state.gameOver) {
-      updateMessage('游戏结束！', 'info');
+      updateMessage("游戏结束！", "info");
     } else if (state.aiThinking) {
-      updateMessage('AI正在思考...', 'info');
-    } else if (state.mode === 'pve' && state.currentPlayer === state.aiTeam) {
-      updateMessage('轮到AI行动', 'info');
+      updateMessage("AI正在思考...", "info");
+    } else if (state.mode === "pve" && state.currentPlayer === state.aiTeam) {
+      updateMessage("轮到AI行动", "info");
     } else {
-      updateMessage('轮到 ' + getPlayerName(state.currentPlayer) + ' 行动', 'info');
+      updateMessage("轮到 " + getPlayerName(state.currentPlayer) + " 行动", "info");
     }
   }
 
   function countPieces(board, color) {
-    var count = 0;
-    for (var c = 0; c < COLS; c++) {
-      for (var r = 0; r < ROWS; r++) {
+    let count = 0;
+    for (let c = 0; c < COLS; c++) {
+      for (let r = 0; r < ROWS; r++) {
         if (board[c][r] !== EMPTY && getOwner(board[c][r]) === color) count++;
       }
     }
@@ -744,41 +911,41 @@ if (typeof document !== 'undefined') {
   }
 
   function updateMessage(text, type) {
-    var el = document.getElementById('message');
+    const el = document.getElementById("message");
     el.textContent = text;
-    el.className = type === 'error' ? 'error' : (type === 'info' ? 'info' : '');
+    el.className = type === "error" ? "error" : type === "info" ? "info" : "";
   }
 
   function showGameOver(state) {
-    var winnerText = document.getElementById('winner-text');
+    const winnerText = document.getElementById("winner-text");
     if (state.winner) {
-      winnerText.textContent = getPlayerName(state.winner) + ' 获胜！';
-      winnerText.className = state.winner === RED ? 'text-red' : 'text-black-side';
+      winnerText.textContent = getPlayerName(state.winner) + " 获胜！";
+      winnerText.className = state.winner === RED ? "text-red" : "text-black-side";
     } else {
-      winnerText.textContent = '平局！';
-      winnerText.className = '';
+      winnerText.textContent = "平局！";
+      winnerText.className = "";
     }
-    document.getElementById('game-over').style.display = 'flex';
+    document.getElementById("game-over").style.display = "flex";
   }
 
   function handleCanvasClick(e) {
     if (!gameState || gameState.gameOver || gameState.aiThinking) return;
-    if (gameState.mode === 'pve' && gameState.currentPlayer === gameState.aiTeam) return;
+    if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) return;
 
-    var rect = canvas.getBoundingClientRect();
-    var scaleX = (window.devicePixelRatio || 1) * (BOARD_W / rect.width);
-    var scaleY = (window.devicePixelRatio || 1) * (BOARD_H / rect.height);
-    var px = (e.clientX - rect.left) * scaleX;
-    var py = (e.clientY - rect.top) * scaleY;
-    var col = Math.round((px - PADDING) / CELL_SIZE);
-    var row = Math.round((py - PADDING) / CELL_SIZE);
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = (window.devicePixelRatio || 1) * (BOARD_W / rect.width);
+    const scaleY = (window.devicePixelRatio || 1) * (BOARD_H / rect.height);
+    const px = (e.clientX - rect.left) * scaleX;
+    const py = (e.clientY - rect.top) * scaleY;
+    const col = Math.round((px - PADDING) / CELL_SIZE);
+    const row = Math.round((py - PADDING) / CELL_SIZE);
 
     if (!inBounds(col, row)) return;
 
-    var piece = gameState.board[col][row];
+    const piece = gameState.board[col][row];
 
     if (gameState.selectedPiece) {
-      var move = findMove(gameState.validMoves, col, row);
+      const move = findMove(gameState.validMoves, col, row);
       if (move) {
         doMove(move);
         return;
@@ -786,13 +953,13 @@ if (typeof document !== 'undefined') {
     }
 
     if (piece !== EMPTY && getOwner(piece) === gameState.currentPlayer) {
-      var moves = getValidMoves(gameState.board, col, row);
+      const moves = getValidMoves(gameState.board, col, row);
       if (moves.length > 0) {
         gameState.selectedPiece = { c: col, r: row };
         gameState.validMoves = moves;
         renderGame(gameState);
       } else {
-        updateMessage('该棋子没有合法移动', 'error');
+        updateMessage("该棋子没有合法移动", "error");
       }
       return;
     }
@@ -803,7 +970,7 @@ if (typeof document !== 'undefined') {
   }
 
   function findMove(moves, toC, toR) {
-    for (var i = 0; i < moves.length; i++) {
+    for (let i = 0; i < moves.length; i++) {
       if (moves[i].toC === toC && moves[i].toR === toR) return moves[i];
     }
     return null;
@@ -819,20 +986,22 @@ if (typeof document !== 'undefined') {
   }
 
   function endTurn() {
-    var nextPlayer = getOpponent(gameState.currentPlayer);
-    var gameOverResult = checkGameOver(gameState.board, nextPlayer);
+    const nextPlayer = getOpponent(gameState.currentPlayer);
+    const gameOverResult = checkGameOver(gameState.board, nextPlayer);
     if (gameOverResult) {
       gameState.gameOver = true;
       gameState.winner = gameOverResult.winner;
       renderGame(gameState);
-      setTimeout(function() { showGameOver(gameState); }, 500);
+      setTimeout(() => {
+        showGameOver(gameState);
+      }, 500);
       return;
     }
 
     gameState.currentPlayer = nextPlayer;
     renderGame(gameState);
 
-    if (gameState.mode === 'pve' && gameState.currentPlayer === gameState.aiTeam) {
+    if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) {
       triggerAI();
     }
   }
@@ -840,8 +1009,8 @@ if (typeof document !== 'undefined') {
   function triggerAI() {
     gameState.aiThinking = true;
     renderGame(gameState);
-    setTimeout(function() {
-      var move = getBestAIMove(gameState.board, gameState.aiTeam);
+    setTimeout(() => {
+      const move = getBestAIMove(gameState.board, gameState.aiTeam);
       gameState.aiThinking = false;
       if (move) {
         gameState.board = applyMove(gameState.board, move);
@@ -856,7 +1025,7 @@ if (typeof document !== 'undefined') {
     gameState = createGameState(mode);
     gameState.currentPlayer = firstPlayer || RED;
 
-    if (mode === 'pve') {
+    if (mode === "pve") {
       if (firstPlayer === RED) {
         gameState.playerTeam = RED;
         gameState.aiTeam = BLACK;
@@ -866,117 +1035,140 @@ if (typeof document !== 'undefined') {
       }
     }
 
-    document.getElementById('mode-selection').style.display = 'none';
-    document.getElementById('rps-section').style.display = 'none';
-    document.getElementById('game-area').style.display = 'flex';
-    document.getElementById('game-over').style.display = 'none';
+    document.getElementById("mode-selection").style.display = "none";
+    document.getElementById("rps-section").style.display = "none";
+    document.getElementById("game-area").style.display = "flex";
+    document.getElementById("game-over").style.display = "none";
 
     initBoard();
     renderGame(gameState);
     canvas.onclick = handleCanvasClick;
 
-    if (mode === 'pve' && gameState.currentPlayer === gameState.aiTeam) {
+    if (mode === "pve" && gameState.currentPlayer === gameState.aiTeam) {
       triggerAI();
     }
   }
 
   function restartGame() {
-    document.getElementById('game-over').style.display = 'none';
-    document.getElementById('game-area').style.display = 'none';
-    document.getElementById('mode-selection').style.display = 'flex';
+    document.getElementById("game-over").style.display = "none";
+    document.getElementById("game-area").style.display = "none";
+    document.getElementById("mode-selection").style.display = "flex";
     gameState = null;
   }
 
   function handleRPSChoice(player, choice) {
-    if (player === 'human') {
+    if (player === "human") {
       rpsChoices.human = choice;
-      document.querySelectorAll('#rps-player-buttons .btn-rps').forEach(function(btn) {
-        btn.classList.remove('selected');
+      document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
+        btn.classList.remove("selected");
       });
-      event.target.classList.add('selected');
+      event.target.classList.add("selected");
 
-      var choices = ['rock', 'scissors', 'paper'];
-      var aiChoice = choices[Math.floor(Math.random() * 3)];
+      const choices = ["rock", "scissors", "paper"];
+      const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      var resultEl = document.getElementById('rps-result');
-      var humanWins = judgeRPS(choice, aiChoice);
+      var resultEl = document.getElementById("rps-result");
+      const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
-        resultEl.textContent = '你选择了' + getRPSName(choice) + '，AI选择了' + getRPSName(aiChoice) + '，你赢了！你先手(红方)。';
-        setTimeout(function() { startGame('pve', RED); }, 1500);
+        resultEl.textContent =
+          "你选择了" +
+          getRPSName(choice) +
+          "，AI选择了" +
+          getRPSName(aiChoice) +
+          "，你赢了！你先手(红方)。";
+        setTimeout(() => {
+          startGame("pve", RED);
+        }, 1500);
       } else if (humanWins === -1) {
-        resultEl.textContent = '你选择了' + getRPSName(choice) + '，AI选择了' + getRPSName(aiChoice) + '，你输了！AI先手(红方)。';
-        setTimeout(function() { startGame('pve', BLACK); }, 1500);
+        resultEl.textContent =
+          "你选择了" +
+          getRPSName(choice) +
+          "，AI选择了" +
+          getRPSName(aiChoice) +
+          "，你输了！AI先手(红方)。";
+        setTimeout(() => {
+          startGame("pve", BLACK);
+        }, 1500);
       } else {
-        resultEl.textContent = '你选择了' + getRPSName(choice) + '，AI选择了' + getRPSName(aiChoice) + '，平局！重新选择。';
+        resultEl.textContent =
+          "你选择了" +
+          getRPSName(choice) +
+          "，AI选择了" +
+          getRPSName(aiChoice) +
+          "，平局！重新选择。";
         rpsChoices.human = null;
         rpsChoices.player2 = null;
       }
     } else {
-      rpsChoices['player' + player] = choice;
-      document.querySelectorAll('#rps-p' + player + '-buttons .btn-rps').forEach(function(btn) {
-        btn.classList.remove('selected');
+      rpsChoices["player" + player] = choice;
+      document.querySelectorAll("#rps-p" + player + "-buttons .btn-rps").forEach((btn) => {
+        btn.classList.remove("selected");
       });
-      event.target.classList.add('selected');
+      event.target.classList.add("selected");
 
-      var statusEl = document.getElementById('rps-p' + player + '-status');
-      statusEl.textContent = '已选择：' + getRPSName(choice);
+      const statusEl = document.getElementById("rps-p" + player + "-status");
+      statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById('rps-result');
-        var winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
+        var resultEl = document.getElementById("rps-result");
+        const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
-          resultEl.textContent = '玩家1赢了！玩家1先手(红方)。';
-          setTimeout(function() { startGame('pvp', RED); }, 1500);
+          resultEl.textContent = "玩家1赢了！玩家1先手(红方)。";
+          setTimeout(() => {
+            startGame("pvp", RED);
+          }, 1500);
         } else if (winner === -1) {
-          resultEl.textContent = '玩家2赢了！玩家2先手(红方)。';
-          setTimeout(function() { startGame('pvp', BLACK); }, 1500);
+          resultEl.textContent = "玩家2赢了！玩家2先手(红方)。";
+          setTimeout(() => {
+            startGame("pvp", BLACK);
+          }, 1500);
         } else {
-          resultEl.textContent = '平局！重新选择。';
+          resultEl.textContent = "平局！重新选择。";
           rpsChoices.player1 = null;
           rpsChoices.player2 = null;
-          document.getElementById('rps-p1-status').textContent = '请选择';
-          document.getElementById('rps-p2-status').textContent = '请选择';
-          document.querySelectorAll('.btn-rps').forEach(function(btn) {
-            btn.classList.remove('selected');
+          document.getElementById("rps-p1-status").textContent = "请选择";
+          document.getElementById("rps-p2-status").textContent = "请选择";
+          document.querySelectorAll(".btn-rps").forEach((btn) => {
+            btn.classList.remove("selected");
           });
         }
       }
     }
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('btn-pvp').addEventListener('click', function() {
-      document.getElementById('mode-selection').style.display = 'none';
-      document.getElementById('rps-section').style.display = 'flex';
-      document.getElementById('rps-pvp').style.display = 'block';
-      document.getElementById('rps-pve').style.display = 'none';
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("btn-pvp").addEventListener("click", () => {
+      document.getElementById("mode-selection").style.display = "none";
+      document.getElementById("rps-section").style.display = "flex";
+      document.getElementById("rps-pvp").style.display = "block";
+      document.getElementById("rps-pve").style.display = "none";
       rpsChoices = { player1: null, player2: null, human: null };
     });
 
-    document.getElementById('btn-pve').addEventListener('click', function() {
-      document.getElementById('mode-selection').style.display = 'none';
-      document.getElementById('rps-section').style.display = 'flex';
-      document.getElementById('rps-pvp').style.display = 'none';
-      document.getElementById('rps-pve').style.display = 'block';
+    document.getElementById("btn-pve").addEventListener("click", () => {
+      document.getElementById("mode-selection").style.display = "none";
+      document.getElementById("rps-section").style.display = "flex";
+      document.getElementById("rps-pvp").style.display = "none";
+      document.getElementById("rps-pve").style.display = "block";
       rpsChoices = { player1: null, player2: null, human: null };
     });
 
-    document.querySelectorAll('.btn-rps').forEach(function(button) {
-      button.addEventListener('click', function(ev) {
-        var player = ev.target.dataset.player;
-        var choice = ev.target.dataset.choice;
+    document.querySelectorAll(".btn-rps").forEach((button) => {
+      button.addEventListener("click", (ev) => {
+        const player = ev.target.dataset.player;
+        const choice = ev.target.dataset.choice;
         handleRPSChoice(player, choice);
       });
     });
 
-    document.getElementById('btn-restart').addEventListener('click', restartGame);
+    document.getElementById("btn-restart").addEventListener("click", restartGame);
 
-    document.getElementById('mode-selection').style.display = 'flex';
-    document.getElementById('rps-section').style.display = 'none';
-    document.getElementById('game-area').style.display = 'none';
-    document.getElementById('game-over').style.display = 'none';
+    document.getElementById("mode-selection").style.display = "flex";
+    document.getElementById("rps-section").style.display = "none";
+    document.getElementById("game-area").style.display = "none";
+    document.getElementById("game-over").style.display = "none";
   });
 }

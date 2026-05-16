@@ -1,24 +1,53 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 import {
-  BOARD_SIZE, EMPTY,
-  W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
-  B_PAWN, B_KNIGHT, B_BISHOP, B_ROOK, B_QUEEN, B_KING,
-  WHITE, BLACK, AI_DEPTH,
-  isWhite, isBlack, getOwner, getOpponent, getPlayerName, inBounds,
-  createBoard, copyBoard, applyMove,
-  getValidMoves, getAllMoves,
-  isInCheck, isSquareAttacked,
-  getPawnMoves, getKnightMoves, getBishopMoves, getRookMoves,
-  getQueenMoves, getKingMoves,
-  checkGameOver, evaluateBoard, getBestAIMove, createGameState
-} from './game.js';
+  BOARD_SIZE,
+  EMPTY,
+  W_PAWN,
+  W_KNIGHT,
+  W_BISHOP,
+  W_ROOK,
+  W_QUEEN,
+  W_KING,
+  B_PAWN,
+  B_KNIGHT,
+  B_BISHOP,
+  B_ROOK,
+  B_QUEEN,
+  B_KING,
+  WHITE,
+  BLACK,
+  AI_DEPTH,
+  isWhite,
+  isBlack,
+  getOwner,
+  getOpponent,
+  getPlayerName,
+  inBounds,
+  createBoard,
+  copyBoard,
+  applyMove,
+  getValidMoves,
+  getAllMoves,
+  isInCheck,
+  isSquareAttacked,
+  getPawnMoves,
+  getKnightMoves,
+  getBishopMoves,
+  getRookMoves,
+  getQueenMoves,
+  getKingMoves,
+  checkGameOver,
+  evaluateBoard,
+  getBestAIMove,
+  createGameState,
+} from "./game.js";
 
-describe('constants', () => {
-  it('board size', () => {
+describe("constants", () => {
+  it("board size", () => {
     expect(BOARD_SIZE).toBe(8);
     expect(EMPTY).toBe(0);
   });
-  it('white pieces', () => {
+  it("white pieces", () => {
     expect(W_PAWN).toBe(1);
     expect(W_KNIGHT).toBe(2);
     expect(W_BISHOP).toBe(3);
@@ -26,7 +55,7 @@ describe('constants', () => {
     expect(W_QUEEN).toBe(5);
     expect(W_KING).toBe(6);
   });
-  it('black pieces', () => {
+  it("black pieces", () => {
     expect(B_PAWN).toBe(7);
     expect(B_KNIGHT).toBe(8);
     expect(B_BISHOP).toBe(9);
@@ -34,42 +63,42 @@ describe('constants', () => {
     expect(B_QUEEN).toBe(11);
     expect(B_KING).toBe(12);
   });
-  it('colors', () => {
-    expect(WHITE).toBe('white');
-    expect(BLACK).toBe('black');
+  it("colors", () => {
+    expect(WHITE).toBe("white");
+    expect(BLACK).toBe("black");
   });
-  it('AI_DEPTH is 3', () => {
+  it("AI_DEPTH is 3", () => {
     expect(AI_DEPTH).toBe(3);
   });
 });
 
-describe('piece helpers', () => {
-  it('isWhite', () => {
+describe("piece helpers", () => {
+  it("isWhite", () => {
     expect(isWhite(W_PAWN)).toBe(true);
     expect(isWhite(W_KING)).toBe(true);
     expect(isWhite(B_PAWN)).toBe(false);
     expect(isWhite(EMPTY)).toBe(false);
   });
-  it('isBlack', () => {
+  it("isBlack", () => {
     expect(isBlack(B_PAWN)).toBe(true);
     expect(isBlack(B_KING)).toBe(true);
     expect(isBlack(W_PAWN)).toBe(false);
     expect(isBlack(EMPTY)).toBe(false);
   });
-  it('getOwner', () => {
+  it("getOwner", () => {
     expect(getOwner(W_ROOK)).toBe(WHITE);
     expect(getOwner(B_KNIGHT)).toBe(BLACK);
     expect(getOwner(EMPTY)).toBeNull();
   });
-  it('getOpponent', () => {
+  it("getOpponent", () => {
     expect(getOpponent(WHITE)).toBe(BLACK);
     expect(getOpponent(BLACK)).toBe(WHITE);
   });
-  it('getPlayerName', () => {
-    expect(getPlayerName(WHITE)).toBe('白方');
-    expect(getPlayerName(BLACK)).toBe('黑方');
+  it("getPlayerName", () => {
+    expect(getPlayerName(WHITE)).toBe("白方");
+    expect(getPlayerName(BLACK)).toBe("黑方");
   });
-  it('inBounds', () => {
+  it("inBounds", () => {
     expect(inBounds(0, 0)).toBe(true);
     expect(inBounds(7, 7)).toBe(true);
     expect(inBounds(-1, 0)).toBe(false);
@@ -78,15 +107,15 @@ describe('piece helpers', () => {
   });
 });
 
-describe('createBoard', () => {
-  it('creates 8x8 board', () => {
+describe("createBoard", () => {
+  it("creates 8x8 board", () => {
     var board = createBoard();
     expect(board.length).toBe(8);
     for (var c = 0; c < 8; c++) {
       expect(board[c].length).toBe(8);
     }
   });
-  it('has correct black pieces at row 0', () => {
+  it("has correct black pieces at row 0", () => {
     var board = createBoard();
     expect(board[0][0]).toBe(B_ROOK);
     expect(board[1][0]).toBe(B_KNIGHT);
@@ -97,7 +126,7 @@ describe('createBoard', () => {
     expect(board[6][0]).toBe(B_KNIGHT);
     expect(board[7][0]).toBe(B_ROOK);
   });
-  it('has correct white pieces at row 7', () => {
+  it("has correct white pieces at row 7", () => {
     var board = createBoard();
     expect(board[0][7]).toBe(W_ROOK);
     expect(board[1][7]).toBe(W_KNIGHT);
@@ -108,14 +137,14 @@ describe('createBoard', () => {
     expect(board[6][7]).toBe(W_KNIGHT);
     expect(board[7][7]).toBe(W_ROOK);
   });
-  it('has pawns at correct rows', () => {
+  it("has pawns at correct rows", () => {
     var board = createBoard();
     for (var c = 0; c < 8; c++) {
       expect(board[c][1]).toBe(B_PAWN);
       expect(board[c][6]).toBe(W_PAWN);
     }
   });
-  it('has 32 pieces total', () => {
+  it("has 32 pieces total", () => {
     var board = createBoard();
     var count = 0;
     for (var c = 0; c < 8; c++) {
@@ -125,7 +154,7 @@ describe('createBoard', () => {
     }
     expect(count).toBe(32);
   });
-  it('middle rows are empty', () => {
+  it("middle rows are empty", () => {
     var board = createBoard();
     for (var c = 0; c < 8; c++) {
       for (var r = 2; r < 6; r++) {
@@ -135,8 +164,8 @@ describe('createBoard', () => {
   });
 });
 
-describe('copyBoard', () => {
-  it('creates independent copy', () => {
+describe("copyBoard", () => {
+  it("creates independent copy", () => {
     var board = createBoard();
     var copy = copyBoard(board);
     copy[0][0] = EMPTY;
@@ -144,15 +173,15 @@ describe('copyBoard', () => {
   });
 });
 
-describe('applyMove', () => {
-  it('moves piece correctly', () => {
+describe("applyMove", () => {
+  it("moves piece correctly", () => {
     var board = createBoard();
     var move = { fromC: 4, fromR: 6, toC: 4, toR: 4 };
     var newBoard = applyMove(board, move);
     expect(newBoard[4][6]).toBe(EMPTY);
     expect(newBoard[4][4]).toBe(W_PAWN);
   });
-  it('captures enemy piece', () => {
+  it("captures enemy piece", () => {
     var board = createBoard();
     board[3][3] = B_PAWN;
     var move = { fromC: 4, fromR: 6, toC: 3, toR: 3, promotion: W_QUEEN };
@@ -160,13 +189,13 @@ describe('applyMove', () => {
     expect(newBoard[4][6]).toBe(EMPTY);
     expect(newBoard[3][3]).toBe(W_QUEEN);
   });
-  it('does not modify original', () => {
+  it("does not modify original", () => {
     var board = createBoard();
     var move = { fromC: 4, fromR: 6, toC: 4, toR: 4 };
     applyMove(board, move);
     expect(board[4][6]).toBe(W_PAWN);
   });
-  it('handles castling king-side', () => {
+  it("handles castling king-side", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][7] = W_KING;
@@ -178,7 +207,7 @@ describe('applyMove', () => {
     expect(newBoard[7][7]).toBe(EMPTY);
     expect(newBoard[5][7]).toBe(W_ROOK);
   });
-  it('handles castling queen-side', () => {
+  it("handles castling queen-side", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][7] = W_KING;
@@ -190,7 +219,7 @@ describe('applyMove', () => {
     expect(newBoard[0][7]).toBe(EMPTY);
     expect(newBoard[3][7]).toBe(W_ROOK);
   });
-  it('handles promotion', () => {
+  it("handles promotion", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][1] = W_PAWN;
@@ -202,13 +231,13 @@ describe('applyMove', () => {
   });
 });
 
-describe('Pawn moves', () => {
-  it('white pawn can move forward one or two from start', () => {
+describe("Pawn moves", () => {
+  it("white pawn can move forward one or two from start", () => {
     var board = createBoard();
     var moves = getPawnMoves(board, 4, 6, WHITE);
     expect(moves.length).toBe(2);
   });
-  it('white pawn can only move one after leaving start', () => {
+  it("white pawn can only move one after leaving start", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][5] = W_PAWN;
@@ -216,31 +245,31 @@ describe('Pawn moves', () => {
     expect(moves.length).toBe(1);
     expect(moves[0].toR).toBe(4);
   });
-  it('black pawn can move forward one or two from start', () => {
+  it("black pawn can move forward one or two from start", () => {
     var board = createBoard();
     var moves = getPawnMoves(board, 4, 1, BLACK);
     expect(moves.length).toBe(2);
   });
-  it('pawn can capture diagonally', () => {
+  it("pawn can capture diagonally", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][4] = W_PAWN;
     board[3][3] = B_PAWN;
     board[5][3] = B_KNIGHT;
     var moves = getPawnMoves(board, 4, 4, WHITE);
-    var captures = moves.filter(function(m) { return m.toC !== 4; });
+    var captures = moves.filter((m) => m.toC !== 4);
     expect(captures.length).toBe(2);
   });
-  it('pawn cannot move forward into occupied square', () => {
+  it("pawn cannot move forward into occupied square", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][4] = W_PAWN;
     board[4][3] = B_PAWN;
     var moves = getPawnMoves(board, 4, 4, WHITE);
-    var forward = moves.filter(function(m) { return m.toC === 4; });
+    var forward = moves.filter((m) => m.toC === 4);
     expect(forward.length).toBe(0);
   });
-  it('white pawn promotes at row 0', () => {
+  it("white pawn promotes at row 0", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][1] = W_PAWN;
@@ -251,7 +280,7 @@ describe('Pawn moves', () => {
       expect(moves[i].promotion).toBeDefined();
     }
   });
-  it('black pawn promotes at row 7', () => {
+  it("black pawn promotes at row 7", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][6] = B_PAWN;
@@ -264,43 +293,43 @@ describe('Pawn moves', () => {
   });
 });
 
-describe('Knight moves', () => {
-  it('knight has up to 8 moves in open field', () => {
+describe("Knight moves", () => {
+  it("knight has up to 8 moves in open field", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[3][4] = W_KNIGHT;
     var moves = getKnightMoves(board, 3, 4, WHITE);
     expect(moves.length).toBe(8);
   });
-  it('knight at corner has fewer moves', () => {
+  it("knight at corner has fewer moves", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[0][0] = W_KNIGHT;
     var moves = getKnightMoves(board, 0, 0, WHITE);
     expect(moves.length).toBe(2);
   });
-  it('knight can jump over pieces', () => {
+  it("knight can jump over pieces", () => {
     var board = createBoard();
     // Knight at (1,7) can jump to (0,5) or (2,5) despite pawns
     var moves = getKnightMoves(board, 1, 7, WHITE);
     expect(moves.length).toBe(2);
   });
-  it('knight cannot capture own pieces', () => {
+  it("knight cannot capture own pieces", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[3][4] = W_KNIGHT;
     board[1][3] = W_PAWN;
     board[5][3] = W_PAWN;
     var moves = getKnightMoves(board, 3, 4, WHITE);
-    var capturesOwn = moves.filter(function(m) {
-      return (m.toC === 1 && m.toR === 3) || (m.toC === 5 && m.toR === 3);
-    });
+    var capturesOwn = moves.filter(
+      (m) => (m.toC === 1 && m.toR === 3) || (m.toC === 5 && m.toR === 3)
+    );
     expect(capturesOwn.length).toBe(0);
   });
 });
 
-describe('Bishop moves', () => {
-  it('bishop moves diagonally', () => {
+describe("Bishop moves", () => {
+  it("bishop moves diagonally", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[3][4] = W_BISHOP;
@@ -308,31 +337,31 @@ describe('Bishop moves', () => {
     // diagonals: up-left(2), up-right(3), down-left(4), down-right(4) = 13
     expect(moves.length).toBe(13);
   });
-  it('bishop blocked by own piece', () => {
+  it("bishop blocked by own piece", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[3][4] = W_BISHOP;
     board[4][3] = W_PAWN; // blocks down-right
     var moves = getBishopMoves(board, 3, 4, WHITE);
-    var blocked = moves.filter(function(m) { return m.toC === 4 && m.toR === 3; });
+    var blocked = moves.filter((m) => m.toC === 4 && m.toR === 3);
     expect(blocked.length).toBe(0);
   });
-  it('bishop can capture enemy', () => {
+  it("bishop can capture enemy", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[3][4] = W_BISHOP;
     board[5][2] = B_PAWN;
     var moves = getBishopMoves(board, 3, 4, WHITE);
-    var capture = moves.filter(function(m) { return m.toC === 5 && m.toR === 2; });
+    var capture = moves.filter((m) => m.toC === 5 && m.toR === 2);
     expect(capture.length).toBe(1);
     // cannot go beyond
-    var beyond = moves.filter(function(m) { return m.toC === 6 && m.toR === 1; });
+    var beyond = moves.filter((m) => m.toC === 6 && m.toR === 1);
     expect(beyond.length).toBe(0);
   });
 });
 
-describe('Rook moves', () => {
-  it('rook moves along lines', () => {
+describe("Rook moves", () => {
+  it("rook moves along lines", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[3][4] = W_ROOK;
@@ -340,19 +369,19 @@ describe('Rook moves', () => {
     // vertical: 4 up + 3 down = 7, horizontal: 3 left + 4 right = 7 => 14
     expect(moves.length).toBe(14);
   });
-  it('rook blocked by own piece', () => {
+  it("rook blocked by own piece", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[3][4] = W_ROOK;
     board[3][2] = W_PAWN; // block upward
     var moves = getRookMoves(board, 3, 4, WHITE);
-    var upMoves = moves.filter(function(m) { return m.toC === 3 && m.toR < 4; });
+    var upMoves = moves.filter((m) => m.toC === 3 && m.toR < 4);
     expect(upMoves.length).toBe(1); // only row 3
   });
 });
 
-describe('Queen moves', () => {
-  it('queen moves like rook + bishop', () => {
+describe("Queen moves", () => {
+  it("queen moves like rook + bishop", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[3][4] = W_QUEEN;
@@ -362,71 +391,71 @@ describe('Queen moves', () => {
   });
 });
 
-describe('King moves', () => {
-  it('king moves one step in all directions', () => {
+describe("King moves", () => {
+  it("king moves one step in all directions", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][4] = W_KING;
     var moves = getKingMoves(board, 4, 4, WHITE);
     expect(moves.length).toBe(8);
   });
-  it('king at corner has 3 moves', () => {
+  it("king at corner has 3 moves", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[0][0] = W_KING;
     var moves = getKingMoves(board, 0, 0, WHITE);
     expect(moves.length).toBe(3);
   });
-  it('king cannot move to attacked square', () => {
+  it("king cannot move to attacked square", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][4] = W_KING;
     board[3][2] = B_ROOK; // attacks (3,4) and (4,2) etc
     var moves = getValidMoves(board, 4, 4, new Set());
-    var toAttacked = moves.filter(function(m) { return m.toC === 3 && m.toR === 4; });
+    var toAttacked = moves.filter((m) => m.toC === 3 && m.toR === 4);
     expect(toAttacked.length).toBe(0);
   });
-  it('castling king-side works', () => {
+  it("castling king-side works", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][7] = W_KING;
     board[7][7] = W_ROOK;
     var hasMoved = new Set();
     var moves = getKingMoves(board, 4, 7, WHITE, hasMoved);
-    var castle = moves.filter(function(m) { return m.castling && m.toC === 6; });
+    var castle = moves.filter((m) => m.castling && m.toC === 6);
     expect(castle.length).toBe(1);
   });
-  it('castling queen-side works', () => {
+  it("castling queen-side works", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][7] = W_KING;
     board[0][7] = W_ROOK;
     var hasMoved = new Set();
     var moves = getKingMoves(board, 4, 7, WHITE, hasMoved);
-    var castle = moves.filter(function(m) { return m.castling && m.toC === 2; });
+    var castle = moves.filter((m) => m.castling && m.toC === 2);
     expect(castle.length).toBe(1);
   });
-  it('castling blocked if king has moved', () => {
+  it("castling blocked if king has moved", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][7] = W_KING;
     board[7][7] = W_ROOK;
-    var hasMoved = new Set(['4,7']);
+    var hasMoved = new Set(["4,7"]);
     var moves = getKingMoves(board, 4, 7, WHITE, hasMoved);
-    var castle = moves.filter(function(m) { return m.castling; });
+    var castle = moves.filter((m) => m.castling);
     expect(castle.length).toBe(0);
   });
-  it('castling blocked if rook has moved', () => {
+  it("castling blocked if rook has moved", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][7] = W_KING;
     board[7][7] = W_ROOK;
-    var hasMoved = new Set(['7,7']);
+    var hasMoved = new Set(["7,7"]);
     var moves = getKingMoves(board, 4, 7, WHITE, hasMoved);
-    var castle = moves.filter(function(m) { return m.castling; });
+    var castle = moves.filter((m) => m.castling);
     expect(castle.length).toBe(0);
   });
-  it('castling blocked if path not clear', () => {
+  it("castling blocked if path not clear", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][7] = W_KING;
@@ -434,10 +463,10 @@ describe('King moves', () => {
     board[5][7] = W_BISHOP; // blocks path
     var hasMoved = new Set();
     var moves = getKingMoves(board, 4, 7, WHITE, hasMoved);
-    var castle = moves.filter(function(m) { return m.castling; });
+    var castle = moves.filter((m) => m.castling);
     expect(castle.length).toBe(0);
   });
-  it('castling blocked if king passes through attacked square', () => {
+  it("castling blocked if king passes through attacked square", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][7] = W_KING;
@@ -445,20 +474,20 @@ describe('King moves', () => {
     board[5][0] = B_ROOK; // attacks (5,7)
     var hasMoved = new Set();
     var moves = getKingMoves(board, 4, 7, WHITE, hasMoved);
-    var castle = moves.filter(function(m) { return m.castling; });
+    var castle = moves.filter((m) => m.castling);
     expect(castle.length).toBe(0);
   });
 });
 
-describe('Check detection', () => {
-  it('detects check by rook', () => {
+describe("Check detection", () => {
+  it("detects check by rook", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][4] = W_KING;
     board[4][0] = B_ROOK; // checks king
     expect(isInCheck(board, WHITE)).toBe(true);
   });
-  it('no check when blocked', () => {
+  it("no check when blocked", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][4] = W_KING;
@@ -466,28 +495,28 @@ describe('Check detection', () => {
     board[4][2] = W_PAWN; // blocks
     expect(isInCheck(board, WHITE)).toBe(false);
   });
-  it('detects check by knight', () => {
+  it("detects check by knight", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][4] = W_KING;
     board[2][3] = B_KNIGHT; // attacks (4,4)
     expect(isInCheck(board, WHITE)).toBe(true);
   });
-  it('detects check by bishop', () => {
+  it("detects check by bishop", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][4] = W_KING;
     board[2][2] = B_BISHOP; // attacks (4,4) diagonally
     expect(isInCheck(board, WHITE)).toBe(true);
   });
-  it('detects check by pawn', () => {
+  it("detects check by pawn", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][4] = W_KING;
     board[3][3] = B_PAWN; // attacks (4,4) diagonally
     expect(isInCheck(board, WHITE)).toBe(true);
   });
-  it('isSquareAttacked works', () => {
+  it("isSquareAttacked works", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][4] = B_ROOK;
@@ -497,8 +526,8 @@ describe('Check detection', () => {
   });
 });
 
-describe('getValidMoves filters', () => {
-  it('filters moves that leave king in check', () => {
+describe("getValidMoves filters", () => {
+  it("filters moves that leave king in check", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][4] = W_KING;
@@ -513,12 +542,12 @@ describe('getValidMoves filters', () => {
   });
 });
 
-describe('checkGameOver', () => {
-  it('returns null for initial board', () => {
+describe("checkGameOver", () => {
+  it("returns null for initial board", () => {
     var board = createBoard();
     expect(checkGameOver(board, WHITE)).toBeNull();
   });
-  it('detects white king missing', () => {
+  it("detects white king missing", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][0] = B_KING;
@@ -526,7 +555,7 @@ describe('checkGameOver', () => {
     expect(result).not.toBeNull();
     expect(result.winner).toBe(BLACK);
   });
-  it('detects black king missing', () => {
+  it("detects black king missing", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][7] = W_KING;
@@ -534,7 +563,7 @@ describe('checkGameOver', () => {
     expect(result).not.toBeNull();
     expect(result.winner).toBe(WHITE);
   });
-  it('detects checkmate', () => {
+  it("detects checkmate", () => {
     // Scholar's mate position: black king at (7,0), white queen at (6,1), white bishop at (5,2)
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
@@ -546,9 +575,9 @@ describe('checkGameOver', () => {
     // Black king has no legal moves and is in check
     expect(result).not.toBeNull();
     expect(result.winner).toBe(WHITE);
-    expect(result.reason).toBe('checkmate');
+    expect(result.reason).toBe("checkmate");
   });
-  it('detects stalemate', () => {
+  it("detects stalemate", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[0][0] = B_KING;
@@ -562,19 +591,19 @@ describe('checkGameOver', () => {
     // Diagonal: (0,1), (2,1), (0,3), (2,3)... not (0,0)
     // So black is not in check, but has no moves = stalemate
     var result = checkGameOver(board, BLACK);
-    if (result && result.reason === 'stalemate') {
+    if (result && result.reason === "stalemate") {
       expect(result.winner).toBeNull();
     }
   });
 });
 
-describe('evaluateBoard', () => {
-  it('returns near 0 for initial position', () => {
+describe("evaluateBoard", () => {
+  it("returns near 0 for initial position", () => {
     var board = createBoard();
     var score = evaluateBoard(board, WHITE);
     expect(Math.abs(score)).toBeLessThan(100);
   });
-  it('positive when AI has material advantage', () => {
+  it("positive when AI has material advantage", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][7] = W_KING;
@@ -584,7 +613,7 @@ describe('evaluateBoard', () => {
     var score = evaluateBoard(board, WHITE);
     expect(score).toBeGreaterThan(0);
   });
-  it('negative when opponent has material advantage', () => {
+  it("negative when opponent has material advantage", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][7] = W_KING;
@@ -596,8 +625,8 @@ describe('evaluateBoard', () => {
   });
 });
 
-describe('getBestAIMove', () => {
-  it('returns a valid move from initial position', () => {
+describe("getBestAIMove", () => {
+  it("returns a valid move from initial position", () => {
     var board = createBoard();
     var move = getBestAIMove(board, WHITE);
     expect(move).not.toBeNull();
@@ -606,7 +635,7 @@ describe('getBestAIMove', () => {
     expect(move.toC).toBeDefined();
     expect(move.toR).toBeDefined();
   });
-  it('takes winning capture when available', () => {
+  it("takes winning capture when available", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     board[4][7] = W_KING;
@@ -618,15 +647,15 @@ describe('getBestAIMove', () => {
   });
 });
 
-describe('getAllMoves', () => {
-  it('returns moves for initial board', () => {
+describe("getAllMoves", () => {
+  it("returns moves for initial board", () => {
     var board = createBoard();
     var moves = getAllMoves(board, WHITE);
     expect(moves.length).toBeGreaterThan(0);
     // White has 20 initial moves (16 pawn + 4 knight)
     expect(moves.length).toBe(20);
   });
-  it('returns empty when no pieces', () => {
+  it("returns empty when no pieces", () => {
     var board = [];
     for (var c = 0; c < 8; c++) board.push(new Array(8).fill(EMPTY));
     var moves = getAllMoves(board, WHITE);
@@ -634,10 +663,10 @@ describe('getAllMoves', () => {
   });
 });
 
-describe('createGameState', () => {
-  it('creates correct initial state', () => {
-    var state = createGameState('pvp');
-    expect(state.mode).toBe('pvp');
+describe("createGameState", () => {
+  it("creates correct initial state", () => {
+    var state = createGameState("pvp");
+    expect(state.mode).toBe("pvp");
     expect(state.currentPlayer).toBe(WHITE);
     expect(state.gameOver).toBe(false);
     expect(state.winner).toBeNull();
@@ -650,8 +679,8 @@ describe('createGameState', () => {
     expect(state.hasMoved).toBeInstanceOf(Set);
     expect(state.promotionPending).toBeNull();
   });
-  it('pve mode has null teams initially', () => {
-    var state = createGameState('pve');
+  it("pve mode has null teams initially", () => {
+    var state = createGameState("pve");
     expect(state.playerTeam).toBeNull();
     expect(state.aiTeam).toBeNull();
   });

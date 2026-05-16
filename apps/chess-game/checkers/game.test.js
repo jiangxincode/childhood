@@ -1,45 +1,65 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 import {
-  BOARD_SIZE, EMPTY, RED, WHITE, RED_KING, WHITE_KING, AI_DEPTH,
-  createBoard, copyBoard, isRed, isWhite, isKing, getOwner,
-  getOpponent, getPlayerName, promote, inBounds,
-  getSimpleMoves, getCaptureMoves, getAllMoves, applyMove,
-  checkGameOver, evaluateBoard, getBestAIMove, createGameState
-} from './game.js';
+  BOARD_SIZE,
+  EMPTY,
+  RED,
+  WHITE,
+  RED_KING,
+  WHITE_KING,
+  AI_DEPTH,
+  createBoard,
+  copyBoard,
+  isRed,
+  isWhite,
+  isKing,
+  getOwner,
+  getOpponent,
+  getPlayerName,
+  promote,
+  inBounds,
+  getSimpleMoves,
+  getCaptureMoves,
+  getAllMoves,
+  applyMove,
+  checkGameOver,
+  evaluateBoard,
+  getBestAIMove,
+  createGameState,
+} from "./game.js";
 
-describe('constants', () => {
-  it('BOARD_SIZE is 8', () => {
+describe("constants", () => {
+  it("BOARD_SIZE is 8", () => {
     expect(BOARD_SIZE).toBe(8);
   });
-  it('EMPTY is 0', () => {
+  it("EMPTY is 0", () => {
     expect(EMPTY).toBe(0);
   });
-  it('RED is 1', () => {
+  it("RED is 1", () => {
     expect(RED).toBe(1);
   });
-  it('WHITE is 2', () => {
+  it("WHITE is 2", () => {
     expect(WHITE).toBe(2);
   });
-  it('RED_KING is 3', () => {
+  it("RED_KING is 3", () => {
     expect(RED_KING).toBe(3);
   });
-  it('WHITE_KING is 4', () => {
+  it("WHITE_KING is 4", () => {
     expect(WHITE_KING).toBe(4);
   });
-  it('AI_DEPTH is 4', () => {
+  it("AI_DEPTH is 4", () => {
     expect(AI_DEPTH).toBe(4);
   });
 });
 
-describe('createBoard', () => {
-  it('creates 8x8 board', () => {
+describe("createBoard", () => {
+  it("creates 8x8 board", () => {
     var board = createBoard();
     expect(board.length).toBe(8);
     for (var r = 0; r < 8; r++) {
       expect(board[r].length).toBe(8);
     }
   });
-  it('RED pieces on dark squares in rows 0-2', () => {
+  it("RED pieces on dark squares in rows 0-2", () => {
     var board = createBoard();
     var redCount = 0;
     for (var r = 0; r < 3; r++) {
@@ -54,7 +74,7 @@ describe('createBoard', () => {
     }
     expect(redCount).toBe(12);
   });
-  it('WHITE pieces on dark squares in rows 5-7', () => {
+  it("WHITE pieces on dark squares in rows 5-7", () => {
     var board = createBoard();
     var whiteCount = 0;
     for (var r = 5; r < 8; r++) {
@@ -69,7 +89,7 @@ describe('createBoard', () => {
     }
     expect(whiteCount).toBe(12);
   });
-  it('rows 3-4 are empty', () => {
+  it("rows 3-4 are empty", () => {
     var board = createBoard();
     for (var r = 3; r <= 4; r++) {
       for (var c = 0; c < 8; c++) {
@@ -77,7 +97,7 @@ describe('createBoard', () => {
       }
     }
   });
-  it('light squares are always empty', () => {
+  it("light squares are always empty", () => {
     var board = createBoard();
     for (var r = 0; r < 8; r++) {
       for (var c = 0; c < 8; c++) {
@@ -89,14 +109,14 @@ describe('createBoard', () => {
   });
 });
 
-describe('copyBoard', () => {
-  it('creates independent copy', () => {
+describe("copyBoard", () => {
+  it("creates independent copy", () => {
     var board = createBoard();
     var copy = copyBoard(board);
     copy[0][1] = 99;
     expect(board[0][1]).toBe(RED);
   });
-  it('copies all values correctly', () => {
+  it("copies all values correctly", () => {
     var board = createBoard();
     var copy = copyBoard(board);
     for (var r = 0; r < 8; r++) {
@@ -107,27 +127,27 @@ describe('copyBoard', () => {
   });
 });
 
-describe('piece helpers', () => {
-  it('isRed', () => {
+describe("piece helpers", () => {
+  it("isRed", () => {
     expect(isRed(RED)).toBe(true);
     expect(isRed(RED_KING)).toBe(true);
     expect(isRed(WHITE)).toBe(false);
     expect(isRed(WHITE_KING)).toBe(false);
     expect(isRed(EMPTY)).toBe(false);
   });
-  it('isWhite', () => {
+  it("isWhite", () => {
     expect(isWhite(WHITE)).toBe(true);
     expect(isWhite(WHITE_KING)).toBe(true);
     expect(isWhite(RED)).toBe(false);
     expect(isWhite(EMPTY)).toBe(false);
   });
-  it('isKing', () => {
+  it("isKing", () => {
     expect(isKing(RED_KING)).toBe(true);
     expect(isKing(WHITE_KING)).toBe(true);
     expect(isKing(RED)).toBe(false);
     expect(isKing(WHITE)).toBe(false);
   });
-  it('getOwner', () => {
+  it("getOwner", () => {
     expect(getOwner(RED)).toBe(RED);
     expect(getOwner(RED_KING)).toBe(RED);
     expect(getOwner(WHITE)).toBe(WHITE);
@@ -136,50 +156,50 @@ describe('piece helpers', () => {
   });
 });
 
-describe('getOpponent', () => {
-  it('RED -> WHITE', () => {
+describe("getOpponent", () => {
+  it("RED -> WHITE", () => {
     expect(getOpponent(RED)).toBe(WHITE);
   });
-  it('WHITE -> RED', () => {
+  it("WHITE -> RED", () => {
     expect(getOpponent(WHITE)).toBe(RED);
   });
 });
 
-describe('getPlayerName', () => {
-  it('RED is 红方', () => {
-    expect(getPlayerName(RED)).toBe('红方');
+describe("getPlayerName", () => {
+  it("RED is 红方", () => {
+    expect(getPlayerName(RED)).toBe("红方");
   });
-  it('WHITE is 白方', () => {
-    expect(getPlayerName(WHITE)).toBe('白方');
+  it("WHITE is 白方", () => {
+    expect(getPlayerName(WHITE)).toBe("白方");
   });
 });
 
-describe('promote', () => {
-  it('RED promotes at row 7', () => {
+describe("promote", () => {
+  it("RED promotes at row 7", () => {
     expect(promote(RED, 7)).toBe(RED_KING);
   });
-  it('RED does not promote at row 6', () => {
+  it("RED does not promote at row 6", () => {
     expect(promote(RED, 6)).toBe(RED);
   });
-  it('WHITE promotes at row 0', () => {
+  it("WHITE promotes at row 0", () => {
     expect(promote(WHITE, 0)).toBe(WHITE_KING);
   });
-  it('WHITE does not promote at row 1', () => {
+  it("WHITE does not promote at row 1", () => {
     expect(promote(WHITE, 1)).toBe(WHITE);
   });
-  it('king stays king', () => {
+  it("king stays king", () => {
     expect(promote(RED_KING, 7)).toBe(RED_KING);
     expect(promote(WHITE_KING, 0)).toBe(WHITE_KING);
   });
 });
 
-describe('inBounds', () => {
-  it('valid positions', () => {
+describe("inBounds", () => {
+  it("valid positions", () => {
     expect(inBounds(0, 0)).toBe(true);
     expect(inBounds(7, 7)).toBe(true);
     expect(inBounds(3, 4)).toBe(true);
   });
-  it('out of bounds', () => {
+  it("out of bounds", () => {
     expect(inBounds(-1, 0)).toBe(false);
     expect(inBounds(0, -1)).toBe(false);
     expect(inBounds(8, 0)).toBe(false);
@@ -187,28 +207,28 @@ describe('inBounds', () => {
   });
 });
 
-describe('getSimpleMoves', () => {
-  it('RED piece can move diagonally down', () => {
+describe("getSimpleMoves", () => {
+  it("RED piece can move diagonally down", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[2][3] = RED; // dark square: (2+3)%2=1
     var moves = getSimpleMoves(board, 2, 3);
     expect(moves.length).toBe(2);
-    var targets = moves.map(function(m) { return m.toR + ',' + m.toC; });
-    expect(targets).toContain('3,2');
-    expect(targets).toContain('3,4');
+    var targets = moves.map((m) => m.toR + "," + m.toC);
+    expect(targets).toContain("3,2");
+    expect(targets).toContain("3,4");
   });
-  it('WHITE piece can move diagonally up', () => {
+  it("WHITE piece can move diagonally up", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[5][2] = WHITE;
     var moves = getSimpleMoves(board, 5, 2);
     expect(moves.length).toBe(2);
-    var targets = moves.map(function(m) { return m.toR + ',' + m.toC; });
-    expect(targets).toContain('4,1');
-    expect(targets).toContain('4,3');
+    var targets = moves.map((m) => m.toR + "," + m.toC);
+    expect(targets).toContain("4,1");
+    expect(targets).toContain("4,3");
   });
-  it('blocked piece has no moves', () => {
+  it("blocked piece has no moves", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[2][3] = RED;
@@ -217,14 +237,14 @@ describe('getSimpleMoves', () => {
     var moves = getSimpleMoves(board, 2, 3);
     expect(moves.length).toBe(0);
   });
-  it('king can move in all 4 directions', () => {
+  it("king can move in all 4 directions", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[3][4] = RED_KING;
     var moves = getSimpleMoves(board, 3, 4);
     expect(moves.length).toBe(4);
   });
-  it('edge piece has fewer moves', () => {
+  it("edge piece has fewer moves", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[0][1] = RED; // top edge, dark square
@@ -232,7 +252,7 @@ describe('getSimpleMoves', () => {
     // RED moves down: (1,0) and (1,2) both in bounds
     expect(moves.length).toBe(2);
   });
-  it('corner piece has only 1 move', () => {
+  it("corner piece has only 1 move", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[1][0] = RED; // left edge dark square
@@ -242,8 +262,8 @@ describe('getSimpleMoves', () => {
   });
 });
 
-describe('getCaptureMoves', () => {
-  it('RED can capture WHITE', () => {
+describe("getCaptureMoves", () => {
+  it("RED can capture WHITE", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[2][3] = RED;
@@ -256,7 +276,7 @@ describe('getCaptureMoves', () => {
     expect(caps[0].capturedR).toBe(3);
     expect(caps[0].capturedC).toBe(4);
   });
-  it('cannot capture own piece', () => {
+  it("cannot capture own piece", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[2][3] = RED;
@@ -265,7 +285,7 @@ describe('getCaptureMoves', () => {
     var caps = getCaptureMoves(board, 2, 3);
     expect(caps.length).toBe(0);
   });
-  it('cannot capture to occupied square', () => {
+  it("cannot capture to occupied square", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[2][3] = RED;
@@ -274,7 +294,7 @@ describe('getCaptureMoves', () => {
     var caps = getCaptureMoves(board, 2, 3);
     expect(caps.length).toBe(0);
   });
-  it('regular RED cannot capture backward', () => {
+  it("regular RED cannot capture backward", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[4][5] = RED;
@@ -283,7 +303,7 @@ describe('getCaptureMoves', () => {
     var caps = getCaptureMoves(board, 4, 5);
     expect(caps.length).toBe(0);
   });
-  it('king can capture in all directions', () => {
+  it("king can capture in all directions", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[3][4] = RED_KING;
@@ -300,8 +320,8 @@ describe('getCaptureMoves', () => {
   });
 });
 
-describe('getAllMoves', () => {
-  it('returns simple moves when no captures', () => {
+describe("getAllMoves", () => {
+  it("returns simple moves when no captures", () => {
     var board = createBoard();
     var moves = getAllMoves(board, RED);
     // RED has 12 pieces, each with 1-2 simple moves
@@ -311,7 +331,7 @@ describe('getAllMoves', () => {
       expect(moves[i].capturedR).toBeUndefined();
     }
   });
-  it('forces capture when available', () => {
+  it("forces capture when available", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     // One RED that can capture, one that has simple moves
@@ -325,7 +345,7 @@ describe('getAllMoves', () => {
       expect(moves[i].capturedR).toBeDefined();
     }
   });
-  it('returns empty array when no legal moves', () => {
+  it("returns empty array when no legal moves", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     // RED at (0,1): forward moves (1,0) and (1,2) occupied by WHITE
@@ -342,22 +362,22 @@ describe('getAllMoves', () => {
   });
 });
 
-describe('applyMove', () => {
-  it('moves piece correctly', () => {
+describe("applyMove", () => {
+  it("moves piece correctly", () => {
     var board = createBoard();
     var move = { fromR: 2, fromC: 3, toR: 3, toC: 4 };
     var newBoard = applyMove(board, move);
     expect(newBoard[2][3]).toBe(EMPTY);
     expect(newBoard[3][4]).toBe(RED);
   });
-  it('does not modify original board', () => {
+  it("does not modify original board", () => {
     var board = createBoard();
     var move = { fromR: 2, fromC: 3, toR: 3, toC: 4 };
     applyMove(board, move);
     expect(board[2][3]).toBe(RED);
     expect(board[3][4]).toBe(EMPTY);
   });
-  it('removes captured piece', () => {
+  it("removes captured piece", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[2][3] = RED;
@@ -367,7 +387,7 @@ describe('applyMove', () => {
     expect(newBoard[3][4]).toBe(EMPTY);
     expect(newBoard[4][5]).toBe(RED);
   });
-  it('promotes piece at opposite end', () => {
+  it("promotes piece at opposite end", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[6][1] = RED;
@@ -377,12 +397,12 @@ describe('applyMove', () => {
   });
 });
 
-describe('checkGameOver', () => {
-  it('returns null when game is ongoing', () => {
+describe("checkGameOver", () => {
+  it("returns null when game is ongoing", () => {
     var board = createBoard();
     expect(checkGameOver(board, RED)).toBeNull();
   });
-  it('detects RED has no pieces', () => {
+  it("detects RED has no pieces", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[5][2] = WHITE;
@@ -390,7 +410,7 @@ describe('checkGameOver', () => {
     expect(result).not.toBeNull();
     expect(result.winner).toBe(WHITE);
   });
-  it('detects WHITE has no pieces', () => {
+  it("detects WHITE has no pieces", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[2][3] = RED;
@@ -398,7 +418,7 @@ describe('checkGameOver', () => {
     expect(result).not.toBeNull();
     expect(result.winner).toBe(RED);
   });
-  it('detects no legal moves', () => {
+  it("detects no legal moves", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     // RED at (0,1) completely blocked: forward moves occupied, capture landing occupied
@@ -412,15 +432,15 @@ describe('checkGameOver', () => {
   });
 });
 
-describe('evaluateBoard', () => {
-  it('returns 0 for equal position', () => {
+describe("evaluateBoard", () => {
+  it("returns 0 for equal position", () => {
     var board = createBoard();
     // Both sides have 12 pieces, symmetric
     var score = evaluateBoard(board, RED);
     // Should be close to 0 (small differences due to position)
     expect(Math.abs(score)).toBeLessThan(50);
   });
-  it('positive when AI has more pieces', () => {
+  it("positive when AI has more pieces", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[3][4] = RED;
@@ -429,7 +449,7 @@ describe('evaluateBoard', () => {
     var score = evaluateBoard(board, RED);
     expect(score).toBeGreaterThan(0);
   });
-  it('negative when opponent has more pieces', () => {
+  it("negative when opponent has more pieces", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[3][4] = RED;
@@ -438,7 +458,7 @@ describe('evaluateBoard', () => {
     var score = evaluateBoard(board, RED);
     expect(score).toBeLessThan(0);
   });
-  it('king is worth more than regular piece', () => {
+  it("king is worth more than regular piece", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     board[3][4] = RED_KING;
@@ -457,8 +477,8 @@ describe('evaluateBoard', () => {
   });
 });
 
-describe('getBestAIMove', () => {
-  it('returns a valid move', () => {
+describe("getBestAIMove", () => {
+  it("returns a valid move", () => {
     var board = createBoard();
     var move = getBestAIMove(board, RED);
     expect(move).not.toBeNull();
@@ -467,7 +487,7 @@ describe('getBestAIMove', () => {
     expect(move.toR).toBeDefined();
     expect(move.toC).toBeDefined();
   });
-  it('takes winning capture when available', () => {
+  it("takes winning capture when available", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     // AI (RED) can capture last WHITE piece
@@ -478,7 +498,7 @@ describe('getBestAIMove', () => {
     expect(move.capturedR).toBe(3);
     expect(move.capturedC).toBe(4);
   });
-  it('blocks opponent from winning', () => {
+  it("blocks opponent from winning", () => {
     var board = [];
     for (var r = 0; r < 8; r++) board.push(new Array(8).fill(EMPTY));
     // WHITE has pieces that can capture RED
@@ -491,10 +511,10 @@ describe('getBestAIMove', () => {
   });
 });
 
-describe('createGameState', () => {
-  it('creates correct initial state', () => {
-    var state = createGameState('pvp');
-    expect(state.mode).toBe('pvp');
+describe("createGameState", () => {
+  it("creates correct initial state", () => {
+    var state = createGameState("pvp");
+    expect(state.mode).toBe("pvp");
     expect(state.currentPlayer).toBe(RED);
     expect(state.gameOver).toBe(false);
     expect(state.winner).toBeNull();
@@ -509,8 +529,8 @@ describe('createGameState', () => {
     expect(state.lastMove).toBeNull();
     expect(state.multiJumpPiece).toBeNull();
   });
-  it('pve mode has null teams initially', () => {
-    var state = createGameState('pve');
+  it("pve mode has null teams initially", () => {
+    var state = createGameState("pve");
     expect(state.playerTeam).toBeNull();
     expect(state.aiTeam).toBeNull();
   });
