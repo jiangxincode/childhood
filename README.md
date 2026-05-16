@@ -48,6 +48,39 @@
 |:---:|
 | ![围棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/围棋.jpg) |
 
+## 项目结构
+
+```
+childhood/
+├── apps/
+│   ├── card-game/                    # 童年经典卡牌游戏
+│   │   ├── knife-kills-chicken/      # 刀杀鸡
+│   │   ├── dragon-tiger-fight/       # 龙虎斗
+│   │   ├── animal-chess/             # 兽棋
+│   │   ├── chinese-army-chess/       # 军棋（卡牌版）
+│   │   ├── cat-and-mouse/            # 猫捉老鼠
+│   │   └── little-emperor/           # 小皇帝
+│   ├── chess-game/                   # 棋类游戏
+│   │   ├── chinese-chess/            # 中国象棋
+│   │   ├── international-chess/      # 国际象棋
+│   │   ├── chinese-army-chess/       # 军棋（棋盘版）
+│   │   ├── gomoku/                   # 五子棋
+│   │   ├── reversi/                  # 黑白棋
+│   │   ├── checkers/                 # 国际跳棋
+│   │   ├── flying-chess/             # 飞行棋
+│   │   ├── tic-tac-toe/              # 井字棋
+│   │   ├── chinese-checkers/         # 中国跳棋
+│   │   └── go/                       # 围棋
+│   └── common/                       # 共享模块
+│       ├── card-game-core.js         # 卡牌游戏核心逻辑
+│       └── game-utils.js             # 游戏工具函数
+├── js/                               # 全局 JavaScript
+├── css/                              # 全局样式
+├── images/                           # 图片资源
+├── index.html                        # 入口页面
+└── package.json                      # 项目配置
+```
+
 ## 快速开始
 
 ```bash
