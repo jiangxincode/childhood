@@ -28,9 +28,9 @@
 |:-------------:|:-------:|:------:|
 | ![军棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/军师旅团营.jpg) | ![猫捉老鼠](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/猫捉老鼠.jpg) | ![小皇帝](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/小皇帝.jpg) |
 
-## 棋类游戏
+## 经典棋盘游戏
 
-![策略棋盘博弈](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/策略棋盘博弈.jpg)
+![经典棋盘游戏](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/策略棋盘博弈.jpg)
 
 | 中国象棋 | 国际象棋 | 军棋（棋盘版） |
 |:-------:|:-------:|:------------:|
@@ -40,13 +40,19 @@
 |:-----:|:-----:|:-------:|
 | ![五子棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/五子棋.jpg) | ![黑白棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/黑白棋.jpg) | ![国际跳棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/国际跳棋.jpg) |
 
-| 飞行棋 | 井字棋 | 中国跳棋 |
-|:-----:|:-----:|:-------:|
-| ![飞行棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/飞行棋.jpg) | ![井字棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/井字棋.jpg) | ![中国跳棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/中国跳棋.jpg) |
+| 井字棋 | 中国跳棋 | 围棋 |
+|:-----:|:-------:|:---:|
+| ![井字棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/井字棋.jpg) | ![中国跳棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/中国跳棋.jpg) | ![围棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/围棋.jpg) |
 
-| 围棋 |
-|:---:|
-| ![围棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/围棋.jpg) |
+## 欢乐骰子游戏
+
+| 飞行棋 |
+|:-----:|
+| ![飞行棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/飞行棋.jpg) |
+
+## 童年棋盘游戏
+
+敬请期待……
 
 ## 项目结构
 
@@ -60,17 +66,19 @@ childhood/
 │   │   ├── chinese-army-chess/       # 军棋（卡牌版）
 │   │   ├── cat-and-mouse/            # 猫捉老鼠
 │   │   └── little-emperor/           # 小皇帝
-│   ├── chess-game/                   # 棋类游戏
+│   ├── board-game/                   # 经典棋盘游戏
 │   │   ├── chinese-chess/            # 中国象棋
 │   │   ├── international-chess/      # 国际象棋
 │   │   ├── chinese-army-chess/       # 军棋（棋盘版）
 │   │   ├── gomoku/                   # 五子棋
 │   │   ├── reversi/                  # 黑白棋
 │   │   ├── checkers/                 # 国际跳棋
-│   │   ├── flying-chess/             # 飞行棋
 │   │   ├── tic-tac-toe/              # 井字棋
 │   │   ├── chinese-checkers/         # 中国跳棋
 │   │   └── go/                       # 围棋
+│   ├── dice-game/                    # 欢乐骰子游戏
+│   │   └── flying-chess/             # 飞行棋
+│   ├── childhood-board-game/         # 童年棋盘游戏
 │   └── common/                       # 共享模块
 │       ├── card-game-core.js         # 卡牌游戏核心逻辑
 │       └── game-utils.js             # 游戏工具函数
