@@ -987,6 +987,7 @@ if (typeof document !== "undefined") {
     document.getElementById("mode-selection").style.display = "none";
     document.getElementById("rps-section").style.display = "none";
     document.getElementById("game-area").style.display = "flex";
+    document.getElementById("rule-pve").style.display = mode === "pve" ? "block" : "none";
     document.getElementById("game-over").style.display = "none";
 
     initBoard();

@@ -590,6 +590,7 @@ function startGame(mode, firstPlayer = PLAYER_BLACK) {
 
   // Show game area
   document.getElementById("game-area").style.display = "flex";
+  document.getElementById("rule-pve").style.display = mode === "pve" ? "block" : "none";
 
   // Initialize board
   initBoard();

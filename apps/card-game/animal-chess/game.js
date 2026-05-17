@@ -554,6 +554,7 @@ if (typeof document !== "undefined") {
     $modeSelection.style.display = "none";
     $rpsSection.style.display = "none";
     $gameArea.style.display = "flex";
+    document.getElementById("rule-pve").style.display = gameState.mode === "pve" ? "block" : "none";
     $gameOver.style.display = "none";
   }
 

@@ -63,6 +63,8 @@ const PlaneOption = function () {
     $j(".option-panel").addClass("hidden");
     $j("#game-main").css("display", "flex");
     $j("#rules-panel").show();
+    const hasComputer = planeOption.userList.some((u) => u.state === "computer");
+    $j("#rule-pve").css("display", hasComputer ? "block" : "none");
   };
 };
 const planeOption = new PlaneOption();

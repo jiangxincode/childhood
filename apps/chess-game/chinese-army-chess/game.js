@@ -1508,6 +1508,8 @@ if (typeof document !== "undefined") {
   function showGameArea() {
     $modeSelection.style.display = "none";
     $gameArea.style.display = "flex";
+    document.getElementById("rule-pve").style.display =
+      gameState.oppType === "pve" ? "block" : "none";
     $gameOver.style.display = "none";
   }
 
