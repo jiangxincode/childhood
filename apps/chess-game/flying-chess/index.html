@@ -4,17 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>飞行棋</title>
-  <link rel="stylesheet" href="css/init.css">
-  <link rel="stylesheet" href="css/common.css">
-  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="game.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.css" integrity="sha384-nUTaU14OWvO/jw7oZcZKWi+CMigrJqCcXOckztW+DdeohdDB4Qm6CEAGGk1y1KL+" crossorigin="anonymous">
   <script src="../../../js/baidu-analytics.js"></script>
   <script src="../../../js/common.js"></script>
-  <script src="js/Coord.js"></script>
 </head>
 <body>
 
-  <!-- 游戏设置界面 -->
+  <!-- Game Settings -->
   <div id="option-panel" class="option-panel">
     <div class="option-content">
       <h1 class="option-title">飞行棋</h1>
@@ -81,7 +78,7 @@
     </div>
   </div>
 
-  <!-- 状态栏 -->
+  <!-- Status Bar -->
   <div id="status-bar">
     <div class="status-item">
       <span class="label">当前行动方：</span>
@@ -109,11 +106,10 @@
     </div>
   </div>
 
-  <!-- 主游戏区域：棋盘 + 规则面板 -->
+  <!-- Main Game Area -->
   <div id="game-main">
-    <!-- 游戏主容器 -->
     <div class="main">
-      <!-- 骰子区域 -->
+      <!-- Dice -->
       <div class="dice" id="dice">
         <div class="slot slot1"></div>
         <div class="slot slot2"></div>
@@ -123,14 +119,14 @@
         <div class="slot slot6"></div>
       </div>
 
-      <!-- 各玩家骰子结果显示 -->
+      <!-- Dice result display -->
       <div id="sdnred" class="showdicenum sdnred"></div>
       <div id="sdnblue" class="showdicenum sdnblue"></div>
       <div id="sdnyellow" class="showdicenum sdnyellow"></div>
       <div id="sdngreen" class="showdicenum sdngreen"></div>
     </div>
 
-    <!-- 游戏规则面板（游戏开始后显示在棋盘右侧） -->
+    <!-- Rules Panel -->
     <div id="rules-panel">
       <h3>📜 游戏规则</h3>
       <div class="rule-section">
@@ -170,10 +166,10 @@
     </div>
   </div>
 
-  <!-- 电脑回合遮罩 -->
+  <!-- Computer turn overlay -->
   <div class="shade">&nbsp;</div>
 
-  <!-- 音效播放元素 -->
+  <!-- Audio element -->
   <audio id="yinxiao" src=""></audio>
 
   <!-- jQuery (CDN) -->
@@ -181,13 +177,9 @@
   <script>
     var $j = jQuery.noConflict();
   </script>
-  <!-- SlotMachine 插件 -->
+  <!-- SlotMachine plugin -->
   <script src="https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.min.js" integrity="sha384-1G5Acg2KIubxO4nuc5u6ws1osW3s92QGxLdwGhqveLameeWIhDbEf0zGpYS6qz1v" crossorigin="anonymous"></script>
-  <!-- 游戏逻辑 -->
-  <script src="js/Audio.js"></script>
-  <script src="js/Option.js"></script>
-  <script src="js/Rule.js"></script>
-  <script src="js/Computer.js"></script>
-  <script src="js/index.js"></script>
+  <!-- Game logic -->
+  <script src="game.js"></script>
 </body>
 </html>
