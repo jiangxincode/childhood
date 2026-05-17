@@ -547,8 +547,8 @@ if (typeof $j !== "undefined") {
 
     function backCurrentUserAllPlane() {
       $j(".plane").each(function () {
-        if (this.currentUser == $j(this).attr("type")) {
-          this.planeBack("attack", this.currentUser, $j(this));
+        if (planeOption.currentUser == $j(this).attr("type")) {
+          rule.planeBack("attack", planeOption.currentUser, $j(this));
         }
       });
     }
@@ -797,7 +797,7 @@ if (typeof $j !== "undefined") {
       }
     });
     if (!flag) {
-      setTimeout(nextUser(), 1000);
+      setTimeout(nextUser, 1000);
     } else if (state == "computer") {
       computer.performing();
     }
@@ -1102,8 +1102,8 @@ if (typeof $j !== "undefined") {
             return false;
           }
         }
-      } else if (event.keyCode) {
-        if (event.keyCode == 116) {
+      } else if (e.keyCode) {
+        if (e.keyCode == 116) {
           if (confirm("确定刷新页面吗？刷新后页面数据将被清除！")) {
             return true;
           } else {
