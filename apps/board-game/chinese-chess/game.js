@@ -945,8 +945,9 @@ if (typeof document !== "undefined") {
     if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) return;
 
     const rect = canvas.getBoundingClientRect();
-    const scaleX = (window.devicePixelRatio || 1) * (BOARD_W / rect.width);
-    const scaleY = (window.devicePixelRatio || 1) * (BOARD_H / rect.height);
+    // rect is in CSS pixels and so are PADDING/CELL_SIZE; do NOT multiply by devicePixelRatio.
+    const scaleX = BOARD_W / rect.width;
+    const scaleY = BOARD_H / rect.height;
     const px = (e.clientX - rect.left) * scaleX;
     const py = (e.clientY - rect.top) * scaleY;
     let col = Math.round((px - PADDING) / CELL_SIZE);

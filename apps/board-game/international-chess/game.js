@@ -1009,8 +1009,9 @@ if (typeof document !== "undefined") {
     if (gameState.promotionPending) return;
 
     const rect = canvas.getBoundingClientRect();
-    const scaleX = (window.devicePixelRatio || 1) * (CANVAS_SIZE / rect.width);
-    const scaleY = (window.devicePixelRatio || 1) * (CANVAS_SIZE / rect.height);
+    // rect is in CSS pixels and so are PADDING/CELL_SIZE; do NOT multiply by devicePixelRatio.
+    const scaleX = CANVAS_SIZE / rect.width;
+    const scaleY = CANVAS_SIZE / rect.height;
     const px = (e.clientX - rect.left) * scaleX;
     const py = (e.clientY - rect.top) * scaleY;
     let col = Math.floor((px - PADDING) / CELL_SIZE);
