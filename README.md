@@ -12,7 +12,7 @@
   <a href="https://sonarcloud.io/dashboard?id=jiangxincode_childhood"><img src="https://sonarcloud.io/api/project_badges/measure?project=jiangxincode_childhood&metric=alert_status" alt="Quality Gate Status"></a>
 </p>
 
-一个纯前端经典游戏合集，收录了 **16 款**童年桌游与卡牌游戏，零框架、零构建，开箱即玩。
+一个纯前端经典游戏合集，收录了 **28 款**童年桌游与卡牌游戏，零框架、零构建，开箱即玩。
 
 **[在线体验](https://jiangxincode.github.io/childhood/)**
 
@@ -52,7 +52,21 @@
 
 ## 童年棋盘游戏
 
-敬请期待……
+| 摆四龙 | 憋茅坑 | 蚂蚁搬家 |
+|:-----:|:-----:|:-------:|
+| ![摆四龙](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/摆四龙.jpg) | ![憋茅坑](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/憋茅坑.jpg) | ![蚂蚁搬家](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/蚂蚁搬家.jpg) |
+
+| 小猫钓鱼 | 狼吃羊 | 四步钉 |
+|:-------:|:-----:|:------:|
+| ![小猫钓鱼](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/小猫钓鱼.jpg) | ![狼吃羊](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/狼吃羊.jpg) | ![四步钉](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/四步钉.jpg) |
+
+| 成龙成方 | 憋葫芦 | 钻牛角尖 |
+|:-------:|:-----:|:-------:|
+| ![成龙成方](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/成龙成方.jpg) | ![憋葫芦](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/憋葫芦.jpg) | ![钻牛角尖](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/钻牛角尖.jpg) |
+
+| 仨子儿棋 | 上刀山 | 散窑 |
+|:-------:|:-----:|:---:|
+| ![仨子儿棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/仨子儿棋.jpg) | ![上刀山](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/上刀山.jpg) | ![散窑](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/散窑.jpg) |
 
 ## 项目结构
 
@@ -79,6 +93,18 @@ childhood/
 │   ├── dice-game/                    # 欢乐骰子游戏
 │   │   └── flying-chess/             # 飞行棋
 │   ├── childhood-board-game/         # 童年棋盘游戏
+│   │   ├── bai-si-long/              # 摆四龙
+│   │   ├── bie-mao-keng/             # 憋茅坑
+│   │   ├── ma-yi-ban-jia/            # 蚂蚁搬家
+│   │   ├── xiao-mao-diao-yu/         # 小猫钓鱼
+│   │   ├── lang-chi-yang/            # 狼吃羊
+│   │   ├── si-bu-ding/               # 四步钉
+│   │   ├── cheng-long-cheng-fang/    # 成龙成方
+│   │   ├── bie-hu-lu/                # 憋葫芦
+│   │   ├── zuan-niu-jiao-jian/       # 钻牛角尖
+│   │   ├── sa-zi-er-qi/              # 仨子儿棋
+│   │   ├── shang-dao-shan/           # 上刀山
+│   │   └── san-yao/                  # 散窑
 │   └── common/                       # 共享模块
 │       ├── card-game-core.js         # 卡牌游戏核心逻辑
 │       └── game-utils.js             # 游戏工具函数

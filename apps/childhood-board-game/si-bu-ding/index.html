@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>四步钉</title>
+  <link rel="stylesheet" href="game.css">
+  <script src="../../../js/baidu-analytics.js"></script>
+  <script src="../../../js/common.js"></script>
+  <script src="../../common/game-utils.js"></script>
+</head>
+<body>
+
+  <!-- Mode Selection -->
+  <div id="mode-selection" class="overlay">
+    <div class="overlay-content">
+      <h1 class="game-title">四步钉</h1>
+      <p class="subtitle">经典童年棋盘游戏</p>
+      <div class="mode-buttons">
+        <button id="btn-pvp" class="btn btn-pvp">双人对战</button>
+        <button id="btn-pve" class="btn btn-pve">人机对战</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RPS Selection -->
+  <div id="rps-section" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2>石头剪刀布 - 决定先手</h2>
+      <div id="rps-pvp" style="display:none;">
+      </div>
+      <div id="rps-pve" style="display:none;">
+        <div class="rps-player">
+          <h3>你的选择</h3>
+          <div class="rps-buttons">
+            <button class="btn btn-rps" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-choice="paper">🖐️ 布</button>
+          </div>
+        </div>
+      </div>
+      <div id="rps-result" class="rps-result"></div>
+    </div>
+  </div>
+
+  <!-- Game Area -->
+  <div id="game-area" style="display:none;">
+    <div id="status-bar">
+      <div class="status-item">
+        <span class="label">当前行动方：</span>
+        <span id="current-player" class="team-indicator">—</span>
+      </div>
+      <div class="status-item">
+        <span class="label">回合：</span>
+        <span id="turn-count">0</span>
+      </div>
+      <div class="status-item">
+        <span class="label">阶段：</span>
+        <span id="phase-text">布子阶段</span>
+      </div>
+      <div class="status-item">
+        <span class="label">A棋子：</span>
+        <span id="pieces-a" class="team-a">4</span>
+      </div>
+      <div class="status-item">
+        <span class="label">B棋子：</span>
+        <span id="pieces-b" class="team-b">4</span>
+      </div>
+    </div>
+
+    <div id="game-main">
+      <div id="board"></div>
+
+      <div id="rules-panel">
+        <h3>游戏规则</h3>
+        <div class="rule-section">
+          <h4>基本规则</h4>
+          <ul>
+            <li>3x3棋盘，双方各4颗棋子</li>
+            <li>先布子后走子</li>
+            <li>只能横、竖走，每次一步（不能斜走）</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>吃子规则</h4>
+          <ul>
+            <li>一方相连的两颗子与对方一颗子形成直线时，可吃掉对方那颗子</li>
+            <li>即：AAO 或 OAA 排列（横/竖）</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>胜利条件</h4>
+          <ul>
+            <li>将对方棋子吃到只剩1颗即获胜</li>
+          </ul>
+        </div>
+        <div id="rule-pve" class="rule-section">
+          <h4>人机模式</h4>
+          <ul>
+            <li>AI会尽力获胜或阻止你</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="message"></div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="game-over" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2 id="winner-text">游戏结束</h2>
+      <button id="btn-restart" class="btn btn-restart">重新开始</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
