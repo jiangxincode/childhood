@@ -1,0 +1,572 @@
+/* eslint-disable no-var */
+// ============================================================
+// 憋茅坑 (Bie Mao Keng) - Block the Well
+// 2 players, "区"-shaped board with a well, 2 pieces each
+// Win by blocking opponent from moving
+// ============================================================
+
+if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
+  var _gameUtils = require("../../common/game-utils.js");
+  var judgeRPS = _gameUtils.judgeRPS;
+  var getRPSName = _gameUtils.getRPSName;
+}
+
+var PLAYER_A = "A";
+var PLAYER_B = "B";
+var EMPTY = null;
+var TOTAL_POSITIONS = 5;
+var PIECES_EACH = 2;
+
+// Board: Square with center point + well on right side
+// The well replaces the right edge (1-3)
+// Pieces cannot move diagonally across two spaces - must go through center
+// Positions arranged as:
+//   0 ---- 1
+//   | \  / |
+//   |  4   |  (well on right)
+//   | /  \ |
+//   2 ---- 3
+//
+// Edges: square perimeter (0-1, 0-2, 2-3) + center connections (0-4, 1-4, 2-4, 3-4)
+// Note: 1-3 edge is replaced by the well
+var EDGES = [
+  [0, 1], // top
+  [0, 2], // left
+  [2, 3], // bottom
+  [0, 4], // top-left to center
+  [1, 4], // top-right to center
+  [2, 4], // bottom-left to center
+  [3, 4], // bottom-right to center
+];
+
+// Position coordinates for SVG rendering
+var POSITIONS = [
+  { x: 120, y: 60 }, // 0: top-left
+  { x: 320, y: 60 }, // 1: top-right
+  { x: 120, y: 340 }, // 2: bottom-left
+  { x: 320, y: 340 }, // 3: bottom-right
+  { x: 220, y: 200 }, // 4: center
+];
+
+// Display names for positions
+var POSITION_NAMES = ["top-left", "top-right", "bottom-left", "bottom-right", "center"];
+
+// Build adjacency list from edges
+var ADJACENCY = [];
+for (var i = 0; i < TOTAL_POSITIONS; i++) {
+  ADJACENCY.push([]);
+}
+for (var e = 0; e < EDGES.length; e++) {
+  ADJACENCY[EDGES[e][0]].push(EDGES[e][1]);
+  ADJACENCY[EDGES[e][1]].push(EDGES[e][0]);
+}
+
+function createBoard() {
+  var board = [];
+  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+    board.push(EMPTY);
+  }
+  return board;
+}
+
+function createInitialState(mode) {
+  var board = createBoard();
+  // Default: A at top (0 and 1), B at bottom (2 and 3)
+  board[0] = PLAYER_A;
+  board[1] = PLAYER_A;
+  board[2] = PLAYER_B;
+  board[3] = PLAYER_B;
+  // Position 4 (center) is empty
+
+  return {
+    mode: mode,
+    board: board,
+    currentPlayer: PLAYER_A,
+    playerTeam: null,
+    aiTeam: null,
+    gameOver: false,
+    winner: null,
+    turnCount: 0,
+    aiThinking: false,
+  };
+}
+
+function getNeighbors(pos) {
+  return ADJACENCY[pos];
+}
+
+function getValidMovesForPiece(board, pos) {
+  var neighbors = ADJACENCY[pos];
+  var moves = [];
+  for (var i = 0; i < neighbors.length; i++) {
+    if (board[neighbors[i]] === EMPTY) {
+      moves.push(neighbors[i]);
+    }
+  }
+  return moves;
+}
+
+function getAllValidMoves(board, player) {
+  var moves = [];
+  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+    if (board[i] === player) {
+      var targets = getValidMovesForPiece(board, i);
+      for (var j = 0; j < targets.length; j++) {
+        moves.push({ from: i, to: targets[j] });
+      }
+    }
+  }
+  return moves;
+}
+
+function canMove(board, player) {
+  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+    if (board[i] === player) {
+      if (getValidMovesForPiece(board, i).length > 0) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function checkWin(board) {
+  if (!canMove(board, PLAYER_A)) {
+    return PLAYER_B;
+  }
+  if (!canMove(board, PLAYER_B)) {
+    return PLAYER_A;
+  }
+  return null;
+}
+
+function movePiece(board, from, to) {
+  var newBoard = board.slice();
+  newBoard[to] = newBoard[from];
+  newBoard[from] = EMPTY;
+  return newBoard;
+}
+
+function getOpponent(player) {
+  return player === PLAYER_A ? PLAYER_B : PLAYER_A;
+}
+
+function countPieces(board, player) {
+  var count = 0;
+  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+    if (board[i] === player) count++;
+  }
+  return count;
+}
+
+// ============================================================
+// AI: Minimax with alpha-beta pruning (depth-limited)
+// ============================================================
+function evaluateBoard(board, aiPlayer) {
+  var opponent = getOpponent(aiPlayer);
+  var winner = checkWin(board);
+  if (winner === aiPlayer) return 1000;
+  if (winner === opponent) return -1000;
+
+  var score = 0;
+
+  // Mobility score
+  var aiMoves = getAllValidMoves(board, aiPlayer).length;
+  var oppMoves = getAllValidMoves(board, opponent).length;
+  score += (aiMoves - oppMoves) * 5;
+
+  // Center control is valuable (position 4)
+  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+    if (board[i] === aiPlayer) {
+      if (i === 4) score += 5; // center is good
+    }
+    if (board[i] === opponent) {
+      if (i === 4) score -= 5;
+    }
+  }
+
+  return score;
+}
+
+function minimax(board, depth, alpha, beta, maximizing, aiPlayer) {
+  var winner = checkWin(board);
+  if (winner === aiPlayer) return 1000 + depth;
+  if (winner !== null) return -1000 - depth;
+  if (depth === 0) return evaluateBoard(board, aiPlayer);
+
+  var currentPlayer = maximizing ? aiPlayer : getOpponent(aiPlayer);
+  var moves = getAllValidMoves(board, currentPlayer);
+
+  if (moves.length === 0) {
+    return maximizing ? -1000 - depth : 1000 + depth;
+  }
+
+  if (maximizing) {
+    var maxEval = -Infinity;
+    for (var i = 0; i < moves.length; i++) {
+      var newBoard = movePiece(board, moves[i].from, moves[i].to);
+      var evalScore = minimax(newBoard, depth - 1, alpha, beta, false, aiPlayer);
+      if (evalScore > maxEval) maxEval = evalScore;
+      if (maxEval > alpha) alpha = maxEval;
+      if (beta <= alpha) break;
+    }
+    return maxEval;
+  } else {
+    var minEval = Infinity;
+    for (var i2 = 0; i2 < moves.length; i2++) {
+      var newBoard2 = movePiece(board, moves[i2].from, moves[i2].to);
+      var evalScore2 = minimax(newBoard2, depth - 1, alpha, beta, true, aiPlayer);
+      if (evalScore2 < minEval) minEval = evalScore2;
+      if (minEval < beta) beta = minEval;
+      if (beta <= alpha) break;
+    }
+    return minEval;
+  }
+}
+
+function getBestAIMove(state) {
+  var board = state.board;
+  var aiPlayer = state.aiTeam;
+  var moves = getAllValidMoves(board, aiPlayer);
+
+  if (moves.length === 0) return null;
+
+  var bestScore = -Infinity;
+  var bestMoves = [];
+
+  for (var i = 0; i < moves.length; i++) {
+    var newBoard = movePiece(board, moves[i].from, moves[i].to);
+    var score = minimax(newBoard, 4, -Infinity, Infinity, false, aiPlayer);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMoves = [moves[i]];
+    } else if (score === bestScore) {
+      bestMoves.push(moves[i]);
+    }
+  }
+
+  return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+}
+
+// ============================================================
+// Module exports
+// ============================================================
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = {
+    PLAYER_A: PLAYER_A,
+    PLAYER_B: PLAYER_B,
+    EMPTY: EMPTY,
+    TOTAL_POSITIONS: TOTAL_POSITIONS,
+    PIECES_EACH: PIECES_EACH,
+    EDGES: EDGES,
+    POSITIONS: POSITIONS,
+    POSITION_NAMES: POSITION_NAMES,
+    ADJACENCY: ADJACENCY,
+    createBoard: createBoard,
+    createInitialState: createInitialState,
+    getNeighbors: getNeighbors,
+    getValidMovesForPiece: getValidMovesForPiece,
+    getAllValidMoves: getAllValidMoves,
+    canMove: canMove,
+    checkWin: checkWin,
+    movePiece: movePiece,
+    getOpponent: getOpponent,
+    countPieces: countPieces,
+    evaluateBoard: evaluateBoard,
+    minimax: minimax,
+    getBestAIMove: getBestAIMove,
+  };
+}
+
+// ============================================================
+// Browser UI
+// ============================================================
+if (typeof document !== "undefined") {
+  var state = null;
+  var selectedPiece = null;
+
+  function getPlayerName(player) {
+    if (state && state.mode === "pve") {
+      return player === PLAYER_A ? "电脑" : "玩家";
+    }
+    return player === PLAYER_A ? "玩家1" : "玩家2";
+  }
+
+  function getPieceLabel(player) {
+    if (state && state.mode === "pve") {
+      return player === PLAYER_A ? "电" : "玩";
+    }
+    return player === PLAYER_A ? "1" : "2";
+  }
+
+  function initBoard() {
+    var boardEl = document.getElementById("board");
+    boardEl.innerHTML = "";
+
+    var svgNS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", "0 0 440 420");
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("style", "max-width: 440px; height: auto;");
+
+    // Draw well circle on the right side (replaces the 1-3 edge)
+    var wellCircle = document.createElementNS(svgNS, "circle");
+    wellCircle.setAttribute("cx", 380);
+    wellCircle.setAttribute("cy", 200);
+    wellCircle.setAttribute("r", "40");
+    wellCircle.setAttribute("class", "well-circle");
+    svg.appendChild(wellCircle);
+
+    // Draw well label
+    var wellLabel = document.createElementNS(svgNS, "text");
+    wellLabel.setAttribute("x", 380);
+    wellLabel.setAttribute("y", 155);
+    wellLabel.setAttribute("class", "well-label");
+    wellLabel.textContent = "茅坑";
+    svg.appendChild(wellLabel);
+
+    // Draw edges
+    for (var e = 0; e < EDGES.length; e++) {
+      var from = EDGES[e][0];
+      var to = EDGES[e][1];
+      var line = document.createElementNS(svgNS, "line");
+      line.setAttribute("x1", POSITIONS[from].x);
+      line.setAttribute("y1", POSITIONS[from].y);
+      line.setAttribute("x2", POSITIONS[to].x);
+      line.setAttribute("y2", POSITIONS[to].y);
+      line.setAttribute("class", "board-edge");
+      svg.appendChild(line);
+    }
+
+    // Draw position nodes (click targets)
+    for (var i = 0; i < TOTAL_POSITIONS; i++) {
+      var circle = document.createElementNS(svgNS, "circle");
+      circle.setAttribute("cx", POSITIONS[i].x);
+      circle.setAttribute("cy", POSITIONS[i].y);
+      circle.setAttribute("r", "28");
+      circle.setAttribute("class", "position-node");
+      circle.dataset.pos = i;
+      circle.style.cursor = "pointer";
+      circle.addEventListener(
+        "click",
+        (function (pos) {
+          return function () {
+            handlePositionClick(pos);
+          };
+        })(i)
+      );
+      svg.appendChild(circle);
+
+      // Piece text element
+      var text = document.createElementNS(svgNS, "text");
+      text.setAttribute("x", POSITIONS[i].x);
+      text.setAttribute("y", POSITIONS[i].y + 8);
+      text.setAttribute("class", "piece-text");
+      text.dataset.pos = i;
+      text.style.pointerEvents = "none";
+      svg.appendChild(text);
+    }
+
+    boardEl.appendChild(svg);
+  }
+
+  function renderGame() {
+    if (!state) return;
+
+    var nodes = document.querySelectorAll("#board .position-node");
+    var texts = document.querySelectorAll("#board .piece-text");
+
+    nodes.forEach((node) => {
+      var pos = parseInt(node.dataset.pos);
+      node.setAttribute("class", "position-node");
+
+      if (state.board[pos] === PLAYER_A) {
+        node.classList.add("node-a");
+      } else if (state.board[pos] === PLAYER_B) {
+        node.classList.add("node-b");
+      }
+
+      if (selectedPiece === pos) {
+        node.classList.add("node-selected");
+      }
+
+      if (selectedPiece !== null) {
+        var targets = getValidMovesForPiece(state.board, selectedPiece);
+        for (var i = 0; i < targets.length; i++) {
+          if (targets[i] === pos) {
+            node.classList.add("node-highlight");
+          }
+        }
+      }
+    });
+
+    texts.forEach((text) => {
+      var pos = parseInt(text.dataset.pos);
+      text.textContent = "";
+      text.setAttribute("class", "piece-text");
+      if (state.board[pos] === PLAYER_A) {
+        text.textContent = getPieceLabel(PLAYER_A);
+        text.classList.add("text-a");
+      } else if (state.board[pos] === PLAYER_B) {
+        text.textContent = getPieceLabel(PLAYER_B);
+        text.classList.add("text-b");
+      }
+    });
+
+    document.getElementById("current-player").textContent = getPlayerName(state.currentPlayer);
+    document.getElementById("current-player").className =
+      "team-indicator " + (state.currentPlayer === PLAYER_A ? "team-a" : "team-b");
+    document.getElementById("turn-count").textContent = state.turnCount;
+
+    var movesA = getAllValidMoves(state.board, PLAYER_A).length;
+    var movesB = getAllValidMoves(state.board, PLAYER_B).length;
+    document.getElementById("label-a").textContent = getPlayerName(PLAYER_A) + " 可走：";
+    document.getElementById("moves-a").textContent = movesA;
+    document.getElementById("label-b").textContent = getPlayerName(PLAYER_B) + " 可走：";
+    document.getElementById("moves-b").textContent = movesB;
+
+    if (state.gameOver) {
+      var winnerText = getPlayerName(state.winner) + " 获胜！";
+      document.getElementById("winner-text").textContent = winnerText;
+      document.getElementById("game-over").style.display = "flex";
+    }
+  }
+
+  function handlePositionClick(pos) {
+    if (!state || state.gameOver) return;
+    if (state.mode === "pve" && state.currentPlayer === state.aiTeam) return;
+
+    var player = state.currentPlayer;
+
+    if (state.board[pos] === player) {
+      selectedPiece = pos;
+      renderGame();
+      return;
+    }
+
+    if (selectedPiece !== null && state.board[pos] === EMPTY) {
+      var targets = getValidMovesForPiece(state.board, selectedPiece);
+      for (var i = 0; i < targets.length; i++) {
+        if (targets[i] === pos) {
+          state.board = movePiece(state.board, selectedPiece, pos);
+          selectedPiece = null;
+
+          var winner = checkWin(state.board);
+          if (winner) {
+            state.gameOver = true;
+            state.winner = winner;
+          }
+
+          state.currentPlayer = getOpponent(state.currentPlayer);
+          state.turnCount++;
+          renderGame();
+
+          if (!state.gameOver && state.mode === "pve" && state.currentPlayer === state.aiTeam) {
+            triggerAI();
+          }
+          return;
+        }
+      }
+    }
+
+    selectedPiece = null;
+    renderGame();
+  }
+
+  function triggerAI() {
+    state.aiThinking = true;
+    renderGame();
+    setTimeout(() => {
+      var aiMove = getBestAIMove(state);
+      if (!aiMove) {
+        state.aiThinking = false;
+        state.gameOver = true;
+        state.winner = getOpponent(state.aiTeam);
+        renderGame();
+        return;
+      }
+
+      state.board = movePiece(state.board, aiMove.from, aiMove.to);
+
+      var winner = checkWin(state.board);
+      if (winner) {
+        state.gameOver = true;
+        state.winner = winner;
+      }
+
+      state.currentPlayer = getOpponent(state.currentPlayer);
+      state.turnCount++;
+      state.aiThinking = false;
+      renderGame();
+    }, 400);
+  }
+
+  function startGame(mode, firstPlayer) {
+    state = createInitialState(mode);
+    if (mode === "pve") {
+      // A is at top (0,1) = AI, B is at bottom (2,3) = Player
+      // No swap needed — player (B) is already at bottom
+      state.playerTeam = PLAYER_B;
+      state.aiTeam = PLAYER_A;
+      state.currentPlayer = firstPlayer || PLAYER_A;
+    } else {
+      state.currentPlayer = firstPlayer || PLAYER_A;
+    }
+    selectedPiece = null;
+    document.getElementById("mode-selection").style.display = "none";
+    document.getElementById("rps-section").style.display = "none";
+    document.getElementById("game-area").style.display = "flex";
+    document.getElementById("game-over").style.display = "none";
+    initBoard();
+    renderGame();
+    if (mode === "pve" && state.currentPlayer === state.aiTeam) {
+      triggerAI();
+    }
+  }
+
+  function handleRPSChoice(player, choice) {
+    if (player === "human") {
+      var aiChoices = ["rock", "scissors", "paper"];
+      var aiChoice = aiChoices[Math.floor(Math.random() * 3)];
+      var result = judgeRPS(choice, aiChoice);
+      var resultDiv = document.getElementById("rps-result");
+      if (result === 1) {
+        // Player wins RPS, player goes first (player is B in PvE)
+        resultDiv.innerHTML =
+          "<p>你出" + getRPSName(choice) + "，AI出" + getRPSName(aiChoice) + "，你先手！</p>";
+        setTimeout(() => {
+          startGame("pve", PLAYER_B);
+        }, 1500);
+      } else if (result === -1) {
+        // AI wins RPS, AI goes first (AI is A in PvE)
+        resultDiv.innerHTML =
+          "<p>你出" + getRPSName(choice) + "，AI出" + getRPSName(aiChoice) + "，AI先手！</p>";
+        setTimeout(() => {
+          startGame("pve", PLAYER_A);
+        }, 1500);
+      } else {
+        resultDiv.innerHTML = "<p>平局！再来一次</p>";
+      }
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("btn-pvp").addEventListener("click", () => {
+      startGame("pvp", PLAYER_A);
+    });
+    document.getElementById("btn-pve").addEventListener("click", () => {
+      document.getElementById("mode-selection").style.display = "none";
+      document.getElementById("rps-section").style.display = "flex";
+    });
+    document.getElementById("rps-pve").style.display = "block";
+    document.querySelectorAll("#rps-pve .btn-rps").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        handleRPSChoice("human", this.dataset.choice);
+      });
+    });
+    document.getElementById("btn-restart").addEventListener("click", () => {
+      document.getElementById("game-over").style.display = "none";
+      document.getElementById("mode-selection").style.display = "flex";
+    });
+  });
+}

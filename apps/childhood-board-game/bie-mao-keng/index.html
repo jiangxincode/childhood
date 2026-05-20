@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>憋茅坑 - 童年游戏合集</title>
+  <meta name="description" content="在线免费玩憋茅坑，经典童年棋盘游戏，方形棋盘双方各执两子沿连线移动，将对方逼入死角无路可走即获胜，支持双人对战和人机对战，无需下载，即开即玩。">
+  <meta name="keywords" content="憋茅坑,童年棋盘,棋盘游戏,策略游戏,在线游戏,免费游戏">
+  <link rel="canonical" href="https://jiangxincode.github.io/childhood/apps/childhood-board-game/bie-mao-keng/index.html">
+  <link rel="stylesheet" href="game.css">
+  <script src="../../../js/baidu-analytics.js"></script>
+  <script src="../../../js/common.js"></script>
+  <script src="../../common/game-utils.js"></script>
+</head>
+<body>
+
+  <!-- Mode Selection -->
+  <div id="mode-selection" class="overlay">
+    <div class="overlay-content">
+      <h1 class="game-title">憋茅坑</h1>
+      <p class="subtitle">经典童年棋盘游戏</p>
+      <div class="mode-buttons">
+        <button id="btn-pvp" class="btn btn-pvp">双人对战</button>
+        <button id="btn-pve" class="btn btn-pve">人机对战</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RPS Selection -->
+  <div id="rps-section" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2>石头剪刀布 - 决定先手</h2>
+      <div id="rps-pvp" style="display:none;">
+      </div>
+      <div id="rps-pve" style="display:none;">
+        <div class="rps-player">
+          <h3>你的选择</h3>
+          <div class="rps-buttons">
+            <button class="btn btn-rps" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-choice="paper">🖐️ 布</button>
+          </div>
+        </div>
+      </div>
+      <div id="rps-result" class="rps-result"></div>
+    </div>
+  </div>
+
+  <!-- Game Area -->
+  <div id="game-area" style="display:none;">
+    <div id="status-bar">
+      <div class="status-item">
+        <span class="label">当前行动方：</span>
+        <span id="current-player" class="team-indicator">—</span>
+      </div>
+      <div class="status-item">
+        <span class="label">回合：</span>
+        <span id="turn-count">0</span>
+      </div>
+      <div class="status-item">
+        <span id="label-a" class="label">A 可走：</span>
+        <span id="moves-a">0</span>
+      </div>
+      <div class="status-item">
+        <span id="label-b" class="label">B 可走：</span>
+        <span id="moves-b">0</span>
+      </div>
+    </div>
+
+    <div id="game-main">
+      <div id="board"></div>
+
+      <div id="rules-panel">
+        <h3>游戏规则</h3>
+        <div class="rule-section">
+          <h4>基本规则</h4>
+          <ul>
+            <li>正方形棋盘，对角线交叉，右侧有"茅坑"</li>
+            <li>双方各2颗棋子，初始布于棋盘四角</li>
+            <li>轮流沿连线移动一步（含对角线）</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>胜利条件</h4>
+          <ul>
+            <li>当一方无法移动时，对方获胜</li>
+            <li>即将对方逼入死角即为"憋"</li>
+          </ul>
+        </div>
+        <div id="rule-pve" class="rule-section">
+          <h4>人机模式</h4>
+          <ul>
+            <li>AI会尽力获胜或阻止你</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="message"></div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="game-over" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2 id="winner-text">游戏结束</h2>
+      <button id="btn-restart" class="btn btn-restart">重新开始</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
