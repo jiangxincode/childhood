@@ -24,9 +24,9 @@
 |:------:|:------:|:----:|
 | ![刀杀鸡](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/刀杀鸡.jpg) | ![龙虎斗](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/龙虎斗.jpg) | ![兽棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/兽旗.jpg) |
 
-| 军棋（卡牌版） | 猫捉老鼠 | 小皇帝 |
+| 军师旅团营 | 猫捉老鼠 | 小皇帝 |
 |:-------------:|:-------:|:------:|
-| ![军棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/军师旅团营.jpg) | ![猫捉老鼠](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/猫捉老鼠.jpg) | ![小皇帝](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/小皇帝.jpg) |
+| ![军师旅团营](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/军师旅团营.jpg) | ![猫捉老鼠](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/猫捉老鼠.jpg) | ![小皇帝](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/card-game/小皇帝.jpg) |
 
 ## 经典棋盘游戏
 
@@ -34,21 +34,21 @@
 
 | 中国象棋 | 国际象棋 | 军棋（棋盘版） |
 |:-------:|:-------:|:------------:|
-| ![中国象棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/象棋.jpg) | ![国际象棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/国际象棋.jpg) | ![军棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/军棋.jpg) |
+| ![中国象棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/象棋.jpg) | ![国际象棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/国际象棋.jpg) | ![军棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/军棋.jpg) |
 
 | 五子棋 | 黑白棋 | 国际跳棋 |
 |:-----:|:-----:|:-------:|
-| ![五子棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/五子棋.jpg) | ![黑白棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/黑白棋.jpg) | ![国际跳棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/国际跳棋.jpg) |
+| ![五子棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/五子棋.jpg) | ![黑白棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/黑白棋.jpg) | ![国际跳棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/国际跳棋.jpg) |
 
 | 井字棋 | 中国跳棋 | 围棋 |
 |:-----:|:-------:|:---:|
-| ![井字棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/井字棋.jpg) | ![中国跳棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/中国跳棋.jpg) | ![围棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/围棋.jpg) |
+| ![井字棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/井字棋.jpg) | ![中国跳棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/中国跳棋.jpg) | ![围棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/围棋.jpg) |
 
 ## 欢乐骰子游戏
 
 | 飞行棋 |
 |:-----:|
-| ![飞行棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/chess-game/飞行棋.jpg) |
+| ![飞行棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/dice-game/飞行棋.jpg) |
 
 ## 童年棋盘游戏
 
@@ -63,7 +63,7 @@ childhood/
 │   │   ├── knife-kills-chicken/      # 刀杀鸡
 │   │   ├── dragon-tiger-fight/       # 龙虎斗
 │   │   ├── animal-chess/             # 兽棋
-│   │   ├── chinese-army-chess/       # 军棋（卡牌版）
+│   │   ├── chinese-army-chess/       # 军师旅团营
 │   │   ├── cat-and-mouse/            # 猫捉老鼠
 │   │   └── little-emperor/           # 小皇帝
 │   ├── board-game/                   # 经典棋盘游戏
