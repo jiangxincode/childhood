@@ -1,7 +1,7 @@
 ﻿/*
  ***Carousel plugin
- ***The plugin requires at least four images for the carousel
- ***Pass the number of images when calling this plugin
+ ***For >= 4 images: full 3D 4-slot carousel (left / front / right / out)
+ ***For < 4 images: simplified swap mode (front and side toggle on each click)
  */
 (function ($) {
   $.fn.gallery_slider = function (options) {
@@ -23,6 +23,35 @@
       _gallery_left_middle = _ops.gallery_left_middle, //Left image container
       _gallery_right_middle = _ops.gallery_right_middle, //Left image container
       _threeD_gallery_item = _ops.threeD_gallery_item; //Image container
+
+    //Simplified swap mode: works with 2 or 3 images
+    if (_imgNum < 4) {
+      const swapClasses = "front_side gallery_left_middle gallery_right_middle gallery_out";
+
+      const rotate = (forward) => {
+        const $items = _this.find(_threeD_gallery_item);
+        const len = $items.length;
+        if (len < 2) return;
+        const frontIdx = $items.index($items.filter(".front_side").first());
+        if (frontIdx < 0) return;
+        const step = forward ? 1 : -1;
+        const nextIdx = (frontIdx + step + len) % len;
+        const sideIdx = (frontIdx - step + len) % len;
+        $items.each(function (i) {
+          const $el = $(this).removeClass(swapClasses);
+          if (i === nextIdx) $el.addClass("front_side");
+          else if (i === frontIdx)
+            $el.addClass(forward ? "gallery_right_middle" : "gallery_left_middle");
+          else if (i === sideIdx && sideIdx !== nextIdx)
+            $el.addClass(forward ? "gallery_left_middle" : "gallery_right_middle");
+          else $el.addClass("gallery_out");
+        });
+      };
+
+      _this.find(_gallery_item_left).on("click", () => rotate(false));
+      _this.find(_gallery_item_right).on("click", () => rotate(true));
+      return;
+    }
 
     //Bind click event to left button
     _this.find(_gallery_item_left).on("click", () => {
