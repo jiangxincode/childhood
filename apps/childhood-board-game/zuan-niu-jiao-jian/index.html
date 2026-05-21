@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>钻牛角尖 - 童年游戏合集</title>
+  <meta name="description" content="在线免费玩钻牛角尖（牛角棋），经典童年不对称棋盘游戏，11 个节点的牛角形棋盘，追兵两子从牛角根追、逃兵一子从牛角尖逃，沿连线移动一步，逃兵到达牛角根或追兵把逃兵困进牛角尖即获胜，支持双人对战和人机对战，无需下载，即开即玩。">
+  <meta name="keywords" content="钻牛角尖,牛角棋,童年棋盘,不对称棋盘,棋盘游戏,策略游戏,在线游戏,免费游戏">
+  <link rel="canonical" href="https://jiangxincode.github.io/childhood/apps/childhood-board-game/zuan-niu-jiao-jian/index.html">
+  <link rel="stylesheet" href="game.css">
+  <script src="../../../js/baidu-analytics.js"></script>
+  <script src="../../../js/common.js"></script>
+  <script src="../../common/game-utils.js"></script>
+</head>
+<body>
+
+  <!-- Mode Selection -->
+  <div id="mode-selection" class="overlay">
+    <div class="overlay-content">
+      <h1 class="game-title">钻牛角尖</h1>
+      <p class="subtitle">公牛追、母牛逃，看谁先钻牛角尖</p>
+      <div class="mode-buttons">
+        <button id="btn-pvp" class="btn btn-pvp">双人对战</button>
+        <button id="btn-pve" class="btn btn-pve">人机对战</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RPS Selection -->
+  <div id="rps-section" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2>石头剪刀布 - 决定先手</h2>
+      <div id="rps-pvp" style="display:none;"></div>
+      <div id="rps-pve" style="display:none;">
+        <div class="rps-player">
+          <h3>你的选择</h3>
+          <div class="rps-buttons">
+            <button class="btn btn-rps" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-choice="paper">🖐️ 布</button>
+          </div>
+        </div>
+      </div>
+      <div id="rps-result" class="rps-result"></div>
+    </div>
+  </div>
+
+  <!-- Game Area -->
+  <div id="game-area" style="display:none;">
+    <div id="status-bar">
+      <div class="status-item">
+        <span class="label">当前行动方：</span>
+        <span id="current-player" class="team-indicator">—</span>
+      </div>
+      <div class="status-item">
+        <span class="label">回合：</span>
+        <span id="turn-count">0</span>
+      </div>
+      <div class="status-item">
+        <span class="label">追兵可走：</span>
+        <span id="moves-a" class="team-a">0</span>
+      </div>
+      <div class="status-item">
+        <span class="label">逃兵可走：</span>
+        <span id="moves-b" class="team-b">0</span>
+      </div>
+    </div>
+
+    <div id="game-main">
+      <div id="board"></div>
+
+      <div id="rules-panel">
+        <h3>📜 游戏规则</h3>
+        <div class="rule-section">
+          <h4>🎮 棋盘与开局</h4>
+          <ul>
+            <li>11 个交点的牛角形棋盘，左侧是宽阔的牛角根，右端是牛角尖</li>
+            <li>追兵 (A，红，公牛子) 2 子，落在牛角根 1、2 号点</li>
+            <li>逃兵 (B，绿，母牛子) 1 子，落在牛角尖 11 号点</li>
+            <li>石头剪刀布决定先手</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🚶 走法</h4>
+          <ul>
+            <li>每回合沿连线移动己方一颗棋子一步</li>
+            <li>追兵每回合只能动其中一颗</li>
+            <li>目标格必须是空位，不能跳子</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🏆 胜利条件</h4>
+          <ul>
+            <li>追兵胜：将逃兵围困在牛角尖（逃兵无合法走法）</li>
+            <li>逃兵胜：走到牛角根（1 号或 2 号点），或追兵无合法走法</li>
+          </ul>
+        </div>
+        <div id="rule-pve" class="rule-section">
+          <h4>🤖 人机模式</h4>
+          <ul>
+            <li>你执追兵，AI 执逃兵</li>
+            <li>AI 会朝牛角根方向逃窜并尽量保持机动性</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="message"></div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="game-over" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2 id="winner-text">游戏结束</h2>
+      <button id="btn-restart" class="btn btn-restart">重新开始</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

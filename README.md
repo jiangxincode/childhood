@@ -12,7 +12,7 @@
   <a href="https://sonarcloud.io/dashboard?id=jiangxincode_childhood"><img src="https://sonarcloud.io/api/project_badges/measure?project=jiangxincode_childhood&metric=alert_status" alt="Quality Gate Status"></a>
 </p>
 
-一个纯前端经典游戏合集，收录了 **19 款**童年桌游与卡牌游戏，零框架、零构建，开箱即玩。
+一个纯前端经典游戏合集，收录了 **20 款**童年桌游与卡牌游戏，零框架、零构建，开箱即玩。
 
 **[在线体验](https://jiangxincode.github.io/childhood/)**
 
@@ -52,9 +52,9 @@
 
 ## 童年棋盘游戏
 
-| 狼吃羊 | 憋茅坑 | 小猫钓鱼 |
-|:-----:|:-----:|:-------:|
-| ![狼吃羊](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/狼吃羊.jpg) | ![憋茅坑](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/憋茅坑.jpg) | ![小猫钓鱼](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/小猫钓鱼.jpg) |
+| 狼吃羊 | 憋茅坑 | 小猫钓鱼 | 钻牛角尖 |
+|:-----:|:-----:|:-------:|:-------:|
+| ![狼吃羊](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/狼吃羊.jpg) | ![憋茅坑](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/憋茅坑.jpg) | ![小猫钓鱼](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/小猫钓鱼.jpg) | ![钻牛角尖](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/钻牛角尖.jpg) |
 
 ## 项目结构
 
@@ -83,7 +83,8 @@ childhood/
 │   ├── childhood-board-game/         # 童年棋盘游戏
 │   │   ├── lang-chi-yang/            # 狼吃羊
 │   │   ├── bie-mao-keng/             # 憋茅坑
-│   │   └── xiao-mao-diao-yu/         # 小猫钓鱼
+│   │   ├── xiao-mao-diao-yu/         # 小猫钓鱼
+│   │   └── zuan-niu-jiao-jian/       # 钻牛角尖
 │   └── common/                       # 共享模块
 │       ├── card-game-core.js         # 卡牌游戏核心逻辑
 │       └── game-utils.js             # 游戏工具函数
