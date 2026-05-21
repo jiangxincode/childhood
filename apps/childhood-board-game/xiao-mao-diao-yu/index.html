@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小猫钓鱼 - 童年游戏合集</title>
+  <meta name="description" content="在线免费玩小猫钓鱼（也叫鸡毛蒜皮），经典童年棋盘游戏，十字形棋盘双方各执四子，每回合走一步或按"小猫钓鱼"咒语走三步吃子，吃光对方或封锁对方即获胜，支持双人对战和人机对战，无需下载，即开即玩。">
+  <meta name="keywords" content="小猫钓鱼,鸡毛蒜皮,童年棋盘,棋盘游戏,策略游戏,在线游戏,免费游戏">
+  <link rel="canonical" href="https://jiangxincode.github.io/childhood/apps/childhood-board-game/xiao-mao-diao-yu/index.html">
+  <link rel="stylesheet" href="game.css?v=2">
+  <script src="../../../js/baidu-analytics.js"></script>
+  <script src="../../../js/common.js"></script>
+  <script src="../../common/game-utils.js"></script>
+</head>
+<body>
+
+  <!-- Mode Selection -->
+  <div id="mode-selection" class="overlay">
+    <div class="overlay-content">
+      <h1 class="game-title">小猫钓鱼</h1>
+      <p class="subtitle">念咒"小→猫→钓→鱼"走三步吃子</p>
+      <div class="mode-buttons">
+        <button id="btn-pvp" class="btn btn-pvp">双人对战</button>
+        <button id="btn-pve" class="btn btn-pve">人机对战</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RPS Selection -->
+  <div id="rps-section" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2>石头剪刀布 - 决定先手</h2>
+      <div id="rps-pvp" style="display:none;"></div>
+      <div id="rps-pve" style="display:none;">
+        <div class="rps-player">
+          <h3>你的选择</h3>
+          <div class="rps-buttons">
+            <button class="btn btn-rps" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-choice="paper">🖐️ 布</button>
+          </div>
+        </div>
+      </div>
+      <div id="rps-result" class="rps-result"></div>
+    </div>
+  </div>
+
+  <!-- Game Area -->
+  <div id="game-area" style="display:none;">
+    <div id="status-bar">
+      <div class="status-item">
+        <span class="label">当前行动方：</span>
+        <span id="current-player" class="team-indicator">—</span>
+      </div>
+      <div class="status-item">
+        <span class="label">回合：</span>
+        <span id="turn-count">0</span>
+      </div>
+      <div class="status-item">
+        <span class="label">猫：</span>
+        <span id="pieces-a" class="team-a">4</span>
+      </div>
+      <div class="status-item">
+        <span class="label">鱼：</span>
+        <span id="pieces-b" class="team-b">4</span>
+      </div>
+    </div>
+
+    <div id="move-mode-bar">
+      <span class="label">走法：</span>
+      <button id="btn-mode-single" class="btn-mode active">一步</button>
+      <button id="btn-mode-triple" class="btn-mode">小猫钓鱼（三步吃子）</button>
+    </div>
+
+    <div id="game-main">
+      <div id="board"></div>
+
+      <div id="rules-panel">
+        <h3>📜 游戏规则</h3>
+        <div class="rule-section">
+          <h4>📖 别名</h4>
+          <ul>
+            <li>这款游戏在不同地方有两种叫法：<strong>小猫钓鱼</strong>（咒语"小→猫→钓→鱼"）或 <strong>鸡毛蒜皮</strong>（咒语"鸡→毛→蒜→皮"）</li>
+            <li>玩法完全一致，本站统一称作"小猫钓鱼"</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🎮 棋盘与开局</h4>
+          <ul>
+            <li>十字形棋盘，共 12 个交点</li>
+            <li>双方各 4 子，分列上下两端</li>
+            <li>石头剪刀布决定先手</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🚶 走法</h4>
+          <ul>
+            <li>一步：沿连线移动到相邻空位或对方棋子（落到对方棋子即吃子）</li>
+            <li>小猫钓鱼：原位记作"小"，再连续走三步"猫/钓/鱼"</li>
+            <li>三步走法只能用于吃子，终点必须是对方棋子</li>
+            <li>路径中已经走过的点不可重复</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🎯 吃子</h4>
+          <ul>
+            <li>一步落到对方棋子即吃掉</li>
+            <li>三步走法（小猫钓鱼）只能用于吃子</li>
+            <li>己方棋子不可作为终点</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🏆 胜利条件</h4>
+          <ul>
+            <li>吃光对方所有棋子</li>
+            <li>或使对方无合法走法</li>
+          </ul>
+        </div>
+        <div id="rule-pve" class="rule-section">
+          <h4>🤖 人机模式</h4>
+          <ul>
+            <li>你执猫，AI 执鱼</li>
+            <li>AI 会优先吃子并保留机动性</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="chant-trail"></div>
+    <div id="message"></div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="game-over" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2 id="winner-text">游戏结束</h2>
+      <button id="btn-restart" class="btn btn-restart">重新开始</button>
+    </div>
+  </div>
+
+  <script src="game.js?v=2"></script>
+</body>
+</html>
