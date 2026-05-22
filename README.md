@@ -52,9 +52,9 @@
 
 ## 童年棋盘游戏
 
-| 狼吃羊 | 憋茅坑 | 小猫钓鱼 | 钻牛角尖 |
-|:-----:|:-----:|:-------:|:-------:|
-| ![狼吃羊](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/狼吃羊.jpg) | ![憋茅坑](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/憋茅坑.jpg) | ![小猫钓鱼](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/小猫钓鱼.jpg) | ![钻牛角尖](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/钻牛角尖.jpg) |
+| 狼吃羊 | 憋茅坑 | 小猫钓鱼 | 钻牛角尖 | 摆四龙 |
+|:-----:|:-----:|:-------:|:-------:|:------:|
+| ![狼吃羊](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/狼吃羊.jpg) | ![憋茅坑](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/憋茅坑.jpg) | ![小猫钓鱼](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/小猫钓鱼.jpg) | ![钻牛角尖](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/钻牛角尖.jpg) | ![摆四龙](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/摆四龙.jpg) |
 
 ## 项目结构
 
@@ -84,7 +84,8 @@ childhood/
 │   │   ├── lang-chi-yang/            # 狼吃羊
 │   │   ├── bie-mao-keng/             # 憋茅坑
 │   │   ├── xiao-mao-diao-yu/         # 小猫钓鱼
-│   │   └── zuan-niu-jiao-jian/       # 钻牛角尖
+│   │   ├── zuan-niu-jiao-jian/       # 钻牛角尖
+│   │   └── bai-si-long/              # 摆四龙
 │   └── common/                       # 共享模块
 │       ├── card-game-core.js         # 卡牌游戏核心逻辑
 │       └── game-utils.js             # 游戏工具函数
