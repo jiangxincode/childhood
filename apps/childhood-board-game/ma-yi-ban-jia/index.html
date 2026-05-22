@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>蚂蚁搬家 - 童年游戏合集</title>
+  <meta name="description" content="在线免费玩蚂蚁搬家，经典童年棋盘游戏，9x9 棋盘双方各执 4 子在中央纵线对峙，棋盘正中天元不可越过，每回合上下左右走一步或跳过一颗棋子，先把己方 4 子全部搬到对方家即获胜，支持双人对战和人机对战，无需下载，即开即玩。">
+  <meta name="keywords" content="蚂蚁搬家,童年棋盘,跳子,天元,棋盘游戏,策略游戏,在线游戏,免费游戏">
+  <link rel="canonical" href="https://jiangxincode.github.io/childhood/apps/childhood-board-game/ma-yi-ban-jia/index.html">
+  <link rel="stylesheet" href="game.css">
+  <script src="../../../js/baidu-analytics.js"></script>
+  <script src="../../../js/common.js"></script>
+  <script src="../../common/game-utils.js"></script>
+</head>
+<body>
+
+  <!-- Mode Selection -->
+  <div id="mode-selection" class="overlay">
+    <div class="overlay-content">
+      <h1 class="game-title">蚂蚁搬家</h1>
+      <p class="subtitle">蚂蚁齐心搬新家，谁先入住对方家</p>
+      <div class="mode-buttons">
+        <button id="btn-pvp" class="btn btn-pvp">双人对战</button>
+        <button id="btn-pve" class="btn btn-pve">人机对战</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RPS Selection -->
+  <div id="rps-section" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2>石头剪刀布 - 决定先手</h2>
+      <div id="rps-pvp" style="display:none;"></div>
+      <div id="rps-pve" style="display:none;">
+        <div class="rps-player">
+          <h3>你的选择</h3>
+          <div class="rps-buttons">
+            <button class="btn btn-rps" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-choice="paper">🖐️ 布</button>
+          </div>
+        </div>
+      </div>
+      <div id="rps-result" class="rps-result"></div>
+    </div>
+  </div>
+
+  <!-- Game Area -->
+  <div id="game-area" style="display:none;">
+    <div id="status-bar">
+      <div class="status-item">
+        <span class="label">当前行动方：</span>
+        <span id="current-player" class="team-indicator">—</span>
+      </div>
+      <div class="status-item">
+        <span class="label">回合：</span>
+        <span id="turn-count">0</span>
+      </div>
+      <div class="status-item">
+        <span class="label">上方入家：</span>
+        <span id="home-a" class="team-a">0</span>/4
+      </div>
+      <div class="status-item">
+        <span class="label">下方入家：</span>
+        <span id="home-b" class="team-b">0</span>/4
+      </div>
+    </div>
+
+    <div id="game-main">
+      <div id="board"></div>
+
+      <div id="rules-panel">
+        <h3>📜 游戏规则</h3>
+        <div class="rule-section">
+          <h4>🎮 棋盘与开局</h4>
+          <ul>
+            <li>横竖各 9 条线，棋子摆在 81 个交点上</li>
+            <li>双方各 4 子，沿正中央竖线对峙：上方 (A) 占上半段，下方 (B) 占下半段</li>
+            <li>棋盘正中央 (4,4) 是「天元」，不能落子也不能越过</li>
+            <li>石头剪刀布决定先手</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🚶 走法</h4>
+          <ul>
+            <li>每回合移动己方一颗棋子</li>
+            <li>① 上下左右走一步到相邻空交点</li>
+            <li>② 沿直线跳过一颗紧邻的棋子（任何一方均可），落到其后第一个空交点</li>
+            <li>跳子不能跨越天元</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🏆 胜利条件</h4>
+          <ul>
+            <li>把己方 4 子全部搬到对方的「家」（对方初始的 4 个交点）</li>
+            <li>先全部入家的一方获胜</li>
+            <li>对方无子可走时也判为本方胜</li>
+          </ul>
+        </div>
+        <div id="rule-pve" class="rule-section">
+          <h4>🤖 人机模式</h4>
+          <ul>
+            <li>玩家执下方 (B)，AI 执上方 (A)</li>
+            <li>AI 会主动北上（南下）入家并阻挡你的搬迁路线</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="message"></div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="game-over" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2 id="winner-text">游戏结束</h2>
+      <button id="btn-restart" class="btn btn-restart">重新开始</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
