@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>四步钉 - 童年游戏合集</title>
+  <meta name="description" content="在线免费玩四步钉（也叫四子棋），经典童年棋盘游戏，4x4 交点棋盘双方各执 4 子在上下两行对峙，每回合横竖走一步，两子夹对方一子即可吃子，先吃掉对方 3 子即获胜，支持双人对战和人机对战，无需下载，即开即玩。">
+  <meta name="keywords" content="四步钉,四子棋,童年棋盘,夹子吃子,棋盘游戏,策略游戏,在线游戏,免费游戏">
+  <link rel="canonical" href="https://jiangxincode.github.io/childhood/apps/childhood-board-game/si-bu-ding/index.html">
+  <link rel="stylesheet" href="game.css">
+  <script src="../../../js/baidu-analytics.js"></script>
+  <script src="../../../js/common.js"></script>
+  <script src="../../common/game-utils.js"></script>
+</head>
+<body>
+
+  <!-- Mode Selection -->
+  <div id="mode-selection" class="overlay">
+    <div class="overlay-content">
+      <h1 class="game-title">四步钉</h1>
+      <p class="subtitle">两子夹一子，先吃三子者为王</p>
+      <div class="mode-buttons">
+        <button id="btn-pvp" class="btn btn-pvp">双人对战</button>
+        <button id="btn-pve" class="btn btn-pve">人机对战</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RPS Selection -->
+  <div id="rps-section" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2>石头剪刀布 - 决定先手</h2>
+      <div id="rps-pvp" style="display:none;"></div>
+      <div id="rps-pve" style="display:none;">
+        <div class="rps-player">
+          <h3>你的选择</h3>
+          <div class="rps-buttons">
+            <button class="btn btn-rps" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-choice="paper">🖐️ 布</button>
+          </div>
+        </div>
+      </div>
+      <div id="rps-result" class="rps-result"></div>
+    </div>
+  </div>
+
+  <!-- Game Area -->
+  <div id="game-area" style="display:none;">
+    <div id="status-bar">
+      <div class="status-item">
+        <span class="label">当前行动方：</span>
+        <span id="current-player" class="team-indicator">—</span>
+      </div>
+      <div class="status-item">
+        <span class="label">回合：</span>
+        <span id="turn-count">0</span>
+      </div>
+      <div class="status-item">
+        <span class="label">上方吃子：</span>
+        <span id="captured-by-a" class="team-a">0</span>/3
+      </div>
+      <div class="status-item">
+        <span class="label">下方吃子：</span>
+        <span id="captured-by-b" class="team-b">0</span>/3
+      </div>
+    </div>
+
+    <div id="game-main">
+      <div id="board"></div>
+
+      <div id="rules-panel">
+        <h3>📜 游戏规则</h3>
+        <div class="rule-section">
+          <h4>🎮 棋盘与开局</h4>
+          <ul>
+            <li>横竖各 4 条线，棋子摆在 16 个交点上</li>
+            <li>双方各 4 子，固定开局：上方 (A) 占最上一行，下方 (B) 占最下一行</li>
+            <li>石头剪刀布决定先手</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🚶 走法</h4>
+          <ul>
+            <li>每回合移动己方一颗棋子，横竖走一步</li>
+            <li>不能斜走、不能跳子</li>
+            <li>目标交点必须是空位</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🍴 吃子规则</h4>
+          <ul>
+            <li>移动后己方相连的两子与对方的一子在同一行或列上构成「AAO」或「OAA」时，吃掉对方那子</li>
+            <li>仅以刚刚移动的棋子为关键子结算吃子</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🏆 胜利条件</h4>
+          <ul>
+            <li>累计吃掉对方 3 子（对方仅剩 1 子）即获胜</li>
+            <li>对方无子可走时也判为本方胜</li>
+          </ul>
+        </div>
+        <div id="rule-pve" class="rule-section">
+          <h4>🤖 人机模式</h4>
+          <ul>
+            <li>玩家执下方 (B)，AI 执上方 (A)</li>
+            <li>AI 会主动制造夹击并阻断你的吃子机会</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="message"></div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="game-over" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2 id="winner-text">游戏结束</h2>
+      <button id="btn-restart" class="btn btn-restart">重新开始</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

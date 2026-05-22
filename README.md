@@ -52,9 +52,9 @@
 
 ## 童年棋盘游戏
 
-| 狼吃羊 | 憋茅坑 | 小猫钓鱼 | 钻牛角尖 | 摆四龙 | 蚂蚁搬家 |
-|:-----:|:-----:|:-------:|:-------:|:------:|:------:|
-| ![狼吃羊](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/狼吃羊.jpg) | ![憋茅坑](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/憋茅坑.jpg) | ![小猫钓鱼](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/小猫钓鱼.jpg) | ![钻牛角尖](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/钻牛角尖.jpg) | ![摆四龙](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/摆四龙.jpg) | ![蚂蚁搬家](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/蚂蚁搬家.jpg) |
+| 狼吃羊 | 憋茅坑 | 小猫钓鱼 | 钻牛角尖 | 摆四龙 | 蚂蚁搬家 | 四步钉 |
+|:-----:|:-----:|:-------:|:-------:|:------:|:------:|:-----:|
+| ![狼吃羊](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/狼吃羊.jpg) | ![憋茅坑](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/憋茅坑.jpg) | ![小猫钓鱼](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/小猫钓鱼.jpg) | ![钻牛角尖](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/钻牛角尖.jpg) | ![摆四龙](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/摆四龙.jpg) | ![蚂蚁搬家](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/蚂蚁搬家.jpg) | ![四步钉](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/四步钉.jpg) |
 
 ## 项目结构
 
@@ -86,7 +86,8 @@ childhood/
 │   │   ├── xiao-mao-diao-yu/         # 小猫钓鱼
 │   │   ├── zuan-niu-jiao-jian/       # 钻牛角尖
 │   │   ├── bai-si-long/              # 摆四龙
-│   │   └── ma-yi-ban-jia/            # 蚂蚁搬家
+│   │   ├── ma-yi-ban-jia/            # 蚂蚁搬家
+│   │   └── si-bu-ding/               # 四步钉
 │   └── common/                       # 共享模块
 │       ├── card-game-core.js         # 卡牌游戏核心逻辑
 │       └── game-utils.js             # 游戏工具函数
