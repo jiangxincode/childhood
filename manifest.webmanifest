@@ -1,0 +1,36 @@
+{
+  "name": "童年游戏合集",
+  "short_name": "童年游戏",
+  "description": "免费在线玩刀杀鸡、龙虎斗、五子棋、中国象棋、围棋、跳棋等经典童年棋牌游戏，无需下载，即开即玩。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "/childhood/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "any",
+  "background_color": "#1A5276",
+  "theme_color": "#E74C3C",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "./images/pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./images/pwa-icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./images/logo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "monochrome"
+    }
+  ]
+}
