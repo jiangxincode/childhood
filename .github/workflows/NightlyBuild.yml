@@ -1,0 +1,230 @@
+name: Nightly Build
+
+# Build Windows / macOS / Linux installers every night and publish them as a
+# rolling `nightly-build` GitHub prerelease, so users can always grab the
+# latest from master without waiting for a tagged version.
+#
+# Triggers:
+#   - Cron at 20:00 UTC (04:00 Beijing) every day.
+#   - Manual workflow_dispatch.
+#   - Every push to master (so the rolling release always reflects HEAD).
+#
+# Differences vs. desktop-release.yml:
+#   - desktop-release.yml runs on `v*` tags and produces a draft Release.
+#   - This workflow produces a single rolling `nightly-build` prerelease
+#     that is deleted and recreated on every successful build.
+
+on:
+  schedule:
+    # 04:00 Beijing time = 20:00 UTC, every day
+    - cron: "0 20 * * *"
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # macOS Apple Silicon
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+            args: "--target aarch64-apple-darwin"
+            bundle_dir: src-tauri/target/aarch64-apple-darwin/release/bundle
+          # macOS Intel
+          - platform: macos-latest
+            target: x86_64-apple-darwin
+            args: "--target x86_64-apple-darwin"
+            bundle_dir: src-tauri/target/x86_64-apple-darwin/release/bundle
+          # Linux x86_64 (.deb / .rpm / .AppImage)
+          - platform: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            args: ""
+            bundle_dir: src-tauri/target/release/bundle
+          # Windows x86_64 (NSIS .exe; MSI/WiX skipped due to known issues
+          # with non-ASCII productName + multi-language MSI bundling)
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            args: "--bundles nsis"
+            bundle_dir: src-tauri/target/release/bundle
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Compute version metadata
+        id: ver
+        shell: bash
+        run: |
+          echo "DATE=$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+          echo "DATETIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> "$GITHUB_OUTPUT"
+          echo "SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install Linux build dependencies
+        if: startsWith(matrix.platform, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            build-essential \
+            curl \
+            wget \
+            file
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Rust artifacts
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          key: nightly-${{ matrix.target }}
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Generate platform icons
+        run: npm run tauri:icon
+
+      - name: Build with Tauri
+        # Pass empty tagName so tauri-action only builds (no GitHub release).
+        # The aggregate release job below handles publishing.
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ""
+          args: ${{ matrix.args }}
+
+      - name: Collect installers
+        id: collect
+        shell: bash
+        run: |
+          # Gather every bundle output type Tauri may produce on this platform
+          # into a single staging dir so upload-artifact gets a clean tree.
+          stage="nightly-out"
+          mkdir -p "$stage"
+          shopt -s nullglob globstar
+          # Patterns cover all bundle kinds across the three platforms.
+          patterns=(
+            "${{ matrix.bundle_dir }}/dmg/"*.dmg
+            "${{ matrix.bundle_dir }}/macos/"*.app.tar.gz
+            "${{ matrix.bundle_dir }}/nsis/"*-setup.exe
+            "${{ matrix.bundle_dir }}/deb/"*.deb
+            "${{ matrix.bundle_dir }}/rpm/"*.rpm
+            "${{ matrix.bundle_dir }}/appimage/"*.AppImage
+          )
+          found=0
+          for pattern in "${patterns[@]}"; do
+            for f in $pattern; do
+              [[ -e "$f" ]] || continue
+              base=$(basename "$f")
+              ext="${base##*.}"
+              # Prefix with date + short sha so the rolling release is
+              # self-describing and old downloads keep their identity.
+              new="childhood_nightly-${{ steps.ver.outputs.DATE }}-${{ steps.ver.outputs.SHORT_SHA }}_${{ matrix.target }}_${base}"
+              cp "$f" "$stage/$new"
+              echo "collected: $new"
+              found=$((found + 1))
+            done
+          done
+          if [[ $found -eq 0 ]]; then
+            echo "::error::No installers found under ${{ matrix.bundle_dir }}"
+            ls -R "${{ matrix.bundle_dir }}" || true
+            exit 1
+          fi
+          echo "stage=$stage" >> "$GITHUB_OUTPUT"
+
+      - name: Upload installers as artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightly-${{ matrix.target }}
+          path: ${{ steps.collect.outputs.stage }}
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Publish Nightly Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compute version metadata
+        id: ver
+        shell: bash
+        run: |
+          echo "DATE=$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+          echo "DATETIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> "$GITHUB_OUTPUT"
+          echo "SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      - name: Flatten artifacts
+        shell: bash
+        run: |
+          mkdir -p release-assets
+          # Each artifact lands in artifacts/<artifact-name>/, flatten them.
+          find artifacts -type f \( \
+            -name '*.dmg' -o \
+            -name '*.tar.gz' -o \
+            -name '*-setup.exe' -o \
+            -name '*.deb' -o \
+            -name '*.rpm' -o \
+            -name '*.AppImage' \
+          \) -exec cp {} release-assets/ \;
+          ls -la release-assets
+
+      - name: Recreate nightly-build release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          DATE: ${{ steps.ver.outputs.DATE }}
+          DATETIME: ${{ steps.ver.outputs.DATETIME }}
+          SHORT_SHA: ${{ steps.ver.outputs.SHORT_SHA }}
+        shell: bash
+        run: |
+          # Tear down the previous rolling release + tag so we can recreate
+          # them in place; ignore errors if it does not exist yet.
+          gh release delete nightly-build --repo "$REPO" --yes --cleanup-tag 2>/dev/null || true
+          gh api -X DELETE "repos/$REPO/git/refs/tags/nightly-build" 2>/dev/null || true
+
+          notes=$(cat <<EOF
+          自动构建版本，**仅供开发者 / 体验测试使用**。
+
+          - 构建时间：$DATETIME
+          - 提交：[\`$SHORT_SHA\`](https://github.com/$REPO/commit/${{ github.sha }})
+          - 平台：Windows (NSIS .exe)、macOS Intel/ARM (.dmg)、Linux (.deb / .rpm / .AppImage)
+
+          ⚠️ 未签名构建：Windows SmartScreen / macOS Gatekeeper 首次启动会拦截，需手动放行。
+          EOF
+          )
+
+          gh release create nightly-build \
+            --repo "$REPO" \
+            --target "${{ github.sha }}" \
+            --title "Nightly Build $DATE ($SHORT_SHA)" \
+            --notes "$notes" \
+            --prerelease \
+            release-assets/*
