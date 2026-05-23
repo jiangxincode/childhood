@@ -33,6 +33,8 @@ export default [
         prompt: "readonly",
         fetch: "readonly",
         URL: "readonly",
+        URLSearchParams: "readonly",
+        caches: "readonly",
         HTMLElement: "readonly",
         AudioContext: "readonly",
         webkitAudioContext: "readonly",
@@ -75,6 +77,23 @@ export default [
     files: ["**/*.test.js"],
     rules: {
       "no-var": "off",
+    },
+  },
+  {
+    // Service worker context: different globals from regular browser scripts.
+    files: ["sw.js", "**/sw.js"],
+    languageOptions: {
+      globals: {
+        self: "readonly",
+        Request: "readonly",
+        Response: "readonly",
+        Headers: "readonly",
+        caches: "readonly",
+        clients: "readonly",
+        fetch: "readonly",
+        URL: "readonly",
+        console: "readonly",
+      },
     },
   },
   {

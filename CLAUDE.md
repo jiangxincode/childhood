@@ -20,6 +20,18 @@
 
 每次修改后，运行 `npm run lint` 确保代码格式符合规范。如果格式检查失败，修复代码格式后再提交。
 
+## Service Worker (`sw.js`) 维护
+
+修改 `sw.js` 时必须遵守以下要求，否则会导致用户 PWA 缓存出现不一致或更新失败。
+
+- **bump `VERSION`**：只要修改 `sw.js` 的逻辑或 `PRECACHE_URLS` 列表，必须把顶部的 `VERSION` 常量改成新值（例如 `2026-05-24-1`）。`CACHE_NAME` 由 `VERSION` 拼接而来，新 cache 名才能让 `activate` 阶段删掉旧 cache。
+- **同步 `PRECACHE_URLS`**：当新增、改名、删除"全站共享的根级资源"（如 `js/common.js`、`css/index.css`、`images/pwa-icon.svg`、`manifest.webmanifest`）时，必须同步更新 `PRECACHE_URLS`。每个游戏自己的 `game.css` / `game.js` **不要**加入预缓存，它们由运行时 stale-while-revalidate 自动管理。
+- **保留缓存策略边界**：HTML / 导航请求走 network-first，同源静态资源走 stale-while-revalidate；跨域请求**默认直通不缓存**，只有 `CROSS_ORIGIN_PRECACHE` 白名单里的 CDN 脚本/样式才会预缓存并走 SWR。改动 `fetch` handler 时不要破坏这四条分流。
+- **维护跨域白名单**：当 HTML 中新增 / 改动 / 删除 CDN 引用（jsdelivr 上的 jQuery、slotmachine 等）时，必须同步更新 `CROSS_ORIGIN_PRECACHE`。**绝不要**把分析统计类（如百度统计、Google Analytics）加入白名单——统计请求本来就该有就有、没就没。
+- **保留 kill switch**：`?nosw=1` 必须仍能注销所有 SW 并清空 cache（实现在 `js/common.js` 里）。改 SW 注册逻辑时不要破坏它。
+- **不要拦截 `sw.js` 自身**：fetch handler 必须保留 `if (url.pathname.endsWith("/sw.js")) return;`，否则浏览器拿不到新版 sw.js，更新机制会卡住。
+- **预缓存路径用相对形式**：`PRECACHE_URLS` 全部以 `./` 开头，确保 GitHub Pages 的 `/childhood/` 子路径部署也能正确解析。
+
 ## Git 提交
 
 commit message 使用英文。

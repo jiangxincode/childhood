@@ -65,12 +65,60 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // PWA: register service worker (with ?nosw=1 kill switch).
+  // Uses a root-relative URL so the SW scope always covers the whole site,
+  // regardless of which page registers it. Falls back silently when the
+  // page is opened over file:// or in a browser without SW support, so
+  // direct browser access is never blocked.
+  if ("serviceWorker" in navigator) {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("nosw")) {
+      // Kill switch: tear down every SW + cache for this origin.
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((regs) => regs.forEach((r) => r.unregister()))
+        .catch(() => {});
+      if (window.caches && caches.keys) {
+        caches
+          .keys()
+          .then((keys) => keys.forEach((k) => caches.delete(k)))
+          .catch(() => {});
+      }
+    } else if (
+      window.location.protocol === "https:" ||
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+    ) {
+      // Resolve sw.js relative to the site root so any subpage works.
+      // location.pathname examples:
+      //   /childhood/                -> base "/childhood/"
+      //   /childhood/apps/x/y/index.html -> base "/childhood/"
+      const path = window.location.pathname;
+      const appsIdx = path.indexOf("/apps/");
+      const base = appsIdx !== -1 ? path.slice(0, appsIdx + 1) : path.replace(/[^/]*$/, "");
+      const swUrl = base + "sw.js";
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register(swUrl, { scope: base }).catch(() => {
+          // Silent: SW registration failure must not break the page.
+        });
+      });
+    }
+  }
+
   // Back to home button (subpages only, paths containing /apps/)
   if (window.location.pathname.indexOf("/apps/") !== -1) {
-    // Calculate relative path to root (e.g. apps/card-game/xxx/index.html needs ../../../)
-    const depth = window.location.pathname.replace(/\/[^/]*$/, "").split("/apps/")[1];
-    const levels = depth ? depth.split("/").length + 1 : 1;
-    const prefix = new Array(levels + 1).join("../");
+    // Calculate relative path to root.
+    // Pathname forms we need to support:
+    //   .../apps/card-game/chinese-army-chess/index.html  (file://, GitHub Pages)
+    //   .../apps/card-game/chinese-army-chess/             (with trailing slash)
+    //   .../apps/card-game/chinese-army-chess              (serve cleanUrls strips it)
+    // Real depth = number of directory segments after "/apps/" (skip the
+    // index.html part and the empty tail caused by trailing slash) + 1 for
+    // jumping out of the "apps" directory itself.
+    const tail = window.location.pathname.split("/apps/")[1] || "";
+    const dirs = tail.split("/").filter((s) => s && !/\.html?$/i.test(s));
+    const levels = dirs.length + 1;
+    const prefix = "../".repeat(levels);
 
     const back = document.createElement("a");
     back.className = "back-home";

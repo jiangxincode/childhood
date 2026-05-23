@@ -12,7 +12,7 @@
   <a href="https://sonarcloud.io/dashboard?id=jiangxincode_childhood"><img src="https://sonarcloud.io/api/project_badges/measure?project=jiangxincode_childhood&metric=alert_status" alt="Quality Gate Status"></a>
 </p>
 
-一个纯前端经典游戏合集，收录了 **23 款**童年桌游与卡牌游戏，零框架、零构建，开箱即玩。
+一个纯前端经典游戏合集，收录了 **23 款**童年桌游与卡牌游戏，开箱即玩。
 
 **[在线体验](https://jiangxincode.github.io/childhood/)**
 
@@ -107,12 +107,9 @@ cd childhood
 
 # 安装依赖
 npm install
-
-# 直接用浏览器打开即可
-open index.html        # macOS
-start index.html       # Windows
-xdg-open index.html    # Linux
 ```
+
+直接用浏览器打开`index.html`即可，或者`npx serve`后访问<http://localhost:3000>
 
 ## 运行测试
 
