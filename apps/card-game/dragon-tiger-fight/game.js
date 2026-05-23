@@ -808,8 +808,8 @@ if (typeof document !== "undefined") {
     const cell = e.target.closest(".cell");
     if (!cell) return;
 
-    const x = parseInt(cell.dataset.x);
-    const y = parseInt(cell.dataset.y);
+    const x = Number.parseInt(cell.dataset.x);
+    const y = Number.parseInt(cell.dataset.y);
     const card = gameState.board[y][x];
     const currentTeam = gameState.currentTeam;
 

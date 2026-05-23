@@ -739,8 +739,8 @@ if (typeof document !== "undefined") {
     if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) return;
 
     const target = e.target;
-    const cell = parseInt(target.getAttribute("data-cell"));
-    if (isNaN(cell)) return;
+    const cell = Number.parseInt(target.getAttribute("data-cell"));
+    if (Number.isNaN(cell)) return;
 
     if (target.classList.contains("piece")) {
       const player = gameState.board[cell];

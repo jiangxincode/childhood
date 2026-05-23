@@ -581,25 +581,25 @@ if (typeof $j !== "undefined") {
         if (superFlag) {
           switch (planeOption.currentUser) {
             case "red":
-              if (83 == parseInt($j(this).attr("coordId"))) {
+              if (83 == Number.parseInt($j(this).attr("coordId"))) {
                 rule.planeBack("attack", $j(this).attr("type"), $j(this));
                 stopFlag = true;
               }
               break;
             case "blue":
-              if (93 == parseInt($j(this).attr("coordId"))) {
+              if (93 == Number.parseInt($j(this).attr("coordId"))) {
                 rule.planeBack("attack", $j(this).attr("type"), $j(this));
                 stopFlag = true;
               }
               break;
             case "yellow":
-              if (63 == parseInt($j(this).attr("coordId"))) {
+              if (63 == Number.parseInt($j(this).attr("coordId"))) {
                 rule.planeBack("attack", $j(this).attr("type"), $j(this));
                 stopFlag = true;
               }
               break;
             case "green":
-              if (73 == parseInt($j(this).attr("coordId"))) {
+              if (73 == Number.parseInt($j(this).attr("coordId"))) {
                 rule.planeBack("attack", $j(this).attr("type"), $j(this));
                 stopFlag = true;
               }
@@ -852,8 +852,8 @@ if (typeof $j !== "undefined") {
       });
     } else {
       $j(obj).attr({ state: "running" });
-      const yuanCoord = $j(obj).attr("coordId") ? parseInt($j(obj).attr("coordId")) : 0;
-      const yuanStep = $j(obj).attr("step") ? parseInt($j(obj).attr("step")) : 0;
+      const yuanCoord = $j(obj).attr("coordId") ? Number.parseInt($j(obj).attr("coordId")) : 0;
+      const yuanStep = $j(obj).attr("step") ? Number.parseInt($j(obj).attr("step")) : 0;
       step = yuanStep + diceNum;
       let coordValue,
         currentStep = 0,
@@ -885,7 +885,7 @@ if (typeof $j !== "undefined") {
           ) {
             superTime++;
             coordValue = selectCoordValue(coordValue.superCoord);
-            coordId = parseInt(coordValue.id);
+            coordId = Number.parseInt(coordValue.id);
             step += 12;
             superFlag = true;
             planeAudio.playFlyAcrossMusic();
@@ -908,7 +908,7 @@ if (typeof $j !== "undefined") {
               coordId -= 52;
             }
             coordValue = selectCoordValue(coordId);
-            coordId = parseInt(coordValue.id);
+            coordId = Number.parseInt(coordValue.id);
             step += 4;
             planeAudio.playJumpMusic();
             $j(obj).animate({ top: coordValue.top, left: coordValue.left }, 600);

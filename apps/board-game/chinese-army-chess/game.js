@@ -1350,9 +1350,9 @@ if (typeof document !== "undefined") {
     if (gameState.oppType === "pve" && gameState.currentTeam === gameState.aiTeam) return;
 
     const target = e.target;
-    const x = parseInt(target.dataset.x);
-    const y = parseInt(target.dataset.y);
-    if (isNaN(x) || isNaN(y)) return;
+    const x = Number.parseInt(target.dataset.x);
+    const y = Number.parseInt(target.dataset.y);
+    if (Number.isNaN(x) || Number.isNaN(y)) return;
 
     const piece = gameState.board[y][x];
     const team = gameState.currentTeam;

@@ -377,7 +377,7 @@ if (typeof document !== "undefined") {
     var texts = document.querySelectorAll("#board .piece-text");
 
     nodes.forEach((node) => {
-      var pos = parseInt(node.dataset.pos);
+      var pos = Number.parseInt(node.dataset.pos);
       node.setAttribute("class", "position-node");
 
       if (state.board[pos] === PLAYER_A) {
@@ -401,7 +401,7 @@ if (typeof document !== "undefined") {
     });
 
     texts.forEach((text) => {
-      var pos = parseInt(text.dataset.pos);
+      var pos = Number.parseInt(text.dataset.pos);
       text.textContent = "";
       text.setAttribute("class", "piece-text");
       if (state.board[pos] === PLAYER_A) {

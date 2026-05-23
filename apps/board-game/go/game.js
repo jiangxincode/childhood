@@ -300,7 +300,7 @@ function calculateScore(board) {
       // Determine territory ownership
       const borderKeys = Object.keys(borders);
       if (borderKeys.length === 1) {
-        const owner = parseInt(borderKeys[0]);
+        const owner = Number.parseInt(borderKeys[0]);
         if (owner === BLACK) {
           blackTerritory += territory.length;
         } else if (owner === WHITE) {

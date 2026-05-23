@@ -400,8 +400,8 @@ if (typeof document !== "undefined") {
     if (!state) return;
     var cells = document.querySelectorAll("#board .cell");
     cells.forEach((cell) => {
-      var r = parseInt(cell.dataset.r);
-      var c = parseInt(cell.dataset.c);
+      var r = Number.parseInt(cell.dataset.r);
+      var c = Number.parseInt(cell.dataset.c);
       cell.textContent = "";
       cell.className = "cell";
       if (state.board[r][c] === PLAYER_A) {

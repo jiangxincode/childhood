@@ -1,188 +1,206 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>飞行棋 - 童年游戏合集</title>
-  <meta name="description" content="在线免费玩飞行棋，经典童年骰子棋盘游戏，支持多人对战，无需下载，即开即玩。">
-  <meta name="keywords" content="飞行棋,骰子游戏,棋盘游戏,童年游戏,在线游戏,免费游戏">
-  <link rel="canonical" href="https://jiangxincode.github.io/childhood/apps/dice-game/flying-chess/index.html">
-  <link rel="stylesheet" href="game.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.css" integrity="sha384-nUTaU14OWvO/jw7oZcZKWi+CMigrJqCcXOckztW+DdeohdDB4Qm6CEAGGk1y1KL+" crossorigin="anonymous">
-  <script src="../../../js/baidu-analytics.js"></script>
-  <script src="../../../js/common.js"></script>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>飞行棋 - 童年游戏合集</title>
+    <meta
+      name="description"
+      content="在线免费玩飞行棋，经典童年骰子棋盘游戏，支持多人对战，无需下载，即开即玩。"
+    />
+    <meta name="keywords" content="飞行棋,骰子游戏,棋盘游戏,童年游戏,在线游戏,免费游戏" />
+    <link
+      rel="canonical"
+      href="https://jiangxincode.github.io/childhood/apps/dice-game/flying-chess/index.html"
+    />
+    <link rel="stylesheet" href="game.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.css"
+      integrity="sha384-nUTaU14OWvO/jw7oZcZKWi+CMigrJqCcXOckztW+DdeohdDB4Qm6CEAGGk1y1KL+"
+      crossorigin="anonymous"
+    />
+    <script src="../../../js/baidu-analytics.js"></script>
+    <script src="../../../js/common.js"></script>
+  </head>
+  <body>
+    <!-- Game Settings -->
+    <div id="option-panel" class="option-panel">
+      <div class="option-content">
+        <h1 class="option-title">飞行棋</h1>
+        <p class="option-subtitle">经典飞行棋</p>
+        <form class="option-form" onsubmit="return false;">
+          <div class="form-grid">
+            <div class="form-group">
+              <span class="color-dot" style="background: #e53935"></span>
+              <label for="redUser">红方</label>
+              <select id="redUser">
+                <option value="normal" selected>玩家</option>
+                <option value="computer">电脑</option>
+                <option value="close">无</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <span class="color-dot" style="background: #1565c0"></span>
+              <label for="blueUser">蓝方</label>
+              <select id="blueUser">
+                <option value="normal">玩家</option>
+                <option value="computer" selected>电脑</option>
+                <option value="close">无</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <span class="color-dot" style="background: #f9a825"></span>
+              <label for="yellowUser">黄方</label>
+              <select id="yellowUser">
+                <option value="normal">玩家</option>
+                <option value="computer" selected>电脑</option>
+                <option value="close">无</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <span class="color-dot" style="background: #2e7d32"></span>
+              <label for="greenUser">绿方</label>
+              <select id="greenUser">
+                <option value="normal">玩家</option>
+                <option value="computer" selected>电脑</option>
+                <option value="close">无</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid form-grid-options">
+            <div class="form-group">
+              <label for="qifei">起飞点数</label>
+              <select id="qifei">
+                <option value="2,4,6">2, 4, 6</option>
+                <option value="5,6">5, 6</option>
+                <option value="6" selected>6</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="nandu">难度</label>
+              <select id="nandu">
+                <option value="easy">简单</option>
+                <option value="normal" selected>普通</option>
+                <option value="hard">难</option>
+              </select>
+            </div>
+          </div>
+          <button type="button" id="begin" class="btn-begin">开始游戏</button>
+        </form>
+      </div>
+    </div>
 
-  <!-- Game Settings -->
-  <div id="option-panel" class="option-panel">
-    <div class="option-content">
-      <h1 class="option-title">飞行棋</h1>
-      <p class="option-subtitle">经典飞行棋</p>
-      <form class="option-form" onsubmit="return false;">
-        <div class="form-grid">
-          <div class="form-group">
-            <span class="color-dot" style="background:#e53935"></span>
-            <label>红方</label>
-            <select id="redUser">
-              <option value="normal" selected>玩家</option>
-              <option value="computer">电脑</option>
-              <option value="close">无</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <span class="color-dot" style="background:#1565c0"></span>
-            <label>蓝方</label>
-            <select id="blueUser">
-              <option value="normal">玩家</option>
-              <option value="computer" selected>电脑</option>
-              <option value="close">无</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <span class="color-dot" style="background:#f9a825"></span>
-            <label>黄方</label>
-            <select id="yellowUser">
-              <option value="normal">玩家</option>
-              <option value="computer" selected>电脑</option>
-              <option value="close">无</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <span class="color-dot" style="background:#2e7d32"></span>
-            <label>绿方</label>
-            <select id="greenUser">
-              <option value="normal">玩家</option>
-              <option value="computer" selected>电脑</option>
-              <option value="close">无</option>
-            </select>
-          </div>
+    <!-- Status Bar -->
+    <div id="status-bar">
+      <div class="status-item">
+        <span class="label">当前行动方：</span>
+        <span id="current-player" class="team-indicator">—</span>
+      </div>
+      <div class="status-item">
+        <span class="status-color" style="color: #e53935">红</span>
+        <span id="type-red" class="status-type">玩家</span>
+        <span class="label">到达：</span><span id="count-red">0</span>/4
+      </div>
+      <div class="status-item">
+        <span class="status-color" style="color: #1565c0">蓝</span>
+        <span id="type-blue" class="status-type">电脑</span>
+        <span class="label">到达：</span><span id="count-blue">0</span>/4
+      </div>
+      <div class="status-item">
+        <span class="status-color" style="color: #f9a825">黄</span>
+        <span id="type-yellow" class="status-type">电脑</span>
+        <span class="label">到达：</span><span id="count-yellow">0</span>/4
+      </div>
+      <div class="status-item">
+        <span class="status-color" style="color: #2e7d32">绿</span>
+        <span id="type-green" class="status-type">电脑</span>
+        <span class="label">到达：</span><span id="count-green">0</span>/4
+      </div>
+    </div>
+
+    <!-- Main Game Area -->
+    <div id="game-main">
+      <div class="main">
+        <!-- Dice -->
+        <div class="dice" id="dice">
+          <div class="slot slot1"></div>
+          <div class="slot slot2"></div>
+          <div class="slot slot3"></div>
+          <div class="slot slot4"></div>
+          <div class="slot slot5"></div>
+          <div class="slot slot6"></div>
         </div>
-        <div class="form-grid form-grid-options">
-          <div class="form-group">
-            <label>起飞点数</label>
-            <select id="qifei">
-              <option value="2,4,6">2, 4, 6</option>
-              <option value="5,6">5, 6</option>
-              <option value="6" selected>6</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>难度</label>
-            <select id="nandu">
-              <option value="easy">简单</option>
-              <option value="normal" selected>普通</option>
-              <option value="hard">难</option>
-            </select>
-          </div>
+
+        <!-- Dice result display -->
+        <div id="sdnred" class="showdicenum sdnred"></div>
+        <div id="sdnblue" class="showdicenum sdnblue"></div>
+        <div id="sdnyellow" class="showdicenum sdnyellow"></div>
+        <div id="sdngreen" class="showdicenum sdngreen"></div>
+      </div>
+
+      <!-- Rules Panel -->
+      <div id="rules-panel">
+        <h3>📜 游戏规则</h3>
+        <div class="rule-section">
+          <h4>🛫 起飞规则</h4>
+          <ul>
+            <li id="rule-takeoff">掷到6飞机才能起飞</li>
+            <li>掷到6可以再掷一次</li>
+            <li>连续3次掷6，所有飞机回停机坪</li>
+          </ul>
         </div>
-        <button type="button" id="begin" class="btn-begin">开始游戏</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Status Bar -->
-  <div id="status-bar">
-    <div class="status-item">
-      <span class="label">当前行动方：</span>
-      <span id="current-player" class="team-indicator">—</span>
-    </div>
-    <div class="status-item">
-      <span class="status-color" style="color:#e53935">红</span>
-      <span id="type-red" class="status-type">玩家</span>
-      <span class="label">到达：</span><span id="count-red">0</span>/4
-    </div>
-    <div class="status-item">
-      <span class="status-color" style="color:#1565c0">蓝</span>
-      <span id="type-blue" class="status-type">电脑</span>
-      <span class="label">到达：</span><span id="count-blue">0</span>/4
-    </div>
-    <div class="status-item">
-      <span class="status-color" style="color:#f9a825">黄</span>
-      <span id="type-yellow" class="status-type">电脑</span>
-      <span class="label">到达：</span><span id="count-yellow">0</span>/4
-    </div>
-    <div class="status-item">
-      <span class="status-color" style="color:#2e7d32">绿</span>
-      <span id="type-green" class="status-type">电脑</span>
-      <span class="label">到达：</span><span id="count-green">0</span>/4
-    </div>
-  </div>
-
-  <!-- Main Game Area -->
-  <div id="game-main">
-    <div class="main">
-      <!-- Dice -->
-      <div class="dice" id="dice">
-        <div class="slot slot1"></div>
-        <div class="slot slot2"></div>
-        <div class="slot slot3"></div>
-        <div class="slot slot4"></div>
-        <div class="slot slot5"></div>
-        <div class="slot slot6"></div>
-      </div>
-
-      <!-- Dice result display -->
-      <div id="sdnred" class="showdicenum sdnred"></div>
-      <div id="sdnblue" class="showdicenum sdnblue"></div>
-      <div id="sdnyellow" class="showdicenum sdnyellow"></div>
-      <div id="sdngreen" class="showdicenum sdngreen"></div>
-    </div>
-
-    <!-- Rules Panel -->
-    <div id="rules-panel">
-      <h3>📜 游戏规则</h3>
-      <div class="rule-section">
-        <h4>🛫 起飞规则</h4>
-        <ul>
-          <li id="rule-takeoff">掷到6飞机才能起飞</li>
-          <li>掷到6可以再掷一次</li>
-          <li>连续3次掷6，所有飞机回停机坪</li>
-        </ul>
-      </div>
-      <div class="rule-section">
-        <h4>🎲 移动规则</h4>
-        <ul>
-          <li>同色格可跳跃4格</li>
-          <li>同色带标记格可飞跃12格</li>
-        </ul>
-      </div>
-      <div class="rule-section">
-        <h4>💥 撞机规则</h4>
-        <ul>
-          <li>撞到对手飞机将其送回停机坪</li>
-        </ul>
-      </div>
-      <div class="rule-section">
-        <h4>🏆 胜负判定</h4>
-        <ul>
-          <li>4架飞机全部到达终点即获胜</li>
-        </ul>
-      </div>
-      <div id="rule-pve" class="rule-section">
-        <h4>🤖 人机模式</h4>
-        <ul>
-          <li>AI随机选择可移动的飞机</li>
-          <li>无策略，纯随机操作</li>
-        </ul>
+        <div class="rule-section">
+          <h4>🎲 移动规则</h4>
+          <ul>
+            <li>同色格可跳跃4格</li>
+            <li>同色带标记格可飞跃12格</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>💥 撞机规则</h4>
+          <ul>
+            <li>撞到对手飞机将其送回停机坪</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🏆 胜负判定</h4>
+          <ul>
+            <li>4架飞机全部到达终点即获胜</li>
+          </ul>
+        </div>
+        <div id="rule-pve" class="rule-section">
+          <h4>🤖 人机模式</h4>
+          <ul>
+            <li>AI随机选择可移动的飞机</li>
+            <li>无策略，纯随机操作</li>
+          </ul>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Computer turn overlay -->
-  <div class="shade">&nbsp;</div>
+    <!-- Computer turn overlay -->
+    <div class="shade">&nbsp;</div>
 
-  <!-- Audio element -->
-  <audio id="yinxiao" src=""></audio>
+    <!-- Audio element -->
+    <audio id="yinxiao" src=""></audio>
 
-  <!-- jQuery (CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/jquery@4.0.0/dist/jquery.min.js" integrity="sha384-fgGyf7Mo7DURSOMnOy7ed+dkq5Job205Gnzu6QIg0BOHKaqt4D76Dt8VlDCzcMHV" crossorigin="anonymous"></script>
-  <script>
-    var $j = jQuery.noConflict();
-  </script>
-  <!-- SlotMachine plugin -->
-  <script src="https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.min.js" integrity="sha384-1G5Acg2KIubxO4nuc5u6ws1osW3s92QGxLdwGhqveLameeWIhDbEf0zGpYS6qz1v" crossorigin="anonymous"></script>
-  <!-- Game logic -->
-  <script src="game.js"></script>
-</body>
+    <!-- jQuery (CDN) -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/jquery@4.0.0/dist/jquery.min.js"
+      integrity="sha384-fgGyf7Mo7DURSOMnOy7ed+dkq5Job205Gnzu6QIg0BOHKaqt4D76Dt8VlDCzcMHV"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      var $j = jQuery.noConflict();
+    </script>
+    <!-- SlotMachine plugin -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.min.js"
+      integrity="sha384-1G5Acg2KIubxO4nuc5u6ws1osW3s92QGxLdwGhqveLameeWIhDbEf0zGpYS6qz1v"
+      crossorigin="anonymous"
+    ></script>
+    <!-- Game logic -->
+    <script src="game.js"></script>
+  </body>
 </html>

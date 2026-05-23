@@ -450,7 +450,7 @@ if (typeof document !== "undefined") {
     }
 
     nodes.forEach((g) => {
-      var pos = parseInt(g.getAttribute("data-pos"));
+      var pos = Number.parseInt(g.getAttribute("data-pos"));
       var classes = ["node"];
       var label = "";
       if (state.board[pos] === PLAYER_A) {

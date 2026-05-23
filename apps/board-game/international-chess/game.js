@@ -1072,7 +1072,7 @@ if (typeof document !== "undefined") {
     document.getElementById("promotion-overlay").style.display = "none";
     const move = gameState.promotionPending;
     if (!move) return;
-    move.promotion = parseInt(promoPiece);
+    move.promotion = Number.parseInt(promoPiece);
     gameState.promotionPending = null;
     doMove(move);
   }

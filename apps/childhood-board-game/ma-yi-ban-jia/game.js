@@ -489,8 +489,8 @@ if (typeof document !== "undefined") {
 
     var nodes = document.querySelectorAll("#board .node");
     nodes.forEach((g) => {
-      var nx = parseInt(g.getAttribute("data-x"));
-      var ny = parseInt(g.getAttribute("data-y"));
+      var nx = Number.parseInt(g.getAttribute("data-x"));
+      var ny = Number.parseInt(g.getAttribute("data-y"));
       var classes = ["node"];
       if (state.board[ny][nx] === PLAYER_A) classes.push("node-a");
       else if (state.board[ny][nx] === PLAYER_B) classes.push("node-b");

@@ -252,8 +252,8 @@ if (typeof document !== "undefined") {
 
     const cells = document.querySelectorAll("#board .cell");
     cells.forEach((cell) => {
-      const cx = parseInt(cell.dataset.x);
-      const cy = parseInt(cell.dataset.y);
+      const cx = Number.parseInt(cell.dataset.x);
+      const cy = Number.parseInt(cell.dataset.y);
       const val = state.board[cy][cx];
       cell.className = "cell";
       cell.textContent = "";
