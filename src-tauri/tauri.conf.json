@@ -51,9 +51,6 @@
       "minimumSystemVersion": "10.13"
     },
     "windows": {
-      "wix": {
-        "language": ["zh-CN", "en-US"]
-      },
       "nsis": {
         "languages": ["SimpChinese", "English"]
       }

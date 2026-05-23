@@ -54,9 +54,11 @@ npm run tauri:build
 
 | 平台 | 产物 |
 |------|------|
-| Windows | `src-tauri/target/release/bundle/msi/*.msi`、`src-tauri/target/release/bundle/nsis/*.exe` |
+| Windows | `src-tauri/target/release/bundle/nsis/*.exe`（NSIS 安装器，含 SimpChinese / English 双语） |
 | macOS | `src-tauri/target/release/bundle/dmg/*.dmg`、`src-tauri/target/release/bundle/macos/*.app` |
 | Linux | `src-tauri/target/release/bundle/deb/*.deb`、`src-tauri/target/release/bundle/rpm/*.rpm`、`src-tauri/target/release/bundle/appimage/*.AppImage` |
+
+> Windows 仅产 NSIS .exe，不产 MSI。Tauri 的 WiX/MSI 流水线在产品名含非 ASCII 字符（如中文）+ 多语言 MSI 同时启用时，`light.exe` 在第二个语言版本会失败。NSIS 在同样配置下表现稳定，且对最终用户是几乎一样的安装体验。
 
 ## CI / 自动发行
 

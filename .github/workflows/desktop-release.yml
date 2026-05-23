@@ -35,10 +35,11 @@ jobs:
           - platform: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             args: ""
-          # Windows x86_64 (.msi / NSIS .exe)
+          # Windows x86_64 (NSIS .exe; MSI/WiX skipped due to known issues
+          # with non-ASCII productName + multi-language MSI bundling)
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
-            args: ""
+            args: "--bundles nsis"
 
     runs-on: ${{ matrix.platform }}
 
