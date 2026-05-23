@@ -5,7 +5,10 @@
  *   - HTML / navigation requests : network-first, fall back to cache, then offline shell.
  *   - Same-origin static assets  : stale-while-revalidate (cache hit served immediately,
  *                                  cache refreshed in the background).
- *   - Cross-origin requests      : passed through to the network, never cached.
+ *   - Cross-origin allowlist     : same SWR behaviour, but only for the few CDN
+ *                                  scripts/styles the app actually needs to run
+ *                                  (jQuery, slotmachine). Listed in CROSS_ORIGIN_PRECACHE.
+ *   - Other cross-origin         : passed through, never cached (e.g. analytics).
  *
  * Versioning
  *   Bump VERSION below to invalidate every previous cache. The `activate` handler
@@ -17,7 +20,7 @@
  */
 
 // Bump this string to ship a new cache. Keep it short and unique.
-const VERSION = "2026-05-23-1";
+const VERSION = "2026-05-23-2";
 const CACHE_NAME = `childhood-${VERSION}`;
 
 // App shell precache: only the global resources used by every page.
@@ -38,19 +41,38 @@ const PRECACHE_URLS = [
   "./images/pwa-icon-maskable.svg",
 ];
 
+// Cross-origin scripts/styles required for the app to actually run offline.
+// Listed by full URL so the same constant doubles as the runtime allowlist.
+// Anything not in this set keeps the original "skip and let the network
+// handle it" behaviour (e.g. analytics beacons must never be cached).
+const CROSS_ORIGIN_PRECACHE = [
+  "https://cdn.jsdelivr.net/npm/jquery@4.0.0/dist/jquery.min.js",
+  "https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.min.js",
+  "https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.css",
+];
+const CROSS_ORIGIN_ALLOWLIST = new Set(CROSS_ORIGIN_PRECACHE);
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) =>
+    caches.open(CACHE_NAME).then((cache) => {
+      // Same-origin requests: use { cache: "reload" } to dodge the HTTP cache.
+      const sameOrigin = PRECACHE_URLS.map((u) => new Request(u, { cache: "reload" }));
+      // Cross-origin requests: force CORS mode so we get a real, readable
+      // response (jsdelivr already serves CORS headers, and the <script>
+      // tags use crossorigin="anonymous"). Without this we would only get
+      // opaque responses, which work but inflate the cache quota.
+      const crossOrigin = CROSS_ORIGIN_PRECACHE.map(
+        (u) => new Request(u, { mode: "cors", credentials: "omit" })
+      );
+      const all = [...sameOrigin, ...crossOrigin];
       // Use Promise.all + per-item catch so one missing asset
       // does not abort the whole install step.
-      Promise.all(
-        PRECACHE_URLS.map((url) =>
-          cache
-            .add(new Request(url, { cache: "reload" }))
-            .catch((err) => console.warn("[SW] precache failed:", url, err))
+      return Promise.all(
+        all.map((req) =>
+          cache.add(req).catch((err) => console.warn("[SW] precache failed:", req.url, err))
         )
-      )
-    )
+      );
+    })
   );
 });
 
@@ -86,14 +108,19 @@ self.addEventListener("fetch", (event) => {
   // Only intercept GET; let POST / PUT / etc. go straight to the network.
   if (req.method !== "GET") return;
 
-  // Parse URL safely, then skip cross-origin (CDN, analytics, ...).
+  // Parse URL safely. Skip cross-origin requests *unless* they are on the
+  // explicit allowlist (vendored CDN scripts that the app needs to run).
+  // Everything else cross-origin (analytics, GitHub avatars, ...) keeps
+  // its original behaviour: the SW does not touch it.
   let url;
   try {
     url = new URL(req.url);
   } catch {
     return;
   }
-  if (url.origin !== self.location.origin) return;
+  if (url.origin !== self.location.origin && !CROSS_ORIGIN_ALLOWLIST.has(req.url)) {
+    return;
+  }
 
   // Never intercept the SW file itself.
   if (url.pathname.endsWith("/sw.js")) return;
@@ -140,13 +167,16 @@ async function networkFirst(req) {
 /**
  * Stale-while-revalidate: serve from cache immediately, refresh the cache in
  * the background. Suitable for CSS / JS / images / fonts.
+ *
+ * Caches both same-origin (response.type === "basic") and CORS responses
+ * (response.type === "cors") so allowlisted CDN assets survive offline.
  */
 async function staleWhileRevalidate(req) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(req);
   const networkPromise = fetch(req)
     .then((res) => {
-      if (res && res.status === 200 && res.type === "basic") {
+      if (res && res.status === 200 && (res.type === "basic" || res.type === "cors")) {
         cache.put(req, res.clone()).catch(() => {});
       }
       return res;
