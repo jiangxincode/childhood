@@ -107,10 +107,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Back to home button (subpages only, paths containing /apps/)
   if (window.location.pathname.indexOf("/apps/") !== -1) {
-    // Calculate relative path to root (e.g. apps/card-game/xxx/index.html needs ../../../)
-    const depth = window.location.pathname.replace(/\/[^/]*$/, "").split("/apps/")[1];
-    const levels = depth ? depth.split("/").length + 1 : 1;
-    const prefix = new Array(levels + 1).join("../");
+    // Calculate relative path to root.
+    // Pathname forms we need to support:
+    //   .../apps/card-game/chinese-army-chess/index.html  (file://, GitHub Pages)
+    //   .../apps/card-game/chinese-army-chess/             (with trailing slash)
+    //   .../apps/card-game/chinese-army-chess              (serve cleanUrls strips it)
+    // Real depth = number of directory segments after "/apps/" (skip the
+    // index.html part and the empty tail caused by trailing slash) + 1 for
+    // jumping out of the "apps" directory itself.
+    const tail = window.location.pathname.split("/apps/")[1] || "";
+    const dirs = tail.split("/").filter((s) => s && !/\.html?$/i.test(s));
+    const levels = dirs.length + 1;
+    const prefix = "../".repeat(levels);
 
     const back = document.createElement("a");
     back.className = "back-home";
