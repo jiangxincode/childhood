@@ -125,32 +125,40 @@ jobs:
         run: |
           # Gather every bundle output type Tauri may produce on this platform
           # into a single staging dir so upload-artifact gets a clean tree.
+          # Tauri uses productName ("童年游戏合集") as the file prefix, which
+          # renders poorly on the GitHub Releases page. Rename to ASCII here
+          # while keeping the bundle type and architecture in the filename.
           stage="nightly-out"
           mkdir -p "$stage"
           shopt -s nullglob
-          # Patterns cover all bundle kinds across the three platforms.
-          patterns=(
-            "${{ matrix.bundle_dir }}/dmg/"*.dmg
-            "${{ matrix.bundle_dir }}/macos/"*.app.tar.gz
-            "${{ matrix.bundle_dir }}/nsis/"*-setup.exe
-            "${{ matrix.bundle_dir }}/deb/"*.deb
-            "${{ matrix.bundle_dir }}/rpm/"*.rpm
-            "${{ matrix.bundle_dir }}/appimage/"*.AppImage
+
+          version_tag="${{ steps.ver.outputs.DATE }}-${{ steps.ver.outputs.SHORT_SHA }}"
+          target="${{ matrix.target }}"
+
+          # Map: <glob pattern> => <ASCII suffix>. Each suffix already includes
+          # the file extension so the renamed file stays self-describing.
+          declare -a MAPPINGS=(
+            "${{ matrix.bundle_dir }}/dmg/*.dmg|installer.dmg"
+            "${{ matrix.bundle_dir }}/macos/*.app.tar.gz|app.tar.gz"
+            "${{ matrix.bundle_dir }}/nsis/*-setup.exe|setup.exe"
+            "${{ matrix.bundle_dir }}/deb/*.deb|installer.deb"
+            "${{ matrix.bundle_dir }}/rpm/*.rpm|installer.rpm"
+            "${{ matrix.bundle_dir }}/appimage/*.AppImage|installer.AppImage"
           )
+
           found=0
-          for pattern in "${patterns[@]}"; do
+          for entry in "${MAPPINGS[@]}"; do
+            pattern="${entry%%|*}"
+            suffix="${entry##*|}"
             for f in $pattern; do
               [[ -e "$f" ]] || continue
-              base=$(basename "$f")
-              ext="${base##*.}"
-              # Prefix with date + short sha so the rolling release is
-              # self-describing and old downloads keep their identity.
-              new="childhood_nightly-${{ steps.ver.outputs.DATE }}-${{ steps.ver.outputs.SHORT_SHA }}_${{ matrix.target }}_${base}"
+              new="childhood-${version_tag}-${target}.${suffix}"
               cp "$f" "$stage/$new"
               echo "collected: $new"
               found=$((found + 1))
             done
           done
+
           if [[ $found -eq 0 ]]; then
             echo "::error::No installers found under ${{ matrix.bundle_dir }}"
             ls -R "${{ matrix.bundle_dir }}" || true
