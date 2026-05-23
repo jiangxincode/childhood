@@ -19,7 +19,7 @@
  * preload scanner kicks in.
  */
 (function () {
-  var p = location.pathname;
+  const p = location.pathname;
   if (!p.endsWith("/") && !/\.html?$/i.test(p)) {
     document.write('<base href="' + p.split("/").pop() + '/">');
   }
