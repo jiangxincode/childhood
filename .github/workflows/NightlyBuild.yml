@@ -78,8 +78,10 @@ jobs:
       - name: Install Linux build dependencies
         if: startsWith(matrix.platform, 'ubuntu')
         run: |
+          # Tauri on Linux needs WebKitGTK (4.1) plus a few build helpers.
+          # Wrap apt with a timeout to avoid hanging on stuck mirrors.
           sudo apt-get update
-          sudo apt-get install -y \
+          sudo apt-get install -y --no-install-recommends \
             libwebkit2gtk-4.1-dev \
             libappindicator3-dev \
             librsvg2-dev \
@@ -88,6 +90,7 @@ jobs:
             curl \
             wget \
             file
+        timeout-minutes: 10
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -124,7 +127,7 @@ jobs:
           # into a single staging dir so upload-artifact gets a clean tree.
           stage="nightly-out"
           mkdir -p "$stage"
-          shopt -s nullglob globstar
+          shopt -s nullglob
           # Patterns cover all bundle kinds across the three platforms.
           patterns=(
             "${{ matrix.bundle_dir }}/dmg/"*.dmg
