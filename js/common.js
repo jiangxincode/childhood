@@ -70,7 +70,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // regardless of which page registers it. Falls back silently when the
   // page is opened over file:// or in a browser without SW support, so
   // direct browser access is never blocked.
-  if ("serviceWorker" in navigator) {
+  // Skip SW entirely when running inside a Tauri shell: Tauri serves the
+  // app from a custom protocol with its own asset cache, so a SW is both
+  // redundant and can fail to install on those origins.
+  const isTauri =
+    typeof window !== "undefined" &&
+    (window.__TAURI__ || window.__TAURI_INTERNALS__ || window.location.protocol === "tauri:");
+  if (!isTauri && "serviceWorker" in navigator) {
     const params = new URLSearchParams(window.location.search);
     if (params.has("nosw")) {
       // Kill switch: tear down every SW + cache for this origin.

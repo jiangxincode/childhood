@@ -36,6 +36,18 @@
 
 commit message 使用英文。
 
+## Tauri 桌面打包
+
+修改前端资源时不需要额外动作；但以下情况必须同步维护 `src-tauri/` 配置：
+
+- **新增 / 删除根目录顶级文件夹**（除 `apps/`、`css/`、`images/`、`js/` 之外）：检查 `scripts/build-dist.mjs` 的 `INCLUDE_DIRS` 是否需要扩列。该脚本决定哪些资源会被复制进 `dist/` 进入安装包。
+- **新增 / 改动 / 删除 CDN 引用**：除了 `sw.js` 的白名单同步外，必须同步更新 `src-tauri/tauri.conf.json` 中 `app.security.csp` 的 `script-src` / `style-src` / `connect-src`。Tauri WebView 默认按这条 CSP 拦截，漏改会导致桌面端白屏或资源 404。
+- **新增 / 改动 / 删除统计上报域名**：CSP 的 `connect-src` 需同步更新；`script-src`/`img-src` 视上报方式而定。
+- **改动 `images/pwa-icon.svg`**：在本地执行 `npm run tauri:icon` 重新生成各平台图标。CI 已经会自动重新生成，但本地构建前要手动跑一次。
+- **不要把 `*.test.js`、`sonar-report.xml`、`sw.js` 等加入 `dist/`**：`scripts/build-dist.mjs` 的过滤规则保证它们不进安装包；如调整规则，要保持测试文件、CI 元数据、SEO 文件被排除。
+
+详见 `src-tauri/README.md`。
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 

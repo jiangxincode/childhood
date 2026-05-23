@@ -1,0 +1,8 @@
+{
+  "identifier": "default",
+  "description": "Default capability set for the main window. The app is a pure static site and needs no extra permissions beyond core defaults (window/event/path).",
+  "windows": ["main"],
+  "permissions": [
+    "core:default"
+  ]
+}

@@ -23,3 +23,9 @@ tmp/
 .claude/
 
 sonar-report.xml
+
+# Tauri build outputs
+/dist/
+src-tauri/target/
+src-tauri/icons/
+src-tauri/gen/
