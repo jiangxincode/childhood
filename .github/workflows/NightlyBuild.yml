@@ -197,10 +197,11 @@ jobs:
         run: |
           mkdir -p release-assets
           # Each artifact lands in artifacts/<artifact-name>/, flatten them.
+          # Patterns must stay aligned with the rename done in Collect installers.
           find artifacts -type f \( \
             -name '*.dmg' -o \
             -name '*.tar.gz' -o \
-            -name '*-setup.exe' -o \
+            -name '*.exe' -o \
             -name '*.deb' -o \
             -name '*.rpm' -o \
             -name '*.AppImage' \
