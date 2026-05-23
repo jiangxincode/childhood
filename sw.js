@@ -31,6 +31,7 @@ const PRECACHE_URLS = [
   "./css/index.css",
   "./js/common.js",
   "./js/jquery-yys-slider.js",
+  "./js/base-fix.js",
   "./images/logo.svg",
   "./images/logo-icon.svg",
   "./images/pwa-icon.svg",

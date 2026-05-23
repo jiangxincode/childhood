@@ -107,12 +107,9 @@ cd childhood
 
 # 安装依赖
 npm install
-
-# 直接用浏览器打开即可
-open index.html        # macOS
-start index.html       # Windows
-xdg-open index.html    # Linux
 ```
+
+直接用浏览器打开`index.html`即可，或者`npx serve`后访问<http://localhost:3000>
 
 ## 运行测试
 
