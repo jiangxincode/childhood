@@ -553,8 +553,17 @@ if (typeof document !== "undefined") {
   function updateStatus(state) {
     // Current team
     if (state.currentTeam) {
-      const teamName = state.currentTeam === "dragon" ? "龙队" : "虎队";
-      $currentTeam.textContent = teamName;
+      const label = getCurrentPlayerLabel({
+        mode: state.mode,
+        currentSide: state.currentTeam,
+        playerSide: state.playerTeam,
+        sidesOrder: state.firstPlayer
+          ? [state.firstPlayer, state.firstPlayer === "dragon" ? "tiger" : "dragon"]
+          : ["dragon", "tiger"],
+        assigned: state.teamAssigned,
+        aiFirst: state.aiFirst,
+      });
+      $currentTeam.textContent = label.text;
       $currentTeam.className =
         "team-indicator " + (state.currentTeam === "dragon" ? "dragon-text" : "tiger-text");
     } else {
@@ -668,8 +677,16 @@ if (typeof document !== "undefined") {
   }
 
   function showGameOverScreen(winner) {
-    const winnerName = winner === "dragon" ? "龙队" : "虎队";
-    $winnerText.textContent = winnerName + " 获胜！";
+    // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of dragon/tiger
+    const label = getCurrentPlayerLabel({
+      mode: gameState.mode,
+      currentSide: winner,
+      playerSide: gameState.playerTeam,
+      sidesOrder: gameState.firstPlayer
+        ? [gameState.firstPlayer, gameState.firstPlayer === "dragon" ? "tiger" : "dragon"]
+        : ["dragon", "tiger"],
+    });
+    $winnerText.textContent = label.text + " 获胜！";
     $gameOver.style.display = "flex";
   }
 
@@ -932,12 +949,16 @@ if (typeof document !== "undefined") {
         showMessage("你的回合", "");
       }
     } else {
-      // PVP
-      const teamName = gameState.currentTeam === "dragon" ? "龙队" : "虎队";
+      // PVP - show 玩家1 / 玩家2 instead of dragon/tiger
       if (!gameState.teamAssigned) {
         showMessage("请翻开一张牌", "");
       } else {
-        showMessage(teamName + "的回合", "");
+        const sidesOrder = gameState.firstPlayer
+          ? [gameState.firstPlayer, gameState.firstPlayer === "dragon" ? "tiger" : "dragon"]
+          : ["dragon", "tiger"];
+        const idx = sidesOrder.indexOf(gameState.currentTeam);
+        const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
+        showMessage(playerName + "的回合", "");
       }
     }
   }

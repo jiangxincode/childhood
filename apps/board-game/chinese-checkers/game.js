@@ -711,8 +711,23 @@ if (typeof document !== "undefined") {
   }
 
   function updateStatusBar() {
+    // Current acting side - shown as 玩家/电脑 (PVE) or 玩家1/玩家2/... (PVP)
+    // Reorder players so that the firstPlayer (RPS winner) is 玩家1.
+    let sidesOrder = gameState.players;
+    if (gameState.firstPlayer) {
+      const startIdx = gameState.players.indexOf(gameState.firstPlayer);
+      if (startIdx > 0) {
+        sidesOrder = gameState.players.slice(startIdx).concat(gameState.players.slice(0, startIdx));
+      }
+    }
+    const label = getCurrentPlayerLabel({
+      mode: gameState.mode,
+      currentSide: gameState.currentPlayer,
+      playerSide: gameState.playerTeam,
+      sidesOrder: sidesOrder,
+    });
     const currentConfig = PLAYER_COLORS[gameState.currentPlayer];
-    document.getElementById("current-player").textContent = currentConfig.name;
+    document.getElementById("current-player").textContent = label.text;
     document.getElementById("current-player").className =
       "team-indicator " + currentConfig.textClass;
     document.getElementById("turn-count").textContent = gameState.turnCount;
@@ -727,7 +742,23 @@ if (typeof document !== "undefined") {
   function showGameOver() {
     const winnerText = document.getElementById("winner-text");
     if (gameState.winner) {
-      winnerText.textContent = PLAYER_COLORS[gameState.winner].name + " 获胜！";
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2/... (PVP), reordered by firstPlayer
+      let sidesOrder = gameState.players;
+      if (gameState.firstPlayer) {
+        const startIdx = gameState.players.indexOf(gameState.firstPlayer);
+        if (startIdx > 0) {
+          sidesOrder = gameState.players
+            .slice(startIdx)
+            .concat(gameState.players.slice(0, startIdx));
+        }
+      }
+      const label = getCurrentPlayerLabel({
+        mode: gameState.mode,
+        currentSide: gameState.winner,
+        playerSide: gameState.playerTeam,
+        sidesOrder: sidesOrder,
+      });
+      winnerText.textContent = label.text + " 获胜！";
     } else {
       winnerText.textContent = "平局！";
     }
@@ -800,7 +831,21 @@ if (typeof document !== "undefined") {
 
     drawBoard();
     updateStatusBar();
-    updateMessage("轮到 " + PLAYER_COLORS[gameState.currentPlayer].name + " 行动", "info");
+    // Reuse updateStatusBar's label logic for the message
+    let sidesOrder = gameState.players;
+    if (gameState.firstPlayer) {
+      const startIdx = gameState.players.indexOf(gameState.firstPlayer);
+      if (startIdx > 0) {
+        sidesOrder = gameState.players.slice(startIdx).concat(gameState.players.slice(0, startIdx));
+      }
+    }
+    const label = getCurrentPlayerLabel({
+      mode: gameState.mode,
+      currentSide: gameState.currentPlayer,
+      playerSide: gameState.playerTeam,
+      sidesOrder: sidesOrder,
+    });
+    updateMessage("轮到 " + label.text + " 行动", "info");
 
     if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) {
       triggerAI();
@@ -847,6 +892,7 @@ if (typeof document !== "undefined") {
     if (firstPlayer) {
       gameState.currentPlayer = firstPlayer;
     }
+    gameState.firstPlayer = gameState.currentPlayer;
 
     if (mode === "pve") {
       // Determine player and AI teams
@@ -891,7 +937,23 @@ if (typeof document !== "undefined") {
 
     drawBoard();
     updateStatusBar();
-    updateMessage("游戏开始！" + PLAYER_COLORS[gameState.currentPlayer].name + " 先手", "info");
+    // Build initial message via shared label helper for consistent naming
+    let sidesOrderInit = gameState.players;
+    if (gameState.firstPlayer) {
+      const startIdxInit = gameState.players.indexOf(gameState.firstPlayer);
+      if (startIdxInit > 0) {
+        sidesOrderInit = gameState.players
+          .slice(startIdxInit)
+          .concat(gameState.players.slice(0, startIdxInit));
+      }
+    }
+    const initLabel = getCurrentPlayerLabel({
+      mode: gameState.mode,
+      currentSide: gameState.currentPlayer,
+      playerSide: gameState.playerTeam,
+      sidesOrder: sidesOrderInit,
+    });
+    updateMessage("游戏开始！" + initLabel.text + " 先手", "info");
 
     const svg = document.getElementById("board-svg");
     svg.onclick = handleSvgClick;

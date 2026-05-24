@@ -1443,7 +1443,16 @@ if (typeof document !== "undefined") {
     const s = gameState;
 
     if (s.currentTeam) {
-      $currentTeam.textContent = s.currentTeam === RED ? "红方" : "蓝方";
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
+      const label = getCurrentPlayerLabel({
+        mode: s.oppType,
+        currentSide: s.currentTeam,
+        playerSide: s.playerTeam,
+        sidesOrder: s.firstPlayer
+          ? [s.firstPlayer, s.firstPlayer === RED ? BLUE : RED]
+          : [RED, BLUE],
+      });
+      $currentTeam.textContent = label.text;
       $currentTeam.className =
         "team-indicator " + (s.currentTeam === RED ? "red-text" : "blue-text");
     } else {
@@ -1515,11 +1524,16 @@ if (typeof document !== "undefined") {
 
   function showGameOverScreen(winner) {
     if (winner) {
-      let winnerName = winner === RED ? "红方" : "蓝方";
-      if (gameState.oppType === "pve") {
-        winnerName = winner === gameState.playerTeam ? "你赢了！" : "电脑获胜！";
-      }
-      $winnerText.textContent = winnerName;
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
+      const label = getCurrentPlayerLabel({
+        mode: gameState.oppType,
+        currentSide: winner,
+        playerSide: gameState.playerTeam,
+        sidesOrder: gameState.firstPlayer
+          ? [gameState.firstPlayer, gameState.firstPlayer === RED ? BLUE : RED]
+          : [RED, BLUE],
+      });
+      $winnerText.textContent = label.text + " 获胜！";
     } else {
       $winnerText.textContent = "平局！";
     }
@@ -1588,8 +1602,16 @@ if (typeof document !== "undefined") {
     if (gameState.oppType === "pve" && gameState.currentTeam === gameState.aiTeam) {
       triggerAI();
     } else {
-      const teamName = gameState.currentTeam === RED ? "红方" : "蓝方";
-      showMessage(teamName + "的回合", "");
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) in turn message
+      const turnLabel = getCurrentPlayerLabel({
+        mode: gameState.oppType,
+        currentSide: gameState.currentTeam,
+        playerSide: gameState.playerTeam,
+        sidesOrder: gameState.firstPlayer
+          ? [gameState.firstPlayer, gameState.firstPlayer === RED ? BLUE : RED]
+          : [RED, BLUE],
+      });
+      showMessage(turnLabel.text + "的回合", "");
     }
   }
 

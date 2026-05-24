@@ -769,8 +769,16 @@ if (typeof document !== "undefined") {
       drawKoMarker(state.koPoint.x, state.koPoint.y);
     }
 
-    // Update status bar
-    document.getElementById("current-player").textContent = getPlayerName(state.currentPlayer);
+    // Update status bar - shown as 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP)
+    const label = getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: state.currentPlayer,
+      playerSide: state.playerTeam,
+      sidesOrder: state.firstPlayer
+        ? [state.firstPlayer, state.firstPlayer === BLACK ? WHITE : BLACK]
+        : [BLACK, WHITE],
+    });
+    document.getElementById("current-player").textContent = label.text;
     document.getElementById("current-player").className =
       "team-indicator " + (state.currentPlayer === BLACK ? "text-black" : "text-white-stone");
     document.getElementById("turn-count").textContent = state.turnCount;
@@ -794,7 +802,7 @@ if (typeof document !== "undefined") {
     } else if (state.mode === "pve" && state.currentPlayer === state.aiTeam) {
       updateMessage("轮到AI行动", "info");
     } else {
-      updateMessage("轮到 " + getPlayerName(state.currentPlayer) + " 落子", "info");
+      updateMessage("轮到 " + label.text + " 落子", "info");
     }
   }
 
@@ -811,18 +819,21 @@ if (typeof document !== "undefined") {
     const blackTotal = score.black + state.capturesBlack;
     const whiteTotal = score.white + state.capturesWhite + state.komi;
 
-    if (state.winner) {
-      winnerText.textContent = getPlayerName(state.winner) + " 获胜！";
-    } else {
-      // Calculate final score
-      if (blackTotal > whiteTotal) {
-        winnerText.textContent = "黑棋 获胜！";
-        state.winner = BLACK;
-      } else {
-        winnerText.textContent = "白棋 获胜！";
-        state.winner = WHITE;
-      }
+    // Determine winner if not yet decided (count-based ending)
+    if (!state.winner) {
+      state.winner = blackTotal > whiteTotal ? BLACK : WHITE;
     }
+
+    // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
+    const label = getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: state.winner,
+      playerSide: state.playerTeam,
+      sidesOrder: state.firstPlayer
+        ? [state.firstPlayer, state.firstPlayer === BLACK ? WHITE : BLACK]
+        : [BLACK, WHITE],
+    });
+    winnerText.textContent = label.text + " 获胜！";
 
     scoreDetail.innerHTML =
       "黑棋：" +
@@ -929,7 +940,15 @@ if (typeof document !== "undefined") {
     }
 
     gameState.currentPlayer = getOpponent(gameState.currentPlayer);
-    updateMessage(getPlayerName(gameState.currentPlayer) + "选择Pass，轮到对方", "info");
+    const passLabel = getCurrentPlayerLabel({
+      mode: gameState.mode,
+      currentSide: gameState.currentPlayer,
+      playerSide: gameState.playerTeam,
+      sidesOrder: gameState.firstPlayer
+        ? [gameState.firstPlayer, gameState.firstPlayer === BLACK ? WHITE : BLACK]
+        : [BLACK, WHITE],
+    });
+    updateMessage("对方选择Pass，轮到 " + passLabel.text, "info");
     renderGame(gameState);
 
     if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) {
@@ -973,6 +992,7 @@ if (typeof document !== "undefined") {
   function startGame(mode, firstPlayer) {
     gameState = createGameState(mode);
     gameState.currentPlayer = firstPlayer || BLACK;
+    gameState.firstPlayer = firstPlayer || BLACK;
 
     if (mode === "pve") {
       if (firstPlayer === BLACK) {

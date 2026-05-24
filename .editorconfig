@@ -1,0 +1,19 @@
+# EditorConfig: https://editorconfig.org
+# Tells editors (VS Code, IntelliJ, etc.) to keep line endings consistent
+# regardless of OS, so files don't drift to CRLF on Windows.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Windows-only scripts: keep CRLF or cmd/powershell may misbehave
+[*.{bat,cmd,ps1}]
+end_of_line = crlf
+
+[*.md]
+trim_trailing_whitespace = false

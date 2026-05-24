@@ -473,9 +473,16 @@ if (typeof document !== "undefined") {
       if (text) text.textContent = label;
     });
 
-    // Status bar
-    document.getElementById("current-player").textContent =
-      state.currentPlayer === PLAYER_A ? "猫" : "鱼";
+    // Status bar - shown as 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP)
+    const label = getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: state.currentPlayer,
+      playerSide: state.playerTeam,
+      sidesOrder: state.firstPlayer
+        ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
+        : [PLAYER_A, PLAYER_B],
+    });
+    document.getElementById("current-player").textContent = label.text;
     document.getElementById("current-player").className =
       "team-indicator " + (state.currentPlayer === PLAYER_A ? "team-a" : "team-b");
     document.getElementById("turn-count").textContent = state.turnCount;
@@ -513,8 +520,16 @@ if (typeof document !== "undefined") {
     }
 
     if (state.gameOver) {
-      var winnerText = state.winner === PLAYER_A ? "猫获胜！" : "鱼获胜！";
-      document.getElementById("winner-text").textContent = winnerText;
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of role name
+      var winnerLabel = getCurrentPlayerLabel({
+        mode: state.mode,
+        currentSide: state.winner,
+        playerSide: state.playerTeam,
+        sidesOrder: state.firstPlayer
+          ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
+          : [PLAYER_A, PLAYER_B],
+      });
+      document.getElementById("winner-text").textContent = winnerLabel.text + " 获胜！";
       document.getElementById("game-over").style.display = "flex";
     }
   }
@@ -589,6 +604,7 @@ if (typeof document !== "undefined") {
   function startGame(mode, firstPlayer) {
     state = createGameState(mode);
     state.currentPlayer = firstPlayer || PLAYER_A;
+    state.firstPlayer = firstPlayer || PLAYER_A;
     if (mode === "pve") {
       state.playerTeam = PLAYER_A;
       state.aiTeam = PLAYER_B;

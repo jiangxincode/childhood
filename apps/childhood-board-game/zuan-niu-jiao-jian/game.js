@@ -523,8 +523,16 @@ if (typeof document !== "undefined") {
       if (text) text.textContent = label;
     });
 
-    document.getElementById("current-player").textContent =
-      state.currentPlayer === PLAYER_A ? "追兵 (A)" : "逃兵 (B)";
+    // Current acting side - shown as 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP)
+    const label = getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: state.currentPlayer,
+      playerSide: state.playerTeam,
+      sidesOrder: state.firstPlayer
+        ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
+        : [PLAYER_A, PLAYER_B],
+    });
+    document.getElementById("current-player").textContent = label.text;
     document.getElementById("current-player").className =
       "team-indicator " + (state.currentPlayer === PLAYER_A ? "team-a" : "team-b");
     document.getElementById("turn-count").textContent = state.turnCount;
@@ -548,11 +556,22 @@ if (typeof document !== "undefined") {
           break;
         }
       }
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of role name
+      var winnerLabel = getCurrentPlayerLabel({
+        mode: state.mode,
+        currentSide: state.winner,
+        playerSide: state.playerTeam,
+        sidesOrder: state.firstPlayer
+          ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
+          : [PLAYER_A, PLAYER_B],
+      });
       var winnerText;
       if (state.winner === PLAYER_B) {
-        winnerText = bAtRoot ? "逃兵获胜！成功逃到牛角根。" : "逃兵获胜！追兵无路可走。";
+        winnerText = bAtRoot
+          ? winnerLabel.text + " 获胜！成功逃到牛角根。"
+          : winnerLabel.text + " 获胜！追兵无路可走。";
       } else {
-        winnerText = "追兵获胜！逃兵被困进牛角尖。";
+        winnerText = winnerLabel.text + " 获胜！逃兵被困进牛角尖。";
       }
       document.getElementById("winner-text").textContent = winnerText;
       document.getElementById("game-over").style.display = "flex";
@@ -619,6 +638,7 @@ if (typeof document !== "undefined") {
   function startGame(mode, firstPlayer) {
     state = createInitialState(mode);
     state.currentPlayer = firstPlayer || PLAYER_A;
+    state.firstPlayer = firstPlayer || PLAYER_A;
     if (mode === "pve") {
       // Default: human plays the chasers (A), AI plays the runner (B)
       state.playerTeam = PLAYER_A;

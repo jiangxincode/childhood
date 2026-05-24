@@ -73,3 +73,92 @@ describe("shuffleArray", () => {
     expect(result).toBe(arr);
   });
 });
+
+const { getCurrentPlayerLabel } = require("./game-utils.js");
+
+describe("getCurrentPlayerLabel", () => {
+  it("returns dash when currentSide is null", () => {
+    const r = getCurrentPlayerLabel({ mode: "pve", currentSide: null, playerSide: "red" });
+    expect(r.text).toBe("—");
+    expect(r.role).toBe("unknown");
+  });
+
+  it("returns dash when not assigned and aiFirst is unknown", () => {
+    const r = getCurrentPlayerLabel({
+      mode: "pve",
+      currentSide: "red",
+      playerSide: null,
+      assigned: false,
+    });
+    expect(r.text).toBe("—");
+    expect(r.role).toBe("unknown");
+  });
+
+  it("uses aiFirst when PVE is not assigned yet (player first)", () => {
+    const r = getCurrentPlayerLabel({
+      mode: "pve",
+      currentSide: "red",
+      assigned: false,
+      aiFirst: false,
+    });
+    expect(r.text).toBe("玩家");
+    expect(r.role).toBe("player");
+  });
+
+  it("uses aiFirst when PVE is not assigned yet (AI first)", () => {
+    const r = getCurrentPlayerLabel({
+      mode: "pve",
+      currentSide: "red",
+      assigned: false,
+      aiFirst: true,
+    });
+    expect(r.text).toBe("电脑");
+    expect(r.role).toBe("ai");
+  });
+
+  it("returns 玩家 in PVE when current side equals player side", () => {
+    const r = getCurrentPlayerLabel({ mode: "pve", currentSide: "red", playerSide: "red" });
+    expect(r.text).toBe("玩家");
+    expect(r.role).toBe("player");
+  });
+
+  it("returns 电脑 in PVE when current side differs from player side", () => {
+    const r = getCurrentPlayerLabel({ mode: "pve", currentSide: "blue", playerSide: "red" });
+    expect(r.text).toBe("电脑");
+    expect(r.role).toBe("ai");
+  });
+
+  it("returns 玩家1 in PVP when current side is the first side", () => {
+    const r = getCurrentPlayerLabel({
+      mode: "pvp",
+      currentSide: "red",
+      sidesOrder: ["red", "blue"],
+    });
+    expect(r.text).toBe("玩家1");
+    expect(r.role).toBe("playerN");
+  });
+
+  it("returns 玩家2 in PVP when current side is the second side", () => {
+    const r = getCurrentPlayerLabel({
+      mode: "pvp",
+      currentSide: "blue",
+      sidesOrder: ["red", "blue"],
+    });
+    expect(r.text).toBe("玩家2");
+    expect(r.role).toBe("playerN");
+  });
+
+  it("supports more than two players in PVP", () => {
+    const r = getCurrentPlayerLabel({
+      mode: "pvp",
+      currentSide: 3,
+      sidesOrder: [1, 2, 3, 4],
+    });
+    expect(r.text).toBe("玩家3");
+  });
+
+  it("returns dash in PVE when playerSide is missing and aiFirst is unknown", () => {
+    const r = getCurrentPlayerLabel({ mode: "pve", currentSide: "red" });
+    expect(r.text).toBe("—");
+  });
+});

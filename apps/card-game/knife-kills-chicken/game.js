@@ -581,8 +581,17 @@ if (typeof document !== "undefined") {
   function updateStatus(state) {
     // Current team
     if (state.currentTeam) {
-      const teamName = state.currentTeam === "red" ? "红方" : "蓝方";
-      $currentTeam.textContent = teamName;
+      const label = getCurrentPlayerLabel({
+        mode: state.mode,
+        currentSide: state.currentTeam,
+        playerSide: state.playerTeam,
+        sidesOrder: state.firstPlayer
+          ? [state.firstPlayer, state.firstPlayer === "red" ? "blue" : "red"]
+          : ["red", "blue"],
+        assigned: state.teamAssigned,
+        aiFirst: state.aiFirst,
+      });
+      $currentTeam.textContent = label.text;
       $currentTeam.className =
         "team-indicator " + (state.currentTeam === "red" ? "red-text" : "blue-text");
     } else {
@@ -694,8 +703,16 @@ if (typeof document !== "undefined") {
   }
 
   function showGameOverScreen(winner) {
-    const winnerName = winner === "red" ? "红方" : "蓝方";
-    $winnerText.textContent = winnerName + " 获胜！";
+    // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
+    const label = getCurrentPlayerLabel({
+      mode: gameState.mode,
+      currentSide: winner,
+      playerSide: gameState.playerTeam,
+      sidesOrder: gameState.firstPlayer
+        ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
+        : ["red", "blue"],
+    });
+    $winnerText.textContent = label.text + " 获胜！";
     $gameOver.style.display = "flex";
   }
 
@@ -996,12 +1013,16 @@ if (typeof document !== "undefined") {
         showMessage("你的回合", "");
       }
     } else {
-      // PVP or team not assigned
-      const teamName = gameState.currentTeam === "red" ? "红方" : "蓝方";
+      // PVP - show 玩家1 / 玩家2 instead of color
       if (!gameState.teamAssigned) {
         showMessage("请翻开一张牌", "");
       } else {
-        showMessage(teamName + "的回合", "");
+        const sidesOrder = gameState.firstPlayer
+          ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
+          : ["red", "blue"];
+        const idx = sidesOrder.indexOf(gameState.currentTeam);
+        const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
+        showMessage(playerName + "的回合", "");
       }
     }
   }

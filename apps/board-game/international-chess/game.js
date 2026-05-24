@@ -952,7 +952,16 @@ if (typeof document !== "undefined") {
         if (state.board[c][r] !== EMPTY) drawPiece(c, r, state.board[c][r]);
       }
     }
-    document.getElementById("current-player").textContent = getPlayerName(state.currentPlayer);
+    // Current acting side - shown as 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP)
+    const label = getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: state.currentPlayer,
+      playerSide: state.playerTeam,
+      sidesOrder: state.firstPlayer
+        ? [state.firstPlayer, state.firstPlayer === WHITE ? BLACK : WHITE]
+        : [WHITE, BLACK],
+    });
+    document.getElementById("current-player").textContent = label.text;
     document.getElementById("current-player").className =
       "team-indicator " + (state.currentPlayer === WHITE ? "text-white-side" : "text-black-side");
     document.getElementById("turn-count").textContent = state.turnCount;
@@ -972,7 +981,7 @@ if (typeof document !== "undefined") {
     else if (state.mode === "pve" && state.currentPlayer === state.aiTeam)
       updateMessage("轮到AI行动", "info");
     else if (state.promotionPending) updateMessage("选择升变棋子", "info");
-    else updateMessage("轮到 " + getPlayerName(state.currentPlayer) + " 行动", "info");
+    else updateMessage("轮到 " + label.text + " 行动", "info");
   }
 
   function countPieces(board, color) {
@@ -994,7 +1003,16 @@ if (typeof document !== "undefined") {
   function showGameOver(state) {
     const winnerText = document.getElementById("winner-text");
     if (state.winner) {
-      winnerText.textContent = getPlayerName(state.winner) + " 获胜！";
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
+      const label = getCurrentPlayerLabel({
+        mode: state.mode,
+        currentSide: state.winner,
+        playerSide: state.playerTeam,
+        sidesOrder: state.firstPlayer
+          ? [state.firstPlayer, state.firstPlayer === WHITE ? BLACK : WHITE]
+          : [WHITE, BLACK],
+      });
+      winnerText.textContent = label.text + " 获胜！";
       winnerText.className = state.winner === WHITE ? "text-white-side" : "text-black-side";
     } else {
       winnerText.textContent = "和棋！";
@@ -1146,6 +1164,7 @@ if (typeof document !== "undefined") {
   function startGame(mode, playerTeam) {
     gameState = createGameState(mode);
     gameState.currentPlayer = WHITE; // White always moves first
+    gameState.firstPlayer = WHITE;
     gameState.boardFlipped = false;
     if (mode === "pve") {
       gameState.playerTeam = playerTeam || WHITE;
