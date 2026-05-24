@@ -387,9 +387,16 @@ function initBoard() {
  * @param {GameState} state - game state
  */
 function renderGame(state) {
-  // Update status bar
-  document.getElementById("current-team").textContent =
-    state.currentPlayer === PLAYER_BLACK ? "黑棋" : "白棋";
+  // Update status bar - shown as 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP)
+  const label = getCurrentPlayerLabel({
+    mode: state.mode,
+    currentSide: state.currentPlayer,
+    playerSide: state.playerTeam,
+    sidesOrder: state.firstPlayer
+      ? [state.firstPlayer, state.firstPlayer === PLAYER_BLACK ? PLAYER_WHITE : PLAYER_BLACK]
+      : [PLAYER_BLACK, PLAYER_WHITE],
+  });
+  document.getElementById("current-team").textContent = label.text;
   document.getElementById("current-team").className =
     state.currentPlayer === PLAYER_BLACK
       ? "team-indicator black-text"
@@ -565,6 +572,7 @@ function handleCellClick(x, y) {
 function startGame(mode, firstPlayer = PLAYER_BLACK) {
   gameState = createGameState(mode);
   gameState.currentPlayer = firstPlayer;
+  gameState.firstPlayer = firstPlayer;
   gameState.validMoves = getValidMoves(gameState.board, firstPlayer);
 
   // Set player and AI for PvE mode

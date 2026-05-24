@@ -523,8 +523,16 @@ if (typeof document !== "undefined") {
       if (text) text.textContent = label;
     });
 
-    document.getElementById("current-player").textContent =
-      state.currentPlayer === PLAYER_A ? "追兵 (A)" : "逃兵 (B)";
+    // Current acting side - shown as 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP)
+    const label = getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: state.currentPlayer,
+      playerSide: state.playerTeam,
+      sidesOrder: state.firstPlayer
+        ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
+        : [PLAYER_A, PLAYER_B],
+    });
+    document.getElementById("current-player").textContent = label.text;
     document.getElementById("current-player").className =
       "team-indicator " + (state.currentPlayer === PLAYER_A ? "team-a" : "team-b");
     document.getElementById("turn-count").textContent = state.turnCount;
@@ -619,6 +627,7 @@ if (typeof document !== "undefined") {
   function startGame(mode, firstPlayer) {
     state = createInitialState(mode);
     state.currentPlayer = firstPlayer || PLAYER_A;
+    state.firstPlayer = firstPlayer || PLAYER_A;
     if (mode === "pve") {
       // Default: human plays the chasers (A), AI plays the runner (B)
       state.playerTeam = PLAYER_A;

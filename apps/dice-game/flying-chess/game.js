@@ -872,7 +872,9 @@ if (typeof $j !== "undefined") {
             rule.planeBack("win", $j(this).attr("type"), $j(this));
             if (rule.victory()) {
               planeAudio.playWinMusic();
-              alert(planeOption.currentUser + "用户胜利!");
+              const winnerEl = document.getElementById("current-player");
+              const winnerLabel = winnerEl ? winnerEl.textContent : planeOption.currentUser;
+              alert(winnerLabel + "胜利!");
               return;
             }
             planeAudio.playLitWinMusic();
@@ -1049,21 +1051,44 @@ if (typeof $j !== "undefined") {
   }
 
   /**
-   * Update status bar
+   * Update status bar - show the current user's role (玩家N/电脑) instead of color
+   * If multiple human players exist, distinguish them with player numbers.
    */
   function updateStatusBar() {
-    const COLOR_NAMES_BROWSER = { red: "红", blue: "蓝", yellow: "黄", green: "绿" };
     const TYPE_NAMES_BROWSER = { normal: "玩家", computer: "电脑", close: "无" };
     const current = planeOption.currentUser;
-    $j("#current-player")
-      .text(COLOR_NAMES_BROWSER[current] + "方")
-      .css("color", current);
+    // Count totals first
+    let humanTotal = 0;
+    let aiTotal = 0;
+    for (let i = 0; i < planeOption.userList.length; i++) {
+      const st = planeOption.userList[i].state;
+      if (st === "normal") humanTotal++;
+      else if (st === "computer") aiTotal++;
+    }
+    // Assign labels in userList order (stable)
+    let humanIdx = 0;
+    let aiIdx = 0;
+    let currentLabel = "玩家";
     for (let i = 0; i < planeOption.userList.length; i++) {
       const user = planeOption.userList[i];
+      let label;
+      if (user.state === "normal") {
+        humanIdx++;
+        label = humanTotal > 1 ? "玩家" + humanIdx : "玩家";
+      } else if (user.state === "computer") {
+        aiIdx++;
+        label = aiTotal > 1 ? "电脑" + aiIdx : "电脑";
+      } else {
+        label = TYPE_NAMES_BROWSER[user.state] || "";
+      }
+      if (user.color === current) {
+        currentLabel = label;
+      }
+      $j("#type-" + user.color).text(label);
       const count = $j(".plane[type=" + user.color + "][state=win]").length;
       $j("#count-" + user.color).text(count);
-      $j("#type-" + user.color).text(TYPE_NAMES_BROWSER[user.state] || "");
     }
+    $j("#current-player").text(currentLabel).css("color", current);
   }
 
   /**

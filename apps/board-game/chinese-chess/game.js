@@ -881,7 +881,16 @@ if (typeof document !== "undefined") {
       }
     }
 
-    document.getElementById("current-player").textContent = getPlayerName(state.currentPlayer);
+    // Current acting side - shown as 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP)
+    const label = getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: state.currentPlayer,
+      playerSide: state.playerTeam,
+      sidesOrder: state.firstPlayer
+        ? [state.firstPlayer, state.firstPlayer === RED ? BLACK : RED]
+        : [RED, BLACK],
+    });
+    document.getElementById("current-player").textContent = label.text;
     document.getElementById("current-player").className =
       "team-indicator " + (state.currentPlayer === RED ? "text-red" : "text-black-side");
     document.getElementById("turn-count").textContent = state.turnCount;
@@ -908,7 +917,7 @@ if (typeof document !== "undefined") {
     } else if (state.mode === "pve" && state.currentPlayer === state.aiTeam) {
       updateMessage("轮到AI行动", "info");
     } else {
-      updateMessage("轮到 " + getPlayerName(state.currentPlayer) + " 行动", "info");
+      updateMessage("轮到 " + label.text + " 行动", "info");
     }
   }
 
@@ -1041,6 +1050,7 @@ if (typeof document !== "undefined") {
   function startGame(mode, firstPlayer) {
     gameState = createGameState(mode);
     gameState.currentPlayer = firstPlayer || RED;
+    gameState.firstPlayer = firstPlayer || RED;
     gameState.boardFlipped = false;
 
     if (mode === "pve") {

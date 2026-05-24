@@ -45,9 +45,64 @@ function shuffleArray(arr) {
   return arr;
 }
 
+/**
+ * Resolve a generic display label for the current acting side.
+ * Returns "玩家"/"电脑" in PVE mode and "玩家1"/"玩家2"/... in PVP mode.
+ *
+ * This avoids leaking side identifiers like color/role names to the UI.
+ * It is especially useful for flip-card games where the side -> role
+ * mapping is not yet decided at game start.
+ *
+ * @param {Object} opts
+ * @param {string} [opts.mode] - 'pve' | 'pvp'
+ * @param {*} [opts.currentSide] - current side identifier (e.g. 'red', 1, 'dragon')
+ * @param {*} [opts.playerSide] - human side identifier (used in PVE)
+ * @param {Array} [opts.sidesOrder] - sides in turn order starting from the first to act (used in PVP)
+ * @param {boolean} [opts.assigned=true] - whether the side -> role mapping is decided
+ * @param {boolean} [opts.aiFirst] - whether the AI acts first (used in PVE before assignment)
+ * @returns {{text: string, role: 'unknown'|'player'|'ai'|'playerN'}}
+ */
+function getCurrentPlayerLabel(opts) {
+  const mode = opts && opts.mode;
+  const currentSide = opts ? opts.currentSide : null;
+  const playerSide = opts ? opts.playerSide : null;
+  const sidesOrder = opts ? opts.sidesOrder : null;
+  const assigned = !opts || opts.assigned !== false;
+  const aiFirst = opts ? opts.aiFirst : undefined;
+
+  if (currentSide == null) {
+    return { text: "—", role: "unknown" };
+  }
+
+  if (mode === "pve") {
+    if (assigned && playerSide != null) {
+      return currentSide === playerSide
+        ? { text: "玩家", role: "player" }
+        : { text: "电脑", role: "ai" };
+    }
+    // Unassigned PVE (e.g. flip games before first flip): use aiFirst flag
+    if (aiFirst === true) {
+      return { text: "电脑", role: "ai" };
+    }
+    if (aiFirst === false) {
+      return { text: "玩家", role: "player" };
+    }
+    return { text: "—", role: "unknown" };
+  }
+
+  // PVP mode (also default when mode is missing)
+  if (Array.isArray(sidesOrder) && sidesOrder.length > 0) {
+    const idx = sidesOrder.indexOf(currentSide);
+    if (idx >= 0) {
+      return { text: "玩家" + (idx + 1), role: "playerN" };
+    }
+  }
+  return { text: "玩家", role: "unknown" };
+}
+
 // ============================================================
 // Module exports (Node.js environment)
 // ============================================================
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { judgeRPS, getRPSName, shuffleArray };
+  module.exports = { judgeRPS, getRPSName, shuffleArray, getCurrentPlayerLabel };
 }

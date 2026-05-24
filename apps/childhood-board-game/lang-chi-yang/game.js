@@ -438,9 +438,17 @@ if (typeof document !== "undefined") {
       }
     });
 
-    var playerLabel = state.currentPlayer === PLAYER_A ? "羊 (Sheep)" : "狼 (Wolf)";
+    // Current acting side - shown as 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP)
+    const label = getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: state.currentPlayer,
+      playerSide: state.playerTeam,
+      sidesOrder: state.firstPlayer
+        ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
+        : [PLAYER_A, PLAYER_B],
+    });
     var playerClass = state.currentPlayer === PLAYER_A ? "team-a" : "team-b";
-    document.getElementById("current-player").textContent = playerLabel;
+    document.getElementById("current-player").textContent = label.text;
     document.getElementById("current-player").className = "team-indicator " + playerClass;
     document.getElementById("turn-count").textContent = state.turnCount;
     document.getElementById("pieces-a").textContent = state.piecesA;
@@ -544,6 +552,7 @@ if (typeof document !== "undefined") {
   function startGame(mode, firstPlayer) {
     state = createGameState(mode);
     state.currentPlayer = firstPlayer || PLAYER_A;
+    state.firstPlayer = firstPlayer || PLAYER_A;
     if (mode === "pve") {
       state.playerTeam = PLAYER_A;
       state.aiTeam = PLAYER_B;

@@ -242,8 +242,16 @@ if (typeof document !== "undefined") {
   }
 
   function renderGame(state) {
-    document.getElementById("current-player").textContent =
-      state.currentPlayer === PLAYER_X ? "X (先手)" : "O (后手)";
+    // Current acting side - shown as 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP)
+    const label = getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: state.currentPlayer,
+      playerSide: state.playerTeam,
+      sidesOrder: state.firstPlayer
+        ? [state.firstPlayer, state.firstPlayer === PLAYER_X ? PLAYER_O : PLAYER_X]
+        : [PLAYER_X, PLAYER_O],
+    });
+    document.getElementById("current-player").textContent = label.text;
     document.getElementById("current-player").className =
       "team-indicator " + (state.currentPlayer === PLAYER_X ? "text-x" : "text-o");
     document.getElementById("turn-count").textContent = state.turnCount;
@@ -361,6 +369,7 @@ if (typeof document !== "undefined") {
   function startGame(mode, firstPlayer) {
     gameState = createGameState(mode);
     gameState.currentPlayer = firstPlayer || PLAYER_X;
+    gameState.firstPlayer = firstPlayer || PLAYER_X;
 
     if (mode === "pve") {
       if (firstPlayer === PLAYER_X) {

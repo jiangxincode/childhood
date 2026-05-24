@@ -554,8 +554,16 @@ if (typeof document !== "undefined") {
       }
     }
 
-    // Status bar
-    document.getElementById("current-player").textContent = getPlayerName(state.currentPlayer);
+    // Status bar - shown as 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP)
+    const label = getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: state.currentPlayer,
+      playerSide: state.playerTeam,
+      sidesOrder: state.firstPlayer
+        ? [state.firstPlayer, state.firstPlayer === RED ? WHITE : RED]
+        : [RED, WHITE],
+    });
+    document.getElementById("current-player").textContent = label.text;
     document.getElementById("current-player").className =
       "team-indicator " + (state.currentPlayer === RED ? "text-red" : "text-white-piece");
     document.getElementById("turn-count").textContent = state.turnCount;
@@ -586,7 +594,7 @@ if (typeof document !== "undefined") {
     } else if (state.mustCapture) {
       updateMessage("必须吃子！请选择吃子棋子", "info");
     } else {
-      updateMessage("轮到 " + getPlayerName(state.currentPlayer) + " 行动", "info");
+      updateMessage("轮到 " + label.text + " 行动", "info");
     }
   }
 
@@ -842,6 +850,7 @@ if (typeof document !== "undefined") {
   function startGame(mode, firstPlayer) {
     gameState = createGameState(mode);
     gameState.currentPlayer = firstPlayer || RED;
+    gameState.firstPlayer = firstPlayer || RED;
 
     if (mode === "pve") {
       if (firstPlayer === RED) {

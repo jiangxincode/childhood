@@ -474,8 +474,16 @@ if (typeof document !== "undefined") {
       if (text) text.textContent = label;
     });
 
-    document.getElementById("current-player").textContent =
-      state.currentPlayer === PLAYER_A ? "上方 (A)" : "下方 (B)";
+    // Current acting side - shown as 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP)
+    const label = getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: state.currentPlayer,
+      playerSide: state.playerTeam,
+      sidesOrder: state.firstPlayer
+        ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
+        : [PLAYER_A, PLAYER_B],
+    });
+    document.getElementById("current-player").textContent = label.text;
     document.getElementById("current-player").className =
       "team-indicator " + (state.currentPlayer === PLAYER_A ? "team-a" : "team-b");
     document.getElementById("turn-count").textContent = state.turnCount;
@@ -583,6 +591,7 @@ if (typeof document !== "undefined") {
   function startGame(mode, firstPlayer) {
     state = createInitialState(mode);
     state.currentPlayer = firstPlayer || PLAYER_A;
+    state.firstPlayer = firstPlayer || PLAYER_A;
     if (mode === "pve") {
       // Human always plays the bottom side (B), AI plays the top (A).
       state.playerTeam = PLAYER_B;
