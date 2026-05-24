@@ -1,5 +1,5 @@
 /* eslint-disable no-var */
-/* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, getValidCapturesCore:writable, flipCard:writable, moveCard:writable, createBaseState:writable */
+/* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, getValidCapturesCore:writable, flipCard:writable, moveCard:writable, createBaseState:writable, smartAiDecide:writable */
 // ============================================================
 // Animal Chess - Game Core Logic
 // ============================================================
@@ -21,6 +21,7 @@ if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
   flipCard = _core.flipCard;
   moveCard = _core.moveCard;
   createBaseState = _core.createBaseState;
+  smartAiDecide = _core.smartAiDecide;
 }
 
 // All animal names (shared by red/blue, rank 1-8, lower value = higher rank)
@@ -241,76 +242,33 @@ function checkGameOver(board, currentTeam) {
 }
 
 /**
- * AI decision: select optimal action
- * Priority: capture (prefer high rank, avoid high-rank mutual destruction) > flip (random) > move (random)
+ * Piece value function for AI scoring.
+ * Stronger pieces score higher; rank 8 (rat) gets reversal premium because
+ * it can capture the opponent's rank 1 elephant.
+ * @param {number} rank
+ * @returns {number}
+ */
+function pieceValue(rank) {
+  if (rank === 1) return 10;
+  if (rank === 8) return 5;
+  return 9 - rank;
+}
+
+/**
+ * AI decision: smart one-step lookahead.
+ * Priority: capture (highest expected score) > flip (least risky) > move (escape/approach).
  * @param {GameState} state
  * @param {string} aiTeam - AI team 'red' | 'blue'
  * @returns {{type, from?, to?, x?, y?}|null}
  */
 function aiDecide(state, aiTeam) {
-  const board = state.board;
-
-  // Priority 1: capture (prefer high rank pieces, avoid high-rank mutual destruction)
-  const allCaptures = [];
-  for (let y = 0; y < 4; y++) {
-    for (let x = 0; x < 4; x++) {
-      const card = board[y][x];
-      if (!card || !card.faceUp || card.team !== aiTeam) continue;
-      const targets = getValidCaptures(board, x, y, aiTeam);
-      for (const t of targets) {
-        const target = board[t.y][t.x];
-        const mutual = isMutualDestruction(card, target);
-        allCaptures.push({
-          from: { x, y },
-          to: t,
-          defenderRank: target.rank,
-          attackerRank: card.rank,
-          mutual,
-        });
-      }
-    }
-  }
-  if (allCaptures.length > 0) {
-    // Sort: prefer non-mutual first, then lower defender rank (higher value target), then higher attacker rank (lower value attacker)
-    allCaptures.sort((a, b) => {
-      if (a.mutual !== b.mutual) return a.mutual ? 1 : -1;
-      if (a.defenderRank !== b.defenderRank) return a.defenderRank - b.defenderRank;
-      return b.attackerRank - a.attackerRank;
-    });
-    return { type: "capture", from: allCaptures[0].from, to: allCaptures[0].to };
-  }
-
-  // Priority 2: flip (random)
-  const faceDownCells = [];
-  for (let y = 0; y < 4; y++) {
-    for (let x = 0; x < 4; x++) {
-      const card = board[y][x];
-      if (card && !card.faceUp) faceDownCells.push({ x, y });
-    }
-  }
-  if (faceDownCells.length > 0) {
-    const pick = faceDownCells[Math.floor(Math.random() * faceDownCells.length)];
-    return { type: "flip", x: pick.x, y: pick.y };
-  }
-
-  // Priority 3: move (random)
-  const allMoves = [];
-  for (let y = 0; y < 4; y++) {
-    for (let x = 0; x < 4; x++) {
-      const card = board[y][x];
-      if (!card || !card.faceUp || card.team !== aiTeam) continue;
-      const targets = getValidMoves(board, x, y);
-      for (const t of targets) {
-        allMoves.push({ from: { x, y }, to: t });
-      }
-    }
-  }
-  if (allMoves.length > 0) {
-    const pick = allMoves[Math.floor(Math.random() * allMoves.length)];
-    return { type: "move", from: pick.from, to: pick.to };
-  }
-
-  return null;
+  return smartAiDecide(state, aiTeam, {
+    canCapture: canCapture,
+    isMutualDestruction: isMutualDestruction,
+    pieceValue: pieceValue,
+    getValidCaptures: getValidCaptures,
+    getValidMoves: getValidMoves,
+  });
 }
 
 // ============================================================
