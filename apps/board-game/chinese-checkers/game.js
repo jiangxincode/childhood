@@ -742,7 +742,23 @@ if (typeof document !== "undefined") {
   function showGameOver() {
     const winnerText = document.getElementById("winner-text");
     if (gameState.winner) {
-      winnerText.textContent = PLAYER_COLORS[gameState.winner].name + " 获胜！";
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2/... (PVP), reordered by firstPlayer
+      let sidesOrder = gameState.players;
+      if (gameState.firstPlayer) {
+        const startIdx = gameState.players.indexOf(gameState.firstPlayer);
+        if (startIdx > 0) {
+          sidesOrder = gameState.players
+            .slice(startIdx)
+            .concat(gameState.players.slice(0, startIdx));
+        }
+      }
+      const label = getCurrentPlayerLabel({
+        mode: gameState.mode,
+        currentSide: gameState.winner,
+        playerSide: gameState.playerTeam,
+        sidesOrder: sidesOrder,
+      });
+      winnerText.textContent = label.text + " 获胜！";
     } else {
       winnerText.textContent = "平局！";
     }

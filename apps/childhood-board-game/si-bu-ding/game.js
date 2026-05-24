@@ -523,9 +523,20 @@ if (typeof document !== "undefined") {
 
     if (state.gameOver) {
       var winnerText;
-      if (state.winner === PLAYER_A) winnerText = "上方 (A) 吃掉对方 3 子，获胜！";
-      else if (state.winner === PLAYER_B) winnerText = "下方 (B) 吃掉对方 3 子，获胜！";
-      else winnerText = "平局";
+      if (state.winner === PLAYER_A || state.winner === PLAYER_B) {
+        // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of position name
+        var winnerLabel = getCurrentPlayerLabel({
+          mode: state.mode,
+          currentSide: state.winner,
+          playerSide: state.playerTeam,
+          sidesOrder: state.firstPlayer
+            ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
+            : [PLAYER_A, PLAYER_B],
+        });
+        winnerText = winnerLabel.text + " 吃掉对方 3 子，获胜！";
+      } else {
+        winnerText = "平局";
+      }
       document.getElementById("winner-text").textContent = winnerText;
       document.getElementById("game-over").style.display = "flex";
     }

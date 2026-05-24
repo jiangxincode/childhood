@@ -455,8 +455,16 @@ if (typeof document !== "undefined") {
     document.getElementById("pieces-b").textContent = state.piecesB;
 
     if (state.gameOver) {
-      var winnerText = state.winner === PLAYER_A ? "羊群获胜！" : "狼群获胜！";
-      document.getElementById("winner-text").textContent = winnerText;
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of role name
+      var winnerLabel = getCurrentPlayerLabel({
+        mode: state.mode,
+        currentSide: state.winner,
+        playerSide: state.playerTeam,
+        sidesOrder: state.firstPlayer
+          ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
+          : [PLAYER_A, PLAYER_B],
+      });
+      document.getElementById("winner-text").textContent = winnerLabel.text + " 获胜！";
       document.getElementById("game-over").style.display = "flex";
     }
   }

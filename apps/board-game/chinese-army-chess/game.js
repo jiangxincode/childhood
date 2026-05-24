@@ -1524,11 +1524,16 @@ if (typeof document !== "undefined") {
 
   function showGameOverScreen(winner) {
     if (winner) {
-      let winnerName = winner === RED ? "红方" : "蓝方";
-      if (gameState.oppType === "pve") {
-        winnerName = winner === gameState.playerTeam ? "你赢了！" : "电脑获胜！";
-      }
-      $winnerText.textContent = winnerName;
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
+      const label = getCurrentPlayerLabel({
+        mode: gameState.oppType,
+        currentSide: winner,
+        playerSide: gameState.playerTeam,
+        sidesOrder: gameState.firstPlayer
+          ? [gameState.firstPlayer, gameState.firstPlayer === RED ? BLUE : RED]
+          : [RED, BLUE],
+      });
+      $winnerText.textContent = label.text + " 获胜！";
     } else {
       $winnerText.textContent = "平局！";
     }

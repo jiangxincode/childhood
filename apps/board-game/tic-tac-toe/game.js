@@ -306,7 +306,16 @@ if (typeof document !== "undefined") {
     if (state.winner === "draw") {
       winnerText.textContent = "平局！";
     } else {
-      winnerText.textContent = state.winner + " 获胜！";
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of X/O
+      const label = getCurrentPlayerLabel({
+        mode: state.mode,
+        currentSide: state.winner,
+        playerSide: state.playerTeam,
+        sidesOrder: state.firstPlayer
+          ? [state.firstPlayer, state.firstPlayer === PLAYER_X ? PLAYER_O : PLAYER_X]
+          : [PLAYER_X, PLAYER_O],
+      });
+      winnerText.textContent = label.text + " 获胜！";
     }
     document.getElementById("game-over").style.display = "flex";
   }

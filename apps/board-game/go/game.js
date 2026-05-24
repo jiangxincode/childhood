@@ -819,18 +819,21 @@ if (typeof document !== "undefined") {
     const blackTotal = score.black + state.capturesBlack;
     const whiteTotal = score.white + state.capturesWhite + state.komi;
 
-    if (state.winner) {
-      winnerText.textContent = getPlayerName(state.winner) + " 获胜！";
-    } else {
-      // Calculate final score
-      if (blackTotal > whiteTotal) {
-        winnerText.textContent = "黑棋 获胜！";
-        state.winner = BLACK;
-      } else {
-        winnerText.textContent = "白棋 获胜！";
-        state.winner = WHITE;
-      }
+    // Determine winner if not yet decided (count-based ending)
+    if (!state.winner) {
+      state.winner = blackTotal > whiteTotal ? BLACK : WHITE;
     }
+
+    // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
+    const label = getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: state.winner,
+      playerSide: state.playerTeam,
+      sidesOrder: state.firstPlayer
+        ? [state.firstPlayer, state.firstPlayer === BLACK ? WHITE : BLACK]
+        : [BLACK, WHITE],
+    });
+    winnerText.textContent = label.text + " 获胜！";
 
     scoreDetail.innerHTML =
       "黑棋：" +

@@ -617,7 +617,16 @@ if (typeof document !== "undefined") {
   function showGameOver(state) {
     const winnerText = document.getElementById("winner-text");
     if (state.winner) {
-      winnerText.textContent = getPlayerName(state.winner) + " 获胜！";
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
+      const label = getCurrentPlayerLabel({
+        mode: state.mode,
+        currentSide: state.winner,
+        playerSide: state.playerTeam,
+        sidesOrder: state.firstPlayer
+          ? [state.firstPlayer, state.firstPlayer === RED ? WHITE : RED]
+          : [RED, WHITE],
+      });
+      winnerText.textContent = label.text + " 获胜！";
     } else {
       winnerText.textContent = "平局！";
     }

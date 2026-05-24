@@ -395,8 +395,16 @@ if (typeof document !== "undefined") {
   }
 
   function showGameOverScreen(winner) {
-    const winnerName = winner === "red" ? "红方" : "蓝方";
-    $winnerText.textContent = winnerName + " 获胜！";
+    // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
+    const label = getCurrentPlayerLabel({
+      mode: gameState.mode,
+      currentSide: winner,
+      playerSide: gameState.playerTeam,
+      sidesOrder: gameState.firstPlayer
+        ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
+        : ["red", "blue"],
+    });
+    $winnerText.textContent = label.text + " 获胜！";
     $gameOver.style.display = "flex";
   }
 

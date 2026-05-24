@@ -677,8 +677,16 @@ if (typeof document !== "undefined") {
   }
 
   function showGameOverScreen(winner) {
-    const winnerName = winner === "dragon" ? "龙队" : "虎队";
-    $winnerText.textContent = winnerName + " 获胜！";
+    // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of dragon/tiger
+    const label = getCurrentPlayerLabel({
+      mode: gameState.mode,
+      currentSide: winner,
+      playerSide: gameState.playerTeam,
+      sidesOrder: gameState.firstPlayer
+        ? [gameState.firstPlayer, gameState.firstPlayer === "dragon" ? "tiger" : "dragon"]
+        : ["dragon", "tiger"],
+    });
+    $winnerText.textContent = label.text + " 获胜！";
     $gameOver.style.display = "flex";
   }
 

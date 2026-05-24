@@ -556,11 +556,22 @@ if (typeof document !== "undefined") {
           break;
         }
       }
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of role name
+      var winnerLabel = getCurrentPlayerLabel({
+        mode: state.mode,
+        currentSide: state.winner,
+        playerSide: state.playerTeam,
+        sidesOrder: state.firstPlayer
+          ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
+          : [PLAYER_A, PLAYER_B],
+      });
       var winnerText;
       if (state.winner === PLAYER_B) {
-        winnerText = bAtRoot ? "逃兵获胜！成功逃到牛角根。" : "逃兵获胜！追兵无路可走。";
+        winnerText = bAtRoot
+          ? winnerLabel.text + " 获胜！成功逃到牛角根。"
+          : winnerLabel.text + " 获胜！追兵无路可走。";
       } else {
-        winnerText = "追兵获胜！逃兵被困进牛角尖。";
+        winnerText = winnerLabel.text + " 获胜！逃兵被困进牛角尖。";
       }
       document.getElementById("winner-text").textContent = winnerText;
       document.getElementById("game-over").style.display = "flex";
