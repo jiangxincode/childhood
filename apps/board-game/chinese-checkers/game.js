@@ -717,9 +717,7 @@ if (typeof document !== "undefined") {
     if (gameState.firstPlayer) {
       const startIdx = gameState.players.indexOf(gameState.firstPlayer);
       if (startIdx > 0) {
-        sidesOrder = gameState.players
-          .slice(startIdx)
-          .concat(gameState.players.slice(0, startIdx));
+        sidesOrder = gameState.players.slice(startIdx).concat(gameState.players.slice(0, startIdx));
       }
     }
     const label = getCurrentPlayerLabel({
@@ -822,9 +820,7 @@ if (typeof document !== "undefined") {
     if (gameState.firstPlayer) {
       const startIdx = gameState.players.indexOf(gameState.firstPlayer);
       if (startIdx > 0) {
-        sidesOrder = gameState.players
-          .slice(startIdx)
-          .concat(gameState.players.slice(0, startIdx));
+        sidesOrder = gameState.players.slice(startIdx).concat(gameState.players.slice(0, startIdx));
       }
     }
     const label = getCurrentPlayerLabel({

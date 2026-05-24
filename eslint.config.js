@@ -56,6 +56,8 @@ export default [
         $j: "writable",
         SlotMachine: "readonly",
         Vue: "readonly",
+        // Shared helper from apps/common/game-utils.js (loaded via <script> in browser)
+        getCurrentPlayerLabel: "readonly",
         planeOption: "writable",
         planeAudio: "writable",
         rule: "writable",
