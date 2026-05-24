@@ -66,6 +66,15 @@ function getValidCaptures(board, x, y, team, canCaptureFn) {
   return captures;
 }
 
+// Browser-only alias: per-game scripts (animal-chess/cat-and-mouse/little-emperor)
+// declare a 3-arg getValidCaptures(board, x, y, team) at the top level which
+// shadows this 4-arg core function on the global object (classic <script>).
+// Expose the core function under a separate name so those wrappers can still
+// reach it after shadowing. In Node, those scripts assign this via require()
+// instead, but exposing it here keeps the symbol consistent.
+// eslint-disable-next-line no-var, no-unused-vars
+var getValidCapturesCore = getValidCaptures;
+
 /**
  * Execute flip operation (modifies state in place)
  * Works for red/blue team games.
