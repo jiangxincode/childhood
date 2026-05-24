@@ -464,6 +464,73 @@ describe("aiDecide - AI 决策优先级", () => {
     expect(decision).not.toBeNull();
     expect(decision.type).toBe("flip");
   });
+
+  // ----------------------------------------------------------
+  // Smart AI behaviour (one-step lookahead) tests
+  // ----------------------------------------------------------
+  it("智能 AI：吃子时避免被反吃（送子）", () => {
+    const board = emptyBoard();
+    // Red 师长 (rank 3) at (1,1) can capture blue 排长 (rank 8) at (1,2),
+    // but after the move (1,2) is adjacent to blue 司令 (rank 1) at (1,3) which captures it.
+    // Red 营长 (rank 6) at (3,3) can capture blue 班长 (rank 9) at (3,2) safely.
+    // AI should prefer the safe capture rather than sending its 师长 to die.
+    board[1][1] = makePiece("师长", "red"); // rank 3
+    board[1][2] = makePiece("排长", "blue"); // rank 8 (target)
+    board[1][3] = makePiece("司令", "blue"); // rank 1 (counter-threat)
+    board[3][3] = makePiece("营长", "red"); // rank 6
+    board[3][2] = makePiece("班长", "blue"); // rank 9 (safe target)
+    const state = makeState(board, "red");
+    const decision = aiDecide(state, "red");
+    expect(decision.type).toBe("capture");
+    expect(decision.from).toEqual({ x: 3, y: 3 });
+    expect(decision.to).toEqual({ x: 2, y: 3 });
+  });
+
+  it("智能 AI：抱军旗优先级高于普通吃子", () => {
+    const board = emptyBoard();
+    // Red 工兵 adjacent to face-up flag (capture-flag is the win condition)
+    board[2][2] = makePiece("工兵", "red");
+    board[2][3] = { name: "军旗", team: "neutral", rank: null, faceUp: true };
+    // Also a normal capture available
+    board[0][0] = makePiece("司令", "red");
+    board[0][1] = makePiece("工兵", "blue");
+    const state = makeState(board, "red");
+    const decision = aiDecide(state, "red");
+    expect(decision.type).toBe("move");
+    expect(decision.to).toEqual({ x: 3, y: 2 });
+  });
+
+  it("智能 AI：被威胁时走子选择逃离", () => {
+    const board = emptyBoard();
+    // Red 班长 (rank 9) at (1,1) threatened by blue 师长 (rank 3) at (1,2).
+    // (0,1), (1,0), (2,1) are empty; (2,1) is the threatened square if moved sideways.
+    // Should pick a move that escapes the threat.
+    board[1][1] = makePiece("班长", "red");
+    board[1][2] = makePiece("师长", "blue");
+    const state = makeState(board, "red");
+    const decision = aiDecide(state, "red");
+    expect(decision.type).toBe("move");
+    expect(decision.from).toEqual({ x: 1, y: 1 });
+    // The new cell should not be threatened by (1,2)
+    const newCell = decision.to;
+    const adjacent =
+      Math.abs(newCell.x - 1) + Math.abs(newCell.y - 2) === 1 &&
+      !(newCell.x === 1 && newCell.y === 1);
+    // Walking to (2,1) keeps us adjacent to (1,2) -> still threatened.
+    // Walking to (0,1) or (1,0) escapes.
+    if (adjacent) {
+      // direct neighbour to attacker -> still threatened, should not happen
+      expect.fail("AI walked into threat at " + JSON.stringify(newCell));
+    }
+  });
+
+  it("智能 AI：无可选项时返回 null", () => {
+    const board = emptyBoard();
+    // Just an empty board -> no legal actions
+    const state = makeState(board, "red");
+    const decision = aiDecide(state, "red");
+    expect(decision).toBeNull();
+  });
 });
 
 // ============================================================

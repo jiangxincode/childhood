@@ -1,5 +1,5 @@
 /* eslint-disable no-var */
-/* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, getValidCapturesCore:writable, flipCard:writable, moveCard:writable, createBaseState:writable */
+/* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, getValidCapturesCore:writable, flipCard:writable, moveCard:writable, createBaseState:writable, smartAiDecide:writable */
 // ============================================================
 // Little Emperor - Game Core Logic
 // ============================================================
@@ -21,6 +21,7 @@ if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
   flipCard = _core.flipCard;
   moveCard = _core.moveCard;
   createBaseState = _core.createBaseState;
+  smartAiDecide = _core.smartAiDecide;
 }
 
 // All piece names (sorted by rank, rank 1-8)
@@ -235,76 +236,33 @@ function checkGameOver(board, currentTeam) {
 }
 
 /**
- * AI decision: select optimal action
- * Priority: capture (prefer high rank, avoid mutual destruction) > flip (random) > move (random)
+ * Piece value for AI scoring.
+ * Stronger pieces score higher; emperor (rank 8) gets reversal premium because
+ * it can capture grandpa (rank 1).
+ * @param {number} rank
+ * @returns {number}
+ */
+function pieceValue(rank) {
+  if (rank === 1) return 10;
+  if (rank === 8) return 5;
+  return 9 - rank;
+}
+
+/**
+ * AI decision: smart one-step lookahead.
+ * Priority: capture (highest expected score) > flip (least risky) > move (escape/approach).
  * @param {Object} state - Game state
  * @param {string} aiTeam - AI team 'red' | 'blue'
  * @returns {{type, from?, to?, x?, y?}|null}
  */
 function aiDecide(state, aiTeam) {
-  const board = state.board;
-
-  // Priority 1: capture (prefer high rank pieces, avoid high-rank mutual destruction)
-  const allCaptures = [];
-  for (let y = 0; y < 4; y++) {
-    for (let x = 0; x < 4; x++) {
-      const card = board[y][x];
-      if (!card || !card.faceUp || card.team !== aiTeam) continue;
-      const targets = getValidCaptures(board, x, y, aiTeam);
-      for (const t of targets) {
-        const target = board[t.y][t.x];
-        const mutual = isMutualDestruction(card, target);
-        allCaptures.push({
-          from: { x, y },
-          to: t,
-          defenderRank: target.rank,
-          attackerRank: card.rank,
-          mutual,
-        });
-      }
-    }
-  }
-  if (allCaptures.length > 0) {
-    // Sort: prefer non-mutual, then prefer high rank (low value), then prefer low rank attacker (high value)
-    allCaptures.sort((a, b) => {
-      if (a.mutual !== b.mutual) return a.mutual ? 1 : -1;
-      if (a.defenderRank !== b.defenderRank) return a.defenderRank - b.defenderRank;
-      return b.attackerRank - a.attackerRank;
-    });
-    return { type: "capture", from: allCaptures[0].from, to: allCaptures[0].to };
-  }
-
-  // Priority 2: flip (random face-down card)
-  const faceDownCells = [];
-  for (let y = 0; y < 4; y++) {
-    for (let x = 0; x < 4; x++) {
-      const card = board[y][x];
-      if (card && !card.faceUp) faceDownCells.push({ x, y });
-    }
-  }
-  if (faceDownCells.length > 0) {
-    const pick = faceDownCells[Math.floor(Math.random() * faceDownCells.length)];
-    return { type: "flip", x: pick.x, y: pick.y };
-  }
-
-  // Priority 3: move (random legal move)
-  const allMoves = [];
-  for (let y = 0; y < 4; y++) {
-    for (let x = 0; x < 4; x++) {
-      const card = board[y][x];
-      if (!card || !card.faceUp || card.team !== aiTeam) continue;
-      const targets = getValidMoves(board, x, y);
-      for (const t of targets) {
-        allMoves.push({ from: { x, y }, to: t });
-      }
-    }
-  }
-  if (allMoves.length > 0) {
-    const pick = allMoves[Math.floor(Math.random() * allMoves.length)];
-    return { type: "move", from: pick.from, to: pick.to };
-  }
-
-  return null;
+  return smartAiDecide(state, aiTeam, {
+    canCapture: canCapture,
+    isMutualDestruction: isMutualDestruction,
+    pieceValue: pieceValue,
+    getValidCaptures: getValidCaptures,
+    getValidMoves: getValidMoves,
+  });
 }
 
 // ============================================================

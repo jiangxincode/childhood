@@ -1,5 +1,5 @@
 /* eslint-disable no-var */
-/* global DIRECTIONS:writable */
+/* global DIRECTIONS:writable, chooseBestCapture:writable, chooseBestFlip:writable, chooseBestMove:writable */
 // ============================================================
 // Chinese Army Chess (Flip Chess) - Game Core Logic
 // ============================================================
@@ -12,9 +12,22 @@ if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   var judgeRPS = _gameUtils.judgeRPS;
   var shuffleArray = _gameUtils.shuffleArray;
 }
-if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
-  const _core = require("../../common/card-game-core.js");
-  DIRECTIONS = _core.DIRECTIONS;
+// Each binding is checked individually so that later requires of this module
+// (after another game.js has already populated some globals) still get the
+// game-specific helpers we need.
+if (typeof require !== "undefined") {
+  if (typeof DIRECTIONS === "undefined") {
+    DIRECTIONS = require("../../common/card-game-core.js").DIRECTIONS;
+  }
+  if (typeof chooseBestCapture === "undefined") {
+    chooseBestCapture = require("../../common/card-game-core.js").chooseBestCapture;
+  }
+  if (typeof chooseBestFlip === "undefined") {
+    chooseBestFlip = require("../../common/card-game-core.js").chooseBestFlip;
+  }
+  if (typeof chooseBestMove === "undefined") {
+    chooseBestMove = require("../../common/card-game-core.js").chooseBestMove;
+  }
 }
 
 // ============================================================
@@ -589,8 +602,61 @@ function checkGameOver(state) {
 }
 
 /**
- * AI decision: select optimal action
- * Priority: capture flag > capture (prefer high rank) > flip (random) > move (random)
+ * Whether attacker-defender combat is mutual destruction.
+ * Bombs and mines (vs non-engineer) trigger mutual destruction; equal-rank
+ * normal collisions also do.
+ * @param {Piece} attacker
+ * @param {Piece} defender
+ * @returns {boolean}
+ */
+function isMutualDestruction(attacker, defender) {
+  if (!attacker || !defender) return false;
+  if (resolveCombat(attacker, defender) === "mutual_destruction") return true;
+  return false;
+}
+
+/**
+ * Piece value used by the smart AI for scoring.
+ *
+ * Pieces are ranked by tactical impact, not strictly by military rank:
+ * - 司令(rank 1) is irreplaceable
+ * - 工兵(rank 10) gets a reversal premium because it disarms mines
+ * - 炸弹 / 地雷 carry strategic value: bombs are sacrificial high-value pieces,
+ *   mines are immobile but hard to clear
+ *
+ * Signature uses 3 args so the shared smart AI passes the full card object
+ * (1-arg form would be treated as a legacy `pieceValue(rank)` callback, which
+ * cannot distinguish bombs/mines/flags whose rank is null).
+ *
+ * @param {Piece} piece
+ * @param {Piece} _other
+ * @param {string} _role
+ * @returns {number}
+ */
+function pieceValue(piece, _other, _role) {
+  if (!piece) return 0;
+  if (isFlag(piece.name)) return 100; // flag is the win condition
+  if (isBomb(piece.name)) return 7; // bombs trade for any non-flag piece
+  if (isMine(piece.name)) return 4; // mines block lanes; only engineers can clear
+  if (!isNormalPiece(piece.name)) return 1;
+  // Normal pieces: rank 1 (司令) is most valuable, rank 10 (工兵) is mine sweeper
+  if (piece.rank === 1) return 12;
+  if (piece.rank === 10) return 6; // engineer reversal premium (vs mine)
+  return 11 - piece.rank; // rank 2..9 -> value 9..2
+}
+
+/**
+ * AI decision for chinese-army-chess.
+ *
+ * Priority:
+ *   1. Capture flag (game-winning move)
+ *   2. Capture (smart, with counter-attack lookahead)
+ *   3. Approach the (revealed) flag with our smallest normal piece - the
+ *      flag-capture candidate. If we're not next to the flag yet, walk a step
+ *      closer; this is the only path to victory in this game.
+ *   4. Flip (avoid revealing pieces near our 司令 / 军长)
+ *   5. Move (escape threats / approach prey, suicide-aware)
+ *
  * @param {GameState} state
  * @param {string} aiTeam - AI team 'red' | 'blue'
  * @returns {{type, from?, to?, x?, y?}|null}
@@ -598,7 +664,7 @@ function checkGameOver(state) {
 function aiDecide(state, aiTeam) {
   const board = state.board;
 
-  // Priority 1: capture flag (highest priority)
+  // Priority 1: capture flag (highest priority, game-winning move)
   for (let y = 0; y < 5; y++) {
     for (let x = 0; x < 5; x++) {
       const piece = board[y][x];
@@ -610,69 +676,142 @@ function aiDecide(state, aiTeam) {
     }
   }
 
-  // Priority 2: capture (prefer high rank, avoid high-rank mutual destruction)
-  const allCaptures = [];
-  for (let y = 0; y < 5; y++) {
-    for (let x = 0; x < 5; x++) {
-      const piece = board[y][x];
-      if (!piece || !piece.faceUp || piece.team !== aiTeam) continue;
-      const targets = getValidCaptures(board, x, y, aiTeam);
-      for (const t of targets) {
-        const target = board[t.y][t.x];
-        const combatResult = resolveCombat(piece, target);
-        const mutual = combatResult === "mutual_destruction";
-        allCaptures.push({
-          from: { x, y },
-          to: t,
-          defenderRank: target.rank !== null ? target.rank : 999,
-          attackerRank: piece.rank !== null ? piece.rank : 999,
-          mutual,
-        });
+  // Build deps for the shared smart helpers. The 5x5 board needs a custom
+  // inBounds; getValidMoves needs to drop flag targets so smart move scoring
+  // does not treat the (possibly unreachable) flag tile as a normal target.
+  const deps = {
+    canCapture: canCapture,
+    isMutualDestruction: isMutualDestruction,
+    pieceValue: pieceValue,
+    inBounds: inBounds,
+    getValidCaptures: function (b, x, y, team) {
+      return getValidCaptures(b, x, y, team);
+    },
+    getValidMoves: function (b, x, y) {
+      // Smart move scoring assumes empty target cells. The flag-capture branch
+      // already runs above as a preempt; here we filter out flag targets so
+      // simulateMove won't write onto the flag tile.
+      const moves = [];
+      const piece = b[y][x];
+      if (!piece || !piece.faceUp) return moves;
+      const list = getValidMoves(b, x, y, piece.team);
+      for (const t of list) {
+        if (t.type !== "capture_flag") moves.push({ x: t.x, y: t.y });
       }
-    }
-  }
+      return moves;
+    },
+  };
 
-  if (allCaptures.length > 0) {
-    // non-mutual first, then defenderRank ascending (low value = high rank), attackerRank descending (use low value piece)
-    allCaptures.sort((a, b) => {
-      if (a.mutual !== b.mutual) return a.mutual ? 1 : -1;
-      if (a.defenderRank !== b.defenderRank) return a.defenderRank - b.defenderRank;
-      return b.attackerRank - a.attackerRank;
-    });
-    return { type: "capture", from: allCaptures[0].from, to: allCaptures[0].to };
-  }
+  // Priority 2: capture
+  const cap = chooseBestCapture(board, aiTeam, deps, 5);
+  if (cap) return cap;
 
-  // Priority 3: flip (random)
-  const faceDownCells = [];
-  for (let y = 0; y < 5; y++) {
-    for (let x = 0; x < 5; x++) {
-      const piece = board[y][x];
-      if (piece && !piece.faceUp) faceDownCells.push({ x, y });
-    }
-  }
-  if (faceDownCells.length > 0) {
-    const pick = faceDownCells[Math.floor(Math.random() * faceDownCells.length)];
-    return { type: "flip", x: pick.x, y: pick.y };
-  }
+  // Priority 3: approach the revealed flag with our smallest normal piece.
+  // This is the dominant winning condition in chinese-army-chess: legacy AI
+  // wins ~96% of its games via flag capture, so the smart AI must actively
+  // pursue the flag rather than just react to threats.
+  const approachFlag = approachFlagMove(board, aiTeam);
+  if (approachFlag) return approachFlag;
 
-  // Priority 4: move (random)
-  const allMoves = [];
-  for (let y = 0; y < 5; y++) {
-    for (let x = 0; x < 5; x++) {
-      const piece = board[y][x];
-      if (!piece || !piece.faceUp || piece.team !== aiTeam) continue;
-      const targets = getValidMoves(board, x, y, aiTeam);
-      for (const t of targets) {
-        allMoves.push({ from: { x, y }, to: t });
-      }
-    }
-  }
-  if (allMoves.length > 0) {
-    const pick = allMoves[Math.floor(Math.random() * allMoves.length)];
-    return { type: "move", from: pick.from, to: pick.to };
-  }
+  // Priority 4: flip
+  const flip = chooseBestFlip(board, aiTeam, deps, 5);
+  if (flip) return flip;
+
+  // Priority 5: move
+  const mv = chooseBestMove(board, aiTeam, deps, 5);
+  if (mv) return mv;
 
   return null;
+}
+
+/**
+ * If the flag is face-up and we have our team's smallest normal piece on the
+ * board, return a one-step move that strictly reduces the Manhattan distance
+ * between that piece and the flag. Returns null otherwise.
+ *
+ * The smallest normal piece is the only one that can capture the flag, so we
+ * actively walk it toward the flag. Among legal moves we pick the one whose
+ * resulting cell is closest to the flag; ties broken by avoiding cells that
+ * are under threat by stronger enemies.
+ *
+ * @param {Board} board
+ * @param {string} aiTeam
+ * @returns {{type:'move', from:{x,y}, to:{x,y}}|null}
+ */
+function approachFlagMove(board, aiTeam) {
+  // Find the face-up flag
+  let flagX = -1;
+  let flagY = -1;
+  for (let y = 0; y < 5; y++) {
+    for (let x = 0; x < 5; x++) {
+      const p = board[y][x];
+      if (p && isFlag(p.name) && p.faceUp) {
+        flagX = x;
+        flagY = y;
+      }
+    }
+  }
+  if (flagX < 0) return null;
+
+  // Find our team's smallest normal piece (highest rank value)
+  const smallest = getLowestNormalPiece(board, aiTeam);
+  if (!smallest) return null;
+
+  // Locate it on the board
+  let sx = -1;
+  let sy = -1;
+  for (let y = 0; y < 5; y++) {
+    for (let x = 0; x < 5; x++) {
+      const p = board[y][x];
+      if (p && p.faceUp && p.team === aiTeam && p.name === smallest.name) {
+        sx = x;
+        sy = y;
+      }
+    }
+  }
+  if (sx < 0) return null;
+
+  const currDist = Math.abs(sx - flagX) + Math.abs(sy - flagY);
+  // Already adjacent - the flag-capture branch above should have handled it,
+  // but keep this defensive check.
+  if (currDist <= 1) return null;
+
+  const moves = getValidMoves(board, sx, sy, aiTeam);
+  let best = null;
+  let bestDist = Infinity;
+  let bestThreatened = true;
+  for (const t of moves) {
+    if (t.type !== "move") continue;
+    const dist = Math.abs(t.x - flagX) + Math.abs(t.y - flagY);
+    if (dist >= currDist) continue; // strictly closer only
+    // Check whether the cell is currently threatened by any face-up enemy
+    // strong enough to capture the smallest piece
+    let threatened = false;
+    for (const { dx, dy } of DIRECTIONS) {
+      const nx = t.x + dx;
+      const ny = t.y + dy;
+      if (!inBounds(nx, ny)) continue;
+      const enemy = board[ny][nx];
+      if (!enemy || !enemy.faceUp || enemy.team === aiTeam) continue;
+      if (canCapture(enemy, smallest)) {
+        threatened = true;
+        break;
+      }
+    }
+    // Prefer non-threatened with shorter distance; among threatened cells,
+    // pick the closest one (still better than wandering randomly).
+    if (
+      best === null ||
+      (bestThreatened && !threatened) ||
+      (bestThreatened === threatened && dist < bestDist)
+    ) {
+      best = t;
+      bestDist = dist;
+      bestThreatened = threatened;
+    }
+  }
+  if (!best) return null;
+  return { type: "move", from: { x: sx, y: sy }, to: { x: best.x, y: best.y } };
 }
 
 // ============================================================
@@ -697,6 +836,8 @@ if (typeof module !== "undefined" && module.exports) {
     inBounds,
     canCapture,
     resolveCombat,
+    isMutualDestruction,
+    pieceValue,
     getLowestNormalPiece,
     canCaptureFlag,
     createGameState,

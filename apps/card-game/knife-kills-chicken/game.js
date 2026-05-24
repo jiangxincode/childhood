@@ -1,5 +1,5 @@
 /* eslint-disable no-var */
-/* global DIRECTIONS:writable, inBounds:writable, flipCard:writable, moveCard:writable, createBaseState:writable */
+/* global DIRECTIONS:writable, inBounds:writable, flipCard:writable, moveCard:writable, createBaseState:writable, chooseBestCapture:writable, chooseBestFlip:writable, chooseBestMove:writable */
 // ============================================================
 // Knife Kills Chicken (Carry Weapon Version) - Game Core Logic
 // ============================================================
@@ -12,13 +12,19 @@ if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   var judgeRPS = _gameUtils.judgeRPS;
   var shuffleArray = _gameUtils.shuffleArray;
 }
-if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
+// Each binding is checked individually so that later requires of this module
+// (after another game.js has already populated some globals) still get the
+// game-specific helpers we need.
+if (typeof require !== "undefined") {
   const _core = require("../../common/card-game-core.js");
-  DIRECTIONS = _core.DIRECTIONS;
-  inBounds = _core.inBounds;
-  flipCard = _core.flipCard;
-  moveCard = _core.moveCard;
-  createBaseState = _core.createBaseState;
+  if (typeof DIRECTIONS === "undefined") DIRECTIONS = _core.DIRECTIONS;
+  if (typeof inBounds === "undefined") inBounds = _core.inBounds;
+  if (typeof flipCard === "undefined") flipCard = _core.flipCard;
+  if (typeof moveCard === "undefined") moveCard = _core.moveCard;
+  if (typeof createBaseState === "undefined") createBaseState = _core.createBaseState;
+  if (typeof chooseBestCapture === "undefined") chooseBestCapture = _core.chooseBestCapture;
+  if (typeof chooseBestFlip === "undefined") chooseBestFlip = _core.chooseBestFlip;
+  if (typeof chooseBestMove === "undefined") chooseBestMove = _core.chooseBestMove;
 }
 
 // 8 roles
@@ -364,82 +370,173 @@ function checkGameOver(board, currentTeam) {
 }
 
 /**
- * AI selects optimal action
+ * Whether attacker-defender combat is mutual destruction.
+ * Only the rocket triggers mutual destruction in this game (it always blows up).
+ * @param {Card} attacker
+ * @param {Card} defender
+ * @returns {boolean}
+ */
+function isMutualDestruction(attacker, defender) {
+  // Rocket sacrifices itself when it captures
+  return attacker && attacker.role === "火箭" && defender;
+}
+
+/**
+ * Piece value for AI scoring. Considers carry-weapon upgrades.
+ *
+ * Base scores reflect a unit's offensive reach in this game's cyclic
+ * dominance graph (rocket is the strongest tactical asset; chicken / human
+ * are mid-tier; tools alone are inert).
+ *
+ * Signature uses 3 args so the shared smart AI passes the full card object
+ * (1-arg form would be treated as a legacy `pieceValue(rank)` callback).
+ *
+ * @param {Card} card
+ * @param {Card} _other
+ * @param {string} _role
+ * @returns {number}
+ */
+function pieceValue(card, _other, _role) {
+  if (!card) return 0;
+  switch (card.role) {
+    case "火箭":
+      return 12; // most decisive piece
+    case "鸡":
+      return 7; // beats wasp + base for knife synergy
+    case "马蜂":
+      return 6; // beats scaly
+    case "老虎":
+      return 6; // beats human
+    case "人":
+      // Carrying knife unlocks attacking chicken -> upgrade
+      return card.carrying === "刀" ? 8 : 5;
+    case "癞痢":
+      // Carrying spear unlocks attacking tiger -> upgrade
+      return card.carrying === "枪" ? 8 : 4;
+    case "刀":
+    case "枪":
+      // Standalone weapons cannot move or attack -> low intrinsic value,
+      // but high "potential" once an ally walks over.
+      return 3;
+    default:
+      return 1;
+  }
+}
+
+/**
+ * AI decision: smart one-step lookahead.
+ *
+ * Priority (matches original AI but with smarter scoring at every step):
+ *   1. capture - best score, counter-attack risk aware
+ *   2. carry weapon - human/scalper grabs own knife/spear if it unlocks new captures
+ *   3. flip - face-down cell that minimises risk
+ *   4. move - escape threats, approach prey
+ *
  * @param {GameState} state - current game state
  * @param {string} aiTeam - AI team
- * @returns {{type: string, from?: {x: number, y: number}, to?: {x: number, y: number}, x?: number, y?: number}|null} AI decision result
+ * @returns {{type: string, from?, to?, x?, y?}|null}
  */
 function aiDecide(state, aiTeam) {
   const board = state.board;
+  const deps = {
+    canCapture: canCapture,
+    isMutualDestruction: isMutualDestruction,
+    pieceValue: pieceValue,
+    getValidCaptures: function (b, x, y, team) {
+      return getValidCaptures(b, x, y, team);
+    },
+    getValidMoves: function (b, x, y) {
+      return getValidMoves(b, x, y);
+    },
+  };
 
-  // Priority 1: when capture opportunity exists, prioritize capture
-  const allCaptures = [];
-  for (let y = 0; y < 4; y++) {
-    for (let x = 0; x < 4; x++) {
-      const card = board[y][x];
-      if (!card || !card.faceUp || card.team !== aiTeam) continue;
-      const targets = getValidCaptures(board, x, y, aiTeam);
-      for (const t of targets) {
-        allCaptures.push({ from: { x, y }, to: t });
-      }
-    }
-  }
-  if (allCaptures.length > 0) {
-    const pick = allCaptures[Math.floor(Math.random() * allCaptures.length)];
-    return { type: "capture", from: pick.from, to: pick.to };
-  }
+  // Priority 1: capture
+  const cap = chooseBestCapture(board, aiTeam, deps);
+  if (cap) return cap;
 
-  // Priority 2: human/scalper adjacent to own knife/spear -> carry weapon
-  const allCarries = [];
+  // Priority 2: carry weapon (rank by upgrade value gain)
+  const carryPick = pickBestCarry(board, aiTeam);
+  if (carryPick) return carryPick;
+
+  // Priority 3: flip
+  const flip = chooseBestFlip(board, aiTeam, deps);
+  if (flip) return flip;
+
+  // Priority 4: move
+  const mv = chooseBestMove(board, aiTeam, deps);
+  if (mv) return mv;
+
+  return null;
+}
+
+/**
+ * Pick the best carry-weapon move. Prefers carriers that are NOT already at
+ * risk and prefers picking up the weapon that unlocks the most useful capture
+ * next turn (knife on a chicken-rich board, spear on a tiger-rich board).
+ * @param {(Card|null)[][]} board
+ * @param {string} aiTeam
+ * @returns {{type: 'carry', from: {x,y}, to: {x,y}}|null}
+ */
+function pickBestCarry(board, aiTeam) {
+  const candidates = [];
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x++) {
       const card = board[y][x];
       if (!card || !card.faceUp || card.team !== aiTeam) continue;
       const targets = getCarryTargets(board, x, y, aiTeam);
       for (const t of targets) {
-        allCarries.push({ from: { x, y }, to: t });
+        candidates.push({ from: { x, y }, to: t, carrier: card });
       }
     }
   }
-  if (allCarries.length > 0) {
-    const pick = allCarries[Math.floor(Math.random() * allCarries.length)];
-    return { type: "carry", from: pick.from, to: pick.to };
-  }
+  if (candidates.length === 0) return null;
 
-  // Priority 3: when face-down cards exist, flip one randomly
-  const faceDownCells = [];
+  // Score each candidate
+  for (const c of candidates) {
+    // Synergy reward: count visible enemies the upgrade would unlock
+    let unlockBonus = 0;
+    if (c.carrier.role === "人") {
+      // Human + knife -> can hunt chicken
+      unlockBonus = countVisibleEnemyRole(board, aiTeam, "鸡") * 2;
+    } else if (c.carrier.role === "癞痢") {
+      // Scalper + spear -> can hunt tiger
+      unlockBonus = countVisibleEnemyRole(board, aiTeam, "老虎") * 2;
+    }
+    // Penalty if carrier is currently safe but the destination is threatened
+    const futureBoard = [];
+    for (let y = 0; y < 4; y++) futureBoard.push(board[y].slice());
+    futureBoard[c.to.y][c.to.x] = c.carrier;
+    futureBoard[c.from.y][c.from.x] = null;
+    const futureThreatened = isThreatened(futureBoard, c.to.x, c.to.y, aiTeam);
+    c.score = unlockBonus + (futureThreatened ? -3 : 0);
+  }
+  candidates.sort((a, b) => b.score - a.score);
+  return { type: "carry", from: candidates[0].from, to: candidates[0].to };
+}
+
+function countVisibleEnemyRole(board, aiTeam, role) {
+  let n = 0;
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x++) {
-      const card = board[y][x];
-      if (card && !card.faceUp) {
-        faceDownCells.push({ x, y });
-      }
+      const c = board[y][x];
+      if (c && c.faceUp && c.team !== aiTeam && c.role === role) n++;
     }
   }
-  if (faceDownCells.length > 0) {
-    const pick = faceDownCells[Math.floor(Math.random() * faceDownCells.length)];
-    return { type: "flip", x: pick.x, y: pick.y };
-  }
+  return n;
+}
 
-  // Priority 4: randomly select own piece and move to legal position
-  const allMoves = [];
-  for (let y = 0; y < 4; y++) {
-    for (let x = 0; x < 4; x++) {
-      const card = board[y][x];
-      if (!card || !card.faceUp || card.team !== aiTeam) continue;
-      const targets = getValidMoves(board, x, y);
-      for (const t of targets) {
-        allMoves.push({ from: { x, y }, to: t });
-      }
-    }
+function isThreatened(board, x, y, ownTeam) {
+  const me = board[y][x];
+  if (!me || !me.faceUp) return false;
+  for (const { dx, dy } of DIRECTIONS) {
+    const nx = x + dx;
+    const ny = y + dy;
+    if (!inBounds(nx, ny)) continue;
+    const enemy = board[ny][nx];
+    if (!enemy || !enemy.faceUp || enemy.team === ownTeam) continue;
+    if (canCapture(enemy, me)) return true;
   }
-  if (allMoves.length > 0) {
-    const pick = allMoves[Math.floor(Math.random() * allMoves.length)];
-    return { type: "move", from: pick.from, to: pick.to };
-  }
-
-  // No legal actions
-  return null;
+  return false;
 }
 
 // Export for testing
@@ -451,6 +548,8 @@ if (typeof module !== "undefined" && module.exports) {
     getImagePath,
     judgeRPS,
     canCapture,
+    isMutualDestruction,
+    pieceValue,
     createGameState,
     getValidMoves,
     getValidCaptures,
