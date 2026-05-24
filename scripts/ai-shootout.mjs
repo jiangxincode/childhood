@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url);
 
 // Legacy AI implementation (greedy) - mirrors the original aiDecide.
 function legacyAiDecide(state, aiTeam, deps) {
-  const { canCapture, isMutualDestruction, getValidCaptures, getValidMoves } = deps;
+  const { isMutualDestruction, getValidCaptures, getValidMoves } = deps;
   const board = state.board;
 
   const allCaptures = [];

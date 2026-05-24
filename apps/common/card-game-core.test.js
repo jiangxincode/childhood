@@ -419,9 +419,9 @@ describe("smartAiDecide", () => {
     // Should not move into a threatened cell (e.g. (2,1) is empty too but not threatened either)
     // Just verify it picked a safe cell
     var futureBoard = simulateMove(board, decision.from, decision.to);
-    expect(isPositionUnderThreat(futureBoard, decision.to.x, decision.to.y, "red", rankCanCapture)).toBe(
-      false
-    );
+    expect(
+      isPositionUnderThreat(futureBoard, decision.to.x, decision.to.y, "red", rankCanCapture)
+    ).toBe(false);
   });
 
   it("returns null when there are no legal actions", () => {
