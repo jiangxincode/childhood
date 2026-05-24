@@ -1340,3 +1340,74 @@ describe("aiDecide - AI决策函数", () => {
     expect(decision.type).toBe("flip");
   });
 });
+// ============================================================
+// Smart AI behaviour (one-step lookahead) tests
+// ============================================================
+describe("aiDecide - 智能 AI 行为", () => {
+  it("吃子时避免被反吃（送子）", () => {
+    // Red wasp(马蜂) at (1,1) can capture blue 癞痢 at (1,2),
+    // but adjacent (1,3) holds a blue chicken which dominates wasp -> wasp dies next turn (net -2).
+    // Red chicken at (3,3) can capture blue wasp at (3,2) safely (no adjacent threat) -> net +6.
+    // Smart AI should pick the safe chicken capture.
+    const board = emptyBoard();
+    board[1][1] = makeCard("马蜂", "red");
+    board[1][2] = makeCard("癞痢", "blue");
+    board[1][3] = makeCard("鸡", "blue"); // counter-threat: chicken beats wasp
+    board[3][3] = makeCard("鸡", "red");
+    board[3][2] = makeCard("马蜂", "blue");
+    const state = makeState(board, "red");
+    const decision = aiDecide(state, "red");
+    expect(decision.type).toBe("capture");
+    // Should NOT pick the wasp capture (it would die next turn)
+    expect(decision.from).toEqual({ x: 3, y: 3 });
+    expect(decision.to).toEqual({ x: 2, y: 3 });
+  });
+
+  it("无吃子机会时优先扛刀以解锁杀鸡能力", () => {
+    // Red has a human and a knife adjacent + a visible blue chicken on board.
+    // The smart carry priority should pick this carry move.
+    const board = emptyBoard();
+    board[1][1] = makeCard("人", "red");
+    board[1][2] = makeCard("刀", "red");
+    board[3][3] = makeCard("鸡", "blue");
+    const state = makeState(board, "red");
+    const decision = aiDecide(state, "red");
+    expect(decision.type).toBe("carry");
+    expect(decision.from).toEqual({ x: 1, y: 1 });
+    expect(decision.to).toEqual({ x: 2, y: 1 });
+  });
+
+  it("被威胁时走子选择逃离", () => {
+    // Red chicken at (1,1) threatened by blue rocket at (2,1).
+    // Smart AI should pick a move that escapes the rocket's threat zone.
+    // Legal moves: (0,1), (1,0), (1,2). All three are non-threatened cells
+    // (the rocket only threatens its 4 immediate neighbours).
+    const board = emptyBoard();
+    board[1][1] = makeCard("鸡", "red");
+    board[1][2] = makeCard("火箭", "blue");
+    const state = makeState(board, "red");
+    const decision = aiDecide(state, "red");
+    expect(decision.type).toBe("move");
+    expect(decision.from).toEqual({ x: 1, y: 1 });
+    // Result should be one of (0,1), (1,0), (1,2); none are adjacent to the rocket.
+    const safeTargets = [
+      JSON.stringify({ x: 0, y: 1 }),
+      JSON.stringify({ x: 1, y: 0 }),
+      JSON.stringify({ x: 1, y: 2 }),
+    ];
+    expect(safeTargets).toContain(JSON.stringify(decision.to));
+  });
+
+  it("无任何合法操作时返回 null", () => {
+    const board = emptyBoard();
+    // Red knife (cannot move/capture) surrounded by blue pieces, no face-down cards.
+    board[1][1] = makeCard("刀", "red");
+    board[1][0] = makeCard("马蜂", "blue");
+    board[1][2] = makeCard("枪", "blue");
+    board[0][1] = makeCard("老虎", "blue");
+    board[2][1] = makeCard("人", "blue");
+    const state = makeState(board, "red");
+    const decision = aiDecide(state, "red");
+    expect(decision).toBeNull();
+  });
+});
