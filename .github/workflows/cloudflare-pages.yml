@@ -1,0 +1,91 @@
+name: Deploy to Cloudflare Pages
+
+# Mirrors the static site to Cloudflare Pages.
+# GitHub Pages remains the canonical SEO host (see canonical/og:url tags in
+# index.html and friends). Cloudflare is a faster mirror; canonical tags make
+# search engines fold its content back into the GitHub Pages domain.
+#
+# Required repository secrets:
+#   - CLOUDFLARE_API_TOKEN   (token with "Cloudflare Pages: Edit" permission)
+#   - CLOUDFLARE_ACCOUNT_ID
+#
+# Required repository variable (optional, defaults to "childhood"):
+#   - CLOUDFLARE_PAGES_PROJECT  (name of the existing Pages project)
+
+on:
+  push:
+    branches: ["master"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+# Avoid concurrent deploys racing each other; never cancel a deploy in flight.
+concurrency:
+  group: cloudflare-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-pages
+      url: ${{ steps.deploy.outputs.deployment-url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Stage publish directory
+        # Copy only what should ship to the public CDN. Everything in this
+        # list maps to a real entry served by GitHub Pages today; if you add
+        # a new top-level static asset, append it here too.
+        run: |
+          set -eux
+          mkdir -p public
+          # Top-level static directories
+          for dir in apps css images js; do
+            if [[ -d "$dir" ]]; then
+              cp -r "$dir" "public/"
+            fi
+          done
+          # Top-level static files (HTML, PWA, SEO, verification, license,
+          # plus Cloudflare-specific _headers/_redirects which must sit at
+          # the publish root to be picked up).
+          for file in \
+            index.html \
+            manifest.webmanifest \
+            sw.js \
+            robots.txt \
+            sitemap.xml \
+            BingSiteAuth.xml \
+            google39f08d3f2271d152.html \
+            LICENSE \
+            _headers \
+            _redirects; do
+            if [[ -f "$file" ]]; then
+              cp "$file" "public/"
+            fi
+          done
+          # Strip test files and Sonar artefacts that might be nested under apps/
+          find public -type f \( -name '*.test.js' -o -name 'sonar-report.xml' -o -name '.DS_Store' \) -delete
+          echo "--- public tree (top 2 levels) ---"
+          find public -maxdepth 2 -type d
+          echo "--- total files ---"
+          find public -type f | wc -l
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # `--branch` controls whether CF Pages treats this as a production
+          # or preview deploy. Match the repo's default branch (`master`) so
+          # the CF Pages project's production branch can be set to `master`.
+          command: >-
+            pages deploy public
+            --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'childhood' }}
+            --branch=master
+            --commit-dirty=true

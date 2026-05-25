@@ -15,7 +15,15 @@ const INCLUDE_DIRS = ["apps", "css", "images", "js"];
 const INCLUDE_FILES = ["index.html", "manifest.webmanifest", "LICENSE"];
 
 // Files anywhere in the tree we never want to ship in the desktop bundle.
-const EXCLUDE_FILE_PATTERNS = [/\.test\.js$/i, /sonar-report\.xml$/i, /\.DS_Store$/i];
+const EXCLUDE_FILE_PATTERNS = [
+  /\.test\.js$/i,
+  /sonar-report\.xml$/i,
+  /\.DS_Store$/i,
+  // Cloudflare Pages config files: only meaningful when served by CF,
+  // pure noise inside a Tauri installer.
+  /^_headers$/,
+  /^_redirects$/,
+];
 
 // Directories anywhere in the tree we never want to traverse.
 const EXCLUDE_DIR_NAMES = new Set([

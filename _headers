@@ -1,0 +1,30 @@
+# Cloudflare Pages headers config.
+# https://developers.cloudflare.com/pages/configuration/headers/
+#
+# GitHub Pages ignores this file (it serves directly without parsing _headers),
+# so it is safe to commit to the repo root.
+
+# HTML: short revalidation window so SW updates roll out quickly.
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Service worker must never be cached by intermediaries; the browser still
+# revalidates on every navigation, but a stale CDN copy would block updates.
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Hashed-content-free assets: cache for a day, let SWR keep things fresh.
+/css/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/js/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# Images: long cache, they rarely change.
+/images/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=2592000
+
+# Baseline security headers for the whole site.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: interest-cohort=()

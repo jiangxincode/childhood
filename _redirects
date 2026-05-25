@@ -1,0 +1,6 @@
+# Cloudflare Pages redirects/rewrites.
+# https://developers.cloudflare.com/pages/configuration/redirects/
+#
+# This site is fully static with one index.html per directory, so we do not
+# need SPA-style rewrites. The file is intentionally minimal but kept so
+# future redirects (e.g. legacy URL forwarding) have an obvious home.
