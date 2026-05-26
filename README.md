@@ -47,15 +47,23 @@
 
 ## 欢乐骰子游戏
 
+![欢乐骰子游戏](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/欢乐骰子游戏.jpg)
+
 | 飞行棋 |
 |:-----:|
 | ![飞行棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/dice-game/飞行棋.jpg) |
 
 ## 童年棋盘游戏
 
-| 狼吃羊 | 憋茅坑 | 小猫钓鱼 | 钻牛角尖 | 摆四龙 | 蚂蚁搬家 | 四步钉 |
-|:-----:|:-----:|:-------:|:-------:|:------:|:------:|:-----:|
-| ![狼吃羊](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/狼吃羊.jpg) | ![憋茅坑](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/憋茅坑.jpg) | ![小猫钓鱼](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/小猫钓鱼.jpg) | ![钻牛角尖](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/钻牛角尖.jpg) | ![摆四龙](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/摆四龙.jpg) | ![蚂蚁搬家](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/蚂蚁搬家.jpg) | ![四步钉](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/四步钉.jpg) |
+![童年棋盘游戏](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/童年怀旧棋盘.jpg)
+
+| 狼吃羊 | 憋茅坑 | 小猫钓鱼 | 钻牛角尖 |
+|:-----:|:-----:|:-------:|:-------:|
+| ![狼吃羊](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/狼吃羊.jpg) | ![憋茅坑](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/憋茅坑.jpg) | ![小猫钓鱼](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/小猫钓鱼.jpg) | ![钻牛角尖](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/钻牛角尖.jpg) |
+
+| 摆四龙 | 蚂蚁搬家 | 四步钉 |
+|:-----:|:------:|:-----:|
+| ![摆四龙](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/摆四龙.jpg) | ![蚂蚁搬家](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/蚂蚁搬家.jpg) | ![四步钉](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/四步钉.jpg) |
 
 ## 项目结构
 
