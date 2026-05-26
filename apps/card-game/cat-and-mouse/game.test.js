@@ -795,6 +795,13 @@ describe("checkGameOver - 游戏结束判定", () => {
     expect(result.ended).toBe(false);
     expect(result.winner).toBeNull();
   });
+
+  it("双方棋子都被同归于尽吃光时为平局", () => {
+    const board = emptyBoard();
+    const result = checkGameOver(board, "red");
+    expect(result.ended).toBe(true);
+    expect(result.winner).toBe("draw");
+  });
 });
 
 // ============================================================

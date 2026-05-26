@@ -864,11 +864,11 @@ describe("checkGameOver - 游戏结束判定", () => {
     expect(result.winner).toBeNull();
   });
 
-  it("空board时双方都无牌，红方先判定为0 → 蓝方获胜", () => {
+  it("空board时双方都无牌为平局", () => {
     const board = emptyBoard();
     const result = checkGameOver(board, "red");
     expect(result.ended).toBe(true);
-    expect(result.winner).toBe("blue");
+    expect(result.winner).toBe("draw");
   });
 });
 
