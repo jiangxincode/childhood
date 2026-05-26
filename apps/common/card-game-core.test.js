@@ -437,3 +437,133 @@ describe("smartAiDecide", () => {
     expect(decision).toBeNull();
   });
 });
+
+// ============================================================
+// Stalemate / draw detection tests
+// ============================================================
+const {
+  STALEMATE_NO_CAPTURE_LIMIT,
+  POSITION_REPETITION_LIMIT,
+  hashPosition,
+  recordNonCaptureAction,
+  recordCaptureAction,
+  isStalemateDraw,
+} = require("./card-game-core.js");
+
+describe("stalemate constants", () => {
+  it("exposes a non-trivial no-capture limit", () => {
+    expect(typeof STALEMATE_NO_CAPTURE_LIMIT).toBe("number");
+    expect(STALEMATE_NO_CAPTURE_LIMIT).toBeGreaterThan(10);
+  });
+  it("exposes a repetition limit", () => {
+    expect(POSITION_REPETITION_LIMIT).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("hashPosition", () => {
+  it("returns same hash for identical board+team", () => {
+    var s1 = createBaseState("pvp");
+    s1.board = emptyBoard();
+    s1.currentTeam = "red";
+    var s2 = createBaseState("pvp");
+    s2.board = emptyBoard();
+    s2.currentTeam = "red";
+    expect(hashPosition(s1)).toBe(hashPosition(s2));
+  });
+  it("differs when current team differs", () => {
+    var s1 = createBaseState("pvp");
+    s1.board = emptyBoard();
+    s1.currentTeam = "red";
+    var s2 = createBaseState("pvp");
+    s2.board = emptyBoard();
+    s2.currentTeam = "blue";
+    expect(hashPosition(s1)).not.toBe(hashPosition(s2));
+  });
+});
+
+describe("recordNonCaptureAction / isStalemateDraw - no-capture limit", () => {
+  it("draws after reaching the no-capture limit", () => {
+    var state = createBaseState("pvp");
+    state.board = emptyBoard();
+    state.currentTeam = "red";
+    expect(isStalemateDraw(state)).toBe(false);
+    for (var i = 0; i < STALEMATE_NO_CAPTURE_LIMIT - 1; i++) {
+      // Vary position so repetition rule does not trigger first
+      state.board[0][0] = { team: "red", faceUp: true, k: i };
+      recordNonCaptureAction(state);
+    }
+    expect(isStalemateDraw(state)).toBe(false);
+    state.board[0][0] = { team: "red", faceUp: true, k: 9999 };
+    recordNonCaptureAction(state);
+    expect(isStalemateDraw(state)).toBe(true);
+  });
+});
+
+describe("recordCaptureAction", () => {
+  it("resets stalemate counters", () => {
+    var state = createBaseState("pvp");
+    state.board = emptyBoard();
+    state.currentTeam = "red";
+    for (var i = 0; i < 10; i++) {
+      state.board[0][0] = { team: "red", faceUp: true, k: i };
+      recordNonCaptureAction(state);
+    }
+    expect(state.noCaptureActions).toBe(10);
+    recordCaptureAction(state);
+    expect(state.noCaptureActions).toBe(0);
+    expect(Object.keys(state.positionHistory).length).toBe(0);
+  });
+});
+
+describe("isStalemateDraw - position repetition", () => {
+  it("draws when same position+team is reached the repetition-limit times", () => {
+    var state = createBaseState("pvp");
+    state.board = emptyBoard();
+    state.board[0][0] = { team: "red", faceUp: true };
+    state.currentTeam = "red";
+    // Reach the same position POSITION_REPETITION_LIMIT times.
+    for (var i = 0; i < POSITION_REPETITION_LIMIT; i++) {
+      recordNonCaptureAction(state);
+    }
+    expect(isStalemateDraw(state)).toBe(true);
+  });
+  it("does not draw before the repetition limit", () => {
+    var state = createBaseState("pvp");
+    state.board = emptyBoard();
+    state.board[0][0] = { team: "red", faceUp: true };
+    state.currentTeam = "red";
+    for (var i = 0; i < POSITION_REPETITION_LIMIT - 1; i++) {
+      recordNonCaptureAction(state);
+    }
+    expect(isStalemateDraw(state)).toBe(false);
+  });
+});
+
+describe("flipCard / moveCard increment stalemate counters", () => {
+  it("flipCard increments noCaptureActions", () => {
+    var state = createBaseState("pvp");
+    state.board = emptyBoard();
+    state.board[1][1] = { team: "red", faceUp: false };
+    state.currentTeam = "red";
+    state.teamAssigned = true;
+    flipCard(state, 1, 1);
+    expect(state.noCaptureActions).toBe(1);
+  });
+  it("moveCard increments noCaptureActions", () => {
+    var state = createBaseState("pvp");
+    state.board = emptyBoard();
+    state.board[1][1] = { team: "red", faceUp: true };
+    state.currentTeam = "red";
+    state.teamAssigned = true;
+    moveCard(state, { x: 1, y: 1 }, { x: 2, y: 1 });
+    expect(state.noCaptureActions).toBe(1);
+  });
+});
+
+describe("createBaseState - stalemate fields", () => {
+  it("initializes noCaptureActions to 0 and positionHistory to {}", () => {
+    var state = createBaseState("pvp");
+    expect(state.noCaptureActions).toBe(0);
+    expect(state.positionHistory).toEqual({});
+  });
+});

@@ -1,5 +1,5 @@
 /* eslint-disable no-var */
-/* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, smartAiDecide:writable */
+/* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, smartAiDecide:writable, isStalemateDraw:writable, recordCaptureAction:writable, recordNonCaptureAction:writable */
 // ============================================================
 // Dragon Tiger Fight - Game Core Logic
 // ============================================================
@@ -18,6 +18,9 @@ if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
   inBounds = _core.inBounds;
   getValidMoves = _core.getValidMoves;
   smartAiDecide = _core.smartAiDecide;
+  isStalemateDraw = _core.isStalemateDraw;
+  recordCaptureAction = _core.recordCaptureAction;
+  recordNonCaptureAction = _core.recordNonCaptureAction;
 }
 
 // Dragon team 8 pieces (rank 1-8, lower value = higher rank)
@@ -181,6 +184,9 @@ function createGameState(mode) {
     winner: null,
     aiThinking: false,
     aiFirst: false,
+    // Stalemate tracking (anti-deadlock)
+    noCaptureActions: 0,
+    positionHistory: {},
   };
 }
 
@@ -245,6 +251,7 @@ function flipCard(state, x, y) {
     state.currentTeam = state.currentTeam === "dragon" ? "tiger" : "dragon";
   }
   state.turnCount++;
+  recordNonCaptureAction(state);
   return state;
 }
 
@@ -266,6 +273,7 @@ function moveCard(state, from, to) {
   state.board[from.y][from.x] = null;
   state.currentTeam = state.currentTeam === "dragon" ? "tiger" : "dragon";
   state.turnCount++;
+  recordNonCaptureAction(state);
   return state;
 }
 
@@ -310,6 +318,7 @@ function captureCard(state, from, to) {
 
   state.currentTeam = state.currentTeam === "dragon" ? "tiger" : "dragon";
   state.turnCount++;
+  recordCaptureAction(state);
   return state;
 }
 
@@ -339,9 +348,13 @@ function hasAnyLegalAction(board, team) {
  * Check if game is over
  * @param {Board} board - board
  * @param {string} currentTeam - current team 'dragon' | 'tiger'
+ * @param {Object} [state] - optional full game state for stalemate detection
  * @returns {{ended: boolean, winner: string|null}}
  */
-function checkGameOver(board, currentTeam) {
+function checkGameOver(board, currentTeam, state) {
+  if (state && isStalemateDraw(state)) {
+    return { ended: true, winner: "draw" };
+  }
   let dragonCount = 0;
   let tigerCount = 0;
   for (let y = 0; y < 4; y++) {
@@ -891,7 +904,7 @@ if (typeof document !== "undefined") {
 
   function afterAction() {
     // Check game over
-    const result = checkGameOver(gameState.board, gameState.currentTeam);
+    const result = checkGameOver(gameState.board, gameState.currentTeam, gameState);
     if (result.ended) {
       gameState.gameOver = true;
       gameState.winner = result.winner;

@@ -1,5 +1,5 @@
 /* eslint-disable no-var */
-/* global DIRECTIONS:writable, chooseBestCapture:writable, chooseBestFlip:writable, chooseBestMove:writable */
+/* global DIRECTIONS:writable, chooseBestCapture:writable, chooseBestFlip:writable, chooseBestMove:writable, isStalemateDraw:writable, recordCaptureAction:writable, recordNonCaptureAction:writable */
 // ============================================================
 // Chinese Army Chess (Flip Chess) - Game Core Logic
 // ============================================================
@@ -27,6 +27,15 @@ if (typeof require !== "undefined") {
   }
   if (typeof chooseBestMove === "undefined") {
     chooseBestMove = require("../../common/card-game-core.js").chooseBestMove;
+  }
+  if (typeof isStalemateDraw === "undefined") {
+    isStalemateDraw = require("../../common/card-game-core.js").isStalemateDraw;
+  }
+  if (typeof recordCaptureAction === "undefined") {
+    recordCaptureAction = require("../../common/card-game-core.js").recordCaptureAction;
+  }
+  if (typeof recordNonCaptureAction === "undefined") {
+    recordNonCaptureAction = require("../../common/card-game-core.js").recordNonCaptureAction;
   }
 }
 
@@ -289,6 +298,9 @@ function createGameState(mode) {
     winner: null,
     aiThinking: false,
     aiFirst: false,
+    // Stalemate tracking (anti-deadlock)
+    noCaptureActions: 0,
+    positionHistory: {},
   };
 }
 
@@ -431,6 +443,7 @@ function flipCard(state, x, y) {
   if (isFlag(card.name)) {
     state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
     state.turnCount++;
+    recordNonCaptureAction(state);
     return state;
   }
 
@@ -453,6 +466,7 @@ function flipCard(state, x, y) {
 
   state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
   state.turnCount++;
+  recordNonCaptureAction(state);
   return state;
 }
 
@@ -485,6 +499,9 @@ function moveCard(state, from, to) {
     state.gameOver = true;
     state.winner = state.currentTeam;
     state.turnCount++;
+    // Capturing the flag ends the game; treat as a capture-equivalent reset
+    // (no need for further stalemate detection on this state).
+    recordCaptureAction(state);
     return state;
   }
 
@@ -494,6 +511,7 @@ function moveCard(state, from, to) {
     state.board[from.y][from.x] = null;
     state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
     state.turnCount++;
+    recordNonCaptureAction(state);
     return state;
   }
 
@@ -552,6 +570,7 @@ function captureCard(state, from, to) {
 
   state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
   state.turnCount++;
+  recordCaptureAction(state);
   return state;
 }
 
@@ -590,6 +609,11 @@ function checkGameOver(state) {
   // If already won by capturing flag
   if (state.gameOver) {
     return { ended: true, winner: state.winner };
+  }
+
+  // Stalemate / repetition draw (anti-deadlock)
+  if (isStalemateDraw(state)) {
+    return { ended: true, winner: "draw" };
   }
 
   // If current team has no legal actions
@@ -1218,6 +1242,11 @@ if (typeof document !== "undefined") {
   }
 
   function showGameOverScreen(winner) {
+    if (winner === "draw") {
+      $winnerText.textContent = "平局！";
+      $gameOver.style.display = "flex";
+      return;
+    }
     // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
     const label = getCurrentPlayerLabel({
       mode: gameState.mode,
