@@ -10,6 +10,63 @@ const DIRECTIONS = [
   { dx: 0, dy: 1 },
 ];
 
+// ============================================================
+// Stalemate / draw detection (anti-deadlock for card games)
+// ============================================================
+// Reaching this number of consecutive non-capture actions ends the game in a draw.
+const STALEMATE_NO_CAPTURE_LIMIT = 50;
+// Reaching this number of repetitions of the same position+turn signals a draw.
+const POSITION_REPETITION_LIMIT = 3;
+
+/**
+ * Build a compact signature of the board + side to move for repetition tracking.
+ * Relies on JSON serialization of the board cells; field insertion order is
+ * stable inside each game's card factory, so equivalent positions hash equal.
+ * @param {Object} state
+ * @returns {string}
+ */
+function hashPosition(state) {
+  return JSON.stringify(state.board) + "|" + (state.currentTeam || "");
+}
+
+/**
+ * Increment the non-capture action counter and record the current position.
+ * Call this at the end of any non-capture action that consumes a turn
+ * (flip / move / carry-weapon).
+ * @param {Object} state
+ */
+function recordNonCaptureAction(state) {
+  state.noCaptureActions = (state.noCaptureActions || 0) + 1;
+  if (!state.positionHistory) state.positionHistory = {};
+  const key = hashPosition(state);
+  state.positionHistory[key] = (state.positionHistory[key] || 0) + 1;
+}
+
+/**
+ * Reset stalemate tracking after a capture: piece count just changed so any
+ * earlier repetition counts can no longer recur.
+ * @param {Object} state
+ */
+function recordCaptureAction(state) {
+  state.noCaptureActions = 0;
+  state.positionHistory = {};
+}
+
+/**
+ * Check whether the current state has reached a draw by stalemate rules.
+ * @param {Object} state
+ * @returns {boolean}
+ */
+function isStalemateDraw(state) {
+  if (!state) return false;
+  if ((state.noCaptureActions || 0) >= STALEMATE_NO_CAPTURE_LIMIT) return true;
+  if (state.positionHistory) {
+    const key = hashPosition(state);
+    if ((state.positionHistory[key] || 0) >= POSITION_REPETITION_LIMIT) return true;
+  }
+  return false;
+}
+
 /**
  * Check if coordinates are within 4x4 board range
  * @param {number} x
@@ -111,6 +168,7 @@ function flipCard(state, x, y) {
     state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
   }
   state.turnCount++;
+  recordNonCaptureAction(state);
   return state;
 }
 
@@ -132,6 +190,7 @@ function moveCard(state, from, to) {
   state.board[from.y][from.x] = null;
   state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
   state.turnCount++;
+  recordNonCaptureAction(state);
   return state;
 }
 
@@ -545,6 +604,11 @@ function createBaseState(mode) {
     winner: null,
     aiThinking: false,
     aiFirst: false,
+    // Stalemate tracking (anti-deadlock): consecutive non-capture turns and
+    // position repetition counter. See isStalemateDraw / recordNonCaptureAction
+    // / recordCaptureAction.
+    noCaptureActions: 0,
+    positionHistory: {},
   };
 }
 
@@ -554,6 +618,12 @@ function createBaseState(mode) {
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     DIRECTIONS: DIRECTIONS,
+    STALEMATE_NO_CAPTURE_LIMIT: STALEMATE_NO_CAPTURE_LIMIT,
+    POSITION_REPETITION_LIMIT: POSITION_REPETITION_LIMIT,
+    hashPosition: hashPosition,
+    recordNonCaptureAction: recordNonCaptureAction,
+    recordCaptureAction: recordCaptureAction,
+    isStalemateDraw: isStalemateDraw,
     inBounds: inBounds,
     getValidMoves: getValidMoves,
     getValidCaptures: getValidCaptures,

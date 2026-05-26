@@ -799,6 +799,66 @@ describe("checkGameOver - 游戏结束判定", () => {
     expect(result.ended).toBe(true);
     expect(result.winner).toBe("draw");
   });
+
+  it("无吃子动作连续达到上限时判平局（防止死循环）", () => {
+    const board = emptyBoard();
+    board[0][0] = makeCard("象", "red");
+    board[3][3] = makeCard("象", "blue");
+    const state = makeState(board, "red");
+    state.noCaptureActions = 50;
+    const result = checkGameOver(state.board, state.currentTeam, state);
+    expect(result.ended).toBe(true);
+    expect(result.winner).toBe("draw");
+  });
+
+  it("局面重复达到上限时判平局（防止死循环）", () => {
+    const board = emptyBoard();
+    board[0][0] = makeCard("象", "red");
+    board[3][3] = makeCard("象", "blue");
+    const state = makeState(board, "red");
+    // Simulate the same position appearing 3 times in history.
+    const fakeKey = JSON.stringify(state.board) + "|red";
+    state.positionHistory = { [fakeKey]: 3 };
+    const result = checkGameOver(state.board, state.currentTeam, state);
+    expect(result.ended).toBe(true);
+    expect(result.winner).toBe("draw");
+  });
+
+  it("反复来回移动触发平局（端到端）", () => {
+    // Two pieces that cannot capture each other (both face-up rats; same rank
+    // would mutually destruct, so we use rank 4 vs 5 isolated by distance so
+    // they cannot capture). Each side just shuffles back and forth.
+    const board = emptyBoard();
+    board[0][0] = makeCard("豹", "red"); // rank 4
+    board[3][3] = makeCard("豹", "blue"); // rank 4 (different team, far apart)
+    const state = makeState(board, "red", { teamAssigned: true });
+    state.noCaptureActions = 0;
+    state.positionHistory = {};
+    // Keep moving the red piece between (0,0) and (1,0); blue between (3,3) and (2,3).
+    let endResult = null;
+    for (let i = 0; i < 200 && !endResult; i++) {
+      // Red move
+      const rFrom = i % 2 === 0 ? { x: 0, y: 0 } : { x: 1, y: 0 };
+      const rTo = i % 2 === 0 ? { x: 1, y: 0 } : { x: 0, y: 0 };
+      moveCard(state, rFrom, rTo);
+      let r = checkGameOver(state.board, state.currentTeam, state);
+      if (r.ended) {
+        endResult = r;
+        break;
+      }
+      // Blue move
+      const bFrom = i % 2 === 0 ? { x: 3, y: 3 } : { x: 2, y: 3 };
+      const bTo = i % 2 === 0 ? { x: 2, y: 3 } : { x: 3, y: 3 };
+      moveCard(state, bFrom, bTo);
+      r = checkGameOver(state.board, state.currentTeam, state);
+      if (r.ended) {
+        endResult = r;
+        break;
+      }
+    }
+    expect(endResult).not.toBeNull();
+    expect(endResult.winner).toBe("draw");
+  });
 });
 
 // ============================================================

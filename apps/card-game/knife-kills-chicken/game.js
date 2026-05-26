@@ -1,5 +1,5 @@
 /* eslint-disable no-var */
-/* global DIRECTIONS:writable, inBounds:writable, flipCard:writable, moveCard:writable, createBaseState:writable, chooseBestCapture:writable, chooseBestFlip:writable, chooseBestMove:writable */
+/* global DIRECTIONS:writable, inBounds:writable, flipCard:writable, moveCard:writable, createBaseState:writable, chooseBestCapture:writable, chooseBestFlip:writable, chooseBestMove:writable, isStalemateDraw:writable, recordCaptureAction:writable, recordNonCaptureAction:writable */
 // ============================================================
 // Knife Kills Chicken (Carry Weapon Version) - Game Core Logic
 // ============================================================
@@ -25,6 +25,10 @@ if (typeof require !== "undefined") {
   if (typeof chooseBestCapture === "undefined") chooseBestCapture = _core.chooseBestCapture;
   if (typeof chooseBestFlip === "undefined") chooseBestFlip = _core.chooseBestFlip;
   if (typeof chooseBestMove === "undefined") chooseBestMove = _core.chooseBestMove;
+  if (typeof isStalemateDraw === "undefined") isStalemateDraw = _core.isStalemateDraw;
+  if (typeof recordCaptureAction === "undefined") recordCaptureAction = _core.recordCaptureAction;
+  if (typeof recordNonCaptureAction === "undefined")
+    recordNonCaptureAction = _core.recordNonCaptureAction;
 }
 
 // 8 roles
@@ -273,6 +277,7 @@ function captureCard(state, from, to) {
   // Switch current team
   state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
   state.turnCount++;
+  recordCaptureAction(state);
 
   return state;
 }
@@ -311,6 +316,7 @@ function carryWeapon(state, from, to) {
   // Switch current team
   state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
   state.turnCount++;
+  recordNonCaptureAction(state);
   return state;
 }
 
@@ -342,9 +348,13 @@ function hasAnyLegalAction(board, team) {
  * Check if game is over
  * @param {(Card|null)[][]} board - board state
  * @param {string} currentTeam - current team
+ * @param {Object} [state] - optional full game state for stalemate detection
  * @returns {{ended: boolean, winner: string|null}} game over status
  */
-function checkGameOver(board, currentTeam) {
+function checkGameOver(board, currentTeam, state) {
+  if (state && isStalemateDraw(state)) {
+    return { ended: true, winner: "draw" };
+  }
   let redCount = 0;
   let blueCount = 0;
   for (let y = 0; y < 4; y++) {
@@ -1094,7 +1104,7 @@ if (typeof document !== "undefined") {
 
   function afterAction() {
     // Check game over
-    const result = checkGameOver(gameState.board, gameState.currentTeam);
+    const result = checkGameOver(gameState.board, gameState.currentTeam, gameState);
     if (result.ended) {
       gameState.gameOver = true;
       gameState.winner = result.winner;

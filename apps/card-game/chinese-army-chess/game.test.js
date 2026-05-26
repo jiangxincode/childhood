@@ -429,6 +429,29 @@ describe("checkGameOver - 游戏结束判定", () => {
     expect(result.ended).toBe(false);
     expect(result.winner).toBeNull();
   });
+
+  it("无吃子动作连续达到上限时判平局（防止死循环）", () => {
+    const board = emptyBoard();
+    board[0][0] = makePiece("司令", "red");
+    board[3][3] = makePiece("司令", "blue");
+    const state = makeState(board, "red");
+    state.noCaptureActions = 50;
+    const result = checkGameOver(state);
+    expect(result.ended).toBe(true);
+    expect(result.winner).toBe("draw");
+  });
+
+  it("局面重复达到上限时判平局（防止死循环）", () => {
+    const board = emptyBoard();
+    board[0][0] = makePiece("司令", "red");
+    board[3][3] = makePiece("司令", "blue");
+    const state = makeState(board, "red");
+    const fakeKey = JSON.stringify(state.board) + "|red";
+    state.positionHistory = { [fakeKey]: 3 };
+    const result = checkGameOver(state);
+    expect(result.ended).toBe(true);
+    expect(result.winner).toBe("draw");
+  });
 });
 
 // ============================================================

@@ -1173,6 +1173,29 @@ describe("checkGameOver - 游戏结束判定", () => {
     expect(result.ended).toBe(true);
     expect(result.winner).toBe("draw");
   });
+
+  it("无吃子动作连续达到上限时判平局（防止死循环）", () => {
+    const board = emptyBoard();
+    board[0][0] = makeCard("刀", "red");
+    board[3][3] = makeCard("刀", "blue");
+    const state = makeState(board, "red");
+    state.noCaptureActions = 50;
+    const result = checkGameOver(state.board, state.currentTeam, state);
+    expect(result.ended).toBe(true);
+    expect(result.winner).toBe("draw");
+  });
+
+  it("局面重复达到上限时判平局（防止死循环）", () => {
+    const board = emptyBoard();
+    board[0][0] = makeCard("刀", "red");
+    board[3][3] = makeCard("刀", "blue");
+    const state = makeState(board, "red");
+    const fakeKey = JSON.stringify(state.board) + "|red";
+    state.positionHistory = { [fakeKey]: 3 };
+    const result = checkGameOver(state.board, state.currentTeam, state);
+    expect(result.ended).toBe(true);
+    expect(result.winner).toBe("draw");
+  });
 });
 
 const { aiDecide } = require("./game.js");

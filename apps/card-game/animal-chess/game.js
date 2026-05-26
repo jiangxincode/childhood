@@ -1,5 +1,5 @@
 /* eslint-disable no-var */
-/* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, getValidCapturesCore:writable, flipCard:writable, moveCard:writable, createBaseState:writable, smartAiDecide:writable */
+/* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, getValidCapturesCore:writable, flipCard:writable, moveCard:writable, createBaseState:writable, smartAiDecide:writable, isStalemateDraw:writable, recordCaptureAction:writable */
 // ============================================================
 // Animal Chess - Game Core Logic
 // ============================================================
@@ -22,6 +22,8 @@ if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
   moveCard = _core.moveCard;
   createBaseState = _core.createBaseState;
   smartAiDecide = _core.smartAiDecide;
+  isStalemateDraw = _core.isStalemateDraw;
+  recordCaptureAction = _core.recordCaptureAction;
 }
 
 // All animal names (shared by red/blue, rank 1-8, lower value = higher rank)
@@ -190,6 +192,7 @@ function captureCard(state, from, to) {
 
   state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
   state.turnCount++;
+  recordCaptureAction(state);
   return state;
 }
 
@@ -219,9 +222,14 @@ function hasAnyLegalAction(board, team) {
  * Check if game is over
  * @param {Board} board - board
  * @param {string} currentTeam - current team 'red' | 'blue'
+ * @param {Object} [state] - optional full game state for stalemate detection
  * @returns {{ended: boolean, winner: string|null}}
  */
-function checkGameOver(board, currentTeam) {
+function checkGameOver(board, currentTeam, state) {
+  // Stalemate / repetition draw (anti-deadlock)
+  if (state && isStalemateDraw(state)) {
+    return { ended: true, winner: "draw" };
+  }
   let redCount = 0;
   let blueCount = 0;
   for (let y = 0; y < 4; y++) {
@@ -847,7 +855,7 @@ if (typeof document !== "undefined") {
 
   function afterAction() {
     // Check game over
-    const result = checkGameOver(gameState.board, gameState.currentTeam);
+    const result = checkGameOver(gameState.board, gameState.currentTeam, gameState);
     if (result.ended) {
       gameState.gameOver = true;
       gameState.winner = result.winner;
