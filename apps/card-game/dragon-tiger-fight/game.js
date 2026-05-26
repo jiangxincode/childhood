@@ -353,6 +353,8 @@ function checkGameOver(board, currentTeam) {
       }
     }
   }
+  // Both sides have no pieces (mutual destruction wiped out remaining pieces) -> draw
+  if (dragonCount === 0 && tigerCount === 0) return { ended: true, winner: "draw" };
   if (dragonCount === 0) return { ended: true, winner: "tiger" };
   if (tigerCount === 0) return { ended: true, winner: "dragon" };
   if (!hasAnyLegalAction(board, currentTeam)) {
@@ -637,6 +639,11 @@ if (typeof document !== "undefined") {
   }
 
   function showGameOverScreen(winner) {
+    if (winner === "draw") {
+      $winnerText.textContent = "平局！";
+      $gameOver.style.display = "flex";
+      return;
+    }
     // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of dragon/tiger
     const label = getCurrentPlayerLabel({
       mode: gameState.mode,

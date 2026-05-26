@@ -357,6 +357,8 @@ function checkGameOver(board, currentTeam) {
     }
   }
 
+  // Both sides have no cards (mutual destruction wiped out remaining pieces) -> draw
+  if (redCount === 0 && blueCount === 0) return { ended: true, winner: "draw" };
   // One side has no cards -> that side loses
   if (redCount === 0) return { ended: true, winner: "blue" };
   if (blueCount === 0) return { ended: true, winner: "red" };
@@ -802,6 +804,11 @@ if (typeof document !== "undefined") {
   }
 
   function showGameOverScreen(winner) {
+    if (winner === "draw") {
+      $winnerText.textContent = "平局！";
+      $gameOver.style.display = "flex";
+      return;
+    }
     // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
     const label = getCurrentPlayerLabel({
       mode: gameState.mode,
