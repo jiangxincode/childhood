@@ -1,0 +1,174 @@
+/* Room UI Overlay Styles */
+.room-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.room-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.room-content h2 {
+  margin: 0 0 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+.room-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.btn-room {
+  padding: 12px 32px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-room:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.room-section {
+  text-align: left;
+}
+
+.room-section label {
+  display: block;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.room-section textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  resize: vertical;
+  word-break: break-all;
+  background: #f8f9fa;
+  transition: border-color 0.2s;
+}
+
+.room-section textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.room-section textarea[readonly] {
+  background: #e9ecef;
+  cursor: default;
+}
+
+.room-status {
+  font-size: 14px;
+  color: #666;
+  margin: 12px 0;
+  min-height: 20px;
+}
+
+.room-status.success {
+  color: #28a745;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.room-status.error {
+  color: #dc3545;
+}
+
+.room-error {
+  color: #dc3545;
+  font-size: 14px;
+  margin: 8px 0;
+  min-height: 20px;
+}
+
+.room-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.btn-small {
+  padding: 8px 20px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  background: #667eea;
+  transition: background 0.2s;
+}
+
+.btn-small:hover {
+  background: #5a6fd6;
+}
+
+.btn-small:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  padding: 8px 20px;
+  font-size: 14px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #666;
+  background: transparent;
+  margin-top: 12px;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-cancel:hover {
+  border-color: #999;
+  color: #333;
+}
+
+.room-divider {
+  height: 1px;
+  background: #eee;
+  margin: 16px 0;
+}
+
+@media (max-width: 480px) {
+  .room-content {
+    padding: 20px;
+  }
+  .room-buttons {
+    flex-direction: column;
+  }
+  .btn-room {
+    width: 100%;
+  }
+}

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 // =============================================
 // Pure game logic for Flying Chess (no DOM dependency)
 // =============================================
@@ -370,6 +371,14 @@ if (typeof $j !== "undefined") {
   let diceNum = 1;
   let sixTime = 0;
   let nextStep = false;
+
+  // Online mode state
+  let networkProtocol = null;
+  let networkConnection = null;
+  let roomUI = null;
+  let localPlayerRole = null; // 'host' | 'guest'
+  let localColor = null; // color assigned to local player
+  let remoteColor = null; // color assigned to remote player
 
   // ---- Audio ----
   const DICEMUSICURL = "audio/dice.ogg";
@@ -810,6 +819,12 @@ if (typeof $j !== "undefined") {
   function movePlane(obj) {
     let coordId = 0,
       step = 0;
+    // Guard: block plane move for remote player in online mode
+    if (planeOption.gameOnline && planeOption.currentUser === remoteColor) return;
+    // Send plane selection to remote
+    if (planeOption.gameOnline && networkProtocol) {
+      networkProtocol.sendAction({ a: "select", pn: Number.parseInt($j(obj).attr("num")) });
+    }
     $j(obj)
       .siblings("[type=" + planeOption.currentUser + "]")
       .off("click")
@@ -1098,6 +1113,8 @@ if (typeof $j !== "undefined") {
     $j("#dice")
       .off("click")
       .on("click", () => {
+        // Guard: block dice click for remote player in online mode
+        if (planeOption.gameOnline && planeOption.currentUser === remoteColor) return;
         $j("#dice").off("click").removeClass("pointer");
         nextDiceValue = Math.floor(Math.random() * 6);
         DICE.nextActive = nextDiceValue;
@@ -1105,8 +1122,204 @@ if (typeof $j !== "undefined") {
           onComplete(null, { index: DICE.active });
         });
         planeAudio.playDiceMusic();
+        if (planeOption.gameOnline && networkProtocol) {
+          networkProtocol.sendAction({ a: "roll" });
+        }
       })
       .addClass("pointer");
+  }
+
+  // ---- Online mode functions ----
+
+  function cleanupNetwork() {
+    if (networkProtocol) {
+      networkProtocol.destroy();
+      networkProtocol = null;
+    }
+    if (networkConnection) {
+      networkConnection.close();
+      networkConnection = null;
+    }
+    planeOption.gameOnline = false;
+    localPlayerRole = null;
+    localColor = null;
+    remoteColor = null;
+  }
+
+  function setupNetworkHandlers() {
+    networkProtocol.setCallbacks({
+      onAction: function (actionData) {
+        applyRemoteAction(actionData);
+      },
+      onRPSChoice: function (choice) {
+        handleOnlineRPSReceived(choice);
+      },
+      onRPSResult: function (result) {
+        handleOnlineRPSResult(result);
+      },
+      onRestart: function () {
+        cleanupNetwork();
+        $j("#rps-online").hide();
+        $j(".option-panel").removeClass("hidden");
+        $j("#game-main").hide();
+      },
+      onDisconnect: function () {
+        handleDisconnect();
+      },
+    });
+  }
+
+  let rpsOnlineChoices = { online: null, remote: null };
+
+  function startOnlineRPS() {
+    $j(".option-panel").addClass("hidden");
+    $j("#rps-online").css("display", "flex");
+    rpsOnlineChoices = { online: null, remote: null };
+    $j("#rps-online-status").text("请选择");
+    $j("#rps-online-result").text("");
+    $j("#rps-online-buttons .btn-rps").removeClass("selected");
+  }
+
+  function handleOnlineRPSChoice(choice, ev) {
+    rpsOnlineChoices.online = choice;
+    $j("#rps-online-buttons .btn-rps").removeClass("selected");
+    $j(ev.target).addClass("selected");
+    $j("#rps-online-status").text("已选择：" + getRPSName(choice) + "，等待对方...");
+    networkProtocol.sendRPSChoice(choice);
+  }
+
+  function handleOnlineRPSReceived(remoteChoice) {
+    rpsOnlineChoices.remote = remoteChoice;
+    checkOnlineRPSComplete();
+  }
+
+  function checkOnlineRPSComplete() {
+    if (!rpsOnlineChoices.online || !rpsOnlineChoices.remote) return;
+
+    if (localPlayerRole === "host") {
+      const winner = judgeRPS(rpsOnlineChoices.online, rpsOnlineChoices.remote);
+      let firstPlayer;
+      if (winner === 1) {
+        firstPlayer = "host";
+      } else if (winner === -1) {
+        firstPlayer = "guest";
+      } else {
+        networkProtocol.sendRPSResult(null, null);
+        rpsOnlineChoices.online = null;
+        rpsOnlineChoices.remote = null;
+        $j("#rps-online-status").text("平局！请重新选择");
+        $j("#rps-online-buttons .btn-rps").removeClass("selected");
+        return;
+      }
+      networkProtocol.sendRPSResult(
+        {
+          host: localPlayerRole === "host" ? rpsOnlineChoices.online : rpsOnlineChoices.remote,
+          guest: localPlayerRole === "host" ? rpsOnlineChoices.remote : rpsOnlineChoices.online,
+        },
+        firstPlayer
+      );
+    }
+  }
+
+  function handleOnlineRPSResult(result) {
+    if (result.firstPlayer === null) {
+      rpsOnlineChoices.online = null;
+      rpsOnlineChoices.remote = null;
+      $j("#rps-online-status").text("平局！请重新选择");
+      $j("#rps-online-buttons .btn-rps").removeClass("selected");
+      return;
+    }
+
+    const myChoice = rpsOnlineChoices.online;
+    const theirChoice = rpsOnlineChoices.remote;
+    const iWin = result.firstPlayer === localPlayerRole;
+
+    $j("#rps-online-result").text(
+      "你选择了" +
+        getRPSName(myChoice) +
+        "，对方选择了" +
+        getRPSName(theirChoice) +
+        (iWin ? "，你赢了！你先手。" : "，你输了！对方先手。")
+    );
+
+    setTimeout(() => {
+      startOnlineGame(result.firstPlayer);
+    }, 1500);
+  }
+
+  function startOnlineGame(firstPlayerRole) {
+    // Assign colors: host=red, guest=blue, others=close
+    localColor = localPlayerRole === "host" ? "red" : "blue";
+    remoteColor = localPlayerRole === "host" ? "blue" : "red";
+
+    planeOption.gameOnline = true;
+    planeOption.userList = [
+      { color: "red", state: localColor === "red" ? "normal" : "close" },
+      { color: "blue", state: localColor === "blue" ? "normal" : "close" },
+      { color: "yellow", state: "close" },
+      { color: "green", state: "close" },
+    ];
+
+    // Determine starting color
+    const startColor = firstPlayerRole === "host" ? "red" : "blue";
+    planeOption.currentUser = startColor;
+
+    $j("#rps-online").hide();
+    $j(".option-panel").addClass("hidden");
+    $j("#game-main").css("display", "flex");
+
+    // Update rule panel visibility
+    $j("#rule-pve").css("display", "none");
+
+    createPlane(planeOption.userList);
+    $j("#sdn" + planeOption.currentUser).text("请投骰");
+    addDiceEvent();
+    updateStatusBar();
+    setInterval(updateStatusBar, 500);
+
+    // If remote goes first, wait for their roll
+    if (planeOption.currentUser === remoteColor) {
+      $j("#dice").off("click").removeClass("pointer");
+    }
+  }
+
+  function applyRemoteAction(actionData) {
+    if (actionData.a === "roll") {
+      // Remote player rolls the dice
+      if (planeOption.currentUser !== remoteColor) return;
+      $j("#dice").off("click").removeClass("pointer");
+      nextDiceValue = Math.floor(Math.random() * 6);
+      DICE.nextActive = nextDiceValue;
+      DICE.shuffle(3).then(() => {
+        onComplete(null, { index: DICE.active });
+      });
+      planeAudio.playDiceMusic();
+    } else if (actionData.a === "select") {
+      // Remote player selects a plane
+      if (planeOption.currentUser !== remoteColor) return;
+      const pn = actionData.pn;
+      let targetPlane = null;
+      $j(".plane").each(function () {
+        if (
+          $j(this).attr("type") === remoteColor &&
+          $j(this).attr("num") == pn &&
+          $j(this).hasClass("pointer")
+        ) {
+          targetPlane = this;
+          return false; // break
+        }
+      });
+      if (targetPlane) {
+        $j(targetPlane).trigger("click");
+      }
+    }
+  }
+
+  function handleDisconnect() {
+    alert("对方已断开连接，你获胜！");
+    cleanupNetwork();
+    $j("#game-main").hide();
+    $j(".option-panel").removeClass("hidden");
   }
 
   // ---- DOMContentLoaded ----
@@ -1149,6 +1362,39 @@ if (typeof $j !== "undefined") {
       planeOption.begin();
       updateStatusBar();
       setInterval(updateStatusBar, 500);
+    });
+
+    // Online mode button
+    const btnOnline = document.getElementById("btn-online");
+    if (btnOnline) {
+      if (typeof RoomUI === "undefined" || !RoomUI.isSupported()) {
+        btnOnline.style.display = "none";
+      } else {
+        btnOnline.addEventListener("click", () => {
+          roomUI = new RoomUI({
+            onConnectionEstablished: function (connection, protocol, role) {
+              networkConnection = connection;
+              networkProtocol = protocol;
+              localPlayerRole = role;
+              setupNetworkHandlers();
+              startOnlineRPS();
+            },
+            onError: function (msg) {
+              alert(msg);
+            },
+            onCancel: function () {
+              cleanupNetwork();
+            },
+          });
+          roomUI.show();
+        });
+      }
+    }
+
+    // Online RPS buttons
+    $j("#rps-online-buttons .btn-rps").on("click", function (ev) {
+      const choice = $j(this).data("choice");
+      handleOnlineRPSChoice(choice, ev);
     });
   });
 } // end if (typeof $j !== "undefined")

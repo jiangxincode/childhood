@@ -13,7 +13,7 @@
   <a href="https://sonarcloud.io/dashboard?id=jiangxincode_childhood"><img src="https://sonarcloud.io/api/project_badges/measure?project=jiangxincode_childhood&metric=alert_status" alt="Quality Gate Status"></a>
 </p>
 
-一个纯前端经典游戏合集，收录了 **23 款**童年桌游与卡牌游戏，开箱即玩。
+一个纯前端经典游戏合集，收录了 **23 款**童年桌游与卡牌游戏，开箱即玩。支持双人对战、人机对战和联网对战。
 
 **在线体验**：[GitHub Pages（主站）](https://jiangxincode.github.io/childhood/) · [Cloudflare Pages（镜像）](https://childhood-cck.pages.dev/)
 
@@ -99,7 +99,11 @@ childhood/
 │   │   └── si-bu-ding/               # 四步钉
 │   └── common/                       # 共享模块
 │       ├── card-game-core.js         # 卡牌游戏核心逻辑
-│       └── game-utils.js             # 游戏工具函数
+│       ├── game-utils.js             # 游戏工具函数
+│       ├── webrtc-connection.js      # WebRTC P2P 连接管理器
+│       ├── network-game-protocol.js  # 联网游戏消息协议
+│       ├── room-ui.js                # 房间创建/加入 UI 组件
+│       └── room-ui.css               # 房间 UI 样式
 ├── js/                               # 全局 JavaScript
 ├── css/                              # 全局样式
 ├── images/                           # 图片资源

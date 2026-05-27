@@ -1,4 +1,4 @@
-/* eslint-disable no-var */
+/* eslint-disable no-var, no-undef */
 // ============================================================
 // 狼吃羊 (Lang Chi Yang) - Wolf Eats Sheep
 // 2 players, 4x5 grid, asymmetric: 2 wolves vs 10 sheep
@@ -374,6 +374,14 @@ if (typeof document !== "undefined") {
   var state = null;
   var selectedPiece = null;
 
+  // Online mode state
+  var networkProtocol = null;
+  var networkConnection = null;
+  var roomUI = null;
+  var localPlayerRole = null; // 'host' | 'guest'
+  var localTeam = null;
+  var remoteTeam = null;
+
   function initBoard() {
     var boardEl = document.getElementById("board");
     boardEl.innerHTML = "";
@@ -438,15 +446,21 @@ if (typeof document !== "undefined") {
       }
     });
 
-    // Current acting side - shown as 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP)
-    const label = getCurrentPlayerLabel({
-      mode: state.mode,
-      currentSide: state.currentPlayer,
-      playerSide: state.playerTeam,
-      sidesOrder: state.firstPlayer
-        ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
-        : [PLAYER_A, PLAYER_B],
-    });
+    // Current acting side - shown as 玩家/电脑 (PVE), 玩家1/玩家2 (PVP), or 你/对方 (online)
+    var label;
+    if (state.mode === "online") {
+      var isMyTurn = state.currentPlayer === localTeam;
+      label = { text: isMyTurn ? "你" : "对方" };
+    } else {
+      label = getCurrentPlayerLabel({
+        mode: state.mode,
+        currentSide: state.currentPlayer,
+        playerSide: state.playerTeam,
+        sidesOrder: state.firstPlayer
+          ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
+          : [PLAYER_A, PLAYER_B],
+      });
+    }
     var playerClass = state.currentPlayer === PLAYER_A ? "team-a" : "team-b";
     document.getElementById("current-player").textContent = label.text;
     document.getElementById("current-player").className = "team-indicator " + playerClass;
@@ -455,22 +469,28 @@ if (typeof document !== "undefined") {
     document.getElementById("pieces-b").textContent = state.piecesB;
 
     if (state.gameOver) {
-      // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of role name
-      var winnerLabel = getCurrentPlayerLabel({
-        mode: state.mode,
-        currentSide: state.winner,
-        playerSide: state.playerTeam,
-        sidesOrder: state.firstPlayer
-          ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
-          : [PLAYER_A, PLAYER_B],
-      });
-      document.getElementById("winner-text").textContent = winnerLabel.text + " 获胜！";
+      var winnerText;
+      if (state.mode === "online") {
+        winnerText = state.winner === localTeam ? "你" : "对方";
+      } else {
+        var winnerLabel = getCurrentPlayerLabel({
+          mode: state.mode,
+          currentSide: state.winner,
+          playerSide: state.playerTeam,
+          sidesOrder: state.firstPlayer
+            ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
+            : [PLAYER_A, PLAYER_B],
+        });
+        winnerText = winnerLabel.text;
+      }
+      document.getElementById("winner-text").textContent = winnerText + " 获胜！";
       document.getElementById("game-over").style.display = "flex";
     }
   }
 
   function handleCellClick(r, c) {
     if (!state || state.gameOver) return;
+    if (state.mode === "online" && state.currentPlayer !== localTeam) return;
     if (state.mode === "pve" && state.currentPlayer === state.aiTeam) return;
 
     // Select own piece
@@ -488,6 +508,16 @@ if (typeof document !== "undefined") {
         if (stepMoves[i].toR === r && stepMoves[i].toC === c) {
           state.board = applyMove(state.board, stepMoves[i]);
           state.lastJump = null;
+          if (state.mode === "online" && networkProtocol) {
+            networkProtocol.sendAction({
+              a: "move",
+              fx: selectedPiece.r,
+              fy: selectedPiece.c,
+              tx: r,
+              ty: c,
+              mt: "step",
+            });
+          }
           finishTurn();
           return;
         }
@@ -501,6 +531,18 @@ if (typeof document !== "undefined") {
             state.board = applyMove(state.board, jumpMoves[j]);
             state.piecesA = countPieces(state.board, PLAYER_A);
             state.lastJump = { captureR: r, captureC: c };
+            if (state.mode === "online" && networkProtocol) {
+              networkProtocol.sendAction({
+                a: "move",
+                fx: selectedPiece.r,
+                fy: selectedPiece.c,
+                tx: r,
+                ty: c,
+                mt: "jump",
+                cx: r,
+                cy: c,
+              });
+            }
             finishTurn();
             return;
           }
@@ -601,6 +643,217 @@ if (typeof document !== "undefined") {
     }
   }
 
+  // --- Restart (with online cleanup) ---
+
+  function restartGame() {
+    if (state && state.mode === "online" && networkProtocol) {
+      networkProtocol.sendRestart();
+    }
+    cleanupNetwork();
+    document.getElementById("game-over").style.display = "none";
+    document.getElementById("game-area").style.display = "none";
+    document.getElementById("rps-online").style.display = "none";
+    document.getElementById("mode-selection").style.display = "flex";
+    state = null;
+  }
+
+  // --- Online mode functions ---
+
+  function cleanupNetwork() {
+    if (networkProtocol) {
+      networkProtocol.destroy();
+      networkProtocol = null;
+    }
+    if (networkConnection) {
+      networkConnection.close();
+      networkConnection = null;
+    }
+    localPlayerRole = null;
+    localTeam = null;
+    remoteTeam = null;
+  }
+
+  function setupNetworkHandlers() {
+    networkProtocol.setCallbacks({
+      onAction: function (actionData) {
+        applyRemoteAction(actionData);
+      },
+      onRPSChoice: function (choice) {
+        handleOnlineRPSReceived(choice);
+      },
+      onRPSResult: function (result) {
+        handleOnlineRPSResult(result);
+      },
+      onRestart: function () {
+        cleanupNetwork();
+        document.getElementById("game-over").style.display = "none";
+        document.getElementById("game-area").style.display = "none";
+        document.getElementById("rps-online").style.display = "none";
+        document.getElementById("mode-selection").style.display = "flex";
+        state = null;
+      },
+      onDisconnect: function () {
+        handleDisconnect();
+      },
+    });
+  }
+
+  var rpsChoices = { online: null, remote: null };
+
+  function startOnlineRPS() {
+    document.getElementById("mode-selection").style.display = "none";
+    document.getElementById("rps-online").style.display = "flex";
+    rpsChoices = { online: null, remote: null };
+    document.getElementById("rps-online-status").textContent = "请选择";
+    document.getElementById("rps-online-result").textContent = "";
+    document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((btn) => {
+      btn.classList.remove("selected");
+    });
+  }
+
+  function handleOnlineRPSChoice(choice, ev) {
+    rpsChoices.online = choice;
+    document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((btn) => {
+      btn.classList.remove("selected");
+    });
+    ev.target.classList.add("selected");
+    document.getElementById("rps-online-status").textContent =
+      "已选择：" + getRPSName(choice) + "，等待对方...";
+    networkProtocol.sendRPSChoice(choice);
+  }
+
+  function handleOnlineRPSReceived(remoteChoice) {
+    rpsChoices.remote = remoteChoice;
+    checkOnlineRPSComplete();
+  }
+
+  function checkOnlineRPSComplete() {
+    if (!rpsChoices.online || !rpsChoices.remote) return;
+
+    if (localPlayerRole === "host") {
+      var winner = judgeRPS(rpsChoices.online, rpsChoices.remote);
+      var firstPlayer;
+      if (winner === 1) {
+        firstPlayer = "host";
+      } else if (winner === -1) {
+        firstPlayer = "guest";
+      } else {
+        networkProtocol.sendRPSResult(null, null);
+        rpsChoices.online = null;
+        rpsChoices.remote = null;
+        document.getElementById("rps-online-status").textContent = "平局！请重新选择";
+        document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((btn) => {
+          btn.classList.remove("selected");
+        });
+        return;
+      }
+      networkProtocol.sendRPSResult(
+        {
+          host: localPlayerRole === "host" ? rpsChoices.online : rpsChoices.remote,
+          guest: localPlayerRole === "host" ? rpsChoices.remote : rpsChoices.online,
+        },
+        firstPlayer
+      );
+    }
+  }
+
+  function handleOnlineRPSResult(result) {
+    var resultEl = document.getElementById("rps-online-result");
+    if (result.firstPlayer === null) {
+      rpsChoices.online = null;
+      rpsChoices.remote = null;
+      document.getElementById("rps-online-status").textContent = "平局！请重新选择";
+      document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((btn) => {
+        btn.classList.remove("selected");
+      });
+      return;
+    }
+
+    var myChoice = rpsChoices.online;
+    var theirChoice = rpsChoices.remote;
+    var iWin = result.firstPlayer === localPlayerRole;
+
+    resultEl.textContent =
+      "你选择了" +
+      getRPSName(myChoice) +
+      "，对方选择了" +
+      getRPSName(theirChoice) +
+      (iWin ? "，你赢了！你先手（羊）。" : "，你输了！对方先手（羊）。");
+
+    setTimeout(() => {
+      startOnlineGame(result.firstPlayer);
+    }, 1500);
+  }
+
+  function startOnlineGame(firstPlayerRole) {
+    state = createGameState("online");
+
+    var hostPiece = PLAYER_A;
+    var guestPiece = PLAYER_B;
+
+    if (localPlayerRole === "host") {
+      localTeam = firstPlayerRole === "host" ? hostPiece : guestPiece;
+      remoteTeam = firstPlayerRole === "host" ? guestPiece : hostPiece;
+    } else {
+      localTeam = firstPlayerRole === "guest" ? hostPiece : guestPiece;
+      remoteTeam = firstPlayerRole === "guest" ? guestPiece : hostPiece;
+    }
+
+    state.currentPlayer = firstPlayerRole === "host" ? hostPiece : guestPiece;
+    state.firstPlayer = state.currentPlayer;
+    state.playerTeam = localTeam;
+
+    selectedPiece = null;
+    document.getElementById("rps-online").style.display = "none";
+    document.getElementById("game-area").style.display = "flex";
+    document.getElementById("game-over").style.display = "none";
+    initBoard();
+    renderGame();
+  }
+
+  function applyRemoteAction(actionData) {
+    if (!state || state.gameOver) return;
+    if (state.currentPlayer !== remoteTeam) return;
+    // actionData = { a: "move", fx, fy, tx, ty, mt: "step"|"jump", cx?, cy? }
+    var fromR = actionData.fx;
+    var fromC = actionData.fy;
+    var toR = actionData.tx;
+    var toC = actionData.ty;
+
+    // Find and apply the matching move
+    var stepMoves = getStepMoves(state.board, fromR, fromC);
+    for (var i = 0; i < stepMoves.length; i++) {
+      if (stepMoves[i].toR === toR && stepMoves[i].toC === toC) {
+        state.board = applyMove(state.board, stepMoves[i]);
+        state.lastJump = null;
+        finishTurn();
+        return;
+      }
+    }
+
+    if (state.currentPlayer === PLAYER_B) {
+      var jumpMoves = getJumpMoves(state.board, fromR, fromC);
+      for (var j = 0; j < jumpMoves.length; j++) {
+        if (jumpMoves[j].toR === toR && jumpMoves[j].toC === toC) {
+          state.board = applyMove(state.board, jumpMoves[j]);
+          state.piecesA = countPieces(state.board, PLAYER_A);
+          state.lastJump = { captureR: toR, captureC: toC };
+          finishTurn();
+          return;
+        }
+      }
+    }
+  }
+
+  function handleDisconnect() {
+    if (state && !state.gameOver) {
+      state.gameOver = true;
+      document.getElementById("winner-text").textContent = "对方已断开连接，你获胜！";
+      document.getElementById("game-over").style.display = "flex";
+    }
+    cleanupNetwork();
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-pvp").addEventListener("click", () => {
       startGame("pvp", PLAYER_A);
@@ -609,15 +862,48 @@ if (typeof document !== "undefined") {
       document.getElementById("mode-selection").style.display = "none";
       document.getElementById("rps-section").style.display = "flex";
     });
+
+    // Online mode button
+    var btnOnline = document.getElementById("btn-online");
+    if (btnOnline) {
+      if (!RoomUI.isSupported()) {
+        btnOnline.style.display = "none";
+      } else {
+        btnOnline.addEventListener("click", () => {
+          roomUI = new RoomUI({
+            onConnectionEstablished: function (connection, protocol, role) {
+              networkConnection = connection;
+              networkProtocol = protocol;
+              localPlayerRole = role;
+              setupNetworkHandlers();
+              startOnlineRPS();
+            },
+            onError: function (msg) {
+              document.getElementById("message").textContent = msg;
+            },
+            onCancel: function () {
+              cleanupNetwork();
+            },
+          });
+          roomUI.show();
+        });
+      }
+    }
+
+    // Online RPS buttons
+    document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((button) => {
+      button.addEventListener("click", (ev) => {
+        var choice = ev.target.dataset.choice;
+        handleOnlineRPSChoice(choice, ev);
+      });
+    });
+
     document.getElementById("rps-pve").style.display = "block";
     document.querySelectorAll("#rps-pve .btn-rps").forEach((btn) => {
       btn.addEventListener("click", function () {
         handleRPSChoice("human", this.dataset.choice);
       });
     });
-    document.getElementById("btn-restart").addEventListener("click", () => {
-      document.getElementById("game-over").style.display = "none";
-      document.getElementById("mode-selection").style.display = "flex";
-    });
+    document.getElementById("btn-restart").addEventListener("click", restartGame);
   });
 }
