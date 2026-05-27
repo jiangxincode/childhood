@@ -3,10 +3,10 @@
    ============================================================ */
 
 :root {
-  --dragon-color: #d4a017;
-  --dragon-light: #fff3cd;
-  --tiger-color: #2e7d32;
-  --tiger-light: #c8e6c9;
+  --red-color: #c62828;
+  --red-light: #ffcdd2;
+  --blue-color: #1565c0;
+  --blue-light: #bbdefb;
   --bg-color: #f5f0e1;
   --board-bg: #c8b88a;
   --cell-bg: #e8dcc8;
@@ -100,12 +100,12 @@ body {
 }
 
 .btn-pvp {
-  background: var(--dragon-color);
+  background: var(--red-color);
   color: #fff;
 }
 
 .btn-pve {
-  background: var(--tiger-color);
+  background: var(--blue-color);
   color: #fff;
 }
 
@@ -140,8 +140,8 @@ body {
 }
 
 .btn-rps:hover {
-  border-color: var(--tiger-color);
-  background: var(--tiger-light);
+  border-color: var(--blue-color);
+  background: var(--blue-light);
 }
 
 .btn-rps.selected {
@@ -418,13 +418,13 @@ body {
 }
 
 #message.error {
-  color: var(--dragon-color);
-  background: var(--dragon-light);
+  color: var(--red-color);
+  background: var(--red-light);
 }
 
 #message.info {
-  color: var(--tiger-color);
-  background: var(--tiger-light);
+  color: var(--blue-color);
+  background: var(--blue-light);
 }
 
 /* ---- Game Over Screen ---- */

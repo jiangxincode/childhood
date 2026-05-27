@@ -3,21 +3,21 @@
    ============================================================ */
 
 :root {
-  --red-color: #e74c3c;
-  --red-light: #fde8e6;
-  --blue-color: #3498db;
-  --blue-light: #d6eaf8;
-  --bg-color: #1a1a2e;
-  --card-bg: #16213e;
-  --board-bg: #0f3460;
-  --cell-bg: #2a2a4a;
-  --card-back-bg: #1e1e3a;
-  --selected-color: #f1c40f;
-  --target-color: #2ecc71;
-  --ai-highlight: #3498db;
-  --overlay-bg: rgba(0, 0, 0, 0.85);
+  --red-color: #c62828;
+  --red-light: #ffcdd2;
+  --blue-color: #1565c0;
+  --blue-light: #bbdefb;
+  --bg-color: #f5f0e1;
+  --board-bg: #c8b88a;
+  --cell-bg: #e8dcc8;
+  --card-back: #5d4037;
+  --card-back-pattern: #795548;
+  --selected-color: #ffd600;
+  --target-color: #4caf50;
+  --ai-highlight: #42a5f5;
+  --overlay-bg: rgba(0, 0, 0, 0.7);
   --cell-size: 160px;
-  --board-gap: 6px;
+  --cell-gap: 10px;
 }
 
 * {
@@ -33,7 +33,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #e0e0e0;
+  color: #333;
 }
 
 /* ---- Common Buttons ---- */
@@ -71,21 +71,20 @@ body {
 }
 
 .overlay-content {
-  background: var(--card-bg);
+  background: #fff;
   border-radius: 16px;
   padding: 40px 48px;
   text-align: center;
   max-width: 500px;
   width: 90%;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-  border: 1px solid #2a2a4a;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 /* ---- Mode Selection ---- */
 .game-title {
   font-size: 42px;
   margin-bottom: 4px;
-  color: #e0e0e0;
+  color: var(--card-back);
 }
 
 .subtitle {
@@ -113,7 +112,7 @@ body {
 /* ---- Rock Paper Scissors ---- */
 #rps-section h2 {
   margin-bottom: 24px;
-  color: #e0e0e0;
+  color: #333;
 }
 
 .rps-player {
@@ -123,7 +122,7 @@ body {
 .rps-player h3 {
   margin-bottom: 10px;
   font-size: 16px;
-  color: #aaa;
+  color: #555;
 }
 
 .rps-buttons {
@@ -133,9 +132,8 @@ body {
 }
 
 .btn-rps {
-  background: #2a2a4a;
-  border: 2px solid #444;
-  color: #e0e0e0;
+  background: #fff;
+  border: 2px solid #ccc;
   padding: 10px 18px;
   font-size: 16px;
   border-radius: 8px;
@@ -143,12 +141,12 @@ body {
 
 .btn-rps:hover {
   border-color: var(--blue-color);
-  background: #1e3a5a;
+  background: var(--blue-light);
 }
 
 .btn-rps.selected {
   border-color: var(--selected-color);
-  background: #3a3010;
+  background: #fff9c4;
 }
 
 .rps-status {
@@ -162,7 +160,6 @@ body {
   font-size: 18px;
   font-weight: bold;
   min-height: 28px;
-  color: #e0e0e0;
 }
 
 /* ---- Game Area ---- */
@@ -191,10 +188,9 @@ body {
   justify-content: center;
   margin-bottom: 16px;
   padding: 12px 20px;
-  background: var(--card-bg);
+  background: #fff;
   border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  border: 1px solid #2a2a4a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   width: 100%;
 }
 
@@ -203,7 +199,7 @@ body {
 }
 
 .label {
-  color: #888;
+  color: #777;
 }
 
 .team-indicator {
@@ -226,11 +222,11 @@ body {
   display: grid;
   grid-template-columns: repeat(4, var(--cell-size));
   grid-template-rows: repeat(4, var(--cell-size));
-  gap: var(--board-gap);
-  padding: var(--board-gap);
+  gap: var(--cell-gap);
+  padding: var(--cell-gap);
   background: var(--board-bg);
   border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 /* ---- Cell ---- */
@@ -238,38 +234,37 @@ body {
   width: var(--cell-size);
   height: var(--cell-size);
   background: var(--cell-bg);
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  border: 2px solid #444;
+  border: 3px solid transparent;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .cell:hover {
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
 }
 
 /* ---- Card back ---- */
 .cell-back {
-  background: var(--card-back-bg);
+  background: var(--card-back);
   border-radius: 4px;
   width: 90%;
   height: 90%;
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px solid #333;
 }
 
 .cell-back::after {
   content: "?";
-  font-size: 48px;
+  font-size: 28px;
   font-weight: bold;
-  color: #555;
-  text-shadow: 0 0 8px rgba(100, 100, 200, 0.4);
+  color: var(--card-back-pattern);
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
 }
 
 /* ---- Card front ---- */
@@ -300,26 +295,26 @@ body {
 
 /* Selected highlight (yellow) */
 .cell-selected {
-  border: 3px solid #f1c40f !important;
-  box-shadow: 0 0 12px #f1c40f;
+  border-color: var(--selected-color) !important;
+  box-shadow: 0 0 12px var(--selected-color);
 }
 
 /* Move target highlight (green) */
 .cell-target {
-  border: 3px solid #2ecc71 !important;
-  box-shadow: 0 0 12px #2ecc71;
+  border-color: var(--target-color) !important;
+  box-shadow: 0 0 10px var(--target-color);
 }
 
 /* Capture target highlight (red) */
 .cell-capture-target {
-  border: 3px solid #e74c3c !important;
-  box-shadow: 0 0 12px #e74c3c;
+  border-color: var(--red-color) !important;
+  box-shadow: 0 0 10px var(--red-color);
 }
 
 /* AI action highlight (blue) */
 .cell-ai-highlight {
-  border: 3px solid #3498db !important;
-  box-shadow: 0 0 12px #3498db, 0 0 28px rgba(52, 152, 219, 0.3);
+  border-color: var(--ai-highlight) !important;
+  box-shadow: 0 0 14px var(--ai-highlight), 0 0 28px rgba(66, 165, 245, 0.3);
 }
 
 /* Empty space */
@@ -329,22 +324,20 @@ body {
 
 /* ---- Game Rules Panel ---- */
 #rules-panel {
-  background: var(--card-bg);
+  background: #fff;
   border-radius: 10px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  border: 1px solid #2a2a4a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   width: 220px;
   font-size: 13px;
   line-height: 1.6;
-  color: #ccc;
 }
 
 #rules-panel h3 {
   font-size: 16px;
   margin-bottom: 12px;
-  color: #e0e0e0;
-  border-bottom: 2px solid #2a2a4a;
+  color: #333;
+  border-bottom: 2px solid var(--board-bg);
   padding-bottom: 8px;
 }
 
@@ -354,7 +347,7 @@ body {
 
 .rule-section h4 {
   font-size: 13px;
-  color: #aaa;
+  color: #555;
   margin-bottom: 4px;
 }
 
@@ -364,14 +357,14 @@ body {
 }
 
 .rule-section li {
-  color: #999;
+  color: #666;
   padding: 1px 0;
 }
 
 /* ---- Captured Cards Display ---- */
 #captured-area {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   justify-content: center;
   margin-top: 16px;
   width: 100%;
@@ -379,11 +372,10 @@ body {
 
 .captured-section {
   flex: 1;
-  background: var(--card-bg);
+  background: #fff;
   border-radius: 10px;
   padding: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  border: 1px solid #2a2a4a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .captured-section h3 {
@@ -401,11 +393,10 @@ body {
 }
 
 .captured-card {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 4px;
   overflow: hidden;
-  background: #2a2a4a;
 }
 
 .captured-card img {
@@ -419,51 +410,41 @@ body {
   margin-top: 12px;
   padding: 10px 20px;
   font-size: 15px;
-  color: #aaa;
+  color: #555;
   text-align: center;
   min-height: 40px;
-  background: var(--card-bg);
+  background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  border: 1px solid #2a2a4a;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   width: 100%;
   max-width: 360px;
 }
 
 #message.error {
   color: var(--red-color);
-  background: rgba(231, 76, 60, 0.15);
-  border-color: rgba(231, 76, 60, 0.3);
+  background: var(--red-light);
 }
 
 #message.info {
   color: var(--blue-color);
-  background: rgba(52, 152, 219, 0.15);
-  border-color: rgba(52, 152, 219, 0.3);
+  background: var(--blue-light);
 }
 
 /* ---- Game Over Screen ---- */
 #game-over .overlay-content h2 {
   font-size: 28px;
   margin-bottom: 24px;
-  color: #e0e0e0;
 }
 
 #winner-text {
   font-size: 24px;
   margin-bottom: 24px;
-  color: #e0e0e0;
 }
 
 .btn-restart {
-  background: #2a2a4a;
-  color: #e0e0e0;
+  background: var(--card-back);
+  color: #fff;
   font-size: 18px;
-  border: 1px solid #444;
-}
-
-.btn-restart:hover {
-  background: #3a3a5a;
 }
 
 /* ---- Responsive Layout ---- */
@@ -482,7 +463,7 @@ body {
 @media (max-width: 700px) {
   :root {
     --cell-size: calc((100vw - 80px) / 4);
-    --board-gap: 5px;
+    --cell-gap: 6px;
   }
 
   .cell-back::after {
@@ -530,7 +511,7 @@ body {
 @media (max-width: 400px) {
   :root {
     --cell-size: calc((100vw - 60px) / 4);
-    --board-gap: 3px;
+    --cell-gap: 4px;
   }
 
   .cell-back::after {
