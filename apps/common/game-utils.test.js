@@ -161,4 +161,24 @@ describe("getCurrentPlayerLabel", () => {
     const r = getCurrentPlayerLabel({ mode: "pve", currentSide: "red" });
     expect(r.text).toBe("—");
   });
+
+  it("returns 你 in online mode when it is local player's turn", () => {
+    const r = getCurrentPlayerLabel({
+      mode: "online",
+      currentSide: "red",
+      playerSide: "red",
+    });
+    expect(r.text).toBe("你");
+    expect(r.role).toBe("player");
+  });
+
+  it("returns 对方 in online mode when it is remote player's turn", () => {
+    const r = getCurrentPlayerLabel({
+      mode: "online",
+      currentSide: "blue",
+      playerSide: "red",
+    });
+    expect(r.text).toBe("对方");
+    expect(r.role).toBe("opponent");
+  });
 });

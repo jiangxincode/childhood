@@ -81,6 +81,10 @@
   <script src="../../../js/baidu-analytics.js"></script>
   <script src="../../../js/common.js"></script>
   <script src="../../common/game-utils.js"></script>
+  <script src="../../common/webrtc-connection.js"></script>
+  <script src="../../common/network-game-protocol.js"></script>
+  <script src="../../common/room-ui.js"></script>
+  <link rel="stylesheet" href="../../common/room-ui.css">
 </head>
 <body>
 
@@ -94,6 +98,7 @@
         <div class="mode-buttons">
           <button class="btn btn-flip" data-game-type="flip" data-opp-type="pvp">双人对战</button>
           <button class="btn btn-flip" data-game-type="flip" data-opp-type="pve">人机对战</button>
+          <button id="btn-online" class="btn btn-online" data-game-type="flip">联网对战</button>
         </div>
       </div>
       <div class="mode-section">
@@ -101,6 +106,7 @@
         <div class="mode-buttons">
           <button class="btn btn-open" data-game-type="open" data-opp-type="pvp">双人对战</button>
           <button class="btn btn-open" data-game-type="open" data-opp-type="pve">人机对战</button>
+          <button class="btn btn-online" data-game-type="open">联网对战</button>
         </div>
       </div>
       <div class="mode-section">
@@ -108,6 +114,7 @@
         <div class="mode-buttons">
           <button class="btn btn-hidden" data-game-type="hidden" data-opp-type="pvp">双人对战</button>
           <button class="btn btn-hidden" data-game-type="hidden" data-opp-type="pve">人机对战</button>
+          <button class="btn btn-online" data-game-type="hidden">联网对战</button>
         </div>
       </div>
     </div>
@@ -148,6 +155,23 @@
         </div>
       </div>
       <div id="rps-result" class="rps-result"></div>
+    </div>
+  </div>
+
+  <!-- 联网猜拳选择界面 -->
+  <div id="rps-online" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2>石头剪刀布 - 决定先手</h2>
+      <div class="rps-player">
+        <h3>你的选择</h3>
+        <div class="rps-buttons" id="rps-online-buttons">
+          <button class="btn btn-rps" data-player="online" data-choice="rock">✊ 石头</button>
+          <button class="btn btn-rps" data-player="online" data-choice="scissors">✌️ 剪刀</button>
+          <button class="btn btn-rps" data-player="online" data-choice="paper">🖐️ 布</button>
+        </div>
+        <p id="rps-online-status" class="rps-status">请选择</p>
+      </div>
+      <div id="rps-online-result" class="rps-result"></div>
     </div>
   </div>
 

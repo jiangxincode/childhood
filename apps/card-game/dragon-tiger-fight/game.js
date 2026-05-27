@@ -463,6 +463,15 @@ if (typeof document !== "undefined") {
   const $winnerText = document.getElementById("winner-text");
   const $btnRestart = document.getElementById("btn-restart");
 
+  // Online mode state
+  const networkProtocol = null;
+  const networkConnection = null;
+  const roomUI = null;
+  const localPlayerRole = null; // 'host' | 'guest'
+  let localTeam = null;
+  let remoteTeam = null;
+  const localIsFirstPlayer = false;
+
   // --- Renderer functions ---
 
   function getCell(x, y) {
@@ -527,7 +536,16 @@ if (typeof document !== "undefined") {
 
   function updateStatus(state) {
     // Current team
-    if (state.currentTeam) {
+    if (state.mode === "online") {
+      if (!state.teamAssigned) {
+        $currentTeam.textContent = localIsFirstPlayer ? "你的回合" : "对方回合";
+        $currentTeam.className = "team-indicator";
+      } else {
+        $currentTeam.textContent = state.currentTeam === localTeam ? "你的回合" : "对方回合";
+        $currentTeam.className =
+          "team-indicator " + (state.currentTeam === localTeam ? "dragon-text" : "tiger-text");
+      }
+    } else if (state.currentTeam) {
       const label = getCurrentPlayerLabel({
         mode: state.mode,
         currentSide: state.currentTeam,
@@ -602,6 +620,14 @@ if (typeof document !== "undefined") {
         $dragonLabel.textContent = "电脑（龙队）剩余：";
         $tigerLabel.textContent = "玩家（虎队）剩余：";
       }
+    } else if (state.mode === "online" && state.teamAssigned) {
+      if (localTeam === "dragon") {
+        $dragonLabel.textContent = "我方（龙队）剩余：";
+        $tigerLabel.textContent = "对方（虎队）剩余：";
+      } else {
+        $dragonLabel.textContent = "对方（龙队）剩余：";
+        $tigerLabel.textContent = "我方（虎队）剩余：";
+      }
     } else {
       $dragonLabel.textContent = "龙队剩余：";
       $tigerLabel.textContent = "虎队剩余：";
@@ -657,16 +683,20 @@ if (typeof document !== "undefined") {
       $gameOver.style.display = "flex";
       return;
     }
-    // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of dragon/tiger
-    const label = getCurrentPlayerLabel({
-      mode: gameState.mode,
-      currentSide: winner,
-      playerSide: gameState.playerTeam,
-      sidesOrder: gameState.firstPlayer
-        ? [gameState.firstPlayer, gameState.firstPlayer === "dragon" ? "tiger" : "dragon"]
-        : ["dragon", "tiger"],
-    });
-    $winnerText.textContent = label.text + " 获胜！";
+    if (gameState.mode === "online") {
+      $winnerText.textContent = winner === localTeam ? "你获胜了！" : "你失败了！";
+    } else {
+      // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of dragon/tiger
+      const label = getCurrentPlayerLabel({
+        mode: gameState.mode,
+        currentSide: winner,
+        playerSide: gameState.playerTeam,
+        sidesOrder: gameState.firstPlayer
+          ? [gameState.firstPlayer, gameState.firstPlayer === "dragon" ? "tiger" : "dragon"]
+          : ["dragon", "tiger"],
+      });
+      $winnerText.textContent = label.text + " 获胜！";
+    }
     $gameOver.style.display = "flex";
   }
 
@@ -802,6 +832,12 @@ if (typeof document !== "undefined") {
     )
       return;
 
+    // In online mode, only allow click on local player's turn
+    if (gameState.mode === "online") {
+      if (gameState.teamAssigned && gameState.currentTeam !== localTeam) return;
+      if (!gameState.teamAssigned && !localIsFirstPlayer) return;
+    }
+
     const cell = e.target.closest(".cell");
     if (!cell) return;
 
@@ -832,6 +868,9 @@ if (typeof document !== "undefined") {
           if (result) {
             gameState.selectedCell = null;
             clearHighlights();
+            if (gameState.mode === "online" && networkProtocol) {
+              networkProtocol.sendAction({ a: "capture", fx: sel.x, fy: sel.y, tx: x, ty: y });
+            }
             renderBoard(gameState);
             afterAction();
             return;
@@ -847,6 +886,9 @@ if (typeof document !== "undefined") {
         if (moveResult) {
           gameState.selectedCell = null;
           clearHighlights();
+          if (gameState.mode === "online" && networkProtocol) {
+            networkProtocol.sendAction({ a: "move", fx: sel.x, fy: sel.y, tx: x, ty: y });
+          }
           renderBoard(gameState);
           afterAction();
           return;
@@ -872,6 +914,19 @@ if (typeof document !== "undefined") {
       const flipResult = flipCard(gameState, x, y);
       if (flipResult) {
         clearHighlights();
+        // In online mode, assign teams on first flip
+        if (gameState.mode === "online" && !gameState.teamAssigned) {
+          // Note: dragon-tiger-fight's flipCard handles team assignment internally
+          // We need to read the flipped card's team to determine local/remote teams
+          const flippedCard = gameState.board[y][x];
+          localTeam = flippedCard.team;
+          remoteTeam = localTeam === "dragon" ? "tiger" : "dragon";
+          // Mark team as assigned for online mode
+          gameState.teamAssigned = true;
+        }
+        if (gameState.mode === "online" && networkProtocol) {
+          networkProtocol.sendAction({ a: "flip", x: x, y: y });
+        }
         renderBoard(gameState);
         afterAction();
         return;

@@ -1,4 +1,4 @@
-/* eslint-disable no-var */
+/* eslint-disable no-var, no-undef */
 // ============================================================
 // Army Chess (Open) - Game Core Logic
 // ============================================================
@@ -223,9 +223,10 @@ function resolveCombat(attacker, defender) {
 // Create Game State
 // ============================================================
 
-function createGameState(mode) {
+function createGameState(mode, seed) {
   const gameType = mode.gameType || "open";
   const oppType = mode.oppType || "pvp";
+  const rng = seed ? createSeededRandom(seed) : null;
 
   const pieces = [];
 
@@ -266,11 +267,11 @@ function createGameState(mode) {
 
   if (gameType === "flip") {
     // Flip mode: 50 pieces randomly placed on full board, all face down
-    placePiecesRandom(board, pieces);
+    placePiecesRandom(board, pieces, rng);
   } else {
     // Open/hidden mode: constrained placement in halves
-    placePiecesForTeam(board, pieces.slice(0, 25), 0); // Red -> y 6-11
-    placePiecesForTeam(board, pieces.slice(25, 50), 1); // Blue -> y 0-5
+    placePiecesForTeam(board, pieces.slice(0, 25), 0, rng); // Red -> y 6-11
+    placePiecesForTeam(board, pieces.slice(25, 50), 1, rng); // Blue -> y 0-5
 
     // Hidden mode: opponent pieces face down
     if (gameType === "hidden") {
@@ -301,7 +302,7 @@ function createGameState(mode) {
   };
 }
 
-function placePiecesForTeam(board, pieces, halfIndex) {
+function placePiecesForTeam(board, pieces, halfIndex, rng) {
   const yStart = halfIndex === 0 ? 6 : 0;
 
   // Classify pieces
@@ -336,6 +337,9 @@ function placePiecesForTeam(board, pieces, halfIndex) {
   function isOccupied(x, y) {
     return !!occupied[x + "," + y];
   }
+  function doShuffle(arr) {
+    return rng ? shuffleSeeded(arr, rng) : shuffle(arr);
+  }
 
   // 1. Place flag: must be in base camp
   const baseCampPositions = [];
@@ -345,7 +349,7 @@ function placePiecesForTeam(board, pieces, halfIndex) {
       baseCampPositions.push(bc);
     }
   }
-  shuffle(baseCampPositions);
+  doShuffle(baseCampPositions);
   for (var i = 0; i < flags.length; i++) {
     var pos = baseCampPositions[i];
     board[pos.y][pos.x] = flags[i];
@@ -359,7 +363,7 @@ function placePiecesForTeam(board, pieces, halfIndex) {
       if (!isCamp(x, y) && !isOccupied(x, y)) mineRows.push({ x: x, y: y });
     }
   }
-  shuffle(mineRows);
+  doShuffle(mineRows);
   for (var i = 0; i < mines.length; i++) {
     var pos = mineRows[i];
     board[pos.y][pos.x] = mines[i];
@@ -373,7 +377,7 @@ function placePiecesForTeam(board, pieces, halfIndex) {
     if (pos.y === yStart) continue; // Exclude first row
     if (!isOccupied(pos.x, pos.y)) bombPositions.push(pos);
   }
-  shuffle(bombPositions);
+  doShuffle(bombPositions);
   for (var i = 0; i < bombs.length; i++) {
     var pos = bombPositions[i];
     board[pos.y][pos.x] = bombs[i];
@@ -386,7 +390,7 @@ function placePiecesForTeam(board, pieces, halfIndex) {
     var pos = allPositions[i];
     if (!isOccupied(pos.x, pos.y)) remaining.push(pos);
   }
-  shuffle(remaining);
+  doShuffle(remaining);
   for (var i = 0; i < others.length; i++) {
     var pos = remaining[i];
     board[pos.y][pos.x] = others[i];
@@ -394,7 +398,7 @@ function placePiecesForTeam(board, pieces, halfIndex) {
   }
 }
 
-function placePiecesRandom(board, pieces) {
+function placePiecesRandom(board, pieces, rng) {
   // Collect all positions (excluding camps)
   const allPositions = [];
   for (let y = 0; y < ROWS; y++) {
@@ -404,7 +408,8 @@ function placePiecesRandom(board, pieces) {
       }
     }
   }
-  shuffle(allPositions);
+  if (rng) shuffleSeeded(allPositions, rng);
+  else shuffle(allPositions);
 
   // All pieces face down
   for (var i = 0; i < pieces.length; i++) {
@@ -421,6 +426,26 @@ function placePiecesRandom(board, pieces) {
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
+    const tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
+  }
+  return arr;
+}
+
+// Seeded PRNG for deterministic board generation in online mode
+function createSeededRandom(seed) {
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return function () {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function shuffleSeeded(arr, rng) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
     const tmp = arr[i];
     arr[i] = arr[j];
     arr[j] = tmp;
@@ -1012,6 +1037,16 @@ if (typeof module !== "undefined" && module.exports) {
 if (typeof document !== "undefined") {
   let gameState = null;
 
+  // Online mode state
+  let networkProtocol = null;
+  let networkConnection = null;
+  let roomUI = null;
+  let localPlayerRole = null; // 'host' | 'guest'
+  let localTeam = null; // RED or BLUE
+  let remoteTeam = null; // RED or BLUE
+  let pendingBoardSeed = null; // For guest: seed from host for deterministic board
+  let onlineTeamsAssigned = false; // Track if teams have been assigned in flip mode
+
   // Board SVG view coordinate system
   const SVG_W = 480;
   const SVG_H = 780;
@@ -1348,6 +1383,7 @@ if (typeof document !== "undefined") {
   function onBoardClick(e) {
     if (!gameState || gameState.gameOver || gameState.aiThinking) return;
     if (gameState.oppType === "pve" && gameState.currentTeam === gameState.aiTeam) return;
+    if (gameState.oppType === "online" && localTeam && gameState.currentTeam !== localTeam) return;
 
     const target = e.target;
     const x = Number.parseInt(target.dataset.x);
@@ -1362,6 +1398,7 @@ if (typeof document !== "undefined") {
     if (gameType === "flip" && piece && piece.state === STATE_FACE_DOWN) {
       var result = flipPiece(gameState, x, y);
       if (result) {
+        sendNetworkAction({ type: "flip", x: x, y: y });
         clearHighlights();
         drawBoard();
         afterAction();
@@ -1375,6 +1412,7 @@ if (typeof document !== "undefined") {
         var sel = gameState.selectedCell;
         var result = moveCard(gameState, sel, { x: x, y: y });
         if (result) {
+          sendNetworkAction({ type: "move", fx: sel.x, fy: sel.y, tx: x, ty: y });
           gameState.selectedCell = null;
           clearHighlights();
           drawBoard();
@@ -1399,6 +1437,7 @@ if (typeof document !== "undefined") {
       // Try move/capture
       var result = moveCard(gameState, sel, { x: x, y: y });
       if (result) {
+        sendNetworkAction({ type: "move", fx: sel.x, fy: sel.y, tx: x, ty: y });
         gameState.selectedCell = null;
         clearHighlights();
         drawBoard();
@@ -1447,7 +1486,7 @@ if (typeof document !== "undefined") {
       const label = getCurrentPlayerLabel({
         mode: s.oppType,
         currentSide: s.currentTeam,
-        playerSide: s.playerTeam,
+        playerSide: s.oppType === "online" ? localTeam : s.playerTeam,
         sidesOrder: s.firstPlayer
           ? [s.firstPlayer, s.firstPlayer === RED ? BLUE : RED]
           : [RED, BLUE],
@@ -1478,9 +1517,12 @@ if (typeof document !== "undefined") {
 
     const $redLabel = document.getElementById("red-label");
     const $blueLabel = document.getElementById("blue-label");
-    if (s.mode === "pve" && s.playerTeam) {
+    if (s.oppType === "pve" && s.playerTeam) {
       $redLabel.textContent = s.playerTeam === RED ? "玩家（红方）：" : "电脑（红方）：";
       $blueLabel.textContent = s.playerTeam === BLUE ? "玩家（蓝方）：" : "电脑（蓝方）：";
+    } else if (s.oppType === "online" && localTeam) {
+      $redLabel.textContent = localTeam === RED ? "你（红方）：" : "对方（红方）：";
+      $blueLabel.textContent = localTeam === BLUE ? "你（蓝方）：" : "对方（蓝方）：";
     } else {
       $redLabel.textContent = "红方：";
       $blueLabel.textContent = "蓝方：";
@@ -1528,7 +1570,7 @@ if (typeof document !== "undefined") {
       const label = getCurrentPlayerLabel({
         mode: gameState.oppType,
         currentSide: winner,
-        playerSide: gameState.playerTeam,
+        playerSide: gameState.oppType === "online" ? localTeam : gameState.playerTeam,
         sidesOrder: gameState.firstPlayer
           ? [gameState.firstPlayer, gameState.firstPlayer === RED ? BLUE : RED]
           : [RED, BLUE],
@@ -1586,6 +1628,21 @@ if (typeof document !== "undefined") {
     }
   }
 
+  function sendNetworkAction(action) {
+    if (gameState.oppType !== "online" || !networkProtocol) return;
+    if (action.type === "flip") {
+      networkProtocol.sendAction({ a: "flip", x: action.x, y: action.y });
+    } else if (action.type === "move") {
+      networkProtocol.sendAction({
+        a: "move",
+        fx: action.fx,
+        fy: action.fy,
+        tx: action.tx,
+        ty: action.ty,
+      });
+    }
+  }
+
   function afterAction() {
     updateStatus();
     const result = checkGameOver(gameState);
@@ -1599,6 +1656,19 @@ if (typeof document !== "undefined") {
       return;
     }
 
+    // Online flip mode: show team assignment message when teams are first determined
+    if (
+      gameState.oppType === "online" &&
+      gameState.gameType === "flip" &&
+      !onlineTeamsAssigned &&
+      localTeam
+    ) {
+      onlineTeamsAssigned = true;
+      const teamName = localTeam === RED ? "红方" : "蓝方";
+      showMessage("你控制" + teamName + "！", "info");
+      return;
+    }
+
     if (gameState.oppType === "pve" && gameState.currentTeam === gameState.aiTeam) {
       triggerAI();
     } else {
@@ -1606,7 +1676,7 @@ if (typeof document !== "undefined") {
       const turnLabel = getCurrentPlayerLabel({
         mode: gameState.oppType,
         currentSide: gameState.currentTeam,
-        playerSide: gameState.playerTeam,
+        playerSide: gameState.oppType === "online" ? localTeam : gameState.playerTeam,
         sidesOrder: gameState.firstPlayer
           ? [gameState.firstPlayer, gameState.firstPlayer === RED ? BLUE : RED]
           : [RED, BLUE],
@@ -1791,9 +1861,276 @@ if (typeof document !== "undefined") {
   }
 
   // ============================================================
+  // Online Mode Functions
+  // ============================================================
+
+  function cleanupNetwork() {
+    if (networkProtocol) {
+      networkProtocol.destroy();
+      networkProtocol = null;
+    }
+    if (networkConnection) {
+      networkConnection.close();
+      networkConnection = null;
+    }
+    localPlayerRole = null;
+    localTeam = null;
+    remoteTeam = null;
+    pendingBoardSeed = null;
+    onlineTeamsAssigned = false;
+  }
+
+  function setupNetworkHandlers() {
+    networkProtocol.setCallbacks({
+      onAction: (actionData) => {
+        applyRemoteAction(actionData);
+      },
+      onRPSChoice: (choice) => {
+        handleOnlineRPSReceived(choice);
+      },
+      onRPSResult: (result) => {
+        handleOnlineRPSResult(result);
+      },
+      onRestart: () => {
+        cleanupNetwork();
+        document.getElementById("game-over").style.display = "none";
+        document.getElementById("game-area").style.display = "none";
+        document.getElementById("rps-online").style.display = "none";
+        $modeSelection.style.display = "flex";
+        gameState = null;
+      },
+      onDisconnect: () => {
+        handleDisconnect();
+      },
+      onError: (err) => {
+        console.error("Network error:", err);
+      },
+    });
+  }
+
+  function startOnlineRPS() {
+    $modeSelection.style.display = "none";
+    document.getElementById("rps-online").style.display = "flex";
+    rpsChoices = {
+      player1: null,
+      player2: null,
+      human: null,
+      online: null,
+      remote: null,
+    };
+    document.getElementById("rps-online-status").textContent = "请选择";
+    document.getElementById("rps-online-result").textContent = "";
+    document
+      .querySelectorAll("#rps-online-buttons .btn-rps")
+      .forEach((btn) => btn.classList.remove("selected"));
+  }
+
+  function handleOnlineRPSChoice(choice, ev) {
+    rpsChoices.online = choice;
+    document
+      .querySelectorAll("#rps-online-buttons .btn-rps")
+      .forEach((btn) => btn.classList.remove("selected"));
+    ev.target.classList.add("selected");
+    document.getElementById("rps-online-status").textContent =
+      "已选择：" + getRPSName(choice) + "，等待对方...";
+    networkProtocol.sendRPSChoice(choice);
+  }
+
+  function handleOnlineRPSReceived(remoteChoice) {
+    rpsChoices.remote = remoteChoice;
+    checkOnlineRPSComplete();
+  }
+
+  function checkOnlineRPSComplete() {
+    if (!rpsChoices.online || !rpsChoices.remote) return;
+
+    if (localPlayerRole === "host") {
+      const winner = judgeRPS(rpsChoices.online, rpsChoices.remote);
+      let firstPlayer;
+      if (winner === 1) {
+        firstPlayer = "host";
+      } else if (winner === -1) {
+        firstPlayer = "guest";
+      } else {
+        networkProtocol.sendRPSResult(null, null);
+        rpsChoices.online = null;
+        rpsChoices.remote = null;
+        document.getElementById("rps-online-status").textContent = "平局！请重新选择";
+        document
+          .querySelectorAll("#rps-online-buttons .btn-rps")
+          .forEach((btn) => btn.classList.remove("selected"));
+        return;
+      }
+      networkProtocol.sendRPSResult(
+        {
+          host: localPlayerRole === "host" ? rpsChoices.online : rpsChoices.remote,
+          guest: localPlayerRole === "host" ? rpsChoices.remote : rpsChoices.online,
+        },
+        firstPlayer
+      );
+    }
+  }
+
+  function handleOnlineRPSResult(result) {
+    const resultEl = document.getElementById("rps-online-result");
+    if (result.firstPlayer === null) {
+      rpsChoices.online = null;
+      rpsChoices.remote = null;
+      document.getElementById("rps-online-status").textContent = "平局！请重新选择";
+      document
+        .querySelectorAll("#rps-online-buttons .btn-rps")
+        .forEach((btn) => btn.classList.remove("selected"));
+      return;
+    }
+
+    const myChoice = rpsChoices.online;
+    const theirChoice = rpsChoices.remote;
+    const iWin = result.firstPlayer === localPlayerRole;
+
+    resultEl.textContent =
+      "你选择了" +
+      getRPSName(myChoice) +
+      "，对方选择了" +
+      getRPSName(theirChoice) +
+      (iWin ? "，你赢了！你先手。" : "，你输了！对方先手。");
+
+    setTimeout(() => {
+      startOnlineGame(result.firstPlayer);
+    }, 1500);
+  }
+
+  function startOnlineGame(firstPlayerRole) {
+    const gameType = pendingMode.gameType;
+    const seed = Math.floor(Math.random() * 2147483646) + 1;
+
+    if (localPlayerRole === "host") {
+      gameState = createGameState({ gameType: gameType, oppType: "online" }, seed);
+
+      localTeam = RED;
+      remoteTeam = BLUE;
+
+      if (gameType !== "flip") {
+        gameState.currentTeam = firstPlayerRole === "host" ? RED : BLUE;
+        gameState.firstPlayer = gameState.currentTeam;
+      } else {
+        gameState.currentTeam = RED;
+        gameState.firstPlayer = RED;
+      }
+
+      networkProtocol.sendAction({ a: "board_sync", seed: seed, gameType: gameType });
+    } else {
+      // Guest: use seed from host if available, otherwise generate locally
+      const actualSeed = pendingBoardSeed || seed;
+      pendingBoardSeed = null;
+      gameState = createGameState({ gameType: gameType, oppType: "online" }, actualSeed);
+
+      localTeam = BLUE;
+      remoteTeam = RED;
+
+      if (gameType !== "flip") {
+        gameState.currentTeam = firstPlayerRole === "host" ? RED : BLUE;
+        gameState.firstPlayer = gameState.currentTeam;
+      } else {
+        gameState.currentTeam = RED;
+        gameState.firstPlayer = RED;
+      }
+    }
+
+    onlineTeamsAssigned = gameType !== "flip";
+
+    buildBoardSVG();
+
+    // Switch rules panel
+    document.querySelectorAll(".rules-content").forEach((el) => {
+      el.style.display = "none";
+    });
+    const rulesId = "rules-" + gameType;
+    const rulesEl = document.getElementById(rulesId);
+    if (rulesEl) rulesEl.style.display = "block";
+
+    // Bind click event
+    const layer = document.getElementById("pieces-layer");
+    if (layer) layer.addEventListener("click", onBoardClick);
+
+    document.getElementById("rps-online").style.display = "none";
+    document.getElementById("rule-pve").style.display = "none";
+    $gameArea.style.display = "flex";
+    $gameOver.style.display = "none";
+
+    drawBoard();
+    updateStatus();
+
+    if (gameType === "flip") {
+      showMessage("翻棋模式，请翻开棋子", "");
+    } else {
+      const firstLabel = getCurrentPlayerLabel({
+        mode: "online",
+        currentSide: gameState.currentTeam,
+        playerSide: localTeam,
+        sidesOrder: gameState.firstPlayer
+          ? [gameState.firstPlayer, gameState.firstPlayer === RED ? BLUE : RED]
+          : [RED, BLUE],
+      });
+      showMessage(firstLabel.text + "先行，请选择棋子移动", "");
+    }
+  }
+
+  function applyRemoteAction(actionData) {
+    if (!gameState || gameState.gameOver) return;
+
+    // Handle board sync from host
+    if (actionData.a === "board_sync") {
+      if (localPlayerRole === "guest") {
+        pendingBoardSeed = actionData.seed;
+      }
+      return;
+    }
+
+    if (actionData.a === "flip") {
+      flipPiece(gameState, actionData.x, actionData.y);
+      clearHighlights();
+      gameState.selectedCell = null;
+      drawBoard();
+      afterAction();
+    } else if (actionData.a === "move") {
+      moveCard(
+        gameState,
+        { x: actionData.fx, y: actionData.fy },
+        { x: actionData.tx, y: actionData.ty }
+      );
+      clearHighlights();
+      gameState.selectedCell = null;
+      drawBoard();
+      afterAction();
+    }
+  }
+
+  function handleDisconnect() {
+    if (gameState && !gameState.gameOver) {
+      gameState.gameOver = true;
+      showMessage("对方已断开连接", "error");
+      $winnerText.textContent = "对方已断开连接，你获胜！";
+      $gameOver.style.display = "flex";
+    }
+    cleanupNetwork();
+  }
+
+  function restartGame() {
+    if (gameState && gameState.oppType === "online" && networkProtocol) {
+      networkProtocol.sendRestart();
+    }
+    cleanupNetwork();
+    $gameOver.style.display = "none";
+    $gameArea.style.display = "none";
+    document.getElementById("rps-online").style.display = "none";
+    $modeSelection.style.display = "flex";
+    gameState = null;
+  }
+
+  // ============================================================
   // Event Binding
   // ============================================================
-  const modeButtons = document.querySelectorAll(".mode-section .btn");
+  const modeButtons = document.querySelectorAll(".mode-section .btn:not(.btn-online)");
   for (let i = 0; i < modeButtons.length; i++) {
     modeButtons[i].addEventListener("click", function () {
       const gameType = this.dataset.gameType;
@@ -1803,7 +2140,42 @@ if (typeof document !== "undefined") {
     });
   }
 
-  document.querySelectorAll(".btn-rps").forEach((button) => {
+  // Online mode button
+  const btnOnline = document.getElementById("btn-online");
+  if (btnOnline) {
+    if (!RoomUI.isSupported()) {
+      btnOnline.style.display = "none";
+    } else {
+      btnOnline.addEventListener("click", () => {
+        roomUI = new RoomUI({
+          onConnectionEstablished: (connection, protocol, role) => {
+            networkConnection = connection;
+            networkProtocol = protocol;
+            localPlayerRole = role;
+            setupNetworkHandlers();
+            startOnlineRPS();
+          },
+          onError: (msg) => {
+            showMessage(msg, "error");
+          },
+          onCancel: () => {
+            cleanupNetwork();
+          },
+        });
+        roomUI.show();
+      });
+    }
+  }
+
+  // Online RPS buttons
+  document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((button) => {
+    button.addEventListener("click", (ev) => {
+      const choice = ev.target.dataset.choice;
+      handleOnlineRPSChoice(choice, ev);
+    });
+  });
+
+  document.querySelectorAll(".rps-buttons:not(#rps-online-buttons) .btn-rps").forEach((button) => {
     button.addEventListener("click", (ev) => {
       const player = ev.target.dataset.player;
       const choice = ev.target.dataset.choice;
@@ -1811,10 +2183,7 @@ if (typeof document !== "undefined") {
     });
   });
 
-  $btnRestart.addEventListener("click", () => {
-    gameState = null;
-    showModeSelection();
-  });
+  $btnRestart.addEventListener("click", restartGame);
 
   // Recalculate on window resize
   window.addEventListener("resize", () => {

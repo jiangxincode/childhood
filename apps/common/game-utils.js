@@ -47,20 +47,21 @@ function shuffleArray(arr) {
 
 /**
  * Resolve a generic display label for the current acting side.
- * Returns "玩家"/"电脑" in PVE mode and "玩家1"/"玩家2"/... in PVP mode.
+ * Returns "你"/"对方" in online mode, "玩家"/"电脑" in PVE mode,
+ * and "玩家1"/"玩家2"/... in PVP mode.
  *
  * This avoids leaking side identifiers like color/role names to the UI.
  * It is especially useful for flip-card games where the side -> role
  * mapping is not yet decided at game start.
  *
  * @param {Object} opts
- * @param {string} [opts.mode] - 'pve' | 'pvp'
+ * @param {string} [opts.mode] - 'pve' | 'pvp' | 'online'
  * @param {*} [opts.currentSide] - current side identifier (e.g. 'red', 1, 'dragon')
- * @param {*} [opts.playerSide] - human side identifier (used in PVE)
+ * @param {*} [opts.playerSide] - human side identifier (used in PVE and online)
  * @param {Array} [opts.sidesOrder] - sides in turn order starting from the first to act (used in PVP)
  * @param {boolean} [opts.assigned=true] - whether the side -> role mapping is decided
  * @param {boolean} [opts.aiFirst] - whether the AI acts first (used in PVE before assignment)
- * @returns {{text: string, role: 'unknown'|'player'|'ai'|'playerN'}}
+ * @returns {{text: string, role: 'unknown'|'player'|'ai'|'playerN'|'opponent'}}
  */
 function getCurrentPlayerLabel(opts) {
   const mode = opts && opts.mode;
@@ -72,6 +73,11 @@ function getCurrentPlayerLabel(opts) {
 
   if (currentSide == null) {
     return { text: "—", role: "unknown" };
+  }
+
+  if (mode === "online") {
+    const isMyTurn = currentSide === playerSide;
+    return { text: isMyTurn ? "你" : "对方", role: isMyTurn ? "player" : "opponent" };
   }
 
   if (mode === "pve") {
