@@ -13,7 +13,7 @@
   <a href="https://sonarcloud.io/dashboard?id=jiangxincode_childhood"><img src="https://sonarcloud.io/api/project_badges/measure?project=jiangxincode_childhood&metric=alert_status" alt="Quality Gate Status"></a>
 </p>
 
-一个纯前端经典游戏合集，收录了 **23 款**童年桌游与卡牌游戏，开箱即玩。支持双人对战、人机对战和 **WebRTC P2P 联网对战**（无需服务器，手动交换房间码即可连接）。
+一个纯前端经典游戏合集，收录了 **23 款**童年桌游与卡牌游戏，开箱即玩。支持双人对战、人机对战和联网对战。
 
 **在线体验**：[GitHub Pages（主站）](https://jiangxincode.github.io/childhood/) · [Cloudflare Pages（镜像）](https://childhood-cck.pages.dev/)
 
