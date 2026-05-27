@@ -95,17 +95,29 @@ body {
 
 .mode-buttons {
   display: flex;
-  gap: 16px;
+  gap: 12px;
+  flex-wrap: nowrap;
   justify-content: center;
 }
 
+.mode-buttons .btn {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
 .btn-pvp {
-  background: var(--red-color);
+  background: #333;
   color: #fff;
 }
 
 .btn-pve {
-  background: var(--blue-color);
+  background: #fff;
+  color: #333;
+  border: 2px solid #333;
+}
+
+.btn-online {
+  background: #1565c0;
   color: #fff;
 }
 

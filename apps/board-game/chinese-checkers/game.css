@@ -64,7 +64,8 @@ body {
 .mode-buttons {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
+  flex-wrap: nowrap;
 }
 
 .btn {
@@ -86,14 +87,25 @@ body {
   transform: translateY(0);
 }
 
+.mode-buttons .btn {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
 .btn-pvp {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #333;
+  color: #fff;
 }
 
 .btn-pve {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
+  background: #fff;
+  color: #333;
+  border: 2px solid #333;
+}
+
+.btn-online {
+  background: #1565c0;
+  color: #fff;
 }
 
 .btn-restart {

@@ -19,17 +19,12 @@ const ICE_GATHER_TIMEOUT_MS = 5000;
  */
 function minimizeSdp(sdp) {
   const keepPrefixes = [
-    "v=",
-    "o=",
-    "s=",
-    "t=",
     "a=ice-ufrag",
     "a=ice-pwd",
     "a=fingerprint",
     "a=setup",
     "a=mid",
     "a=sctp-port",
-    "a=max-message-size",
     "m=application",
     "c=IN",
   ];
@@ -37,12 +32,7 @@ function minimizeSdp(sdp) {
   const kept = [];
   for (const line of lines) {
     if (keepPrefixes.some((p) => line.startsWith(p))) {
-      // Strip max-message-size value to just a reasonable default
-      if (line.startsWith("a=max-message-size:")) {
-        kept.push("a=max-message-size:262144");
-      } else {
-        kept.push(line);
-      }
+      kept.push(line);
     }
   }
   return kept.join("\r\n");
@@ -78,7 +68,9 @@ function encodeRoomData(sdp, candidates) {
   const { sdp: cleanSdp, candidates: sdpCandidates } = extractCandidates(sdp);
   const minSdp = minimizeSdp(cleanSdp);
   const allCandidates = [...sdpCandidates, ...candidates];
-  const payload = JSON.stringify({ s: minSdp, c: allCandidates });
+  // Keep only the first ICE candidate
+  const first = allCandidates.length > 0 ? [allCandidates[0]] : [];
+  const payload = JSON.stringify({ s: minSdp, c: first });
   return btoa(unescape(encodeURIComponent(payload)));
 }
 

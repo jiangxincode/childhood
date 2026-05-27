@@ -29,7 +29,6 @@ describe("minimizeSdp", () => {
     ].join("\r\n");
 
     const result = minimizeSdp(sdp);
-    expect(result).toContain("v=0");
     expect(result).toContain("a=ice-ufrag:abc1");
     expect(result).toContain("a=ice-pwd:def123456789012345678901");
     expect(result).toContain("a=fingerprint:sha-256 AA:BB:CC");
@@ -37,6 +36,8 @@ describe("minimizeSdp", () => {
     expect(result).toContain("a=mid:0");
     expect(result).toContain("a=sctp-port:5000");
     expect(result).toContain("m=application");
+    expect(result).not.toContain("v=0");
+    expect(result).not.toContain("a=max-message-size");
   });
 
   it("strips unnecessary SDP lines", () => {
@@ -71,13 +72,10 @@ describe("minimizeSdp", () => {
     expect(result).not.toContain("rtcp-mux");
     expect(result).not.toContain("rtcp-rsize");
     expect(result).not.toContain("msid:stream1");
-  });
-
-  it("normalizes max-message-size to 262144", () => {
-    const sdp = "v=0\r\na=max-message-size:65536\r\na=ice-ufrag:x\r\n";
-    const result = minimizeSdp(sdp);
-    expect(result).toContain("a=max-message-size:262144");
-    expect(result).not.toContain("65536");
+    expect(result).not.toContain("o=-");
+    expect(result).not.toContain("s=-");
+    expect(result).not.toContain("t=0 0");
+    expect(result).not.toContain("v=0");
   });
 });
 
@@ -120,7 +118,6 @@ describe("encodeRoomData / decodeRoomData", () => {
     expect(encoded.length).toBeGreaterThan(0);
 
     const decoded = decodeRoomData(encoded);
-    expect(decoded.sdp).toContain("v=0");
     expect(decoded.sdp).toContain("a=ice-ufrag:test");
     expect(decoded.sdp).toContain("candidate:");
     expect(decoded.candidates).toHaveLength(1);
@@ -130,11 +127,11 @@ describe("encodeRoomData / decodeRoomData", () => {
     const sdp = "v=0\r\na=ice-ufrag:x\r\na=ice-pwd:y\r\n";
     const encoded = encodeRoomData(sdp, []);
     const decoded = decodeRoomData(encoded);
-    expect(decoded.sdp).toContain("v=0");
+    expect(decoded.sdp).toContain("a=ice-ufrag:x");
     expect(decoded.candidates).toEqual([]);
   });
 
-  it("handles multiple candidates", () => {
+  it("keeps only first candidate", () => {
     const sdp = "v=0\r\na=ice-ufrag:x\r\n";
     const candidates = [
       "candidate:1 1 udp 2122260223 192.168.1.1 12345 typ host",
@@ -143,7 +140,8 @@ describe("encodeRoomData / decodeRoomData", () => {
     ];
     const encoded = encodeRoomData(sdp, candidates);
     const decoded = decodeRoomData(encoded);
-    expect(decoded.candidates).toHaveLength(3);
+    expect(decoded.candidates).toHaveLength(1);
+    expect(decoded.candidates[0]).toContain("192.168.1.1");
   });
 
   it("produces base64 output", () => {

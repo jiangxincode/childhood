@@ -1,4 +1,4 @@
-/* eslint-disable no-var */
+/* eslint-disable no-var, no-undef */
 /* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, smartAiDecide:writable, isStalemateDraw:writable, recordCaptureAction:writable, recordNonCaptureAction:writable */
 // ============================================================
 // Dragon Tiger Fight - Game Core Logic
@@ -464,13 +464,13 @@ if (typeof document !== "undefined") {
   const $btnRestart = document.getElementById("btn-restart");
 
   // Online mode state
-  const networkProtocol = null;
-  const networkConnection = null;
-  const roomUI = null;
-  const localPlayerRole = null; // 'host' | 'guest'
+  let networkProtocol = null;
+  let networkConnection = null;
+  let roomUI = null;
+  let localPlayerRole = null; // 'host' | 'guest'
   let localTeam = null;
   let remoteTeam = null;
-  const localIsFirstPlayer = false;
+  let localIsFirstPlayer = false;
 
   // --- Renderer functions ---
 
@@ -639,9 +639,195 @@ if (typeof document !== "undefined") {
     $message.className = type || "";
   }
 
+  // ---- Online mode functions ----
+  function cleanupNetwork() {
+    if (networkProtocol) {
+      networkProtocol.destroy();
+      networkProtocol = null;
+    }
+    if (networkConnection) {
+      networkConnection.close();
+      networkConnection = null;
+    }
+    if (roomUI) {
+      roomUI.destroy();
+      roomUI = null;
+    }
+    localPlayerRole = null;
+    localTeam = null;
+    remoteTeam = null;
+    localIsFirstPlayer = false;
+  }
+
+  function setupNetworkHandlers() {
+    if (!networkProtocol) return;
+
+    networkProtocol.onAction = (actionData) => {
+      applyRemoteAction(actionData);
+    };
+
+    networkProtocol.onRPSChoice = (remoteChoice) => {
+      handleOnlineRPSReceived(remoteChoice);
+    };
+
+    networkProtocol.onRPSResult = (result) => {
+      handleOnlineRPSResult(result);
+    };
+
+    networkProtocol.onRestart = () => {
+      cleanupNetwork();
+      gameState = null;
+      showModeSelection();
+    };
+
+    networkProtocol.onDisconnect = () => {
+      handleDisconnect();
+    };
+  }
+
+  function startOnlineRPS() {
+    $modeSelection.style.display = "none";
+    $rpsSection.style.display = "none";
+    document.getElementById("rps-online").style.display = "flex";
+    document.getElementById("rps-online-status").textContent = "请选择";
+    document.getElementById("rps-online-result").textContent = "";
+    document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((b) => {
+      b.classList.remove("selected");
+    });
+  }
+
+  function handleOnlineRPSChoice(choice, ev) {
+    _onlineMyRPSChoice = choice;
+    if (networkProtocol) {
+      networkProtocol.sendRPSChoice(choice);
+    }
+    document.getElementById("rps-online-status").textContent = "已选择，等待对方...";
+    document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((b) => {
+      b.classList.remove("selected");
+    });
+    ev.target.classList.add("selected");
+  }
+
+  let _onlineMyRPSChoice = null;
+  let _onlineRemoteRPSChoice = null;
+
+  function handleOnlineRPSReceived(remoteChoice) {
+    _onlineRemoteRPSChoice = remoteChoice;
+    checkOnlineRPSComplete();
+  }
+
+  function checkOnlineRPSComplete() {
+    if (!_onlineMyRPSChoice || !_onlineRemoteRPSChoice) return;
+    if (localPlayerRole === "host") {
+      const result = judgeRPS(_onlineMyRPSChoice, _onlineRemoteRPSChoice);
+      if (result === 0) {
+        if (networkProtocol) {
+          networkProtocol.sendRPSResult({ result: "draw" });
+        }
+        handleOnlineRPSResult({ result: "draw" });
+      } else {
+        const winnerRole =
+          result === 1 ? localPlayerRole : localPlayerRole === "host" ? "guest" : "host";
+        const rpsResult = { result: "win", winner: winnerRole };
+        if (networkProtocol) {
+          networkProtocol.sendRPSResult(rpsResult);
+        }
+        handleOnlineRPSResult(rpsResult);
+      }
+    }
+  }
+
+  function handleOnlineRPSResult(rpsResult) {
+    const $rpsOnlineResult = document.getElementById("rps-online-result");
+
+    if (rpsResult.result === "draw") {
+      $rpsOnlineResult.textContent = "平局！重新选择";
+      _onlineMyRPSChoice = null;
+      _onlineRemoteRPSChoice = null;
+      setTimeout(() => {
+        startOnlineRPS();
+      }, 1500);
+      return;
+    }
+
+    const winnerRole = rpsResult.winner;
+    const isFirst = winnerRole === localPlayerRole;
+    $rpsOnlineResult.textContent = isFirst ? "你赢了！你先手" : "你输了！对方先手";
+
+    setTimeout(() => {
+      document.getElementById("rps-online").style.display = "none";
+      startOnlineGame(isFirst ? "host" : "guest");
+    }, 1500);
+  }
+
+  function startOnlineGame(firstPlayerRole) {
+    gameState = createGameState("online");
+    localIsFirstPlayer = firstPlayerRole === localPlayerRole;
+    gameState.currentTeam = "dragon";
+    showGameArea();
+    renderBoard(gameState);
+
+    if (localIsFirstPlayer) {
+      showMessage("请翻开一张牌", "");
+    } else {
+      showMessage("等待对方操作...", "info");
+    }
+  }
+
+  function applyRemoteAction(actionData) {
+    if (!gameState || gameState.gameOver) return;
+
+    if (actionData.a === "flip") {
+      const flipResult = flipCard(gameState, actionData.x, actionData.y);
+      if (flipResult) {
+        if (!gameState.teamAssigned) {
+          const flippedCard = gameState.board[actionData.y][actionData.x];
+          remoteTeam = flippedCard.team;
+          localTeam = remoteTeam === "dragon" ? "tiger" : "dragon";
+          gameState.teamAssigned = true;
+        }
+        clearHighlights();
+        renderBoard(gameState);
+        afterAction();
+      }
+    } else if (actionData.a === "move") {
+      const moveResult = moveCard(
+        gameState,
+        { x: actionData.fx, y: actionData.fy },
+        { x: actionData.tx, y: actionData.ty }
+      );
+      if (moveResult) {
+        clearHighlights();
+        renderBoard(gameState);
+        afterAction();
+      }
+    } else if (actionData.a === "capture") {
+      const captureResult = captureCard(
+        gameState,
+        { x: actionData.fx, y: actionData.fy },
+        { x: actionData.tx, y: actionData.ty }
+      );
+      if (captureResult) {
+        clearHighlights();
+        renderBoard(gameState);
+        afterAction();
+      }
+    }
+  }
+
+  function handleDisconnect() {
+    if (gameState && !gameState.gameOver) {
+      gameState.gameOver = true;
+      $winnerText.textContent = "对方已断开连接，你获胜！";
+      $gameOver.style.display = "flex";
+    }
+    cleanupNetwork();
+  }
+
   function showModeSelection() {
     $modeSelection.style.display = "flex";
     $rpsSection.style.display = "none";
+    document.getElementById("rps-online").style.display = "none";
     $gameArea.style.display = "none";
     $gameOver.style.display = "none";
   }
@@ -813,8 +999,47 @@ if (typeof document !== "undefined") {
     showRPSSelection("pve");
   });
 
+  // Online mode button
+  const btnOnline = document.getElementById("btn-online");
+  if (btnOnline) {
+    if (!RoomUI.isSupported()) {
+      btnOnline.style.display = "none";
+    } else {
+      btnOnline.addEventListener("click", () => {
+        roomUI = new RoomUI({
+          onConnectionEstablished: (connection, protocol, role) => {
+            networkConnection = connection;
+            networkProtocol = protocol;
+            localPlayerRole = role;
+            setupNetworkHandlers();
+            startOnlineRPS();
+          },
+          onError: (msg) => {
+            showMessage(msg, "error");
+          },
+          onCancel: () => {
+            cleanupNetwork();
+          },
+        });
+        roomUI.show();
+      });
+    }
+  }
+
+  // Online RPS buttons
+  document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((button) => {
+    button.addEventListener("click", (ev) => {
+      const choice = ev.target.dataset.choice;
+      handleOnlineRPSChoice(choice, ev);
+    });
+  });
+
   // --- Restart ---
   $btnRestart.addEventListener("click", () => {
+    if (gameState && gameState.mode === "online" && networkProtocol) {
+      networkProtocol.sendRestart();
+    }
+    cleanupNetwork();
     gameState = null;
     showModeSelection();
   });
@@ -982,6 +1207,14 @@ if (typeof document !== "undefined") {
         showMessage("请翻开一张牌", "");
       } else {
         showMessage("你的回合", "");
+      }
+    } else if (gameState.mode === "online") {
+      if (!gameState.teamAssigned) {
+        showMessage("请翻开一张牌", "");
+      } else if (gameState.currentTeam === localTeam) {
+        showMessage("你的回合", "");
+      } else {
+        showMessage("等待对方操作...", "info");
       }
     } else {
       // PVP - show 玩家1 / 玩家2 instead of dragon/tiger

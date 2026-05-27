@@ -96,7 +96,24 @@ body {
 .mode-buttons {
   display: flex;
   gap: 12px;
+  flex-wrap: nowrap;
   justify-content: center;
+}
+
+.mode-buttons .btn {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+.btn-pvp {
+  background: #333;
+  color: #fff;
+}
+
+.btn-pve {
+  background: #fff;
+  color: #333;
+  border: 2px solid #333;
 }
 
 /* ---- Rock Paper Scissors ---- */
