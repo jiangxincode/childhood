@@ -1,25 +1,26 @@
-/* eslint-disable no-let, no-undef */
+/* eslint-disable no-var, no-undef */
 // ============================================================
 // 狼吃羊 (Lang Chi Yang) - Wolf Eats Sheep
 // 2 players, 4x5 grid, asymmetric: 2 wolves vs 10 sheep
 // ============================================================
 
-if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
-  let _gameUtils = require("../../common/game-utils.js");
-  let judgeRPS = _gameUtils.judgeRPS;
-  let getRPSName = _gameUtils.getRPSName;
+let judgeRPS, getRPSName;
+if (typeof require !== "undefined") {
+  const _gameUtils = require("../../common/game-utils.js");
+  judgeRPS = _gameUtils.judgeRPS;
+  getRPSName = _gameUtils.getRPSName;
 }
 
-let PLAYER_A = "A"; // Sheep (羊) - 10 pieces
-let PLAYER_B = "B"; // Wolf (狼) - 2 pieces
-let EMPTY = null;
-let ROW_COUNT = 5;
-let COL_COUNT = 4;
-let INITIAL_A = 10; // Sheep starts with 10 pieces
-let INITIAL_B = 2; // Wolf starts with 2 pieces
-let MIN_A_TO_LOSE = 3; // If sheep has fewer than 3 pieces, wolf wins
+const PLAYER_A = "A"; // Sheep (羊) - 10 pieces
+const PLAYER_B = "B"; // Wolf (狼) - 2 pieces
+const EMPTY = null;
+const ROW_COUNT = 5;
+const COL_COUNT = 4;
+const INITIAL_A = 10; // Sheep starts with 10 pieces
+const INITIAL_B = 2; // Wolf starts with 2 pieces
+const MIN_A_TO_LOSE = 3; // If sheep has fewer than 3 pieces, wolf wins
 
-let DIRECTIONS = [
+const DIRECTIONS = [
   { dr: -1, dc: 0 },
   { dr: 1, dc: 0 },
   { dr: 0, dc: -1 },
@@ -27,9 +28,9 @@ let DIRECTIONS = [
 ];
 
 function createBoard() {
-  let board = [];
+  const board = [];
   for (let r = 0; r < ROW_COUNT; r++) {
-    let row = [];
+    const row = [];
     for (let c = 0; c < COL_COUNT; c++) {
       row.push(EMPTY);
     }
@@ -39,7 +40,7 @@ function createBoard() {
 }
 
 function getInitialBoard() {
-  let board = createBoard();
+  const board = createBoard();
   // Wolf (B): top row middle positions
   board[0][1] = PLAYER_B;
   board[0][2] = PLAYER_B;
@@ -92,10 +93,10 @@ function countPieces(board, player) {
 }
 
 function getAdjacentCells(r, c) {
-  let cells = [];
-  for (let i = 0; i < DIRECTIONS.length; i++) {
-    let nr = r + DIRECTIONS[i].dr;
-    let nc = c + DIRECTIONS[i].dc;
+  const cells = [];
+  for (const dir of DIRECTIONS) {
+    const nr = r + dir.dr;
+    const nc = c + dir.dc;
     if (inBounds(nr, nc)) {
       cells.push({ r: nr, c: nc });
     }
@@ -105,11 +106,11 @@ function getAdjacentCells(r, c) {
 
 // Get valid step moves for a piece (one step to adjacent empty cell)
 function getStepMoves(board, r, c) {
-  let moves = [];
-  let adj = getAdjacentCells(r, c);
-  for (let i = 0; i < adj.length; i++) {
-    if (board[adj[i].r][adj[i].c] === EMPTY) {
-      moves.push({ fromR: r, fromC: c, toR: adj[i].r, toC: adj[i].c, type: "step" });
+  const moves = [];
+  const adj = getAdjacentCells(r, c);
+  for (const neighbor of adj) {
+    if (board[neighbor.r][neighbor.c] === EMPTY) {
+      moves.push({ fromR: r, fromC: c, toR: neighbor.r, toC: neighbor.c, type: "step" });
     }
   }
   return moves;
@@ -118,12 +119,12 @@ function getStepMoves(board, r, c) {
 // Get valid jump capture moves for a wolf (B only)
 // B at (r,c), empty at (r+dr, c+dc), sheep at (r+2*dr, c+2*dc)
 function getJumpMoves(board, r, c) {
-  let moves = [];
-  for (let i = 0; i < DIRECTIONS.length; i++) {
-    let mr = r + DIRECTIONS[i].dr;
-    let mc = c + DIRECTIONS[i].dc;
-    let tr = r + 2 * DIRECTIONS[i].dr;
-    let tc = c + 2 * DIRECTIONS[i].dc;
+  const moves = [];
+  for (const dir2 of DIRECTIONS) {
+    const mr = r + dir2.dr;
+    const mc = c + dir2.dc;
+    const tr = r + 2 * dir2.dr;
+    const tc = c + 2 * dir2.dc;
     if (inBounds(tr, tc) && board[mr][mc] === EMPTY && board[tr][tc] === PLAYER_A) {
       moves.push({
         fromR: r,
@@ -141,19 +142,19 @@ function getJumpMoves(board, r, c) {
 
 // Get all valid moves for a player
 function getValidMoves(board, player) {
-  let moves = [];
+  const moves = [];
   for (let r = 0; r < ROW_COUNT; r++) {
     for (let c = 0; c < COL_COUNT; c++) {
       if (board[r][c] === player) {
-        let stepMoves = getStepMoves(board, r, c);
-        for (let i = 0; i < stepMoves.length; i++) {
-          moves.push(stepMoves[i]);
+        const stepMoves = getStepMoves(board, r, c);
+        for (const move of stepMoves) {
+          moves.push(move);
         }
         // Only wolves (B) can jump
         if (player === PLAYER_B) {
-          let jumpMoves = getJumpMoves(board, r, c);
-          for (let j = 0; j < jumpMoves.length; j++) {
-            moves.push(jumpMoves[j]);
+          const jumpMoves = getJumpMoves(board, r, c);
+          for (const move2 of jumpMoves) {
+            moves.push(move2);
           }
         }
       }
@@ -164,8 +165,8 @@ function getValidMoves(board, player) {
 
 // Check win conditions: returns winner or null
 function checkWin(board) {
-  let countA = countPieces(board, PLAYER_A);
-  let countB = countPieces(board, PLAYER_B);
+  const countA = countPieces(board, PLAYER_A);
+  const countB = countPieces(board, PLAYER_B);
 
   // Wolf (B) wins when sheep (A) pieces drop below threshold
   if (countA < MIN_A_TO_LOSE) {
@@ -176,7 +177,7 @@ function checkWin(board) {
   if (countB === 0) {
     return PLAYER_A;
   }
-  let bMoves = getValidMoves(board, PLAYER_B);
+  const bMoves = getValidMoves(board, PLAYER_B);
   if (bMoves.length === 0) {
     return PLAYER_A;
   }
@@ -185,7 +186,7 @@ function checkWin(board) {
 }
 
 function cloneBoard(board) {
-  let newBoard = [];
+  const newBoard = [];
   for (let r = 0; r < ROW_COUNT; r++) {
     newBoard.push(board[r].slice());
   }
@@ -193,7 +194,7 @@ function cloneBoard(board) {
 }
 
 function applyMove(board, move) {
-  let newBoard = cloneBoard(board);
+  const newBoard = cloneBoard(board);
   newBoard[move.toR][move.toC] = newBoard[move.fromR][move.fromC];
   newBoard[move.fromR][move.fromC] = EMPTY;
   if (move.type === "jump") {
@@ -209,27 +210,44 @@ function getOpponent(player) {
   return player === PLAYER_A ? PLAYER_B : PLAYER_A;
 }
 
+/**
+ * Score a wolf step move: prefer positions with more empty neighbors,
+ * more mobility, and proximity to sheep.
+ * @param {Array} board - board after the move
+ * @param {Object} move - the move object
+ * @returns {number}
+ */
+function scoreWolfStepMove(board, move) {
+  const adj = getAdjacentCells(move.toR, move.toC);
+  let emptyAdj = 0;
+  let adjToA = 0;
+  for (const nb of adj) {
+    if (board[nb.r][nb.c] === EMPTY) emptyAdj++;
+    if (board[nb.r][nb.c] === PLAYER_A) adjToA++;
+  }
+  const mobility = getStepMoves(board, move.toR, move.toC).length;
+  let score = emptyAdj * 10 + mobility;
+  if (move.type === "step") score += adjToA * 5;
+  return score;
+}
+
 // AI for wolf (B): prioritize captures, then avoid traps, then random
 function getBestAIMove_B(state) {
-  let board = state.board;
-  let moves = getValidMoves(board, PLAYER_B);
+  const board = state.board;
+  const moves = getValidMoves(board, PLAYER_B);
   if (moves.length === 0) return null;
 
-  // Prioritize jump captures
-  let jumpMoves = [];
-  for (let i = 0; i < moves.length; i++) {
-    if (moves[i].type === "jump") jumpMoves.push(moves[i]);
-  }
+  // Prioritize jump captures: pick the one that minimizes opponent mobility
+  const jumpMoves = moves.filter((m) => m.type === "jump");
   if (jumpMoves.length > 0) {
-    // Pick the jump that leaves the fewest escape routes for opponent
     let bestJump = jumpMoves[0];
     let bestScore = -1;
-    for (let j = 0; j < jumpMoves.length; j++) {
-      let testBoard = applyMove(board, jumpMoves[j]);
-      let opponentMoves = getValidMoves(testBoard, PLAYER_A);
+    for (const jm of jumpMoves) {
+      const testBoard = applyMove(board, jm);
+      const opponentMoves = getValidMoves(testBoard, PLAYER_A);
       if (opponentMoves.length > bestScore) {
         bestScore = opponentMoves.length;
-        bestJump = jumpMoves[j];
+        bestJump = jm;
       }
     }
     return bestJump;
@@ -238,94 +256,97 @@ function getBestAIMove_B(state) {
   // Try step moves: prefer moves that keep pieces alive
   let bestMove = moves[0];
   let bestMoveScore = -Infinity;
-  for (let k = 0; k < moves.length; k++) {
-    let testBoard2 = applyMove(board, moves[k]);
-    // Score: more adjacent empty cells = safer
-    let adj = getAdjacentCells(moves[k].toR, moves[k].toC);
-    let emptyAdj = 0;
-    for (let a = 0; a < adj.length; a++) {
-      if (testBoard2[adj[a].r][adj[a].c] === EMPTY) emptyAdj++;
-    }
-    // Penalize if wolf piece has no step moves from new position
-    let bMovesFromNew = getStepMoves(testBoard2, moves[k].toR, moves[k].toC);
-    let score = emptyAdj * 10 + bMovesFromNew.length;
-    // Bonus for moving toward sheep pieces (to potentially capture later)
-    if (moves[k].type === "step") {
-      let adjToA = 0;
-      for (let aa = 0; aa < adj.length; aa++) {
-        if (testBoard2[adj[aa].r][adj[aa].c] === PLAYER_A) adjToA++;
-      }
-      score += adjToA * 5;
-    }
+  for (const m of moves) {
+    const testBoard = applyMove(board, m);
+    const score = scoreWolfStepMove(testBoard, m);
     if (score > bestMoveScore) {
       bestMoveScore = score;
-      bestMove = moves[k];
+      bestMove = m;
     }
   }
   return bestMove;
 }
 
+/**
+ * Score based on Manhattan distance to all wolf pieces (closer is better).
+ * @param {Array} board
+ * @param {number} toR - destination row
+ * @param {number} toC - destination column
+ * @returns {number}
+ */
+function scoreProximityToWolves(board, toR, toC) {
+  let score = 0;
+  for (let r = 0; r < ROW_COUNT; r++) {
+    for (let c = 0; c < COL_COUNT; c++) {
+      if (board[r][c] === PLAYER_B) {
+        const dist = Math.abs(toR - r) + Math.abs(toC - c);
+        score += (10 - dist) * 3;
+      }
+    }
+  }
+  return score;
+}
+
+/**
+ * Penalize if the destination position can be jumped by an adjacent wolf.
+ * @param {Array} board
+ * @param {number} toR - destination row
+ * @param {number} toC - destination column
+ * @param {Array} adj - adjacent cells of the destination
+ * @returns {number} penalty (negative or zero)
+ */
+function scoreJumpDanger(board, toR, toC, adj) {
+  for (const nb of adj) {
+    const dr = toR - nb.r;
+    const dc = toC - nb.c;
+    if (!inBounds(toR + 2 * dr, toC + 2 * dc)) continue;
+    if (board[nb.r][nb.c] !== PLAYER_B) continue;
+    if (board[toR + 2 * dr][toC + 2 * dc] === EMPTY) return -50;
+  }
+  return 0;
+}
+
+/**
+ * Score based on how many wolf escape routes are blocked.
+ * @param {Array} board
+ * @returns {number}
+ */
+function scoreWolfBlocking(board) {
+  let score = 0;
+  for (let r = 0; r < ROW_COUNT; r++) {
+    for (let c = 0; c < COL_COUNT; c++) {
+      if (board[r][c] !== PLAYER_B) continue;
+      const bAdj = getAdjacentCells(r, c);
+      let blockedCount = 0;
+      for (const nb of bAdj) {
+        if (board[nb.r][nb.c] !== EMPTY) blockedCount++;
+      }
+      score += blockedCount * 8;
+    }
+  }
+  return score;
+}
+
 // AI for sheep (A): try to surround wolf, avoid being captured
 function getBestAIMove_A(state) {
-  let board = state.board;
-  let moves = getValidMoves(board, PLAYER_A);
+  const board = state.board;
+  const moves = getValidMoves(board, PLAYER_A);
   if (moves.length === 0) return null;
 
   let bestMove = moves[0];
   let bestMoveScore = -Infinity;
 
-  for (let i = 0; i < moves.length; i++) {
-    let testBoard = applyMove(board, moves[i]);
-    let score = 0;
-
-    // Prefer moves that reduce wolf's mobility
-    let bMovesAfter = getValidMoves(testBoard, PLAYER_B);
-    score -= bMovesAfter.length * 10;
-
-    // Prefer moves that get closer to wolf pieces
-    for (let br = 0; br < ROW_COUNT; br++) {
-      for (let bc = 0; bc < COL_COUNT; bc++) {
-        if (testBoard[br][bc] === PLAYER_B) {
-          let dist = Math.abs(moves[i].toR - br) + Math.abs(moves[i].toC - bc);
-          score += (10 - dist) * 3;
-        }
-      }
-    }
-
-    // Penalize moves that put piece in jumpable position
-    let adj = getAdjacentCells(moves[i].toR, moves[i].toC);
-    for (let a = 0; a < adj.length; a++) {
-      let dr = moves[i].toR - adj[a].r;
-      let dc = moves[i].toC - adj[a].c;
-      if (
-        inBounds(moves[i].toR + 2 * dr, moves[i].toC + 2 * dc) &&
-        testBoard[adj[a].r][adj[a].c] === PLAYER_B
-      ) {
-        let jumpTargetR = moves[i].toR + 2 * dr;
-        let jumpTargetC = moves[i].toC + 2 * dc;
-        if (testBoard[jumpTargetR][jumpTargetC] === EMPTY) {
-          score -= 50; // Very dangerous, can be captured
-        }
-      }
-    }
-
-    // Prefer moves that block wolf's escape routes
-    for (let br2 = 0; br2 < ROW_COUNT; br2++) {
-      for (let bc2 = 0; bc2 < COL_COUNT; bc2++) {
-        if (testBoard[br2][bc2] === PLAYER_B) {
-          let bAdj = getAdjacentCells(br2, bc2);
-          let blockedCount = 0;
-          for (let ba = 0; ba < bAdj.length; ba++) {
-            if (testBoard[bAdj[ba].r][bAdj[ba].c] !== EMPTY) blockedCount++;
-          }
-          score += blockedCount * 8;
-        }
-      }
-    }
+  for (const m of moves) {
+    const testBoard = applyMove(board, m);
+    const bMovesAfter = getValidMoves(testBoard, PLAYER_B);
+    let score = -bMovesAfter.length * 10;
+    score += scoreProximityToWolves(testBoard, m.toR, m.toC);
+    score += scoreJumpDanger(testBoard, m.toR, m.toC, getAdjacentCells(m.toR, m.toC));
+    score += scoreWolfBlocking(testBoard);
 
     if (score > bestMoveScore) {
       bestMoveScore = score;
-      bestMove = moves[i];
+      bestMove = m;
     }
   }
   return bestMove;
@@ -371,23 +392,23 @@ if (typeof module !== "undefined" && module.exports) {
 // Browser UI
 // ============================================================
 if (typeof document !== "undefined") {
-  let state = null;
-  let selectedPiece = null;
+  var state = null;
+  var selectedPiece = null;
 
   // Online mode state
-  let networkProtocol = null;
-  let networkConnection = null;
-  let roomUI = null;
-  let localPlayerRole = null; // 'host' | 'guest'
-  let localTeam = null;
-  let remoteTeam = null;
+  var networkProtocol = null;
+  var networkConnection = null;
+  var roomUI = null;
+  var localPlayerRole = null; // 'host' | 'guest'
+  var localTeam = null;
+  var remoteTeam = null;
 
   function initBoard() {
-    let boardEl = document.getElementById("board");
+    var boardEl = document.getElementById("board");
     boardEl.innerHTML = "";
-    for (let r = 0; r < ROW_COUNT; r++) {
-      for (let c = 0; c < COL_COUNT; c++) {
-        let cell = document.createElement("div");
+    for (var r = 0; r < ROW_COUNT; r++) {
+      for (var c = 0; c < COL_COUNT; c++) {
+        var cell = document.createElement("div");
         cell.className = "cell";
         cell.dataset.r = r;
         cell.dataset.c = c;
@@ -404,86 +425,80 @@ if (typeof document !== "undefined") {
     }
   }
 
+  function buildSidesOrder() {
+    return state.firstPlayer
+      ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
+      : [PLAYER_A, PLAYER_B];
+  }
+
+  function isMoveHighlighted(r, c, moves) {
+    for (const m of moves) {
+      if (m.toR === r && m.toC === c) return true;
+    }
+    return false;
+  }
+
+  function renderCell(cell, r, c) {
+    cell.textContent = "";
+    cell.className = "cell";
+    if (state.board[r][c] === PLAYER_A) {
+      cell.classList.add("cell-a");
+      cell.textContent = "羊";
+    } else if (state.board[r][c] === PLAYER_B) {
+      cell.classList.add("cell-b");
+      cell.textContent = "狼";
+    }
+    if (selectedPiece?.r === r && selectedPiece.c === c) {
+      cell.classList.add("cell-selected");
+    }
+    if (selectedPiece) {
+      var stepMoves = getStepMoves(state.board, selectedPiece.r, selectedPiece.c);
+      if (isMoveHighlighted(r, c, stepMoves)) {
+        cell.classList.add("cell-highlight");
+      }
+      if (state.currentPlayer === PLAYER_B) {
+        var jumpMoves = getJumpMoves(state.board, selectedPiece.r, selectedPiece.c);
+        if (isMoveHighlighted(r, c, jumpMoves)) {
+          cell.classList.add("cell-jump");
+        }
+      }
+    }
+    if (state.lastJump?.captureR === r && state.lastJump.captureC === c) {
+      cell.classList.add("cell-captured");
+    }
+  }
+
+  function getDisplayLabel(side) {
+    if (state.mode === "online") {
+      return side === localTeam ? "你" : "对方";
+    }
+    return getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: side,
+      playerSide: state.playerTeam,
+      sidesOrder: buildSidesOrder(),
+    }).text;
+  }
+
   function renderGame() {
     if (!state) return;
-    let cells = document.querySelectorAll("#board .cell");
+    var cells = document.querySelectorAll("#board .cell");
     cells.forEach((cell) => {
-      let r = Number.parseInt(cell.dataset.r);
-      let c = Number.parseInt(cell.dataset.c);
-      cell.textContent = "";
-      cell.className = "cell";
-      if (state.board[r][c] === PLAYER_A) {
-        cell.classList.add("cell-a");
-        cell.textContent = "羊";
-      } else if (state.board[r][c] === PLAYER_B) {
-        cell.classList.add("cell-b");
-        cell.textContent = "狼";
-      }
-      if (selectedPiece && selectedPiece.r === r && selectedPiece.c === c) {
-        cell.classList.add("cell-selected");
-      }
-      if (selectedPiece) {
-        // Highlight step moves
-        let stepMoves = getStepMoves(state.board, selectedPiece.r, selectedPiece.c);
-        for (let i = 0; i < stepMoves.length; i++) {
-          if (stepMoves[i].toR === r && stepMoves[i].toC === c) {
-            cell.classList.add("cell-highlight");
-          }
-        }
-        // Highlight jump moves for wolf
-        if (state.currentPlayer === PLAYER_B) {
-          let jumpMoves = getJumpMoves(state.board, selectedPiece.r, selectedPiece.c);
-          for (let j = 0; j < jumpMoves.length; j++) {
-            if (jumpMoves[j].toR === r && jumpMoves[j].toC === c) {
-              cell.classList.add("cell-jump");
-            }
-          }
-        }
-      }
-      // Highlight last jump capture
-      if (state.lastJump && state.lastJump.captureR === r && state.lastJump.captureC === c) {
-        cell.classList.add("cell-captured");
-      }
+      var r = Number.parseInt(cell.dataset.r);
+      var c = Number.parseInt(cell.dataset.c);
+      renderCell(cell, r, c);
     });
 
-    // Current acting side - shown as 玩家/电脑 (PVE), 玩家1/玩家2 (PVP), or 你/对方 (online)
-    let label;
-    if (state.mode === "online") {
-      let isMyTurn = state.currentPlayer === localTeam;
-      label = { text: isMyTurn ? "你" : "对方" };
-    } else {
-      label = getCurrentPlayerLabel({
-        mode: state.mode,
-        currentSide: state.currentPlayer,
-        playerSide: state.playerTeam,
-        sidesOrder: state.firstPlayer
-          ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
-          : [PLAYER_A, PLAYER_B],
-      });
-    }
-    let playerClass = state.currentPlayer === PLAYER_A ? "team-a" : "team-b";
-    document.getElementById("current-player").textContent = label.text;
+    var playerClass = state.currentPlayer === PLAYER_A ? "team-a" : "team-b";
+    document.getElementById("current-player").textContent = getDisplayLabel(state.currentPlayer);
     document.getElementById("current-player").className = "team-indicator " + playerClass;
     document.getElementById("turn-count").textContent = state.turnCount;
     document.getElementById("pieces-a").textContent = state.piecesA;
     document.getElementById("pieces-b").textContent = state.piecesB;
 
     if (state.gameOver) {
-      let winnerText;
-      if (state.mode === "online") {
-        winnerText = state.winner === localTeam ? "你" : "对方";
-      } else {
-        let winnerLabel = getCurrentPlayerLabel({
-          mode: state.mode,
-          currentSide: state.winner,
-          playerSide: state.playerTeam,
-          sidesOrder: state.firstPlayer
-            ? [state.firstPlayer, state.firstPlayer === PLAYER_A ? PLAYER_B : PLAYER_A]
-            : [PLAYER_A, PLAYER_B],
-        });
-        winnerText = winnerLabel.text;
-      }
-      document.getElementById("winner-text").textContent = winnerText + " 获胜！";
+      document.getElementById("winner-text").textContent =
+        getDisplayLabel(state.winner) + " 获胜！";
       document.getElementById("game-over").style.display = "flex";
     }
   }
@@ -503,10 +518,10 @@ if (typeof document !== "undefined") {
     // Try to move selected piece
     if (selectedPiece) {
       // Try step move
-      let stepMoves = getStepMoves(state.board, selectedPiece.r, selectedPiece.c);
-      for (let i = 0; i < stepMoves.length; i++) {
-        if (stepMoves[i].toR === r && stepMoves[i].toC === c) {
-          state.board = applyMove(state.board, stepMoves[i]);
+      var stepMoves = getStepMoves(state.board, selectedPiece.r, selectedPiece.c);
+      for (const move6 of stepMoves) {
+        if (move6.toR === r && move6.toC === c) {
+          state.board = applyMove(state.board, move6);
           state.lastJump = null;
           if (state.mode === "online" && networkProtocol) {
             networkProtocol.sendAction({
@@ -525,10 +540,10 @@ if (typeof document !== "undefined") {
 
       // Try jump move (wolf only)
       if (state.currentPlayer === PLAYER_B) {
-        let jumpMoves = getJumpMoves(state.board, selectedPiece.r, selectedPiece.c);
-        for (let j = 0; j < jumpMoves.length; j++) {
-          if (jumpMoves[j].toR === r && jumpMoves[j].toC === c) {
-            state.board = applyMove(state.board, jumpMoves[j]);
+        var jumpMoves = getJumpMoves(state.board, selectedPiece.r, selectedPiece.c);
+        for (const move7 of jumpMoves) {
+          if (move7.toR === r && move7.toC === c) {
+            state.board = applyMove(state.board, move7);
             state.piecesA = countPieces(state.board, PLAYER_A);
             state.lastJump = { captureR: r, captureC: c };
             if (state.mode === "online" && networkProtocol) {
@@ -558,7 +573,7 @@ if (typeof document !== "undefined") {
   function finishTurn() {
     selectedPiece = null;
 
-    let winner = checkWin(state.board);
+    var winner = checkWin(state.board);
     if (winner) {
       state.gameOver = true;
       state.winner = winner;
@@ -577,7 +592,7 @@ if (typeof document !== "undefined") {
     state.aiThinking = true;
     renderGame();
     setTimeout(() => {
-      let aiMove = getBestAIMove(state);
+      var aiMove = getBestAIMove(state);
       if (!aiMove) {
         state.aiThinking = false;
         state.gameOver = true;
@@ -621,10 +636,10 @@ if (typeof document !== "undefined") {
 
   function handleRPSChoice(player, choice) {
     if (player === "human") {
-      let aiChoices = ["rock", "scissors", "paper"];
-      let aiChoice = aiChoices[Math.floor(Math.random() * 3)];
-      let result = judgeRPS(choice, aiChoice);
-      let resultDiv = document.getElementById("rps-result");
+      var aiChoices = ["rock", "scissors", "paper"];
+      var aiChoice = aiChoices[Math.floor(Math.random() * 3)];
+      var result = judgeRPS(choice, aiChoice);
+      var resultDiv = document.getElementById("rps-result");
       if (result === 1) {
         resultDiv.innerHTML =
           "<p>你出" + getRPSName(choice) + "，AI出" + getRPSName(aiChoice) + "，你先手！</p>";
@@ -646,7 +661,7 @@ if (typeof document !== "undefined") {
   // --- Restart (with online cleanup) ---
 
   function restartGame() {
-    if (state && state.mode === "online" && networkProtocol) {
+    if (state?.mode === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();
@@ -698,7 +713,7 @@ if (typeof document !== "undefined") {
     });
   }
 
-  let rpsChoices = { online: null, remote: null };
+  var rpsChoices = { online: null, remote: null };
 
   function startOnlineRPS() {
     document.getElementById("mode-selection").style.display = "none";
@@ -731,8 +746,8 @@ if (typeof document !== "undefined") {
     if (!rpsChoices.online || !rpsChoices.remote) return;
 
     if (localPlayerRole === "host") {
-      let winner = judgeRPS(rpsChoices.online, rpsChoices.remote);
-      let firstPlayer;
+      var winner = judgeRPS(rpsChoices.online, rpsChoices.remote);
+      var firstPlayer;
       if (winner === 1) {
         firstPlayer = "host";
       } else if (winner === -1) {
@@ -758,7 +773,7 @@ if (typeof document !== "undefined") {
   }
 
   function handleOnlineRPSResult(result) {
-    let resultEl = document.getElementById("rps-online-result");
+    var resultEl = document.getElementById("rps-online-result");
     if (result.firstPlayer === null) {
       rpsChoices.online = null;
       rpsChoices.remote = null;
@@ -769,9 +784,9 @@ if (typeof document !== "undefined") {
       return;
     }
 
-    let myChoice = rpsChoices.online;
-    let theirChoice = rpsChoices.remote;
-    let iWin = result.firstPlayer === localPlayerRole;
+    var myChoice = rpsChoices.online;
+    var theirChoice = rpsChoices.remote;
+    var iWin = result.firstPlayer === localPlayerRole;
 
     resultEl.textContent =
       "你选择了" +
@@ -788,8 +803,8 @@ if (typeof document !== "undefined") {
   function startOnlineGame(firstPlayerRole) {
     state = createGameState("online");
 
-    let hostPiece = PLAYER_A;
-    let guestPiece = PLAYER_B;
+    var hostPiece = PLAYER_A;
+    var guestPiece = PLAYER_B;
 
     if (localPlayerRole === "host") {
       localTeam = firstPlayerRole === "host" ? hostPiece : guestPiece;
@@ -815,16 +830,16 @@ if (typeof document !== "undefined") {
     if (!state || state.gameOver) return;
     if (state.currentPlayer !== remoteTeam) return;
     // actionData = { a: "move", fx, fy, tx, ty, mt: "step"|"jump", cx?, cy? }
-    let fromR = actionData.fx;
-    let fromC = actionData.fy;
-    let toR = actionData.tx;
-    let toC = actionData.ty;
+    var fromR = actionData.fx;
+    var fromC = actionData.fy;
+    var toR = actionData.tx;
+    var toC = actionData.ty;
 
     // Find and apply the matching move
-    let stepMoves = getStepMoves(state.board, fromR, fromC);
-    for (let i = 0; i < stepMoves.length; i++) {
-      if (stepMoves[i].toR === toR && stepMoves[i].toC === toC) {
-        state.board = applyMove(state.board, stepMoves[i]);
+    var stepMoves = getStepMoves(state.board, fromR, fromC);
+    for (const move6 of stepMoves) {
+      if (move6.toR === toR && move6.toC === toC) {
+        state.board = applyMove(state.board, move6);
         state.lastJump = null;
         finishTurn();
         return;
@@ -832,10 +847,10 @@ if (typeof document !== "undefined") {
     }
 
     if (state.currentPlayer === PLAYER_B) {
-      let jumpMoves = getJumpMoves(state.board, fromR, fromC);
-      for (let j = 0; j < jumpMoves.length; j++) {
-        if (jumpMoves[j].toR === toR && jumpMoves[j].toC === toC) {
-          state.board = applyMove(state.board, jumpMoves[j]);
+      var jumpMoves = getJumpMoves(state.board, fromR, fromC);
+      for (const move7 of jumpMoves) {
+        if (move7.toR === toR && move7.toC === toC) {
+          state.board = applyMove(state.board, move7);
           state.piecesA = countPieces(state.board, PLAYER_A);
           state.lastJump = { captureR: toR, captureC: toC };
           finishTurn();
@@ -864,11 +879,9 @@ if (typeof document !== "undefined") {
     });
 
     // Online mode button
-    let btnOnline = document.getElementById("btn-online");
+    var btnOnline = document.getElementById("btn-online");
     if (btnOnline) {
-      if (!RoomUI.isSupported()) {
-        btnOnline.style.display = "none";
-      } else {
+      if (RoomUI.isSupported()) {
         btnOnline.addEventListener("click", () => {
           roomUI = new RoomUI({
             onConnectionEstablished: function (connection, protocol, role) {
@@ -887,13 +900,15 @@ if (typeof document !== "undefined") {
           });
           roomUI.show();
         });
+      } else {
+        btnOnline.style.display = "none";
       }
     }
 
     // Online RPS buttons
     document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((button) => {
       button.addEventListener("click", (ev) => {
-        let choice = ev.target.dataset.choice;
+        var choice = ev.target.dataset.choice;
         handleOnlineRPSChoice(choice, ev);
       });
     });

@@ -1,14 +1,15 @@
-/* eslint-disable no-let, no-undef */
+/* eslint-disable no-var, no-undef */
 // ============================================================
 // Chinese Checkers - Game core logic
 // ============================================================
 // Reference: anchengjian/chinese_checkers implementation
 // 17x17 axial coordinate system, 121 valid positions forming a hexagram
 
-if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
+let judgeRPS, getRPSName;
+if (typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  let judgeRPS = _gameUtils.judgeRPS;
-  let getRPSName = _gameUtils.getRPSName;
+  judgeRPS = _gameUtils.judgeRPS;
+  getRPSName = _gameUtils.getRPSName;
 }
 
 const EMPTY = 0;
@@ -123,9 +124,9 @@ function initAdjacency() {
 
   for (let i = 0; i < TOTAL_POSITIONS; i++) {
     const p = positions[i];
-    for (let d = 0; d < DIRECTION_VECTORS.length; d++) {
-      const nx = p.x + DIRECTION_VECTORS[d].x;
-      const ny = p.y + DIRECTION_VECTORS[d].y;
+    for (const dir of DIRECTION_VECTORS) {
+      const nx = p.x + dir.x;
+      const ny = p.y + dir.y;
       const nKey = getPosKey(nx, ny);
       if (posKey[nKey] !== undefined) {
         ADJACENT[i].push(posKey[nKey]);
@@ -214,16 +215,16 @@ function initPositionScores() {
     POSITION_SCORES[player] = [];
     const targets = TARGET_POSITIONS[player];
     const targetSet = {};
-    for (let i = 0; i < targets.length; i++) {
-      targetSet[targets[i]] = true;
+    for (const target of targets) {
+      targetSet[target] = true;
     }
 
     // Calculate target area centroid
     let cx = 0,
       cy = 0;
-    for (let i = 0; i < targets.length; i++) {
-      cx += positions[targets[i]].x;
-      cy += positions[targets[i]].y;
+    for (const target2 of targets) {
+      cx += positions[target2].x;
+      cy += positions[target2].y;
     }
     cx /= targets.length;
     cy /= targets.length;
@@ -231,13 +232,13 @@ function initPositionScores() {
     // Calculate target area depth reference point (farthest vertex)
     let maxDistFromCenter = 0;
     let tipIdx = targets[0];
-    for (let i = 0; i < targets.length; i++) {
-      const dx = positions[targets[i]].x - cx;
-      const dy = positions[targets[i]].y - cy;
+    for (const target3 of targets) {
+      const dx = positions[target3].x - cx;
+      const dy = positions[target3].y - cy;
       const dist = Math.abs(dx) + Math.abs(dy);
       if (dist > maxDistFromCenter) {
         maxDistFromCenter = dist;
-        tipIdx = targets[i];
+        tipIdx = target3;
       }
     }
     const tipPos = positions[tipIdx];
@@ -273,17 +274,17 @@ function createBoard() {
 
 function placePieces(board, player) {
   const pos = START_POSITIONS[player];
-  for (let i = 0; i < pos.length; i++) {
-    board[pos[i]] = player;
+  for (const po of pos) {
+    board[po] = player;
   }
 }
 
 function getAdjacentMoves(board, cell) {
   const moves = [];
   const neighbors = ADJACENT[cell];
-  for (let i = 0; i < neighbors.length; i++) {
-    if (board[neighbors[i]] === EMPTY) {
-      moves.push(neighbors[i]);
+  for (const neighbor of neighbors) {
+    if (board[neighbor] === EMPTY) {
+      moves.push(neighbor);
     }
   }
   return moves;
@@ -293,8 +294,7 @@ function getJumpMoves(board, cell, visited) {
   let moves = [];
   const neighbors = ADJACENT[cell];
 
-  for (let i = 0; i < neighbors.length; i++) {
-    const mid = neighbors[i];
+  for (const mid of neighbors) {
     if (board[mid] !== EMPTY) {
       const p1 = positions[cell];
       const p2 = positions[mid];
@@ -322,8 +322,8 @@ function getLegalMoves(board, cell) {
   moves = moves.concat(adjacentMoves);
 
   const visited = {};
-  for (let i = 0; i < adjacentMoves.length; i++) {
-    visited[adjacentMoves[i]] = true;
+  for (const move of adjacentMoves) {
+    visited[move] = true;
   }
   const jumpMoves = getJumpMoves(board, cell, visited);
   moves = moves.concat(jumpMoves);
@@ -345,8 +345,8 @@ function makeMove(board, from, to) {
 
 function checkWin(board, player) {
   const targets = TARGET_POSITIONS[player];
-  for (let i = 0; i < targets.length; i++) {
-    if (board[targets[i]] !== player) {
+  for (const target2 of targets) {
+    if (board[target2] !== player) {
       return false;
     }
   }
@@ -354,9 +354,9 @@ function checkWin(board, player) {
 }
 
 function checkGameOver(board, players) {
-  for (let i = 0; i < players.length; i++) {
-    if (checkWin(board, players[i])) {
-      return players[i];
+  for (const player of players) {
+    if (checkWin(board, player)) {
+      return player;
     }
   }
   return null;
@@ -368,8 +368,8 @@ function checkGameOver(board, players) {
 
 function isInTargetArea(cell, player) {
   const targets = TARGET_POSITIONS[player];
-  for (let i = 0; i < targets.length; i++) {
-    if (targets[i] === cell) return true;
+  for (const target2 of targets) {
+    if (target2 === cell) return true;
   }
   return false;
 }
@@ -377,8 +377,7 @@ function isInTargetArea(cell, player) {
 function calculateBlockingScore(board, player, position) {
   let score = 0;
   const neighbors = ADJACENT[position];
-  for (let i = 0; i < neighbors.length; i++) {
-    const neighborCell = neighbors[i];
+  for (const neighborCell of neighbors) {
     if (board[neighborCell] !== EMPTY && board[neighborCell] !== player) {
       // Opponent piece next to target position, forming a block
       const opponent = board[neighborCell];
@@ -393,8 +392,8 @@ function calculateBlockingScore(board, player, position) {
 function calculateFormationScore(board, player, position) {
   let score = 0;
   const neighbors = ADJACENT[position];
-  for (let i = 0; i < neighbors.length; i++) {
-    if (board[neighbors[i]] === player) {
+  for (const neighbor of neighbors) {
+    if (board[neighbor] === player) {
       score += 1;
     }
   }
@@ -437,8 +436,8 @@ function evaluateMove(board, player, from, to, allPlayers) {
   // Factor 5: Blocking opponents
   const opponents = [];
   if (allPlayers) {
-    for (let i = 0; i < allPlayers.length; i++) {
-      if (allPlayers[i] !== player) opponents.push(allPlayers[i]);
+    for (const player2 of allPlayers) {
+      if (player2 !== player) opponents.push(player2);
     }
   } else {
     for (let p = RED; p <= ORANGE; p++) {
@@ -467,11 +466,11 @@ function getBestAIMove(board, player, allPlayers) {
   for (let cell = 0; cell < TOTAL_POSITIONS; cell++) {
     if (board[cell] === player) {
       const moves = getLegalMoves(board, cell);
-      for (let i = 0; i < moves.length; i++) {
-        const score = evaluateMove(board, player, cell, moves[i], allPlayers);
+      for (const move2 of moves) {
+        const score = evaluateMove(board, player, cell, move2, allPlayers);
         if (score > bestScore) {
           bestScore = score;
-          bestMove = { from: cell, to: moves[i] };
+          bestMove = { from: cell, to: move2 };
         }
       }
     }
@@ -508,8 +507,8 @@ function createGameState(mode, playerCount) {
 }
 
 function initGame(state) {
-  for (let i = 0; i < state.players.length; i++) {
-    placePieces(state.board, state.players[i]);
+  for (const player of state.players) {
+    placePieces(state.board, player);
   }
 }
 
@@ -617,7 +616,7 @@ if (typeof document !== "undefined") {
     // Calculate canvas size
     let maxPx = 0;
     let maxPy = 0;
-    for (let i = 0; i < TOTAL_POSITIONS; i++) {
+    for (var i = 0; i < TOTAL_POSITIONS; i++) {
       const cp = cellToPixel(i);
       if (cp.x > maxPx) maxPx = cp.x;
       if (cp.y > maxPy) maxPy = cp.y;
@@ -646,8 +645,8 @@ if (typeof document !== "undefined") {
     g.appendChild(bg);
 
     // Draw all valid positions (with area colors)
-    for (let cell = 0; cell < TOTAL_POSITIONS; cell++) {
-      let pos = cellToPixel(cell);
+    for (var cell = 0; cell < TOTAL_POSITIONS; cell++) {
+      var pos = cellToPixel(cell);
       const areaColor = getAreaColor(cell);
 
       const hex = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -674,7 +673,7 @@ if (typeof document !== "undefined") {
     }
 
     // Draw pieces
-    for (let cell = 0; cell < TOTAL_POSITIONS; cell++) {
+    for (var cell = 0; cell < TOTAL_POSITIONS; cell++) {
       if (gameState.board[cell] !== EMPTY) {
         drawPiece(g, cell, gameState.board[cell]);
       }
@@ -682,9 +681,8 @@ if (typeof document !== "undefined") {
 
     // Draw valid move positions
     if (gameState.validMoves.length > 0) {
-      for (let i = 0; i < gameState.validMoves.length; i++) {
-        const moveCell = gameState.validMoves[i];
-        let pos = cellToPixel(moveCell);
+      for (const moveCell of gameState.validMoves) {
+        var pos = cellToPixel(moveCell);
         const indicator = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         indicator.setAttribute("cx", pos.x);
         indicator.setAttribute("cy", pos.y);
@@ -744,7 +742,13 @@ if (typeof document !== "undefined") {
   function updateMessage(text, type) {
     const el = document.getElementById("message");
     el.textContent = text;
-    el.className = type === "error" ? "error" : type === "info" ? "info" : "";
+    if (type === "error") {
+      el.className = "error";
+    } else if (type === "info") {
+      el.className = "info";
+    } else {
+      el.className = "";
+    }
   }
 
   function showGameOver() {
@@ -812,13 +816,11 @@ if (typeof document !== "undefined") {
           networkProtocol.sendAction({ a: "move", from: fromCell, to: cell });
         }
       }
-    } else {
-      if (gameState.selectedPiece !== null) {
-        gameState.selectedPiece = null;
-        gameState.validMoves = [];
-        drawBoard();
-        updateMessage("请选择要移动的棋子", "info");
-      }
+    } else if (gameState.selectedPiece !== null) {
+      gameState.selectedPiece = null;
+      gameState.validMoves = [];
+      drawBoard();
+      updateMessage("请选择要移动的棋子", "info");
     }
   }
 
@@ -917,9 +919,9 @@ if (typeof document !== "undefined") {
         gameState.playerTeam = firstPlayer;
         // AI gets other players
         const aiPlayers = [];
-        for (let i = 0; i < gameState.players.length; i++) {
-          if (gameState.players[i] !== firstPlayer) {
-            aiPlayers.push(gameState.players[i]);
+        for (const player3 of gameState.players) {
+          if (player3 !== firstPlayer) {
+            aiPlayers.push(player3);
           }
         }
         gameState.aiTeam = aiPlayers[0]; // Primary opponent
@@ -941,8 +943,7 @@ if (typeof document !== "undefined") {
     document.getElementById("game-over").style.display = "none";
 
     let colorRulesHtml = "";
-    for (let i = 0; i < gameState.players.length; i++) {
-      const player = gameState.players[i];
+    for (const player of gameState.players) {
       const config = PLAYER_COLORS[player];
       let prefix = "";
       if (mode === "pve") {
@@ -982,7 +983,7 @@ if (typeof document !== "undefined") {
   }
 
   function restartGame() {
-    if (gameState && gameState.mode === "online" && networkProtocol) {
+    if (gameState?.mode === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();
@@ -1206,19 +1207,20 @@ if (typeof document !== "undefined") {
     cleanupNetwork();
   }
 
-  function handleRPSChoice(player, choice) {
+  function handleRPSChoice(player, choice, ev) {
+    let resultEl;
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
 
       const choices = ["rock", "scissors", "paper"];
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      let resultEl = document.getElementById("rps-result");
+      resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -1260,13 +1262,13 @@ if (typeof document !== "undefined") {
       document.querySelectorAll("#rps-p" + player + "-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
 
       const statusEl = document.getElementById("rps-p" + player + "-status");
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        let resultEl = document.getElementById("rps-result");
+        resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
@@ -1365,9 +1367,7 @@ if (typeof document !== "undefined") {
     // Online mode button
     const btnOnline = document.getElementById("btn-online");
     if (btnOnline) {
-      if (!RoomUI.isSupported()) {
-        btnOnline.style.display = "none";
-      } else {
+      if (RoomUI.isSupported()) {
         btnOnline.addEventListener("click", () => {
           roomUI = new RoomUI({
             onConnectionEstablished: (connection, protocol, role) => {
@@ -1386,6 +1386,8 @@ if (typeof document !== "undefined") {
           });
           roomUI.show();
         });
+      } else {
+        btnOnline.style.display = "none";
       }
     }
 
@@ -1402,7 +1404,7 @@ if (typeof document !== "undefined") {
       button.addEventListener("click", (ev) => {
         const player = ev.target.dataset.player;
         const choice = ev.target.dataset.choice;
-        handleRPSChoice(player, choice);
+        handleRPSChoice(player, choice, ev);
       });
     });
 
