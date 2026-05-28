@@ -12,7 +12,7 @@
   --cell-border: #654321;
   --selected-color: #ffd600;
   --valid-move-color: #4caf50;
-  --invalid-move-color: #e53935;
+  --invalid-move-color: #d32f2f;
   --overlay-bg: rgba(0, 0, 0, 0.7);
   --cell-size: 70px;
   --cell-gap: 2px;

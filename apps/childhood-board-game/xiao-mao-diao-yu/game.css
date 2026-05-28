@@ -1,6 +1,6 @@
 :root {
   --a-color: #1565c0;
-  --b-color: #e53935;
+  --b-color: #d32f2f;
   --board-bg: #f9f3e3;
   --board-line: #2c2c2c;
   --node-empty: #ffffff;
@@ -300,7 +300,7 @@ body {
   min-height: 24px;
 }
 .error {
-  color: #e53935;
+  color: #d32f2f;
   background: rgba(229, 57, 53, 0.1);
   padding: 8px 16px;
   border-radius: 8px;

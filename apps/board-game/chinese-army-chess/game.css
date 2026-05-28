@@ -301,7 +301,7 @@ body {
 }
 
 .chess-selected {
-  border: 2px solid #e53935;
+  border: 2px solid #d32f2f;
   box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.3);
 }
 

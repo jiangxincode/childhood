@@ -288,8 +288,8 @@ body {
 
 .btn-resign {
   background: #fff;
-  color: #e53935;
-  border: 2px solid #e53935;
+  color: #d32f2f;
+  border: 2px solid #d32f2f;
 }
 
 .btn-resign:hover {
@@ -312,7 +312,7 @@ body {
 }
 
 #message.error {
-  color: #e53935;
+  color: #d32f2f;
   background: rgba(229, 57, 53, 0.1);
 }
 
