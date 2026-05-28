@@ -7,7 +7,7 @@
 // ============================================================
 // Shared module loading (Node.js test environment)
 // ============================================================
-if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
+if (judgeRPS === undefined && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
   let judgeRPS = _gameUtils.judgeRPS;
   let shuffleArray = _gameUtils.shuffleArray;
@@ -19,13 +19,13 @@ if (typeof require !== "undefined") {
   if (typeof DIRECTIONS === "undefined") {
     DIRECTIONS = require("../../common/card-game-core.js").DIRECTIONS;
   }
-  if (typeof chooseBestCapture === "undefined") {
+  if (chooseBestCapture === undefined) {
     chooseBestCapture = require("../../common/card-game-core.js").chooseBestCapture;
   }
-  if (typeof chooseBestFlip === "undefined") {
+  if (chooseBestFlip === undefined) {
     chooseBestFlip = require("../../common/card-game-core.js").chooseBestFlip;
   }
-  if (typeof chooseBestMove === "undefined") {
+  if (chooseBestMove === undefined) {
     chooseBestMove = require("../../common/card-game-core.js").chooseBestMove;
   }
   if (typeof isStalemateDraw === "undefined") {
@@ -34,7 +34,7 @@ if (typeof require !== "undefined") {
   if (typeof recordCaptureAction === "undefined") {
     recordCaptureAction = require("../../common/card-game-core.js").recordCaptureAction;
   }
-  if (typeof recordNonCaptureAction === "undefined") {
+  if (recordNonCaptureAction === undefined) {
     recordNonCaptureAction = require("../../common/card-game-core.js").recordNonCaptureAction;
   }
 }

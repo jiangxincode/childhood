@@ -8,7 +8,7 @@
 // Win: capture all opponent pieces OR opponent has no legal move.
 // ============================================================
 
-if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
+if (judgeRPS === undefined && typeof require !== "undefined") {
   let _gameUtils = require("../../common/game-utils.js");
   let judgeRPS = _gameUtils.judgeRPS;
   let getRPSName = _gameUtils.getRPSName;

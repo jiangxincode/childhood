@@ -7,7 +7,7 @@
 // ============================================================
 // Shared module loading (Node.js test environment)
 // ============================================================
-if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
+if (judgeRPS === undefined && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
   let judgeRPS = _gameUtils.judgeRPS;
   let shuffleArray = _gameUtils.shuffleArray;

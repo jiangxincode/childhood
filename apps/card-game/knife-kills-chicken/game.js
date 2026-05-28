@@ -7,7 +7,7 @@
 // ============================================================
 // Shared module loading (Node.js test environment)
 // ============================================================
-if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
+if (judgeRPS === undefined && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
   let judgeRPS = _gameUtils.judgeRPS;
   let shuffleArray = _gameUtils.shuffleArray;
@@ -22,12 +22,12 @@ if (typeof require !== "undefined") {
   if (typeof flipCard === "undefined") flipCard = _core.flipCard;
   if (typeof moveCard === "undefined") moveCard = _core.moveCard;
   if (typeof createBaseState === "undefined") createBaseState = _core.createBaseState;
-  if (typeof chooseBestCapture === "undefined") chooseBestCapture = _core.chooseBestCapture;
-  if (typeof chooseBestFlip === "undefined") chooseBestFlip = _core.chooseBestFlip;
-  if (typeof chooseBestMove === "undefined") chooseBestMove = _core.chooseBestMove;
+  if (chooseBestCapture === undefined) chooseBestCapture = _core.chooseBestCapture;
+  if (chooseBestFlip === undefined) chooseBestFlip = _core.chooseBestFlip;
+  if (chooseBestMove === undefined) chooseBestMove = _core.chooseBestMove;
   if (typeof isStalemateDraw === "undefined") isStalemateDraw = _core.isStalemateDraw;
   if (typeof recordCaptureAction === "undefined") recordCaptureAction = _core.recordCaptureAction;
-  if (typeof recordNonCaptureAction === "undefined")
+  if (recordNonCaptureAction === undefined)
     recordNonCaptureAction = _core.recordNonCaptureAction;
 }
 

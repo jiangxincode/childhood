@@ -13,7 +13,7 @@
 // In PvE mode the human always plays the bottom side (B); AI plays A.
 // ============================================================
 
-if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
+if (judgeRPS === undefined && typeof require !== "undefined") {
   let _gameUtils = require("../../common/game-utils.js");
   let judgeRPS = _gameUtils.judgeRPS;
   let getRPSName = _gameUtils.getRPSName;
