@@ -151,9 +151,11 @@ body {
   border-radius: 8px;
 }
 
-.btn-rps:hover {
-  border-color: var(--blue-color);
-  background: var(--blue-light);
+@media (hover: hover) {
+  .btn-rps:hover {
+    border-color: var(--blue-color);
+    background: var(--blue-light);
+  }
 }
 
 .btn-rps.selected {

@@ -64,8 +64,10 @@ body {
   padding: 16px 24px;
   margin: 4px;
 }
-.btn-rps:hover {
-  background: #e0e0e0;
+@media (hover: hover) {
+  .btn-rps:hover {
+    background: #e0e0e0;
+  }
 }
 .btn-restart {
   background: #4caf50;

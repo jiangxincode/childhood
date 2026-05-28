@@ -149,9 +149,11 @@ body {
   border-radius: 8px;
 }
 
-.btn-rps:hover {
-  border-color: var(--black-color);
-  background: var(--white-light);
+@media (hover: hover) {
+  .btn-rps:hover {
+    border-color: var(--black-color);
+    background: var(--white-light);
+  }
 }
 
 .btn-rps.selected {
