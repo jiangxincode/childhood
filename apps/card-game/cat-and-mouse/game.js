@@ -195,7 +195,7 @@ function hasAnyLegalAction(board, team) {
       // Flip: any face-down card on board
       if (card && !card.faceUp) return true;
       // Move/capture: own face-up cards
-      if (card && card.faceUp && card.team === team) {
+      if (card?.faceUp && card.team === team) {
         if (getValidMoves(board, x, y).length > 0) return true;
         if (getValidCaptures(board, x, y, team).length > 0) return true;
       }
@@ -701,7 +701,7 @@ if (typeof document !== "undefined") {
   // ---- 4.12 Restart button event ----
 
   function restartGame() {
-    if (gameState && gameState.mode === "online" && networkProtocol) {
+    if (gameState?.mode === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();
@@ -753,7 +753,7 @@ if (typeof document !== "undefined") {
       }
 
       // Click opponent face-up card -> try capture
-      if (card && card.faceUp && card.team !== currentTeam) {
+      if (card?.faceUp && card.team !== currentTeam) {
         const validCaps = getValidCaptures(gameState.board, sel.x, sel.y, currentTeam);
         if (validCaps.some((t) => t.x === x && t.y === y)) {
           const capResult = captureCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
@@ -792,7 +792,7 @@ if (typeof document !== "undefined") {
       }
 
       // Click own face-up card -> reselect
-      if (card && card.faceUp && card.team === currentTeam) {
+      if (card?.faceUp && card.team === currentTeam) {
         selectCard(x, y);
         return;
       }
@@ -827,13 +827,13 @@ if (typeof document !== "undefined") {
     }
 
     // Click own face-up card -> select
-    if (card && card.faceUp && card.team === currentTeam) {
+    if (card?.faceUp && card.team === currentTeam) {
       selectCard(x, y);
       return;
     }
 
     // Click opponent face-up card (no selection)
-    if (card && card.faceUp && card.team !== currentTeam) {
+    if (card?.faceUp && card.team !== currentTeam) {
       showMessage("这不是你的棋子", "error");
       return;
     }

@@ -282,7 +282,7 @@ function isInFinishChannel(coordId) {
  */
 function isWinCell(coordId) {
   const coord = selectCoordValue(coordId);
-  return coord && coord.state === "win";
+  return coord?.state === "win";
 }
 
 /**
@@ -631,7 +631,7 @@ if (typeof $j !== "undefined") {
             planeList.push($j(this));
           }
         });
-        if (planeList && planeList.length > 0) {
+        if (planeList?.length > 0) {
           const randomNum = obtainRandomNum(planeList.length);
           $j(planeList[randomNum]).trigger("click");
           if (diceNum == 6) {
@@ -688,7 +688,7 @@ if (typeof $j !== "undefined") {
    * @param type   red/blue/yellow/green
    */
   function createPlane(type) {
-    if (type && type.length > 0) {
+    if (type?.length > 0) {
       for (let i = 0; i < type.length; i++) {
         if (type[i].state != "close") {
           switch (type[i].color) {

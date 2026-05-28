@@ -83,7 +83,7 @@ function decodeRoomData(code) {
   const payload = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
   // Reconstruct SDP by appending candidate lines
   let sdp = payload.s;
-  if (payload.c && payload.c.length > 0) {
+  if (payload.c?.length > 0) {
     // Ensure SDP ends with \r\n before appending candidates
     if (!sdp.endsWith("\r\n")) sdp += "\r\n";
     sdp += payload.c.join("\r\n");
@@ -251,7 +251,7 @@ class WebRTCConnection {
    * @param {string} data
    */
   send(data) {
-    if (this._dc && this._dc.readyState === "open") {
+    if (this._dc?.readyState === "open") {
       this._dc.send(data);
     }
   }

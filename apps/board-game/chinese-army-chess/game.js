@@ -798,7 +798,7 @@ function revealFlag(state, team) {
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
       const p = state.board[y][x];
-      if (p && p.team === team && isFlag(p.name)) {
+      if (p?.team === team && isFlag(p.name)) {
         p.state = STATE_FACE_UP;
       }
     }
@@ -844,8 +844,8 @@ function checkGameOver(state) {
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
       const p = state.board[y][x];
-      if (p && p.team === RED && isMovable(p)) hasRed = true;
-      if (p && p.team === BLUE && isMovable(p)) hasBlue = true;
+      if (p?.team === RED && isMovable(p)) hasRed = true;
+      if (p?.team === BLUE && isMovable(p)) hasBlue = true;
     }
   }
 
@@ -876,7 +876,7 @@ function aiDecide(state, aiTeam) {
     for (let y = 0; y < ROWS; y++) {
       for (let x = 0; x < COLS; x++) {
         const p = board[y][x];
-        if (p && p.state === STATE_FACE_DOWN) {
+        if (p?.state === STATE_FACE_DOWN) {
           faceDown.push({ x: x, y: y });
         }
       }
@@ -1395,7 +1395,7 @@ if (typeof document !== "undefined") {
     const gameType = gameState.gameType;
 
     // Flip mode: click face-down piece to flip
-    if (gameType === "flip" && piece && piece.state === STATE_FACE_DOWN) {
+    if (gameType === "flip" && piece?.state === STATE_FACE_DOWN) {
       let result = flipPiece(gameState, x, y);
       if (result) {
         sendNetworkAction({ type: "flip", x: x, y: y });
@@ -1446,7 +1446,7 @@ if (typeof document !== "undefined") {
       }
 
       // Select another own piece
-      if (piece && piece.team === team && piece.state === STATE_FACE_UP) {
+      if (piece?.team === team && piece.state === STATE_FACE_UP) {
         gameState.selectedCell = { x: x, y: y };
         clearHighlights();
         drawBoard();
@@ -1460,7 +1460,7 @@ if (typeof document !== "undefined") {
     }
 
     // No selection: select own piece (must be face up)
-    if (piece && piece.team === team && piece.state === STATE_FACE_UP) {
+    if (piece?.team === team && piece.state === STATE_FACE_UP) {
       gameState.selectedCell = { x: x, y: y };
       clearHighlights();
       drawBoard();
@@ -1469,7 +1469,7 @@ if (typeof document !== "undefined") {
       return;
     }
 
-    if (piece && piece.team !== team) {
+    if (piece?.team !== team) {
       showMessage("这不是你的棋子", "error");
     }
   }
@@ -1711,7 +1711,7 @@ if (typeof document !== "undefined") {
       const fromDiv = layer.querySelector(
         '[data-x="' + decision.from.x + '"][data-y="' + decision.from.y + '"]'
       );
-      if (fromDiv && fromDiv.classList.contains("chess-piece")) {
+      if (fromDiv?.classList.contains("chess-piece")) {
         fromDiv.classList.add("chess-ai-highlight");
       }
     }
@@ -1726,7 +1726,7 @@ if (typeof document !== "undefined") {
         const toDiv = layer.querySelector(
           '[data-x="' + decision.to.x + '"][data-y="' + decision.to.y + '"]'
         );
-        if (toDiv && toDiv.classList.contains("chess-piece")) {
+        if (toDiv?.classList.contains("chess-piece")) {
           toDiv.classList.add("chess-ai-highlight");
         }
       }
@@ -1746,7 +1746,7 @@ if (typeof document !== "undefined") {
       const fromDiv = layer.querySelector(
         '[data-x="' + decision.from.x + '"][data-y="' + decision.from.y + '"]'
       );
-      if (fromDiv && fromDiv.classList.contains("chess-piece")) {
+      if (fromDiv?.classList.contains("chess-piece")) {
         fromDiv.classList.add("chess-ai-highlight");
       }
     }
@@ -2116,7 +2116,7 @@ if (typeof document !== "undefined") {
   }
 
   function restartGame() {
-    if (gameState && gameState.oppType === "online" && networkProtocol) {
+    if (gameState?.oppType === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();

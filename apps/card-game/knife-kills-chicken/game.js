@@ -225,7 +225,7 @@ function getCarryTargets(board, x, y, team) {
     if (!inBounds(nx, ny)) continue;
     const target = board[ny][nx];
     // Target must be the matching weapon, same team, face up
-    if (target && target.faceUp && target.team === team && target.role === weaponRole) {
+    if (target?.faceUp && target.team === team && target.role === weaponRole) {
       targets.push({ x: nx, y: ny });
     }
   }
@@ -334,7 +334,7 @@ function hasAnyLegalAction(board, team) {
       if (card && !card.faceUp) return true;
 
       // Move/capture/carry weapon: own face-up cards
-      if (card && card.faceUp && card.team === team) {
+      if (card?.faceUp && card.team === team) {
         if (getValidMoves(board, x, y).length > 0) return true;
         if (getValidCaptures(board, x, y, team).length > 0) return true;
         if (getCarryTargets(board, x, y, team).length > 0) return true;
@@ -390,7 +390,7 @@ function checkGameOver(board, currentTeam, state) {
  */
 function isMutualDestruction(attacker, defender) {
   // Rocket sacrifices itself when it captures
-  return attacker && attacker.role === "火箭" && defender;
+  return attacker?.role === "火箭" && defender;
 }
 
 /**
@@ -531,7 +531,7 @@ function countVisibleEnemyRole(board, aiTeam, role) {
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x++) {
       const c = board[y][x];
-      if (c && c.faceUp && c.team !== aiTeam && c.role === role) n++;
+      if (c?.faceUp && c.team !== aiTeam && c.role === role) n++;
     }
   }
   return n;
@@ -980,7 +980,7 @@ if (typeof document !== "undefined") {
 
   // --- Restart ---
   function restartGame() {
-    if (gameState && gameState.mode === "online" && networkProtocol) {
+    if (gameState?.mode === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();
@@ -1034,8 +1034,7 @@ if (typeof document !== "undefined") {
 
       // Click own face-up knife/spear -> try carry weapon
       if (
-        card &&
-        card.faceUp &&
+        card?.faceUp &&
         card.team === currentTeam &&
         (card.role === "刀" || card.role === "枪")
       ) {
@@ -1056,7 +1055,7 @@ if (typeof document !== "undefined") {
       }
 
       // Click opponent face-up card -> try capture
-      if (card && card.faceUp && card.team !== currentTeam) {
+      if (card?.faceUp && card.team !== currentTeam) {
         if (
           getValidCaptures(gameState.board, sel.x, sel.y, currentTeam).some(
             (t) => t.x === x && t.y === y
@@ -1101,7 +1100,7 @@ if (typeof document !== "undefined") {
       }
 
       // Click own face-up card -> reselect
-      if (card && card.faceUp && card.team === currentTeam) {
+      if (card?.faceUp && card.team === currentTeam) {
         selectCard(x, y);
         return;
       }
@@ -1136,13 +1135,13 @@ if (typeof document !== "undefined") {
     }
 
     // Click own face-up card -> select
-    if (card && card.faceUp && card.team === currentTeam) {
+    if (card?.faceUp && card.team === currentTeam) {
       selectCard(x, y);
       return;
     }
 
     // Click opponent face-up card (no selection)
-    if (card && card.faceUp && card.team !== currentTeam) {
+    if (card?.faceUp && card.team !== currentTeam) {
       showMessage("这不是你的棋子", "error");
       return;
     }

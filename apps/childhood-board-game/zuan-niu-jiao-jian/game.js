@@ -649,7 +649,7 @@ if (typeof document !== "undefined") {
   }
 
   function restartGame() {
-    if (state && state.mode === "online" && networkProtocol) {
+    if (state?.mode === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();

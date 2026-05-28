@@ -215,7 +215,7 @@ function isLegalMove(board, x, y, player, koPoint) {
   if (!isValidPosition(x, y) || board[y][x] !== EMPTY) return false;
 
   // Ko check
-  if (koPoint && koPoint.x === x && koPoint.y === y) return false;
+  if (koPoint?.x === x && koPoint.y === y) return false;
 
   // Try placing stone
   const result = playMove(board, x, y, player);
@@ -551,7 +551,7 @@ function getQuickMoves(board, player, koPoint, lastX, lastY) {
   for (let y = 0; y < BOARD_SIZE; y++) {
     for (let x = 0; x < BOARD_SIZE; x++) {
       if (board[y][x] !== EMPTY) continue;
-      if (koPoint && koPoint.x === x && koPoint.y === y) continue;
+      if (koPoint?.x === x && koPoint.y === y) continue;
 
       // Quick suicide check: see if any neighbor is empty or opponent with 1 liberty
       let hasEmptyNeighbor = false;
@@ -900,7 +900,7 @@ if (typeof document !== "undefined") {
     if (!isLegalMove(gameState.board, x, y, gameState.currentPlayer, gameState.koPoint)) {
       if (gameState.board[y][x] !== EMPTY) {
         updateMessage("此处已有棋子！", "error");
-      } else if (gameState.koPoint && gameState.koPoint.x === x && gameState.koPoint.y === y) {
+      } else if (gameState.koPoint?.x === x && gameState.koPoint.y === y) {
         updateMessage("打劫！不能立即回提！", "error");
       } else {
         updateMessage("此处不能落子（自杀）！", "error");
@@ -1052,7 +1052,7 @@ if (typeof document !== "undefined") {
   }
 
   function restartGame() {
-    if (gameState && gameState.mode === "online" && networkProtocol) {
+    if (gameState?.mode === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();

@@ -472,7 +472,7 @@ if (typeof document !== "undefined") {
       } else {
         classes.push("node-empty");
       }
-      if (selectedPiece && selectedPiece.x === nx && selectedPiece.y === ny) {
+      if (selectedPiece?.x === nx && selectedPiece.y === ny) {
         classes.push("node-selected");
       }
       if (reachable[nx + "," + ny]) classes.push("node-highlight");
@@ -672,7 +672,7 @@ if (typeof document !== "undefined") {
   }
 
   function restartGame() {
-    if (state && state.mode === "online" && networkProtocol) {
+    if (state?.mode === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();

@@ -57,7 +57,7 @@ class RoomUI {
   destroy() {
     this._destroyed = true;
     this._cleanupConnection();
-    if (this._overlay && this._overlay.parentNode) {
+    if (this._overlay?.parentNode) {
       this._overlay.parentNode.removeChild(this._overlay);
     }
     this._overlay = null;
@@ -361,7 +361,7 @@ class RoomUI {
 
   async _copyToClipboard(text, button) {
     try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
+      if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
       } else {
         // Fallback: textarea select + execCommand

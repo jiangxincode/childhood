@@ -502,7 +502,7 @@ if (typeof document !== "undefined") {
       if (state.board[ny][nx] === PLAYER_A) classes.push("node-a");
       else if (state.board[ny][nx] === PLAYER_B) classes.push("node-b");
       else classes.push("node-empty");
-      if (selectedPiece && selectedPiece.x === nx && selectedPiece.y === ny) {
+      if (selectedPiece?.x === nx && selectedPiece.y === ny) {
         classes.push("node-selected");
       }
       let key = nx + "," + ny;
@@ -663,7 +663,7 @@ if (typeof document !== "undefined") {
   }
 
   function restartGame() {
-    if (state && state.mode === "online" && networkProtocol) {
+    if (state?.mode === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();

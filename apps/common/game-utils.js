@@ -64,7 +64,7 @@ function shuffleArray(arr) {
  * @returns {{text: string, role: 'unknown'|'player'|'ai'|'playerN'|'opponent'}}
  */
 function getCurrentPlayerLabel(opts) {
-  const mode = opts && opts.mode;
+  const mode = opts?.mode;
   const currentSide = opts ? opts.currentSide : null;
   const playerSide = opts ? opts.playerSide : null;
   const sidesOrder = opts ? opts.sidesOrder : null;

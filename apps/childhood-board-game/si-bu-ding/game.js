@@ -493,7 +493,7 @@ if (typeof document !== "undefined") {
       if (state.board[ny][nx] === PLAYER_A) classes.push("node-a");
       else if (state.board[ny][nx] === PLAYER_B) classes.push("node-b");
       else classes.push("node-empty");
-      if (selectedPiece && selectedPiece.x === nx && selectedPiece.y === ny) {
+      if (selectedPiece?.x === nx && selectedPiece.y === ny) {
         classes.push("node-selected");
       }
       if (reachable[nx + "," + ny]) classes.push("node-highlight");
@@ -520,7 +520,7 @@ if (typeof document !== "undefined") {
     if (state.aiThinking) {
       msg.textContent = "AI 思考中…";
       msg.className = "info";
-    } else if (state.lastCaptures && state.lastCaptures.length > 0) {
+    } else if (state.lastCaptures?.length > 0) {
       msg.textContent = "吃掉对方 " + state.lastCaptures.length + " 子！";
       msg.className = "info";
     } else {
@@ -644,7 +644,7 @@ if (typeof document !== "undefined") {
   }
 
   function restartGame() {
-    if (state && state.mode === "online" && networkProtocol) {
+    if (state?.mode === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();

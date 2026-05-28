@@ -504,7 +504,7 @@ function getKingMoves(board, c, r, color, hasMoved) {
   if (hasMoved && !hasMoved.has(c + "," + r)) {
     const row = r;
     // King-side castling (king-side)
-    const kRookMoved = hasMoved && hasMoved.has("7," + row);
+    const kRookMoved = hasMoved?.has("7," + row);
     const kPathClear = board[5][row] === EMPTY && board[6][row] === EMPTY;
     if (
       !kRookMoved &&
@@ -522,7 +522,7 @@ function getKingMoves(board, c, r, color, hasMoved) {
       }
     }
     // Queen-side castling (queen-side)
-    const qRookMoved = hasMoved && hasMoved.has("0," + row);
+    const qRookMoved = hasMoved?.has("0," + row);
     const qPathClear =
       board[1][row] === EMPTY && board[2][row] === EMPTY && board[3][row] === EMPTY;
     if (
@@ -823,11 +823,11 @@ if (typeof document !== "undefined") {
   }
 
   function toCanvasX(c) {
-    const col = gameState && gameState.boardFlipped ? 7 - c : c;
+    const col = gameState?.boardFlipped ? 7 - c : c;
     return PADDING + col * CELL_SIZE;
   }
   function toCanvasY(r) {
-    const row = gameState && gameState.boardFlipped ? 7 - r : r;
+    const row = gameState?.boardFlipped ? 7 - r : r;
     return PADDING + row * CELL_SIZE;
   }
 
@@ -846,7 +846,7 @@ if (typeof document !== "undefined") {
     context.textAlign = "center";
     context.textBaseline = "middle";
     const files = "abcdefgh";
-    const flipped = gameState && gameState.boardFlipped;
+    const flipped = gameState?.boardFlipped;
     for (let c = 0; c < BOARD_SIZE; c++) {
       const fileIdx = flipped ? 7 - c : c;
       context.fillText(files[fileIdx], PADDING + c * CELL_SIZE + CELL_SIZE / 2, CANVAS_SIZE - 8);
@@ -1219,7 +1219,7 @@ if (typeof document !== "undefined") {
   }
 
   function restartGame() {
-    if (gameState && gameState.mode === "online" && networkProtocol) {
+    if (gameState?.mode === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();

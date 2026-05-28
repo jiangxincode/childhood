@@ -514,10 +514,10 @@ if (typeof document !== "undefined") {
     // Last-move chant trail
     let trailEl = document.getElementById("chant-trail");
     if (trailEl) {
-      if (state.lastMove && state.lastMove.type === MOVE_TRIPLE) {
+      if (state.lastMove?.type === MOVE_TRIPLE) {
         trailEl.textContent =
           "上一步：" + state.lastMove.path.map((node, idx) => CHANT[idx]).join(" → ") + "（吃子）";
-      } else if (state.lastMove && state.lastMove.type === MOVE_SINGLE) {
+      } else if (state.lastMove?.type === MOVE_SINGLE) {
         trailEl.textContent =
           "上一步：一步移动" + (state.lastMove.capture !== null ? "（吃子）" : "");
       } else {
@@ -672,7 +672,7 @@ if (typeof document !== "undefined") {
   // --- Restart (with online cleanup) ---
 
   function restartGame() {
-    if (state && state.mode === "online" && networkProtocol) {
+    if (state?.mode === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();

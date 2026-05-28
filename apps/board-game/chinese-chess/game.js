@@ -715,11 +715,11 @@ if (typeof document !== "undefined") {
   }
 
   function toCanvasX(c) {
-    const col = gameState && gameState.boardFlipped ? COLS - 1 - c : c;
+    const col = gameState?.boardFlipped ? COLS - 1 - c : c;
     return PADDING + col * CELL_SIZE;
   }
   function toCanvasY(r) {
-    const row = gameState && gameState.boardFlipped ? ROWS - 1 - r : r;
+    const row = gameState?.boardFlipped ? ROWS - 1 - r : r;
     return PADDING + row * CELL_SIZE;
   }
 
@@ -1112,7 +1112,7 @@ if (typeof document !== "undefined") {
   }
 
   function restartGame() {
-    if (gameState && gameState.mode === "online" && networkProtocol) {
+    if (gameState?.mode === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();

@@ -388,7 +388,7 @@ function getValidMoves(board, x, y, team) {
       moves.push({ x: nx, y: ny, type: "move" });
     } else if (target && isFlag(target.name) && target.faceUp) {
       // Flag position: only add when can capture flag
-      if (flagCapture && flagCapture.flagX === nx && flagCapture.flagY === ny) {
+      if (flagCapture?.flagX === nx && flagCapture.flagY === ny) {
         moves.push({ x: nx, y: ny, type: "capture_flag" });
       }
     }
@@ -591,7 +591,7 @@ function hasAnyLegalAction(board, team) {
       // Flip: any face-down piece on board
       if (piece && !piece.faceUp) return true;
       // Move/capture: own face-up pieces
-      if (piece && piece.faceUp && piece.team === team) {
+      if (piece?.faceUp && piece.team === team) {
         if (getValidMoves(board, x, y, team).length > 0) return true;
         if (getValidCaptures(board, x, y, team).length > 0) return true;
       }
@@ -787,7 +787,7 @@ function approachFlagMove(board, aiTeam) {
   for (let y = 0; y < 5; y++) {
     for (let x = 0; x < 5; x++) {
       const p = board[y][x];
-      if (p && p.faceUp && p.team === aiTeam && p.name === smallest.name) {
+      if (p?.faceUp && p.team === aiTeam && p.name === smallest.name) {
         sx = x;
         sy = y;
       }
@@ -1149,7 +1149,7 @@ if (typeof document !== "undefined") {
       }
 
       // Click face-up flag: try to capture flag (moveCard)
-      if (piece && piece.faceUp && isFlag(piece.name)) {
+      if (piece?.faceUp && isFlag(piece.name)) {
         let result = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
         if (result) {
           gameState.selectedCell = null;
@@ -1166,7 +1166,7 @@ if (typeof document !== "undefined") {
       }
 
       // Click opponent face-up piece (not flag): try capture
-      if (piece && piece.faceUp && piece.team !== currentTeam && !isFlag(piece.name)) {
+      if (piece?.faceUp && piece.team !== currentTeam && !isFlag(piece.name)) {
         const captures = getValidCaptures(gameState.board, sel.x, sel.y, currentTeam);
         const canDo = captures.some((t) => t.x === x && t.y === y);
         if (canDo) {
@@ -1204,7 +1204,7 @@ if (typeof document !== "undefined") {
       }
 
       // Click own face-up piece: reselect
-      if (piece && piece.faceUp && piece.team === currentTeam) {
+      if (piece?.faceUp && piece.team === currentTeam) {
         selectCard(x, y);
         return;
       }
@@ -1239,17 +1239,17 @@ if (typeof document !== "undefined") {
       return;
     }
 
-    if (piece && piece.faceUp && isFlag(piece.name)) {
+    if (piece?.faceUp && isFlag(piece.name)) {
       showMessage("军旗不能被吃", "error");
       return;
     }
 
-    if (piece && piece.faceUp && piece.team === currentTeam) {
+    if (piece?.faceUp && piece.team === currentTeam) {
       selectCard(x, y);
       return;
     }
 
-    if (piece && piece.faceUp && piece.team !== currentTeam) {
+    if (piece?.faceUp && piece.team !== currentTeam) {
       showMessage("这不是你的棋子", "error");
       return;
     }
@@ -1428,7 +1428,7 @@ if (typeof document !== "undefined") {
 
   // Restart button
   function restartGame() {
-    if (gameState && gameState.mode === "online" && networkProtocol) {
+    if (gameState?.mode === "online" && networkProtocol) {
       networkProtocol.sendRestart();
     }
     cleanupNetwork();

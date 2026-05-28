@@ -461,7 +461,7 @@ function renderGame(state) {
       }
 
       // Mark last move position
-      if (state.lastMove && state.lastMove.x === x && state.lastMove.y === y) {
+      if (state.lastMove?.x === x && state.lastMove.y === y) {
         cell.classList.add("cell-last-move");
       }
     }
@@ -655,7 +655,7 @@ function startGame(mode, firstPlayer = PLAYER_BLACK) {
  * Restart game
  */
 function restartGame() {
-  if (gameState && gameState.mode === "online" && networkProtocol) {
+  if (gameState?.mode === "online" && networkProtocol) {
     networkProtocol.sendRestart();
   }
   cleanupNetwork();
