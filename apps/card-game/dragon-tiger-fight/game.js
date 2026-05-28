@@ -1,4 +1,4 @@
-/* eslint-disable no-var, no-undef */
+/* eslint-disable no-let, no-undef */
 /* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, smartAiDecide:writable, isStalemateDraw:writable, recordCaptureAction:writable, recordNonCaptureAction:writable */
 // ============================================================
 // Dragon Tiger Fight - Game Core Logic
@@ -9,8 +9,8 @@
 // ============================================================
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  var judgeRPS = _gameUtils.judgeRPS;
-  var shuffleArray = _gameUtils.shuffleArray;
+  let judgeRPS = _gameUtils.judgeRPS;
+  let shuffleArray = _gameUtils.shuffleArray;
 }
 if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
   const _core = require("../../common/card-game-core.js");
@@ -524,12 +524,12 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (var i = 0; i < moveTargets.length; i++) {
-      var tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (let i = 0; i < moveTargets.length; i++) {
+      let tc = getCell(moveTargets[i].x, moveTargets[i].y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (var i = 0; i < captureTargets.length; i++) {
-      var tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (let i = 0; i < captureTargets.length; i++) {
+      let tc = getCell(captureTargets[i].x, captureTargets[i].y);
       if (tc) tc.classList.add("cell-capture-target");
     }
   }
@@ -583,11 +583,11 @@ if (typeof document !== "undefined") {
 
     // Captured cards
     $capturedDragon.innerHTML = "";
-    for (var i = 0; i < state.capturedDragon.length; i++) {
-      var piece = state.capturedDragon[i];
-      var div = document.createElement("div");
+    for (let i = 0; i < state.capturedDragon.length; i++) {
+      let piece = state.capturedDragon[i];
+      let div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      let img = document.createElement("img");
       img.src = getImagePath(piece);
       img.alt = piece;
       div.appendChild(img);
@@ -595,11 +595,11 @@ if (typeof document !== "undefined") {
     }
 
     $capturedTiger.innerHTML = "";
-    for (var i = 0; i < state.capturedTiger.length; i++) {
-      var piece = state.capturedTiger[i];
-      var div = document.createElement("div");
+    for (let i = 0; i < state.capturedTiger.length; i++) {
+      let piece = state.capturedTiger[i];
+      let div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      let img = document.createElement("img");
       img.src = getImagePath(piece);
       img.alt = piece;
       div.appendChild(img);
@@ -887,8 +887,8 @@ if (typeof document !== "undefined") {
   }
 
   // --- Rock-Paper-Scissors logic ---
-  var rpsP1Choice = null;
-  var rpsP2Choice = null;
+  let rpsP1Choice = null;
+  let rpsP2Choice = null;
 
   function startGame(firstTeam) {
     showGameArea();

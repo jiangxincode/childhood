@@ -1,12 +1,12 @@
-/* eslint-disable no-var, no-undef */
+/* eslint-disable no-let, no-undef */
 // ============================================================
 // Reversi (Othello) - Game Core Logic
 // ============================================================
 
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  var judgeRPS = _gameUtils.judgeRPS;
-  var getRPSName = _gameUtils.getRPSName;
+  let judgeRPS = _gameUtils.judgeRPS;
+  let getRPSName = _gameUtils.getRPSName;
 }
 
 // ============================================================

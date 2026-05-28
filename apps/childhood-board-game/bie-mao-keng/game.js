@@ -1,4 +1,4 @@
-/* eslint-disable no-var, no-undef */
+/* eslint-disable no-let, no-undef */
 // ============================================================
 // 憋茅坑 (Bie Mao Keng) - Block the Well
 // 2 players, "区"-shaped board with a well, 2 pieces each
@@ -6,16 +6,16 @@
 // ============================================================
 
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
-  var _gameUtils = require("../../common/game-utils.js");
-  var judgeRPS = _gameUtils.judgeRPS;
-  var getRPSName = _gameUtils.getRPSName;
+  let _gameUtils = require("../../common/game-utils.js");
+  let judgeRPS = _gameUtils.judgeRPS;
+  let getRPSName = _gameUtils.getRPSName;
 }
 
-var PLAYER_A = "A";
-var PLAYER_B = "B";
-var EMPTY = null;
-var TOTAL_POSITIONS = 5;
-var PIECES_EACH = 2;
+let PLAYER_A = "A";
+let PLAYER_B = "B";
+let EMPTY = null;
+let TOTAL_POSITIONS = 5;
+let PIECES_EACH = 2;
 
 // Board: Square with center point + well on right side
 // The well replaces the right edge (1-3)
@@ -29,7 +29,7 @@ var PIECES_EACH = 2;
 //
 // Edges: square perimeter (0-1, 0-2, 2-3) + center connections (0-4, 1-4, 2-4, 3-4)
 // Note: 1-3 edge is replaced by the well
-var EDGES = [
+let EDGES = [
   [0, 1], // top
   [0, 2], // left
   [2, 3], // bottom
@@ -40,7 +40,7 @@ var EDGES = [
 ];
 
 // Position coordinates for SVG rendering
-var POSITIONS = [
+let POSITIONS = [
   { x: 120, y: 60 }, // 0: top-left
   { x: 320, y: 60 }, // 1: top-right
   { x: 120, y: 340 }, // 2: bottom-left
@@ -49,28 +49,28 @@ var POSITIONS = [
 ];
 
 // Display names for positions
-var POSITION_NAMES = ["top-left", "top-right", "bottom-left", "bottom-right", "center"];
+let POSITION_NAMES = ["top-left", "top-right", "bottom-left", "bottom-right", "center"];
 
 // Build adjacency list from edges
-var ADJACENCY = [];
-for (var i = 0; i < TOTAL_POSITIONS; i++) {
+let ADJACENCY = [];
+for (let i = 0; i < TOTAL_POSITIONS; i++) {
   ADJACENCY.push([]);
 }
-for (var e = 0; e < EDGES.length; e++) {
+for (let e = 0; e < EDGES.length; e++) {
   ADJACENCY[EDGES[e][0]].push(EDGES[e][1]);
   ADJACENCY[EDGES[e][1]].push(EDGES[e][0]);
 }
 
 function createBoard() {
-  var board = [];
-  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+  let board = [];
+  for (let i = 0; i < TOTAL_POSITIONS; i++) {
     board.push(EMPTY);
   }
   return board;
 }
 
 function createInitialState(mode) {
-  var board = createBoard();
+  let board = createBoard();
   // Default: A at top (0 and 1), B at bottom (2 and 3)
   board[0] = PLAYER_A;
   board[1] = PLAYER_A;
@@ -96,9 +96,9 @@ function getNeighbors(pos) {
 }
 
 function getValidMovesForPiece(board, pos) {
-  var neighbors = ADJACENCY[pos];
-  var moves = [];
-  for (var i = 0; i < neighbors.length; i++) {
+  let neighbors = ADJACENCY[pos];
+  let moves = [];
+  for (let i = 0; i < neighbors.length; i++) {
     if (board[neighbors[i]] === EMPTY) {
       moves.push(neighbors[i]);
     }
@@ -107,11 +107,11 @@ function getValidMovesForPiece(board, pos) {
 }
 
 function getAllValidMoves(board, player) {
-  var moves = [];
-  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+  let moves = [];
+  for (let i = 0; i < TOTAL_POSITIONS; i++) {
     if (board[i] === player) {
-      var targets = getValidMovesForPiece(board, i);
-      for (var j = 0; j < targets.length; j++) {
+      let targets = getValidMovesForPiece(board, i);
+      for (let j = 0; j < targets.length; j++) {
         moves.push({ from: i, to: targets[j] });
       }
     }
@@ -120,7 +120,7 @@ function getAllValidMoves(board, player) {
 }
 
 function canMove(board, player) {
-  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+  for (let i = 0; i < TOTAL_POSITIONS; i++) {
     if (board[i] === player) {
       if (getValidMovesForPiece(board, i).length > 0) {
         return true;
@@ -141,7 +141,7 @@ function checkWin(board) {
 }
 
 function movePiece(board, from, to) {
-  var newBoard = board.slice();
+  let newBoard = board.slice();
   newBoard[to] = newBoard[from];
   newBoard[from] = EMPTY;
   return newBoard;
@@ -152,8 +152,8 @@ function getOpponent(player) {
 }
 
 function countPieces(board, player) {
-  var count = 0;
-  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+  let count = 0;
+  for (let i = 0; i < TOTAL_POSITIONS; i++) {
     if (board[i] === player) count++;
   }
   return count;
@@ -163,20 +163,20 @@ function countPieces(board, player) {
 // AI: Minimax with alpha-beta pruning (depth-limited)
 // ============================================================
 function evaluateBoard(board, aiPlayer) {
-  var opponent = getOpponent(aiPlayer);
-  var winner = checkWin(board);
+  let opponent = getOpponent(aiPlayer);
+  let winner = checkWin(board);
   if (winner === aiPlayer) return 1000;
   if (winner === opponent) return -1000;
 
-  var score = 0;
+  let score = 0;
 
   // Mobility score
-  var aiMoves = getAllValidMoves(board, aiPlayer).length;
-  var oppMoves = getAllValidMoves(board, opponent).length;
+  let aiMoves = getAllValidMoves(board, aiPlayer).length;
+  let oppMoves = getAllValidMoves(board, opponent).length;
   score += (aiMoves - oppMoves) * 5;
 
   // Center control is valuable (position 4)
-  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+  for (let i = 0; i < TOTAL_POSITIONS; i++) {
     if (board[i] === aiPlayer) {
       if (i === 4) score += 5; // center is good
     }
@@ -189,33 +189,33 @@ function evaluateBoard(board, aiPlayer) {
 }
 
 function minimax(board, depth, alpha, beta, maximizing, aiPlayer) {
-  var winner = checkWin(board);
+  let winner = checkWin(board);
   if (winner === aiPlayer) return 1000 + depth;
   if (winner !== null) return -1000 - depth;
   if (depth === 0) return evaluateBoard(board, aiPlayer);
 
-  var currentPlayer = maximizing ? aiPlayer : getOpponent(aiPlayer);
-  var moves = getAllValidMoves(board, currentPlayer);
+  let currentPlayer = maximizing ? aiPlayer : getOpponent(aiPlayer);
+  let moves = getAllValidMoves(board, currentPlayer);
 
   if (moves.length === 0) {
     return maximizing ? -1000 - depth : 1000 + depth;
   }
 
   if (maximizing) {
-    var maxEval = -Infinity;
-    for (var i = 0; i < moves.length; i++) {
-      var newBoard = movePiece(board, moves[i].from, moves[i].to);
-      var evalScore = minimax(newBoard, depth - 1, alpha, beta, false, aiPlayer);
+    let maxEval = -Infinity;
+    for (let i = 0; i < moves.length; i++) {
+      let newBoard = movePiece(board, moves[i].from, moves[i].to);
+      let evalScore = minimax(newBoard, depth - 1, alpha, beta, false, aiPlayer);
       if (evalScore > maxEval) maxEval = evalScore;
       if (maxEval > alpha) alpha = maxEval;
       if (beta <= alpha) break;
     }
     return maxEval;
   } else {
-    var minEval = Infinity;
-    for (var i2 = 0; i2 < moves.length; i2++) {
-      var newBoard2 = movePiece(board, moves[i2].from, moves[i2].to);
-      var evalScore2 = minimax(newBoard2, depth - 1, alpha, beta, true, aiPlayer);
+    let minEval = Infinity;
+    for (let i2 = 0; i2 < moves.length; i2++) {
+      let newBoard2 = movePiece(board, moves[i2].from, moves[i2].to);
+      let evalScore2 = minimax(newBoard2, depth - 1, alpha, beta, true, aiPlayer);
       if (evalScore2 < minEval) minEval = evalScore2;
       if (minEval < beta) beta = minEval;
       if (beta <= alpha) break;
@@ -225,18 +225,18 @@ function minimax(board, depth, alpha, beta, maximizing, aiPlayer) {
 }
 
 function getBestAIMove(state) {
-  var board = state.board;
-  var aiPlayer = state.aiTeam;
-  var moves = getAllValidMoves(board, aiPlayer);
+  let board = state.board;
+  let aiPlayer = state.aiTeam;
+  let moves = getAllValidMoves(board, aiPlayer);
 
   if (moves.length === 0) return null;
 
-  var bestScore = -Infinity;
-  var bestMoves = [];
+  let bestScore = -Infinity;
+  let bestMoves = [];
 
-  for (var i = 0; i < moves.length; i++) {
-    var newBoard = movePiece(board, moves[i].from, moves[i].to);
-    var score = minimax(newBoard, 4, -Infinity, Infinity, false, aiPlayer);
+  for (let i = 0; i < moves.length; i++) {
+    let newBoard = movePiece(board, moves[i].from, moves[i].to);
+    let score = minimax(newBoard, 4, -Infinity, Infinity, false, aiPlayer);
     if (score > bestScore) {
       bestScore = score;
       bestMoves = [moves[i]];
@@ -282,15 +282,15 @@ if (typeof module !== "undefined" && module.exports) {
 // Browser UI
 // ============================================================
 if (typeof document !== "undefined") {
-  var state = null;
-  var selectedPiece = null;
-  var rpsChoices = { player1: null, player2: null, human: null };
-  var networkProtocol = null;
-  var networkConnection = null;
-  var roomUI = null;
-  var localPlayerRole = null; // 'host' | 'guest'
-  var localTeam = null; // PLAYER_A or PLAYER_B
-  var remoteTeam = null; // PLAYER_A or PLAYER_B
+  let state = null;
+  let selectedPiece = null;
+  let rpsChoices = { player1: null, player2: null, human: null };
+  let networkProtocol = null;
+  let networkConnection = null;
+  let roomUI = null;
+  let localPlayerRole = null; // 'host' | 'guest'
+  let localTeam = null; // PLAYER_A or PLAYER_B
+  let remoteTeam = null; // PLAYER_A or PLAYER_B
 
   function getPlayerName(player) {
     if (state && state.mode === "online") {
@@ -313,17 +313,17 @@ if (typeof document !== "undefined") {
   }
 
   function initBoard() {
-    var boardEl = document.getElementById("board");
+    let boardEl = document.getElementById("board");
     boardEl.innerHTML = "";
 
-    var svgNS = "http://www.w3.org/2000/svg";
-    var svg = document.createElementNS(svgNS, "svg");
+    let svgNS = "http://www.w3.org/2000/svg";
+    let svg = document.createElementNS(svgNS, "svg");
     svg.setAttribute("viewBox", "0 0 440 420");
     svg.setAttribute("width", "100%");
     svg.setAttribute("style", "max-width: 440px; height: auto;");
 
     // Draw well circle on the right side (replaces the 1-3 edge)
-    var wellCircle = document.createElementNS(svgNS, "circle");
+    let wellCircle = document.createElementNS(svgNS, "circle");
     wellCircle.setAttribute("cx", 380);
     wellCircle.setAttribute("cy", 200);
     wellCircle.setAttribute("r", "40");
@@ -331,7 +331,7 @@ if (typeof document !== "undefined") {
     svg.appendChild(wellCircle);
 
     // Draw well label
-    var wellLabel = document.createElementNS(svgNS, "text");
+    let wellLabel = document.createElementNS(svgNS, "text");
     wellLabel.setAttribute("x", 380);
     wellLabel.setAttribute("y", 155);
     wellLabel.setAttribute("class", "well-label");
@@ -339,10 +339,10 @@ if (typeof document !== "undefined") {
     svg.appendChild(wellLabel);
 
     // Draw edges
-    for (var e = 0; e < EDGES.length; e++) {
-      var from = EDGES[e][0];
-      var to = EDGES[e][1];
-      var line = document.createElementNS(svgNS, "line");
+    for (let e = 0; e < EDGES.length; e++) {
+      let from = EDGES[e][0];
+      let to = EDGES[e][1];
+      let line = document.createElementNS(svgNS, "line");
       line.setAttribute("x1", POSITIONS[from].x);
       line.setAttribute("y1", POSITIONS[from].y);
       line.setAttribute("x2", POSITIONS[to].x);
@@ -352,18 +352,18 @@ if (typeof document !== "undefined") {
     }
 
     // Draw position nodes (click targets)
-    for (var i = 0; i < TOTAL_POSITIONS; i++) {
-      var g = document.createElementNS(svgNS, "g");
+    for (let i = 0; i < TOTAL_POSITIONS; i++) {
+      let g = document.createElementNS(svgNS, "g");
       g.setAttribute("class", "node");
       g.setAttribute("data-pos", i);
       g.setAttribute("transform", "translate(" + POSITIONS[i].x + "," + POSITIONS[i].y + ")");
 
-      var circle = document.createElementNS(svgNS, "circle");
+      let circle = document.createElementNS(svgNS, "circle");
       circle.setAttribute("r", "28");
       circle.setAttribute("class", "node-circle");
       g.appendChild(circle);
 
-      var text = document.createElementNS(svgNS, "text");
+      let text = document.createElementNS(svgNS, "text");
       text.setAttribute("class", "node-text");
       text.setAttribute("text-anchor", "middle");
       text.setAttribute("dominant-baseline", "central");
@@ -386,11 +386,11 @@ if (typeof document !== "undefined") {
   function renderGame() {
     if (!state) return;
 
-    var nodes = document.querySelectorAll("#board .node");
-    var texts = document.querySelectorAll("#board .node-text");
+    let nodes = document.querySelectorAll("#board .node");
+    let texts = document.querySelectorAll("#board .node-text");
 
     nodes.forEach((node) => {
-      var pos = Number.parseInt(node.dataset.pos);
+      let pos = Number.parseInt(node.dataset.pos);
       node.setAttribute("class", "node");
 
       if (state.board[pos] === PLAYER_A) {
@@ -404,8 +404,8 @@ if (typeof document !== "undefined") {
       }
 
       if (selectedPiece !== null) {
-        var targets = getValidMovesForPiece(state.board, selectedPiece);
-        for (var i = 0; i < targets.length; i++) {
+        let targets = getValidMovesForPiece(state.board, selectedPiece);
+        for (let i = 0; i < targets.length; i++) {
           if (targets[i] === pos) {
             node.classList.add("node-highlight");
           }
@@ -414,7 +414,7 @@ if (typeof document !== "undefined") {
     });
 
     texts.forEach((text) => {
-      var pos = Number.parseInt(text.parentElement.dataset.pos);
+      let pos = Number.parseInt(text.parentElement.dataset.pos);
       text.textContent = "";
       if (state.board[pos] === PLAYER_A) {
         text.textContent = getPieceLabel(PLAYER_A);
@@ -428,15 +428,15 @@ if (typeof document !== "undefined") {
       "team-indicator " + (state.currentPlayer === PLAYER_A ? "team-a" : "team-b");
     document.getElementById("turn-count").textContent = state.turnCount;
 
-    var movesA = getAllValidMoves(state.board, PLAYER_A).length;
-    var movesB = getAllValidMoves(state.board, PLAYER_B).length;
+    let movesA = getAllValidMoves(state.board, PLAYER_A).length;
+    let movesB = getAllValidMoves(state.board, PLAYER_B).length;
     document.getElementById("label-a").textContent = getPlayerName(PLAYER_A) + " 可走：";
     document.getElementById("moves-a").textContent = movesA;
     document.getElementById("label-b").textContent = getPlayerName(PLAYER_B) + " 可走：";
     document.getElementById("moves-b").textContent = movesB;
 
     if (state.gameOver) {
-      var winnerText = getPlayerName(state.winner) + " 获胜！";
+      let winnerText = getPlayerName(state.winner) + " 获胜！";
       document.getElementById("winner-text").textContent = winnerText;
       document.getElementById("game-over").style.display = "flex";
     }
@@ -447,7 +447,7 @@ if (typeof document !== "undefined") {
     if (state.mode === "pve" && state.currentPlayer === state.aiTeam) return;
     if (state.mode === "online" && state.currentPlayer !== localTeam) return;
 
-    var player = state.currentPlayer;
+    let player = state.currentPlayer;
 
     if (state.board[pos] === player) {
       selectedPiece = pos;
@@ -456,14 +456,14 @@ if (typeof document !== "undefined") {
     }
 
     if (selectedPiece !== null && state.board[pos] === EMPTY) {
-      var targets = getValidMovesForPiece(state.board, selectedPiece);
-      for (var i = 0; i < targets.length; i++) {
+      let targets = getValidMovesForPiece(state.board, selectedPiece);
+      for (let i = 0; i < targets.length; i++) {
         if (targets[i] === pos) {
-          var fromPos = selectedPiece;
+          let fromPos = selectedPiece;
           state.board = movePiece(state.board, selectedPiece, pos);
           selectedPiece = null;
 
-          var winner = checkWin(state.board);
+          let winner = checkWin(state.board);
           if (winner) {
             state.gameOver = true;
             state.winner = winner;
@@ -493,7 +493,7 @@ if (typeof document !== "undefined") {
     state.aiThinking = true;
     renderGame();
     setTimeout(() => {
-      var aiMove = getBestAIMove(state);
+      let aiMove = getBestAIMove(state);
       if (!aiMove) {
         state.aiThinking = false;
         state.gameOver = true;
@@ -504,7 +504,7 @@ if (typeof document !== "undefined") {
 
       state.board = movePiece(state.board, aiMove.from, aiMove.to);
 
-      var winner = checkWin(state.board);
+      let winner = checkWin(state.board);
       if (winner) {
         state.gameOver = true;
         state.winner = winner;
@@ -610,8 +610,8 @@ if (typeof document !== "undefined") {
     if (!rpsChoices.online || !rpsChoices.remote) return;
 
     if (localPlayerRole === "host") {
-      var winner = judgeRPS(rpsChoices.online, rpsChoices.remote);
-      var firstPlayer;
+      let winner = judgeRPS(rpsChoices.online, rpsChoices.remote);
+      let firstPlayer;
       if (winner === 1) {
         firstPlayer = "host";
       } else if (winner === -1) {
@@ -637,7 +637,7 @@ if (typeof document !== "undefined") {
   }
 
   function handleOnlineRPSResult(result) {
-    var resultEl = document.getElementById("rps-online-result");
+    let resultEl = document.getElementById("rps-online-result");
     if (result.firstPlayer === null) {
       rpsChoices.online = null;
       rpsChoices.remote = null;
@@ -648,9 +648,9 @@ if (typeof document !== "undefined") {
       return;
     }
 
-    var myChoice = rpsChoices.online;
-    var theirChoice = rpsChoices.remote;
-    var iWin = result.firstPlayer === localPlayerRole;
+    let myChoice = rpsChoices.online;
+    let theirChoice = rpsChoices.remote;
+    let iWin = result.firstPlayer === localPlayerRole;
 
     resultEl.textContent =
       "你选择了" +
@@ -667,8 +667,8 @@ if (typeof document !== "undefined") {
   function startOnlineGame(firstPlayerRole) {
     state = createInitialState("online");
 
-    var hostPiece = PLAYER_A;
-    var guestPiece = PLAYER_B;
+    let hostPiece = PLAYER_A;
+    let guestPiece = PLAYER_B;
 
     if (localPlayerRole === "host") {
       localTeam = firstPlayerRole === "host" ? hostPiece : guestPiece;
@@ -697,7 +697,7 @@ if (typeof document !== "undefined") {
     state.board = movePiece(state.board, actionData.from, actionData.to);
     selectedPiece = null;
 
-    var winner = checkWin(state.board);
+    let winner = checkWin(state.board);
     if (winner) {
       state.gameOver = true;
       state.winner = winner;
@@ -742,10 +742,10 @@ if (typeof document !== "undefined") {
 
   function handleRPSChoice(player, choice) {
     if (player === "human") {
-      var aiChoices = ["rock", "scissors", "paper"];
-      var aiChoice = aiChoices[Math.floor(Math.random() * 3)];
-      var result = judgeRPS(choice, aiChoice);
-      var resultDiv = document.getElementById("rps-result");
+      let aiChoices = ["rock", "scissors", "paper"];
+      let aiChoice = aiChoices[Math.floor(Math.random() * 3)];
+      let result = judgeRPS(choice, aiChoice);
+      let resultDiv = document.getElementById("rps-result");
       if (result === 1) {
         // Player wins RPS, player goes first (player is B in PvE)
         resultDiv.innerHTML =
@@ -782,7 +782,7 @@ if (typeof document !== "undefined") {
     });
 
     // Online mode button
-    var btnOnline = document.getElementById("btn-online");
+    let btnOnline = document.getElementById("btn-online");
     if (btnOnline) {
       if (!RoomUI.isSupported()) {
         btnOnline.style.display = "none";
@@ -811,7 +811,7 @@ if (typeof document !== "undefined") {
     // Online RPS buttons
     document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((button) => {
       button.addEventListener("click", (ev) => {
-        var choice = ev.target.dataset.choice;
+        let choice = ev.target.dataset.choice;
         handleOnlineRPSChoice(choice, ev);
       });
     });

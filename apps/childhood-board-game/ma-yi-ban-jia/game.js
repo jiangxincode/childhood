@@ -1,4 +1,4 @@
-/* eslint-disable no-var, no-undef */
+/* eslint-disable no-let, no-undef */
 // ============================================================
 // 蚂蚁搬家 (Ma Yi Ban Jia - Ants Moving House)
 // Two players on a 9x9 intersection board. Each side has 4 pieces
@@ -14,30 +14,30 @@
 // ============================================================
 
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
-  var _gameUtils = require("../../common/game-utils.js");
-  var judgeRPS = _gameUtils.judgeRPS;
-  var getRPSName = _gameUtils.getRPSName;
+  let _gameUtils = require("../../common/game-utils.js");
+  let judgeRPS = _gameUtils.judgeRPS;
+  let getRPSName = _gameUtils.getRPSName;
 }
 
-var PLAYER_A = "A";
-var PLAYER_B = "B";
-var EMPTY = null;
-var BOARD_SIZE = 9; // 9 lines each direction -> 9x9 = 81 intersections
-var PIECES_EACH = 4;
+let PLAYER_A = "A";
+let PLAYER_B = "B";
+let EMPTY = null;
+let BOARD_SIZE = 9; // 9 lines each direction -> 9x9 = 81 intersections
+let PIECES_EACH = 4;
 
-var CENTER_X = 4;
-var CENTER_Y = 4;
-var TIAN_YUAN = { x: CENTER_X, y: CENTER_Y };
+let CENTER_X = 4;
+let CENTER_Y = 4;
+let TIAN_YUAN = { x: CENTER_X, y: CENTER_Y };
 
 // Starting positions: both sides line up on the central column,
 // straddling the tian-yuan. A occupies the upper half, B the lower.
-var START_A = [
+let START_A = [
   { x: 4, y: 0 },
   { x: 4, y: 1 },
   { x: 4, y: 2 },
   { x: 4, y: 3 },
 ];
-var START_B = [
+let START_B = [
   { x: 4, y: 5 },
   { x: 4, y: 6 },
   { x: 4, y: 7 },
@@ -45,11 +45,11 @@ var START_B = [
 ];
 
 // A wins by occupying B's home (B's starting points), and vice versa.
-var HOME_OF_A = START_A;
-var HOME_OF_B = START_B;
+let HOME_OF_A = START_A;
+let HOME_OF_B = START_B;
 
 // Orthogonal directions (no diagonals).
-var DIRECTIONS = [
+let DIRECTIONS = [
   { dx: -1, dy: 0 },
   { dx: 1, dy: 0 },
   { dx: 0, dy: -1 },
@@ -69,20 +69,20 @@ function getOpponent(player) {
 }
 
 function createBoard() {
-  var board = [];
-  for (var y = 0; y < BOARD_SIZE; y++) {
-    var row = [];
-    for (var x = 0; x < BOARD_SIZE; x++) row.push(EMPTY);
+  let board = [];
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    let row = [];
+    for (let x = 0; x < BOARD_SIZE; x++) row.push(EMPTY);
     board.push(row);
   }
   return board;
 }
 
 function applyInitialLayout(board) {
-  for (var i = 0; i < START_A.length; i++) {
+  for (let i = 0; i < START_A.length; i++) {
     board[START_A[i].y][START_A[i].x] = PLAYER_A;
   }
-  for (var j = 0; j < START_B.length; j++) {
+  for (let j = 0; j < START_B.length; j++) {
     board[START_B[j].y][START_B[j].x] = PLAYER_B;
   }
   return board;
@@ -104,9 +104,9 @@ function createInitialState(mode) {
 }
 
 function countPieces(board, player) {
-  var count = 0;
-  for (var y = 0; y < BOARD_SIZE; y++) {
-    for (var x = 0; x < BOARD_SIZE; x++) {
+  let count = 0;
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
       if (board[y][x] === player) count++;
     }
   }
@@ -116,17 +116,17 @@ function countPieces(board, player) {
 // All legal moves for `player` from the given board, including jumps.
 // A move is { fromX, fromY, toX, toY, jump: bool, jumpedX?, jumpedY? }.
 function getValidMoves(board, player) {
-  var moves = [];
-  for (var y = 0; y < BOARD_SIZE; y++) {
-    for (var x = 0; x < BOARD_SIZE; x++) {
+  let moves = [];
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
       if (board[y][x] !== player) continue;
-      for (var d = 0; d < DIRECTIONS.length; d++) {
-        var dx = DIRECTIONS[d].dx;
-        var dy = DIRECTIONS[d].dy;
+      for (let d = 0; d < DIRECTIONS.length; d++) {
+        let dx = DIRECTIONS[d].dx;
+        let dy = DIRECTIONS[d].dy;
 
         // 1) Single step
-        var sx = x + dx;
-        var sy = y + dy;
+        let sx = x + dx;
+        let sy = y + dy;
         if (inBounds(sx, sy) && !isTianYuan(sx, sy) && board[sy][sx] === EMPTY) {
           moves.push({ fromX: x, fromY: y, toX: sx, toY: sy, jump: false });
         }
@@ -135,10 +135,10 @@ function getValidMoves(board, player) {
         //    contain a piece (of either side) and must not be the
         //    tian-yuan (which never holds a piece anyway). The landing
         //    intersection must be empty and not the tian-yuan.
-        var jx = x + dx;
-        var jy = y + dy;
-        var lx = x + dx * 2;
-        var ly = y + dy * 2;
+        let jx = x + dx;
+        let jy = y + dy;
+        let lx = x + dx * 2;
+        let ly = y + dy * 2;
         if (
           inBounds(jx, jy) &&
           inBounds(lx, ly) &&
@@ -168,8 +168,8 @@ function hasValidMoves(board, player) {
 }
 
 function movePiece(board, fromX, fromY, toX, toY) {
-  var newBoard = [];
-  for (var y = 0; y < BOARD_SIZE; y++) newBoard.push(board[y].slice());
+  let newBoard = [];
+  for (let y = 0; y < BOARD_SIZE; y++) newBoard.push(board[y].slice());
   newBoard[toY][toX] = newBoard[fromY][fromX];
   newBoard[fromY][fromX] = EMPTY;
   return newBoard;
@@ -178,8 +178,8 @@ function movePiece(board, fromX, fromY, toX, toY) {
 // `player` wins when every cell of the opposing home is occupied by
 // `player`'s own pieces.
 function checkWin(board, player) {
-  var home = player === PLAYER_A ? HOME_OF_B : HOME_OF_A;
-  for (var i = 0; i < home.length; i++) {
+  let home = player === PLAYER_A ? HOME_OF_B : HOME_OF_A;
+  for (let i = 0; i < home.length; i++) {
     if (board[home[i].y][home[i].x] !== player) return null;
   }
   return { winner: player, line: home.slice() };
@@ -193,25 +193,25 @@ function checkWin(board, player) {
 // each of their pieces to the closest unoccupied target slot in the
 // opponent's home. Targets already filled by their own pieces count 0.
 function distanceToHome(board, player) {
-  var home = player === PLAYER_A ? HOME_OF_B : HOME_OF_A;
-  var pieces = [];
-  for (var y = 0; y < BOARD_SIZE; y++) {
-    for (var x = 0; x < BOARD_SIZE; x++) {
+  let home = player === PLAYER_A ? HOME_OF_B : HOME_OF_A;
+  let pieces = [];
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
       if (board[y][x] === player) pieces.push({ x: x, y: y });
     }
   }
   // Greedy assignment: for each home slot, take the closest unassigned
   // own piece. This is a cheap proxy for "how far from victory".
-  var taken = {};
-  var total = 0;
-  for (var h = 0; h < home.length; h++) {
-    var target = home[h];
+  let taken = {};
+  let total = 0;
+  for (let h = 0; h < home.length; h++) {
+    let target = home[h];
     if (board[target.y][target.x] === player) continue;
-    var bestIdx = -1;
-    var bestDist = Infinity;
-    for (var p = 0; p < pieces.length; p++) {
+    let bestIdx = -1;
+    let bestDist = Infinity;
+    for (let p = 0; p < pieces.length; p++) {
       if (taken[p]) continue;
-      var dist = Math.abs(pieces[p].x - target.x) + Math.abs(pieces[p].y - target.y);
+      let dist = Math.abs(pieces[p].x - target.x) + Math.abs(pieces[p].y - target.y);
       if (dist < bestDist) {
         bestDist = dist;
         bestIdx = p;
@@ -228,44 +228,44 @@ function distanceToHome(board, player) {
 }
 
 function evaluateBoard(board, aiPlayer) {
-  var opponent = getOpponent(aiPlayer);
+  let opponent = getOpponent(aiPlayer);
   if (checkWin(board, aiPlayer)) return 100000;
   if (checkWin(board, opponent)) return -100000;
   // Lower distance is better; flip sign so larger = better for AI.
-  var aiDist = distanceToHome(board, aiPlayer);
-  var oppDist = distanceToHome(board, opponent);
+  let aiDist = distanceToHome(board, aiPlayer);
+  let oppDist = distanceToHome(board, opponent);
   return (oppDist - aiDist) * 10;
 }
 
 function minimax(board, depth, alpha, beta, isMaximizing, aiPlayer) {
-  var opponent = getOpponent(aiPlayer);
+  let opponent = getOpponent(aiPlayer);
 
   if (checkWin(board, aiPlayer)) return 100000 + depth;
   if (checkWin(board, opponent)) return -100000 - depth;
 
-  var nextPlayer = isMaximizing ? aiPlayer : opponent;
+  let nextPlayer = isMaximizing ? aiPlayer : opponent;
   if (!hasValidMoves(board, nextPlayer)) {
     // Side to move is stuck: count it as a loss for that side.
     return isMaximizing ? -100000 - depth : 100000 + depth;
   }
   if (depth === 0) return evaluateBoard(board, aiPlayer);
 
-  var moves = getValidMoves(board, nextPlayer);
+  let moves = getValidMoves(board, nextPlayer);
   if (isMaximizing) {
-    var best = -Infinity;
-    for (var i = 0; i < moves.length; i++) {
-      var nb = movePiece(board, moves[i].fromX, moves[i].fromY, moves[i].toX, moves[i].toY);
-      var s = minimax(nb, depth - 1, alpha, beta, false, aiPlayer);
+    let best = -Infinity;
+    for (let i = 0; i < moves.length; i++) {
+      let nb = movePiece(board, moves[i].fromX, moves[i].fromY, moves[i].toX, moves[i].toY);
+      let s = minimax(nb, depth - 1, alpha, beta, false, aiPlayer);
       if (s > best) best = s;
       if (best > alpha) alpha = best;
       if (beta <= alpha) break;
     }
     return best;
   }
-  var worst = Infinity;
-  for (var k = 0; k < moves.length; k++) {
-    var nb2 = movePiece(board, moves[k].fromX, moves[k].fromY, moves[k].toX, moves[k].toY);
-    var s2 = minimax(nb2, depth - 1, alpha, beta, true, aiPlayer);
+  let worst = Infinity;
+  for (let k = 0; k < moves.length; k++) {
+    let nb2 = movePiece(board, moves[k].fromX, moves[k].fromY, moves[k].toX, moves[k].toY);
+    let s2 = minimax(nb2, depth - 1, alpha, beta, true, aiPlayer);
     if (s2 < worst) worst = s2;
     if (worst < beta) beta = worst;
     if (beta <= alpha) break;
@@ -274,22 +274,22 @@ function minimax(board, depth, alpha, beta, isMaximizing, aiPlayer) {
 }
 
 function getBestAIMove(state) {
-  var aiPlayer = state.aiTeam;
-  var moves = getValidMoves(state.board, aiPlayer);
+  let aiPlayer = state.aiTeam;
+  let moves = getValidMoves(state.board, aiPlayer);
   if (moves.length === 0) return null;
 
   // Quick win check
-  for (var w = 0; w < moves.length; w++) {
-    var nb = movePiece(state.board, moves[w].fromX, moves[w].fromY, moves[w].toX, moves[w].toY);
+  for (let w = 0; w < moves.length; w++) {
+    let nb = movePiece(state.board, moves[w].fromX, moves[w].fromY, moves[w].toX, moves[w].toY);
     if (checkWin(nb, aiPlayer)) return moves[w];
   }
 
-  var depth = 3; // 9x9 with jumps has a high branching factor; keep modest
-  var bestScore = -Infinity;
-  var bestMoves = [];
-  for (var i = 0; i < moves.length; i++) {
-    var next = movePiece(state.board, moves[i].fromX, moves[i].fromY, moves[i].toX, moves[i].toY);
-    var s = minimax(next, depth, -Infinity, Infinity, false, aiPlayer);
+  let depth = 3; // 9x9 with jumps has a high branching factor; keep modest
+  let bestScore = -Infinity;
+  let bestMoves = [];
+  for (let i = 0; i < moves.length; i++) {
+    let next = movePiece(state.board, moves[i].fromX, moves[i].fromY, moves[i].toX, moves[i].toY);
+    let s = minimax(next, depth, -Infinity, Infinity, false, aiPlayer);
     if (s > bestScore) {
       bestScore = s;
       bestMoves = [moves[i]];
@@ -340,20 +340,20 @@ if (typeof module !== "undefined" && module.exports) {
 // Browser UI (SVG board with intersections)
 // ============================================================
 if (typeof document !== "undefined") {
-  var state = null;
-  var selectedPiece = null;
-  var rpsChoices = { player1: null, player2: null, human: null };
-  var networkProtocol = null;
-  var networkConnection = null;
-  var roomUI = null;
-  var localPlayerRole = null; // 'host' | 'guest'
-  var localTeam = null; // PLAYER_A or PLAYER_B
-  var remoteTeam = null; // PLAYER_A or PLAYER_B
+  let state = null;
+  let selectedPiece = null;
+  let rpsChoices = { player1: null, player2: null, human: null };
+  let networkProtocol = null;
+  let networkConnection = null;
+  let roomUI = null;
+  let localPlayerRole = null; // 'host' | 'guest'
+  let localTeam = null; // PLAYER_A or PLAYER_B
+  let remoteTeam = null; // PLAYER_A or PLAYER_B
 
   // Board geometry: 9x9 grid of intersections inside an SVG viewBox.
-  var BOARD_VIEW = 540;
-  var BOARD_PADDING = 30;
-  var CELL_SIZE = (BOARD_VIEW - BOARD_PADDING * 2) / (BOARD_SIZE - 1);
+  let BOARD_VIEW = 540;
+  let BOARD_PADDING = 30;
+  let CELL_SIZE = (BOARD_VIEW - BOARD_PADDING * 2) / (BOARD_SIZE - 1);
 
   function nodeToPx(x, y) {
     return {
@@ -363,18 +363,18 @@ if (typeof document !== "undefined") {
   }
 
   function initBoard() {
-    var boardEl = document.getElementById("board");
+    let boardEl = document.getElementById("board");
     boardEl.innerHTML = "";
-    var svgNS = "http://www.w3.org/2000/svg";
-    var svg = document.createElementNS(svgNS, "svg");
+    let svgNS = "http://www.w3.org/2000/svg";
+    let svg = document.createElementNS(svgNS, "svg");
     svg.setAttribute("viewBox", "0 0 " + BOARD_VIEW + " " + BOARD_VIEW);
     svg.setAttribute("class", "board-svg");
 
     // Grid lines (9 horizontal + 9 vertical)
-    for (var i = 0; i < BOARD_SIZE; i++) {
-      var p0 = nodeToPx(0, i);
-      var p1 = nodeToPx(BOARD_SIZE - 1, i);
-      var hLine = document.createElementNS(svgNS, "line");
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      let p0 = nodeToPx(0, i);
+      let p1 = nodeToPx(BOARD_SIZE - 1, i);
+      let hLine = document.createElementNS(svgNS, "line");
       hLine.setAttribute("x1", p0.cx);
       hLine.setAttribute("y1", p0.cy);
       hLine.setAttribute("x2", p1.cx);
@@ -382,9 +382,9 @@ if (typeof document !== "undefined") {
       hLine.setAttribute("class", "board-line");
       svg.appendChild(hLine);
 
-      var q0 = nodeToPx(i, 0);
-      var q1 = nodeToPx(i, BOARD_SIZE - 1);
-      var vLine = document.createElementNS(svgNS, "line");
+      let q0 = nodeToPx(i, 0);
+      let q1 = nodeToPx(i, BOARD_SIZE - 1);
+      let vLine = document.createElementNS(svgNS, "line");
       vLine.setAttribute("x1", q0.cx);
       vLine.setAttribute("y1", q0.cy);
       vLine.setAttribute("x2", q1.cx);
@@ -394,15 +394,15 @@ if (typeof document !== "undefined") {
     }
 
     // Tian-yuan marker (impassable centre)
-    var center = nodeToPx(CENTER_X, CENTER_Y);
-    var tyMark = document.createElementNS(svgNS, "circle");
+    let center = nodeToPx(CENTER_X, CENTER_Y);
+    let tyMark = document.createElementNS(svgNS, "circle");
     tyMark.setAttribute("cx", center.cx);
     tyMark.setAttribute("cy", center.cy);
     tyMark.setAttribute("r", 14);
     tyMark.setAttribute("class", "tian-yuan");
     svg.appendChild(tyMark);
 
-    var tyText = document.createElementNS(svgNS, "text");
+    let tyText = document.createElementNS(svgNS, "text");
     tyText.setAttribute("x", center.cx);
     tyText.setAttribute("y", center.cy);
     tyText.setAttribute("class", "tian-yuan-text");
@@ -413,9 +413,9 @@ if (typeof document !== "undefined") {
 
     // Home highlights for both sides
     function appendHomeRing(home, cls) {
-      for (var n = 0; n < home.length; n++) {
-        var pt = nodeToPx(home[n].x, home[n].y);
-        var ring = document.createElementNS(svgNS, "circle");
+      for (let n = 0; n < home.length; n++) {
+        let pt = nodeToPx(home[n].x, home[n].y);
+        let ring = document.createElementNS(svgNS, "circle");
         ring.setAttribute("cx", pt.cx);
         ring.setAttribute("cy", pt.cy);
         ring.setAttribute("r", 24);
@@ -427,34 +427,34 @@ if (typeof document !== "undefined") {
     appendHomeRing(HOME_OF_B, "home-b");
 
     // Interactive intersection nodes
-    for (var y = 0; y < BOARD_SIZE; y++) {
-      for (var x = 0; x < BOARD_SIZE; x++) {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
         if (isTianYuan(x, y)) continue; // skip the impassable centre
-        var pt2 = nodeToPx(x, y);
-        var g = document.createElementNS(svgNS, "g");
+        let pt2 = nodeToPx(x, y);
+        let g = document.createElementNS(svgNS, "g");
         g.setAttribute("class", "node");
         g.setAttribute("data-x", x);
         g.setAttribute("data-y", y);
         g.setAttribute("transform", "translate(" + pt2.cx + "," + pt2.cy + ")");
 
         // Wide invisible hit area
-        var hit = document.createElementNS(svgNS, "circle");
+        let hit = document.createElementNS(svgNS, "circle");
         hit.setAttribute("r", CELL_SIZE / 2 - 2);
         hit.setAttribute("class", "node-hit");
         g.appendChild(hit);
 
         // Small dot for empty intersections
-        var dot = document.createElementNS(svgNS, "circle");
+        let dot = document.createElementNS(svgNS, "circle");
         dot.setAttribute("r", 3);
         dot.setAttribute("class", "node-dot");
         g.appendChild(dot);
 
-        var circle = document.createElementNS(svgNS, "circle");
+        let circle = document.createElementNS(svgNS, "circle");
         circle.setAttribute("r", 18);
         circle.setAttribute("class", "node-circle");
         g.appendChild(circle);
 
-        var text = document.createElementNS(svgNS, "text");
+        let text = document.createElementNS(svgNS, "text");
         text.setAttribute("class", "node-text");
         text.setAttribute("text-anchor", "middle");
         text.setAttribute("dominant-baseline", "central");
@@ -478,11 +478,11 @@ if (typeof document !== "undefined") {
   // Build a map of reachable destination cells from `selectedPiece`,
   // and remember whether each is a single step or a jump.
   function reachableTargets() {
-    var map = {};
+    let map = {};
     if (!selectedPiece) return map;
-    var moves = getValidMoves(state.board, state.currentPlayer);
-    for (var i = 0; i < moves.length; i++) {
-      var m = moves[i];
+    let moves = getValidMoves(state.board, state.currentPlayer);
+    for (let i = 0; i < moves.length; i++) {
+      let m = moves[i];
       if (m.fromX === selectedPiece.x && m.fromY === selectedPiece.y) {
         map[m.toX + "," + m.toY] = m;
       }
@@ -492,20 +492,20 @@ if (typeof document !== "undefined") {
 
   function renderGame() {
     if (!state) return;
-    var reachable = reachableTargets();
+    let reachable = reachableTargets();
 
-    var nodes = document.querySelectorAll("#board .node");
+    let nodes = document.querySelectorAll("#board .node");
     nodes.forEach((g) => {
-      var nx = Number.parseInt(g.getAttribute("data-x"));
-      var ny = Number.parseInt(g.getAttribute("data-y"));
-      var classes = ["node"];
+      let nx = Number.parseInt(g.getAttribute("data-x"));
+      let ny = Number.parseInt(g.getAttribute("data-y"));
+      let classes = ["node"];
       if (state.board[ny][nx] === PLAYER_A) classes.push("node-a");
       else if (state.board[ny][nx] === PLAYER_B) classes.push("node-b");
       else classes.push("node-empty");
       if (selectedPiece && selectedPiece.x === nx && selectedPiece.y === ny) {
         classes.push("node-selected");
       }
-      var key = nx + "," + ny;
+      let key = nx + "," + ny;
       if (reachable[key]) {
         classes.push(reachable[key].jump ? "node-jump" : "node-highlight");
       }
@@ -528,7 +528,7 @@ if (typeof document !== "undefined") {
     document.getElementById("home-a").textContent = countOccupiedHome(PLAYER_B);
     document.getElementById("home-b").textContent = countOccupiedHome(PLAYER_A);
 
-    var msg = document.getElementById("message");
+    let msg = document.getElementById("message");
     if (state.aiThinking) {
       msg.textContent = "AI 思考中…";
       msg.className = "info";
@@ -538,10 +538,10 @@ if (typeof document !== "undefined") {
     }
 
     if (state.gameOver) {
-      var winnerText;
+      let winnerText;
       if (state.winner === PLAYER_A || state.winner === PLAYER_B) {
         // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of position name
-        var winnerLabel = getCurrentPlayerLabel({
+        let winnerLabel = getCurrentPlayerLabel({
           mode: state.mode,
           currentSide: state.winner,
           playerSide: state.playerTeam,
@@ -560,9 +560,9 @@ if (typeof document !== "undefined") {
 
   // Number of `player`'s pieces already sitting in the opponent's home.
   function countOccupiedHome(player) {
-    var home = player === PLAYER_A ? HOME_OF_B : HOME_OF_A;
-    var c = 0;
-    for (var i = 0; i < home.length; i++) {
+    let home = player === PLAYER_A ? HOME_OF_B : HOME_OF_A;
+    let c = 0;
+    for (let i = 0; i < home.length; i++) {
       if (state.board[home[i].y][home[i].x] === player) c++;
     }
     return c;
@@ -582,9 +582,9 @@ if (typeof document !== "undefined") {
 
     // Click on a reachable target: commit move
     if (selectedPiece) {
-      var moves = getValidMoves(state.board, state.currentPlayer);
-      for (var i = 0; i < moves.length; i++) {
-        var m = moves[i];
+      let moves = getValidMoves(state.board, state.currentPlayer);
+      for (let i = 0; i < moves.length; i++) {
+        let m = moves[i];
         if (
           m.fromX === selectedPiece.x &&
           m.fromY === selectedPiece.y &&
@@ -607,7 +607,7 @@ if (typeof document !== "undefined") {
     selectedPiece = null;
 
     if (state.mode === "online" && networkProtocol) {
-      var actionData = {
+      let actionData = {
         a: "move",
         fromX: move.fromX,
         fromY: move.fromY,
@@ -622,7 +622,7 @@ if (typeof document !== "undefined") {
       networkProtocol.sendAction(actionData);
     }
 
-    var winResult = checkWin(state.board, state.currentPlayer);
+    let winResult = checkWin(state.board, state.currentPlayer);
     if (winResult) {
       state.gameOver = true;
       state.winner = winResult.winner;
@@ -650,7 +650,7 @@ if (typeof document !== "undefined") {
     state.aiThinking = true;
     renderGame();
     setTimeout(() => {
-      var aiMove = getBestAIMove(state);
+      let aiMove = getBestAIMove(state);
       state.aiThinking = false;
       if (!aiMove) {
         state.gameOver = true;
@@ -755,8 +755,8 @@ if (typeof document !== "undefined") {
     if (!rpsChoices.online || !rpsChoices.remote) return;
 
     if (localPlayerRole === "host") {
-      var winner = judgeRPS(rpsChoices.online, rpsChoices.remote);
-      var firstPlayer;
+      let winner = judgeRPS(rpsChoices.online, rpsChoices.remote);
+      let firstPlayer;
       if (winner === 1) {
         firstPlayer = "host";
       } else if (winner === -1) {
@@ -782,7 +782,7 @@ if (typeof document !== "undefined") {
   }
 
   function handleOnlineRPSResult(result) {
-    var resultEl = document.getElementById("rps-online-result");
+    let resultEl = document.getElementById("rps-online-result");
     if (result.firstPlayer === null) {
       rpsChoices.online = null;
       rpsChoices.remote = null;
@@ -793,9 +793,9 @@ if (typeof document !== "undefined") {
       return;
     }
 
-    var myChoice = rpsChoices.online;
-    var theirChoice = rpsChoices.remote;
-    var iWin = result.firstPlayer === localPlayerRole;
+    let myChoice = rpsChoices.online;
+    let theirChoice = rpsChoices.remote;
+    let iWin = result.firstPlayer === localPlayerRole;
 
     resultEl.textContent =
       "你选择了" +
@@ -812,8 +812,8 @@ if (typeof document !== "undefined") {
   function startOnlineGame(firstPlayerRole) {
     state = createInitialState("online");
 
-    var hostPiece = PLAYER_A;
-    var guestPiece = PLAYER_B;
+    let hostPiece = PLAYER_A;
+    let guestPiece = PLAYER_B;
 
     if (localPlayerRole === "host") {
       localTeam = firstPlayerRole === "host" ? hostPiece : guestPiece;
@@ -839,7 +839,7 @@ if (typeof document !== "undefined") {
   function applyRemoteAction(actionData) {
     if (!state || state.gameOver) return;
     if (state.currentPlayer !== remoteTeam) return;
-    var move = {
+    let move = {
       fromX: actionData.fromX,
       fromY: actionData.fromY,
       toX: actionData.toX,
@@ -884,10 +884,10 @@ if (typeof document !== "undefined") {
   }
 
   function handleRPSChoice(choice) {
-    var aiChoices = ["rock", "scissors", "paper"];
-    var aiChoice = aiChoices[Math.floor(Math.random() * 3)];
-    var result = judgeRPS(choice, aiChoice);
-    var resultDiv = document.getElementById("rps-result");
+    let aiChoices = ["rock", "scissors", "paper"];
+    let aiChoice = aiChoices[Math.floor(Math.random() * 3)];
+    let result = judgeRPS(choice, aiChoice);
+    let resultDiv = document.getElementById("rps-result");
     if (result === 1) {
       resultDiv.innerHTML =
         "<p>你出" + getRPSName(choice) + "，AI出" + getRPSName(aiChoice) + "，你先手！</p>";
@@ -919,7 +919,7 @@ if (typeof document !== "undefined") {
     });
 
     // Online mode button
-    var btnOnline = document.getElementById("btn-online");
+    let btnOnline = document.getElementById("btn-online");
     if (btnOnline) {
       if (!RoomUI.isSupported()) {
         btnOnline.style.display = "none";
@@ -948,7 +948,7 @@ if (typeof document !== "undefined") {
     // Online RPS buttons
     document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((button) => {
       button.addEventListener("click", (ev) => {
-        var choice = ev.target.dataset.choice;
+        let choice = ev.target.dataset.choice;
         handleOnlineRPSChoice(choice, ev);
       });
     });

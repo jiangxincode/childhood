@@ -1,4 +1,4 @@
-/* eslint-disable no-var, no-undef */
+/* eslint-disable no-let, no-undef */
 /* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, getValidCapturesCore:writable, flipCard:writable, moveCard:writable, createBaseState:writable, smartAiDecide:writable, isStalemateDraw:writable, recordCaptureAction:writable */
 // ============================================================
 // Little Emperor - Game Core Logic
@@ -9,8 +9,8 @@
 // ============================================================
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  var judgeRPS = _gameUtils.judgeRPS;
-  var shuffleArray = _gameUtils.shuffleArray;
+  let judgeRPS = _gameUtils.judgeRPS;
+  let shuffleArray = _gameUtils.shuffleArray;
 }
 if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
   const _core = require("../../common/card-game-core.js");
@@ -106,12 +106,12 @@ function createGameState(mode) {
 
   // Create 16 pieces: 8 red + 8 blue
   const cards = [];
-  for (var i = 0; i < PIECE_NAMES.length; i++) {
-    var name = PIECE_NAMES[i];
+  for (let i = 0; i < PIECE_NAMES.length; i++) {
+    let name = PIECE_NAMES[i];
     cards.push({ name: name, team: "red", rank: RANK_MAP[name], faceUp: false });
   }
-  for (var i = 0; i < PIECE_NAMES.length; i++) {
-    var name = PIECE_NAMES[i];
+  for (let i = 0; i < PIECE_NAMES.length; i++) {
+    let name = PIECE_NAMES[i];
     cards.push({ name: name, team: "blue", rank: RANK_MAP[name], faceUp: false });
   }
 
@@ -450,12 +450,12 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (var i = 0; i < moveTargets.length; i++) {
-      var tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (let i = 0; i < moveTargets.length; i++) {
+      let tc = getCell(moveTargets[i].x, moveTargets[i].y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (var i = 0; i < captureTargets.length; i++) {
-      var tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (let i = 0; i < captureTargets.length; i++) {
+      let tc = getCell(captureTargets[i].x, captureTargets[i].y);
       if (tc) tc.classList.add("cell-capture-target");
     }
   }
@@ -514,11 +514,11 @@ if (typeof document !== "undefined") {
 
     // Captured pieces
     $capturedRed.innerHTML = "";
-    for (var i = 0; i < state.capturedRed.length; i++) {
-      var name = state.capturedRed[i];
-      var div = document.createElement("div");
+    for (let i = 0; i < state.capturedRed.length; i++) {
+      let name = state.capturedRed[i];
+      let div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      let img = document.createElement("img");
       img.src = getImagePath("red", name);
       img.alt = name;
       div.appendChild(img);
@@ -526,11 +526,11 @@ if (typeof document !== "undefined") {
     }
 
     $capturedBlue.innerHTML = "";
-    for (var i = 0; i < state.capturedBlue.length; i++) {
-      var name = state.capturedBlue[i];
-      var div = document.createElement("div");
+    for (let i = 0; i < state.capturedBlue.length; i++) {
+      let name = state.capturedBlue[i];
+      let div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      let img = document.createElement("img");
       img.src = getImagePath("blue", name);
       img.alt = name;
       div.appendChild(img);
@@ -582,8 +582,8 @@ if (typeof document !== "undefined") {
 
   // ---- Rock-Paper-Scissors logic ----
 
-  var rpsP1Choice = null;
-  var rpsP2Choice = null;
+  let rpsP1Choice = null;
+  let rpsP2Choice = null;
 
   function startGame(firstTeam) {
     showGameArea();

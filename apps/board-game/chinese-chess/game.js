@@ -1,12 +1,12 @@
-/* eslint-disable no-var, no-undef */
+/* eslint-disable no-let, no-undef */
 // ============================================================
 // Chinese Chess (Xiangqi) - Game Core Logic
 // ============================================================
 
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  var judgeRPS = _gameUtils.judgeRPS;
-  var getRPSName = _gameUtils.getRPSName;
+  let judgeRPS = _gameUtils.judgeRPS;
+  let getRPSName = _gameUtils.getRPSName;
 }
 
 const COLS = 9;
@@ -254,7 +254,7 @@ function isGeneralFacing(board, myColor) {
     opGC = -1,
     opGR = -1;
   for (let c = 3; c <= 5; c++) {
-    for (var r = 0; r <= 2; r++) {
+    for (let r = 0; r <= 2; r++) {
       if (board[c][r] !== EMPTY && isGeneral(board[c][r])) {
         if (getOwner(board[c][r]) === myColor) {
           myGC = c;
@@ -265,7 +265,7 @@ function isGeneralFacing(board, myColor) {
         }
       }
     }
-    for (var r = 7; r <= 9; r++) {
+    for (let r = 7; r <= 9; r++) {
       if (board[c][r] !== EMPTY && isGeneral(board[c][r])) {
         if (getOwner(board[c][r]) === myColor) {
           myGC = c;
@@ -280,7 +280,7 @@ function isGeneralFacing(board, myColor) {
   if (myGC === -1 || opGC === -1 || myGC !== opGC) return false;
   const minR = Math.min(myGR, opGR);
   const maxR = Math.max(myGR, opGR);
-  for (var r = minR + 1; r < maxR; r++) {
+  for (let r = minR + 1; r < maxR; r++) {
     if (board[myGC][r] !== EMPTY) return false;
   }
   return true;
@@ -490,10 +490,10 @@ function checkGameOver(board, nextPlayer) {
   let redGeneral = false,
     blackGeneral = false;
   for (let c = 3; c <= 5; c++) {
-    for (var r = 0; r <= 2; r++) {
+    for (let r = 0; r <= 2; r++) {
       if (board[c][r] === B_GENERAL) blackGeneral = true;
     }
-    for (var r = 7; r <= 9; r++) {
+    for (let r = 7; r <= 9; r++) {
       if (board[c][r] === R_GENERAL) redGeneral = true;
     }
   }
@@ -517,12 +517,12 @@ function evaluateBoard(board, aiColor) {
   const aiAttackPos = create2DArray(COLS, ROWS, 0);
   const oppAttackPos = create2DArray(COLS, ROWS, 0);
 
-  for (var c = 0; c < COLS; c++) {
-    for (var r = 0; r < ROWS; r++) {
-      var piece = board[c][r];
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      let piece = board[c][r];
       if (piece === EMPTY) continue;
       const moves = getValidMoves(board, c, r);
-      var owner = getOwner(piece);
+      let owner = getOwner(piece);
       const attackMap = owner === aiColor ? aiAttackPos : oppAttackPos;
       for (let i = 0; i < moves.length; i++) {
         attackMap[moves[i].toC][moves[i].toR]++;
@@ -530,16 +530,16 @@ function evaluateBoard(board, aiColor) {
     }
   }
 
-  for (var c = 0; c < COLS; c++) {
-    for (var r = 0; r < ROWS; r++) {
-      var piece = board[c][r];
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      let piece = board[c][r];
       if (piece === EMPTY) continue;
       let val = PIECE_VALUES[piece];
 
       if (piece === R_PAWN) val += SOLDIER_POS_RED[c][r];
       else if (piece === B_PAWN) val += SOLDIER_POS_BLACK[c][r];
 
-      var owner = getOwner(piece);
+      let owner = getOwner(piece);
       if (owner === aiColor) {
         if (oppAttackPos[c][r] > 0 && aiAttackPos[c][r] === 0) val = Math.floor(val * 0.7);
         aiScore += val;
@@ -1322,7 +1322,7 @@ if (typeof document !== "undefined") {
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      var resultEl = document.getElementById("rps-result");
+      let resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -1366,7 +1366,7 @@ if (typeof document !== "undefined") {
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById("rps-result");
+        let resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {

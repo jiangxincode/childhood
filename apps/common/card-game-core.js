@@ -129,8 +129,8 @@ function getValidCaptures(board, x, y, team, canCaptureFn) {
 // Expose the core function under a separate name so those wrappers can still
 // reach it after shadowing. In Node, those scripts assign this via require()
 // instead, but exposing it here keeps the symbol consistent.
-// eslint-disable-next-line no-var, no-unused-vars
-var getValidCapturesCore = getValidCaptures;
+// eslint-disable-next-line no-let, no-unused-vars
+let getValidCapturesCore = getValidCaptures;
 
 /**
  * Execute flip operation (modifies state in place)

@@ -1,12 +1,12 @@
-/* eslint-disable no-var, no-undef */
+/* eslint-disable no-let, no-undef */
 // ============================================================
 // Go (Weiqi) - Game core logic
 // ============================================================
 
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  var judgeRPS = _gameUtils.judgeRPS;
-  var getRPSName = _gameUtils.getRPSName;
+  let judgeRPS = _gameUtils.judgeRPS;
+  let getRPSName = _gameUtils.getRPSName;
 }
 
 const BOARD_SIZE = 19;
@@ -258,16 +258,16 @@ function calculateScore(board) {
   let whiteStones = 0;
 
   // Count stones
-  for (var y = 0; y < BOARD_SIZE; y++) {
-    for (var x = 0; x < BOARD_SIZE; x++) {
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
       if (board[y][x] === BLACK) blackStones++;
       else if (board[y][x] === WHITE) whiteStones++;
     }
   }
 
   // Use flood fill to identify territory
-  for (var y = 0; y < BOARD_SIZE; y++) {
-    for (var x = 0; x < BOARD_SIZE; x++) {
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
       const key = x + "," + y;
       if (board[y][x] !== EMPTY || visited[key]) continue;
 
@@ -355,14 +355,14 @@ function getBestAIMove(board, aiPlayer, koPoint, capturesBlack, capturesWhite) {
 
   // Score candidates by heuristic first, keep top N
   const scored = [];
-  for (var i = 0; i < candidateMoves.length; i++) {
+  for (let i = 0; i < candidateMoves.length; i++) {
     const h = evaluateMove(board, candidateMoves[i], aiPlayer);
     scored.push({ move: candidateMoves[i], heuristic: h });
   }
   scored.sort((a, b) => b.heuristic - a.heuristic);
   const topCandidates = scored.slice(0, 12);
 
-  for (var i = 0; i < topCandidates.length; i++) {
+  for (let i = 0; i < topCandidates.length; i++) {
     const move = topCandidates[i].move;
     let wins = 0;
 
@@ -684,7 +684,7 @@ if (typeof document !== "undefined") {
     // Grid lines
     context.strokeStyle = "#8b7355";
     context.lineWidth = 1;
-    for (var i = 0; i < BOARD_SIZE; i++) {
+    for (let i = 0; i < BOARD_SIZE; i++) {
       const pos = MARGIN + i * CELL_SIZE;
       // Vertical lines
       context.beginPath();
@@ -711,7 +711,7 @@ if (typeof document !== "undefined") {
       { x: 15, y: 15 },
     ];
     context.fillStyle = "#8b7355";
-    for (var i = 0; i < starPoints.length; i++) {
+    for (let i = 0; i < starPoints.length; i++) {
       const sx = MARGIN + starPoints[i].x * CELL_SIZE;
       const sy = MARGIN + starPoints[i].y * CELL_SIZE;
       context.beginPath();
@@ -1256,7 +1256,7 @@ if (typeof document !== "undefined") {
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      var resultEl = document.getElementById("rps-result");
+      let resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -1300,7 +1300,7 @@ if (typeof document !== "undefined") {
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById("rps-result");
+        let resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {

@@ -1,4 +1,4 @@
-/* eslint-disable no-var, no-undef */
+/* eslint-disable no-let, no-undef */
 /* global DIRECTIONS:writable, inBounds:writable, flipCard:writable, moveCard:writable, createBaseState:writable, chooseBestCapture:writable, chooseBestFlip:writable, chooseBestMove:writable, isStalemateDraw:writable, recordCaptureAction:writable, recordNonCaptureAction:writable */
 // ============================================================
 // Knife Kills Chicken (Carry Weapon Version) - Game Core Logic
@@ -9,8 +9,8 @@
 // ============================================================
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  var judgeRPS = _gameUtils.judgeRPS;
-  var shuffleArray = _gameUtils.shuffleArray;
+  let judgeRPS = _gameUtils.judgeRPS;
+  let shuffleArray = _gameUtils.shuffleArray;
 }
 // Each binding is checked individually so that later requires of this module
 // (after another game.js has already populated some globals) still get the
@@ -684,16 +684,16 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (var i = 0; i < moveTargets.length; i++) {
-      var tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (let i = 0; i < moveTargets.length; i++) {
+      let tc = getCell(moveTargets[i].x, moveTargets[i].y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (var i = 0; i < captureTargets.length; i++) {
-      var tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (let i = 0; i < captureTargets.length; i++) {
+      let tc = getCell(captureTargets[i].x, captureTargets[i].y);
       if (tc) tc.classList.add("cell-capture-target");
     }
-    for (var i = 0; i < carryTargets.length; i++) {
-      var tc = getCell(carryTargets[i].x, carryTargets[i].y);
+    for (let i = 0; i < carryTargets.length; i++) {
+      let tc = getCell(carryTargets[i].x, carryTargets[i].y);
       if (tc) tc.classList.add("cell-carry-target");
     }
   }

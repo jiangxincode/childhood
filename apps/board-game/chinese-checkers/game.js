@@ -1,4 +1,4 @@
-/* eslint-disable no-var, no-undef */
+/* eslint-disable no-let, no-undef */
 // ============================================================
 // Chinese Checkers - Game core logic
 // ============================================================
@@ -7,8 +7,8 @@
 
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  var judgeRPS = _gameUtils.judgeRPS;
-  var getRPSName = _gameUtils.getRPSName;
+  let judgeRPS = _gameUtils.judgeRPS;
+  let getRPSName = _gameUtils.getRPSName;
 }
 
 const EMPTY = 0;
@@ -117,11 +117,11 @@ function isValidPos(x, y) {
 
 function initAdjacency() {
   ADJACENT = [];
-  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+  for (let i = 0; i < TOTAL_POSITIONS; i++) {
     ADJACENT[i] = [];
   }
 
-  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+  for (let i = 0; i < TOTAL_POSITIONS; i++) {
     const p = positions[i];
     for (let d = 0; d < DIRECTION_VECTORS.length; d++) {
       const nx = p.x + DIRECTION_VECTORS[d].x;
@@ -146,48 +146,48 @@ const TARGET_POSITIONS = {};
 function initPlayerPositions() {
   // Player A (Red): top triangle area x=5,y=1 non-special
   START_POSITIONS[RED] = [];
-  for (var i = 0; i < 4; i++) {
-    for (var j = i; j < 4; j++) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = i; j < 4; j++) {
       START_POSITIONS[RED].push(posKey[getPosKey(5 + i, 1 + j)]);
     }
   }
 
   // Player C (Blue): bottom-right triangle area x=14,y=10 non-special
   START_POSITIONS[BLUE] = [];
-  for (var i = 0; i < 4; i++) {
-    for (var j = i; j < 4; j++) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = i; j < 4; j++) {
       START_POSITIONS[BLUE].push(posKey[getPosKey(14 + i, 10 + j)]);
     }
   }
 
   // Player E (Green): upper-left triangle area x=1,y=5 special
   START_POSITIONS[GREEN] = [];
-  for (var i = 0; i < 4; i++) {
-    for (var j = 0; j <= i; j++) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j <= i; j++) {
       START_POSITIONS[GREEN].push(posKey[getPosKey(1 + i, 5 + j)]);
     }
   }
 
   // Player B (Yellow): right triangle area x=10,y=5 special
   START_POSITIONS[YELLOW] = [];
-  for (var i = 0; i < 4; i++) {
-    for (var j = 0; j <= i; j++) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j <= i; j++) {
       START_POSITIONS[YELLOW].push(posKey[getPosKey(10 + i, 5 + j)]);
     }
   }
 
   // Player D (Purple): bottom triangle area x=10,y=14 special
   START_POSITIONS[PURPLE] = [];
-  for (var i = 0; i < 4; i++) {
-    for (var j = 0; j <= i; j++) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j <= i; j++) {
       START_POSITIONS[PURPLE].push(posKey[getPosKey(10 + i, 14 + j)]);
     }
   }
 
   // Player F (Orange): left triangle area x=5,y=10 non-special
   START_POSITIONS[ORANGE] = [];
-  for (var i = 0; i < 4; i++) {
-    for (var j = i; j < 4; j++) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = i; j < 4; j++) {
       START_POSITIONS[ORANGE].push(posKey[getPosKey(5 + i, 10 + j)]);
     }
   }
@@ -214,14 +214,14 @@ function initPositionScores() {
     POSITION_SCORES[player] = [];
     const targets = TARGET_POSITIONS[player];
     const targetSet = {};
-    for (var i = 0; i < targets.length; i++) {
+    for (let i = 0; i < targets.length; i++) {
       targetSet[targets[i]] = true;
     }
 
     // Calculate target area centroid
     let cx = 0,
       cy = 0;
-    for (var i = 0; i < targets.length; i++) {
+    for (let i = 0; i < targets.length; i++) {
       cx += positions[targets[i]].x;
       cy += positions[targets[i]].y;
     }
@@ -231,7 +231,7 @@ function initPositionScores() {
     // Calculate target area depth reference point (farthest vertex)
     let maxDistFromCenter = 0;
     let tipIdx = targets[0];
-    for (var i = 0; i < targets.length; i++) {
+    for (let i = 0; i < targets.length; i++) {
       const dx = positions[targets[i]].x - cx;
       const dy = positions[targets[i]].y - cy;
       const dist = Math.abs(dx) + Math.abs(dy);
@@ -617,7 +617,7 @@ if (typeof document !== "undefined") {
     // Calculate canvas size
     let maxPx = 0;
     let maxPy = 0;
-    for (var i = 0; i < TOTAL_POSITIONS; i++) {
+    for (let i = 0; i < TOTAL_POSITIONS; i++) {
       const cp = cellToPixel(i);
       if (cp.x > maxPx) maxPx = cp.x;
       if (cp.y > maxPy) maxPy = cp.y;
@@ -646,8 +646,8 @@ if (typeof document !== "undefined") {
     g.appendChild(bg);
 
     // Draw all valid positions (with area colors)
-    for (var cell = 0; cell < TOTAL_POSITIONS; cell++) {
-      var pos = cellToPixel(cell);
+    for (let cell = 0; cell < TOTAL_POSITIONS; cell++) {
+      let pos = cellToPixel(cell);
       const areaColor = getAreaColor(cell);
 
       const hex = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -674,7 +674,7 @@ if (typeof document !== "undefined") {
     }
 
     // Draw pieces
-    for (var cell = 0; cell < TOTAL_POSITIONS; cell++) {
+    for (let cell = 0; cell < TOTAL_POSITIONS; cell++) {
       if (gameState.board[cell] !== EMPTY) {
         drawPiece(g, cell, gameState.board[cell]);
       }
@@ -682,9 +682,9 @@ if (typeof document !== "undefined") {
 
     // Draw valid move positions
     if (gameState.validMoves.length > 0) {
-      for (var i = 0; i < gameState.validMoves.length; i++) {
+      for (let i = 0; i < gameState.validMoves.length; i++) {
         const moveCell = gameState.validMoves[i];
-        var pos = cellToPixel(moveCell);
+        let pos = cellToPixel(moveCell);
         const indicator = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         indicator.setAttribute("cx", pos.x);
         indicator.setAttribute("cy", pos.y);
@@ -917,7 +917,7 @@ if (typeof document !== "undefined") {
         gameState.playerTeam = firstPlayer;
         // AI gets other players
         const aiPlayers = [];
-        for (var i = 0; i < gameState.players.length; i++) {
+        for (let i = 0; i < gameState.players.length; i++) {
           if (gameState.players[i] !== firstPlayer) {
             aiPlayers.push(gameState.players[i]);
           }
@@ -941,7 +941,7 @@ if (typeof document !== "undefined") {
     document.getElementById("game-over").style.display = "none";
 
     let colorRulesHtml = "";
-    for (var i = 0; i < gameState.players.length; i++) {
+    for (let i = 0; i < gameState.players.length; i++) {
       const player = gameState.players[i];
       const config = PLAYER_COLORS[player];
       let prefix = "";
@@ -1218,7 +1218,7 @@ if (typeof document !== "undefined") {
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      var resultEl = document.getElementById("rps-result");
+      let resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -1266,7 +1266,7 @@ if (typeof document !== "undefined") {
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById("rps-result");
+        let resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {

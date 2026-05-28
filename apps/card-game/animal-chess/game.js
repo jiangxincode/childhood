@@ -1,4 +1,4 @@
-/* eslint-disable no-var, no-undef */
+/* eslint-disable no-let, no-undef */
 /* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, getValidCapturesCore:writable, flipCard:writable, moveCard:writable, createBaseState:writable, smartAiDecide:writable, isStalemateDraw:writable, recordCaptureAction:writable */
 // ============================================================
 // Animal Chess - Game Core Logic
@@ -9,8 +9,8 @@
 // ============================================================
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  var judgeRPS = _gameUtils.judgeRPS;
-  var shuffleArray = _gameUtils.shuffleArray;
+  let judgeRPS = _gameUtils.judgeRPS;
+  let shuffleArray = _gameUtils.shuffleArray;
 }
 if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
   const _core = require("../../common/card-game-core.js");
@@ -593,8 +593,8 @@ if (typeof document !== "undefined") {
   }
 
   // --- Rock-Paper-Scissors logic ---
-  var rpsP1Choice = null;
-  var rpsP2Choice = null;
+  let rpsP1Choice = null;
+  let rpsP2Choice = null;
 
   function startGame(firstTeam) {
     showGameArea();

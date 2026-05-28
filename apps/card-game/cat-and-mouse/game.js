@@ -1,4 +1,4 @@
-/* eslint-disable no-var, no-undef */
+/* eslint-disable no-let, no-undef */
 /* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, getValidCapturesCore:writable, flipCard:writable, moveCard:writable, createBaseState:writable, smartAiDecide:writable, isStalemateDraw:writable, recordCaptureAction:writable */
 // ============================================================
 // Cat Catches Mouse - Game Core Logic
@@ -9,8 +9,8 @@
 // ============================================================
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  var judgeRPS = _gameUtils.judgeRPS;
-  var shuffleArray = _gameUtils.shuffleArray;
+  let judgeRPS = _gameUtils.judgeRPS;
+  let shuffleArray = _gameUtils.shuffleArray;
 }
 if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
   const _core = require("../../common/card-game-core.js");
@@ -96,12 +96,12 @@ function createGameState(mode) {
 
   // Create 16 pieces: 8 red + 8 blue
   const cards = [];
-  for (var i = 0; i < PIECE_NAMES.length; i++) {
-    var name = PIECE_NAMES[i];
+  for (let i = 0; i < PIECE_NAMES.length; i++) {
+    let name = PIECE_NAMES[i];
     cards.push({ name: name, team: "red", rank: RANK_MAP[name], faceUp: false });
   }
-  for (var i = 0; i < PIECE_NAMES.length; i++) {
-    var name = PIECE_NAMES[i];
+  for (let i = 0; i < PIECE_NAMES.length; i++) {
+    let name = PIECE_NAMES[i];
     cards.push({ name: name, team: "blue", rank: RANK_MAP[name], faceUp: false });
   }
 
@@ -584,8 +584,8 @@ if (typeof document !== "undefined") {
 
   // ---- 4.5 PVP Rock-Paper-Scissors button events ----
 
-  var rpsP1Choice = null;
-  var rpsP2Choice = null;
+  let rpsP1Choice = null;
+  let rpsP2Choice = null;
 
   document.querySelectorAll("#rps-pvp .btn-rps").forEach((btn) => {
     btn.addEventListener("click", () => {

@@ -1,4 +1,4 @@
-/* eslint-disable no-var, no-undef */
+/* eslint-disable no-let, no-undef */
 /* global DIRECTIONS:writable, chooseBestCapture:writable, chooseBestFlip:writable, chooseBestMove:writable, isStalemateDraw:writable, recordCaptureAction:writable, recordNonCaptureAction:writable */
 // ============================================================
 // Chinese Army Chess (Flip Chess) - Game Core Logic
@@ -9,8 +9,8 @@
 // ============================================================
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  var judgeRPS = _gameUtils.judgeRPS;
-  var shuffleArray = _gameUtils.shuffleArray;
+  let judgeRPS = _gameUtils.judgeRPS;
+  let shuffleArray = _gameUtils.shuffleArray;
 }
 // Each binding is checked individually so that later requires of this module
 // (after another game.js has already populated some globals) still get the
@@ -1011,11 +1011,11 @@ if (typeof document !== "undefined") {
 
     // Captured piece images
     $capturedRed.innerHTML = "";
-    for (var i = 0; i < state.capturedRed.length; i++) {
-      var name = state.capturedRed[i];
-      var div = document.createElement("div");
+    for (let i = 0; i < state.capturedRed.length; i++) {
+      let name = state.capturedRed[i];
+      let div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      let img = document.createElement("img");
       img.src = getImagePath({ name: name, team: "red", rank: getRank(name), faceUp: true });
       img.alt = name;
       div.appendChild(img);
@@ -1023,11 +1023,11 @@ if (typeof document !== "undefined") {
     }
 
     $capturedBlue.innerHTML = "";
-    for (var i = 0; i < state.capturedBlue.length; i++) {
-      var name = state.capturedBlue[i];
-      var div = document.createElement("div");
+    for (let i = 0; i < state.capturedBlue.length; i++) {
+      let name = state.capturedBlue[i];
+      let div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      let img = document.createElement("img");
       img.src = getImagePath({ name: name, team: "blue", rank: getRank(name), faceUp: true });
       img.alt = name;
       div.appendChild(img);
@@ -1079,9 +1079,9 @@ if (typeof document !== "undefined") {
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
 
-    for (var i = 0; i < moveTargets.length; i++) {
+    for (let i = 0; i < moveTargets.length; i++) {
       const t = moveTargets[i];
-      var tc = getCell(t.x, t.y);
+      let tc = getCell(t.x, t.y);
       if (tc) {
         if (t.type === "capture_flag") {
           tc.classList.add("cell-flag-target");
@@ -1091,8 +1091,8 @@ if (typeof document !== "undefined") {
       }
     }
 
-    for (var i = 0; i < captureTargets.length; i++) {
-      var tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (let i = 0; i < captureTargets.length; i++) {
+      let tc = getCell(captureTargets[i].x, captureTargets[i].y);
       if (tc) tc.classList.add("cell-capture-target");
     }
   }
@@ -1150,7 +1150,7 @@ if (typeof document !== "undefined") {
 
       // Click face-up flag: try to capture flag (moveCard)
       if (piece && piece.faceUp && isFlag(piece.name)) {
-        var result = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
+        let result = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
         if (result) {
           gameState.selectedCell = null;
           clearHighlights();
@@ -1170,7 +1170,7 @@ if (typeof document !== "undefined") {
         const captures = getValidCaptures(gameState.board, sel.x, sel.y, currentTeam);
         const canDo = captures.some((t) => t.x === x && t.y === y);
         if (canDo) {
-          var result = captureCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
+          let result = captureCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
           if (result) {
             gameState.selectedCell = null;
             clearHighlights();
@@ -1188,7 +1188,7 @@ if (typeof document !== "undefined") {
 
       // Click empty cell: try move
       if (!piece) {
-        var result = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
+        let result = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
         if (result) {
           gameState.selectedCell = null;
           clearHighlights();
@@ -1218,7 +1218,7 @@ if (typeof document !== "undefined") {
     // No piece selected
     if (piece && !piece.faceUp) {
       // Click face-down piece: flip
-      var result = flipCard(gameState, x, y);
+      let result = flipCard(gameState, x, y);
       if (result) {
         clearHighlights();
         // In online mode, assign teams on first non-flag flip
@@ -1332,8 +1332,8 @@ if (typeof document !== "undefined") {
     }
   }
 
-  var rpsP1Choice = null;
-  var rpsP2Choice = null;
+  let rpsP1Choice = null;
+  let rpsP2Choice = null;
 
   function handleRPSResult(choice1, choice2, mode) {
     const result = judgeRPS(choice1, choice2);

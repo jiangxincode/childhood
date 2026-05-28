@@ -1,12 +1,12 @@
-/* eslint-disable no-var, no-undef */
+/* eslint-disable no-let, no-undef */
 // ============================================================
 // Gomoku (Five in a Row) - Game Core Logic
 // ============================================================
 
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  var judgeRPS = _gameUtils.judgeRPS;
-  var getRPSName = _gameUtils.getRPSName;
+  let judgeRPS = _gameUtils.judgeRPS;
+  let getRPSName = _gameUtils.getRPSName;
 }
 
 const BOARD_SIZE = 15;
@@ -31,11 +31,11 @@ function initWinLines() {
   let lineId = 0;
 
   // Horizontal
-  for (var y = 0; y < BOARD_SIZE; y++) {
-    for (var x = 0; x <= BOARD_SIZE - WIN_COUNT; x++) {
-      var line = [];
-      for (var k = 0; k < WIN_COUNT; k++) {
-        var pos = { x: x + k, y: y };
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x <= BOARD_SIZE - WIN_COUNT; x++) {
+      let line = [];
+      for (let k = 0; k < WIN_COUNT; k++) {
+        let pos = { x: x + k, y: y };
         line.push(pos);
         WINS_MAP[pos.x][pos.y].push(lineId);
       }
@@ -45,11 +45,11 @@ function initWinLines() {
   }
 
   // Vertical
-  for (var x = 0; x < BOARD_SIZE; x++) {
-    for (var y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
-      var line = [];
-      for (var k = 0; k < WIN_COUNT; k++) {
-        var pos = { x: x, y: y + k };
+  for (let x = 0; x < BOARD_SIZE; x++) {
+    for (let y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
+      let line = [];
+      for (let k = 0; k < WIN_COUNT; k++) {
+        let pos = { x: x, y: y + k };
         line.push(pos);
         WINS_MAP[pos.x][pos.y].push(lineId);
       }
@@ -59,11 +59,11 @@ function initWinLines() {
   }
 
   // Down-right diagonal (\) (\)
-  for (var x = 0; x <= BOARD_SIZE - WIN_COUNT; x++) {
-    for (var y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
-      var line = [];
-      for (var k = 0; k < WIN_COUNT; k++) {
-        var pos = { x: x + k, y: y + k };
+  for (let x = 0; x <= BOARD_SIZE - WIN_COUNT; x++) {
+    for (let y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
+      let line = [];
+      for (let k = 0; k < WIN_COUNT; k++) {
+        let pos = { x: x + k, y: y + k };
         line.push(pos);
         WINS_MAP[pos.x][pos.y].push(lineId);
       }
@@ -73,11 +73,11 @@ function initWinLines() {
   }
 
   // Down-left diagonal (/) (/)
-  for (var x = WIN_COUNT - 1; x < BOARD_SIZE; x++) {
-    for (var y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
-      var line = [];
-      for (var k = 0; k < WIN_COUNT; k++) {
-        var pos = { x: x - k, y: y + k };
+  for (let x = WIN_COUNT - 1; x < BOARD_SIZE; x++) {
+    for (let y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
+      let line = [];
+      for (let k = 0; k < WIN_COUNT; k++) {
+        let pos = { x: x - k, y: y + k };
         line.push(pos);
         WINS_MAP[pos.x][pos.y].push(lineId);
       }
@@ -179,7 +179,7 @@ function getBestAIMove(board, aiPlayer) {
     const line = WIN_LINES[lid];
     let aiCount = 0;
     let humanCount = 0;
-    for (var k = 0; k < line.length; k++) {
+    for (let k = 0; k < line.length; k++) {
       const val = board[line[k].y][line[k].x];
       if (val === aiPlayer) aiCount++;
       else if (val === humanPlayer) humanCount++;
@@ -190,14 +190,14 @@ function getBestAIMove(board, aiPlayer) {
 
     if (aiCount > 0 && humanCount === 0) {
       // AI's line, add score to empty positions
-      for (var k = 0; k < line.length; k++) {
+      for (let k = 0; k < line.length; k++) {
         if (board[line[k].y][line[k].x] === EMPTY) {
           scoreAI[line[k].x][line[k].y] += SCORE_AI[aiCount];
         }
       }
     } else if (humanCount > 0 && aiCount === 0) {
       // Human's line, add score to empty positions (defense score)
-      for (var k = 0; k < line.length; k++) {
+      for (let k = 0; k < line.length; k++) {
         if (board[line[k].y][line[k].x] === EMPTY) {
           scoreHuman[line[k].x][line[k].y] += SCORE_HUMAN[humanCount];
         }
@@ -324,7 +324,7 @@ if (typeof document !== "undefined") {
     // Grid lines
     context.strokeStyle = "#8b7355";
     context.lineWidth = 1;
-    for (var i = 0; i < BOARD_SIZE; i++) {
+    for (let i = 0; i < BOARD_SIZE; i++) {
       const pos = MARGIN + i * CELL_SIZE;
       // Vertical lines
       context.beginPath();
@@ -347,7 +347,7 @@ if (typeof document !== "undefined") {
       { x: 11, y: 11 },
     ];
     context.fillStyle = "#8b7355";
-    for (var i = 0; i < starPoints.length; i++) {
+    for (let i = 0; i < starPoints.length; i++) {
       const sx = MARGIN + starPoints[i].x * CELL_SIZE;
       const sy = MARGIN + starPoints[i].y * CELL_SIZE;
       context.beginPath();
@@ -795,7 +795,7 @@ if (typeof document !== "undefined") {
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      var resultEl = document.getElementById("rps-result");
+      let resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -839,7 +839,7 @@ if (typeof document !== "undefined") {
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById("rps-result");
+        let resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
