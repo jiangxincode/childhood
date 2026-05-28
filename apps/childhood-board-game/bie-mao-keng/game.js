@@ -353,14 +353,23 @@ if (typeof document !== "undefined") {
 
     // Draw position nodes (click targets)
     for (var i = 0; i < TOTAL_POSITIONS; i++) {
+      var g = document.createElementNS(svgNS, "g");
+      g.setAttribute("class", "node");
+      g.setAttribute("data-pos", i);
+      g.setAttribute("transform", "translate(" + POSITIONS[i].x + "," + POSITIONS[i].y + ")");
+
       var circle = document.createElementNS(svgNS, "circle");
-      circle.setAttribute("cx", POSITIONS[i].x);
-      circle.setAttribute("cy", POSITIONS[i].y);
       circle.setAttribute("r", "28");
-      circle.setAttribute("class", "position-node");
-      circle.dataset.pos = i;
-      circle.style.cursor = "pointer";
-      circle.addEventListener(
+      circle.setAttribute("class", "node-circle");
+      g.appendChild(circle);
+
+      var text = document.createElementNS(svgNS, "text");
+      text.setAttribute("class", "node-text");
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("dominant-baseline", "central");
+      g.appendChild(text);
+
+      g.addEventListener(
         "click",
         (function (pos) {
           return function () {
@@ -368,16 +377,7 @@ if (typeof document !== "undefined") {
           };
         })(i)
       );
-      svg.appendChild(circle);
-
-      // Piece text element
-      var text = document.createElementNS(svgNS, "text");
-      text.setAttribute("x", POSITIONS[i].x);
-      text.setAttribute("y", POSITIONS[i].y + 8);
-      text.setAttribute("class", "piece-text");
-      text.dataset.pos = i;
-      text.style.pointerEvents = "none";
-      svg.appendChild(text);
+      svg.appendChild(g);
     }
 
     boardEl.appendChild(svg);
@@ -386,12 +386,12 @@ if (typeof document !== "undefined") {
   function renderGame() {
     if (!state) return;
 
-    var nodes = document.querySelectorAll("#board .position-node");
-    var texts = document.querySelectorAll("#board .piece-text");
+    var nodes = document.querySelectorAll("#board .node");
+    var texts = document.querySelectorAll("#board .node-text");
 
     nodes.forEach((node) => {
       var pos = Number.parseInt(node.dataset.pos);
-      node.setAttribute("class", "position-node");
+      node.setAttribute("class", "node");
 
       if (state.board[pos] === PLAYER_A) {
         node.classList.add("node-a");
@@ -414,15 +414,12 @@ if (typeof document !== "undefined") {
     });
 
     texts.forEach((text) => {
-      var pos = Number.parseInt(text.dataset.pos);
+      var pos = Number.parseInt(text.parentElement.dataset.pos);
       text.textContent = "";
-      text.setAttribute("class", "piece-text");
       if (state.board[pos] === PLAYER_A) {
         text.textContent = getPieceLabel(PLAYER_A);
-        text.classList.add("text-a");
       } else if (state.board[pos] === PLAYER_B) {
         text.textContent = getPieceLabel(PLAYER_B);
-        text.classList.add("text-b");
       }
     });
 

@@ -1,10 +1,9 @@
 :root {
   --a-color: #1565c0;
   --b-color: #e53935;
-  --board-bg: #5d4037;
-  --node-bg: rgba(255, 255, 255, 0.95);
-  --node-border: #bdbdbd;
-  --edge-color: #8d6e63;
+  --board-bg: #f9f3e3;
+  --board-line: #2c2c2c;
+  --node-empty: #ffffff;
   --well-color: #ff9800;
   --overlay-bg: rgba(0, 0, 0, 0.5);
 }
@@ -160,7 +159,7 @@ body {
 
 /* SVG board styles */
 .board-edge {
-  stroke: var(--edge-color);
+  stroke: var(--board-line);
   stroke-width: 4;
   stroke-linecap: round;
 }
@@ -180,47 +179,44 @@ body {
   text-anchor: middle;
 }
 
-.position-node {
-  fill: var(--node-bg);
-  stroke: var(--node-border);
-  stroke-width: 3;
+.node {
+  cursor: pointer;
+}
+.node-circle {
+  fill: var(--node-empty);
+  stroke: var(--board-line);
+  stroke-width: 2;
   transition: fill 0.15s, stroke 0.15s;
 }
-.position-node:hover {
+.node-circle:hover {
   stroke: #ff9800;
   stroke-width: 4;
 }
-.node-a {
+.node-text {
+  font-size: 22px;
+  font-weight: bold;
+  fill: #fff;
+  pointer-events: none;
+  user-select: none;
+}
+.node-a .node-circle {
   fill: var(--a-color);
   stroke: #0d47a1;
 }
-.node-b {
+.node-b .node-circle {
   fill: var(--b-color);
   stroke: #b71c1c;
 }
-.node-selected {
+.node-selected .node-circle {
   stroke: #ff9800 !important;
   stroke-width: 5 !important;
   filter: drop-shadow(0 0 8px #ff9800);
 }
-.node-highlight {
+.node-highlight .node-circle {
   fill: #e8f5e9 !important;
   stroke: #4caf50 !important;
   stroke-width: 4 !important;
   stroke-dasharray: 4 2;
-}
-
-.piece-text {
-  font-size: 24px;
-  font-weight: bold;
-  text-anchor: middle;
-  fill: #fff;
-}
-.text-a {
-  fill: #fff;
-}
-.text-b {
-  fill: #fff;
 }
 
 #rules-panel {
