@@ -1043,7 +1043,6 @@ if (typeof document !== "undefined") {
   let roomUI = null;
   let localPlayerRole = null; // 'host' | 'guest'
   let localTeam = null; // RED or BLUE
-  let remoteTeam = null; // RED or BLUE
   let pendingBoardSeed = null; // For guest: seed from host for deterministic board
   let onlineTeamsAssigned = false; // Track if teams have been assigned in flip mode
 
@@ -1875,7 +1874,6 @@ if (typeof document !== "undefined") {
     }
     localPlayerRole = null;
     localTeam = null;
-    remoteTeam = null;
     pendingBoardSeed = null;
     onlineTeamsAssigned = false;
   }
@@ -2007,7 +2005,6 @@ if (typeof document !== "undefined") {
       gameState = createGameState({ gameType: gameType, oppType: "online" }, seed);
 
       localTeam = RED;
-      remoteTeam = BLUE;
 
       if (gameType !== "flip") {
         gameState.currentTeam = firstPlayerRole === "host" ? RED : BLUE;
@@ -2025,7 +2022,6 @@ if (typeof document !== "undefined") {
       gameState = createGameState({ gameType: gameType, oppType: "online" }, actualSeed);
 
       localTeam = BLUE;
-      remoteTeam = RED;
 
       if (gameType !== "flip") {
         gameState.currentTeam = firstPlayerRole === "host" ? RED : BLUE;

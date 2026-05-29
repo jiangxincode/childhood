@@ -551,16 +551,6 @@ function getQuickMoves(board, player, koPoint, lastX, lastY) {
       if (board[y][x] !== EMPTY) continue;
       if (koPoint && koPoint.x === x && koPoint.y === y) continue;
 
-      // Quick suicide check: see if any neighbor is empty or opponent with 1 liberty
-      let hasEmptyNeighbor = false;
-      for (let d = 0; d < DIRECTIONS.length; d++) {
-        const nx = x + DIRECTIONS[d].dx;
-        const ny = y + DIRECTIONS[d].dy;
-        if (isValidPosition(nx, ny)) {
-          if (board[ny][nx] === EMPTY) hasEmptyNeighbor = true;
-        }
-      }
-
       const dist = Math.abs(x - lastX) + Math.abs(y - lastY);
       if (dist <= radius) {
         nearMoves.push({ x: x, y: y });
