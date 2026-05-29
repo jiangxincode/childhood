@@ -122,8 +122,10 @@ function createGameState(mode) {
   const cards = [];
   for (let i = 0; i < ROLES.length; i++) {
     const role = ROLES[i];
-    cards.push({ role: role, team: "red", faceUp: false, carrying: null });
-    cards.push({ role: role, team: "blue", faceUp: false, carrying: null });
+    cards.push(
+      { role: role, team: "red", faceUp: false, carrying: null },
+      { role: role, team: "blue", faceUp: false, carrying: null }
+    );
   }
 
   // Fisher-Yates shuffle
