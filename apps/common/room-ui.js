@@ -58,7 +58,7 @@ class RoomUI {
     this._destroyed = true;
     this._cleanupConnection();
     if (this._overlay && this._overlay.parentNode) {
-      this._overlay.parentNode.removeChild(this._overlay);
+      this._overlay.remove();
     }
     this._overlay = null;
   }
@@ -372,7 +372,7 @@ class RoomUI {
         document.body.appendChild(ta);
         ta.select();
         document.execCommand("copy");
-        document.body.removeChild(ta);
+        ta.remove();
       }
       const orig = button.textContent;
       button.textContent = "已复制!";
