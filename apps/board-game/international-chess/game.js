@@ -504,7 +504,7 @@ function getKingMoves(board, c, r, color, hasMoved) {
   if (hasMoved && !hasMoved.has(c + "," + r)) {
     const row = r;
     // King-side castling (king-side)
-    const kRookMoved = hasMoved && hasMoved.has("7," + row);
+    const kRookMoved = hasMoved.has("7," + row);
     const kPathClear = board[5][row] === EMPTY && board[6][row] === EMPTY;
     if (
       !kRookMoved &&
@@ -522,7 +522,7 @@ function getKingMoves(board, c, r, color, hasMoved) {
       }
     }
     // Queen-side castling (queen-side)
-    const qRookMoved = hasMoved && hasMoved.has("0," + row);
+    const qRookMoved = hasMoved.has("0," + row);
     const qPathClear =
       board[1][row] === EMPTY && board[2][row] === EMPTY && board[3][row] === EMPTY;
     if (
