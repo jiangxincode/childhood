@@ -1,4 +1,4 @@
-/* eslint-disable no-let, no-undef */
+/* eslint-disable no-var, no-undef */
 /* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, smartAiDecide:writable, isStalemateDraw:writable, recordCaptureAction:writable, recordNonCaptureAction:writable */
 // ============================================================
 // Dragon Tiger Fight - Game Core Logic
@@ -7,10 +7,10 @@
 // ============================================================
 // Shared module loading (Node.js test environment)
 // ============================================================
-if (judgeRPS === undefined && typeof require !== "undefined") {
+if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  let judgeRPS = _gameUtils.judgeRPS;
-  let shuffleArray = _gameUtils.shuffleArray;
+  var judgeRPS = _gameUtils.judgeRPS;
+  var shuffleArray = _gameUtils.shuffleArray;
 }
 if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
   const _core = require("../../common/card-game-core.js");
@@ -229,7 +229,9 @@ function flipCard(state, x, y) {
   card.faceUp = true;
 
   // First flip: determine team assignment
-  if (!state.teamAssigned) {
+  if (state.teamAssigned) {
+    state.currentTeam = state.currentTeam === "dragon" ? "tiger" : "dragon";
+  } else {
     state.teamAssigned = true;
     if (state.mode === "pve") {
       if (state.aiFirst) {
@@ -247,8 +249,6 @@ function flipCard(state, x, y) {
     } else {
       state.currentTeam = state.currentTeam === "dragon" ? "tiger" : "dragon";
     }
-  } else {
-    state.currentTeam = state.currentTeam === "dragon" ? "tiger" : "dragon";
   }
   state.turnCount++;
   recordNonCaptureAction(state);
@@ -490,11 +490,7 @@ if (typeof document !== "undefined") {
 
         if (!card) {
           cell.classList.add("cell-empty");
-        } else if (!card.faceUp) {
-          const back = document.createElement("div");
-          back.className = "cell-back";
-          cell.appendChild(back);
-        } else {
+        } else if (card.faceUp) {
           cell.classList.add(card.team === "dragon" ? "cell-dragon" : "cell-tiger");
           const face = document.createElement("div");
           face.className = "cell-face";
@@ -503,6 +499,10 @@ if (typeof document !== "undefined") {
           img.alt = card.piece;
           face.appendChild(img);
           cell.appendChild(face);
+        } else {
+          const back = document.createElement("div");
+          back.className = "cell-back";
+          cell.appendChild(back);
         }
       }
     }
@@ -524,12 +524,12 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (let i = 0; i < moveTargets.length; i++) {
-      let tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (const target of moveTargets) {
+      var tc = getCell(target.x, target.y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (let i = 0; i < captureTargets.length; i++) {
-      let tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (const target2 of captureTargets) {
+      var tc = getCell(target2.x, target2.y);
       if (tc) tc.classList.add("cell-capture-target");
     }
   }
@@ -537,13 +537,13 @@ if (typeof document !== "undefined") {
   function updateStatus(state) {
     // Current team
     if (state.mode === "online") {
-      if (!state.teamAssigned) {
-        $currentTeam.textContent = localIsFirstPlayer ? "你的回合" : "对方回合";
-        $currentTeam.className = "team-indicator";
-      } else {
+      if (state.teamAssigned) {
         $currentTeam.textContent = state.currentTeam === localTeam ? "你的回合" : "对方回合";
         $currentTeam.className =
           "team-indicator " + (state.currentTeam === localTeam ? "dragon-text" : "tiger-text");
+      } else {
+        $currentTeam.textContent = localIsFirstPlayer ? "你的回合" : "对方回合";
+        $currentTeam.className = "team-indicator";
       }
     } else if (state.currentTeam) {
       const label = getCurrentPlayerLabel({
@@ -583,11 +583,10 @@ if (typeof document !== "undefined") {
 
     // Captured cards
     $capturedDragon.innerHTML = "";
-    for (let i = 0; i < state.capturedDragon.length; i++) {
-      let piece = state.capturedDragon[i];
-      let div = document.createElement("div");
+    for (const piece of state.capturedDragon) {
+      const div = document.createElement("div");
       div.className = "captured-card";
-      let img = document.createElement("img");
+      const img = document.createElement("img");
       img.src = getImagePath(piece);
       img.alt = piece;
       div.appendChild(img);
@@ -595,11 +594,10 @@ if (typeof document !== "undefined") {
     }
 
     $capturedTiger.innerHTML = "";
-    for (let i = 0; i < state.capturedTiger.length; i++) {
-      let piece = state.capturedTiger[i];
-      let div = document.createElement("div");
+    for (const piece of state.capturedTiger) {
+      const div = document.createElement("div");
       div.className = "captured-card";
-      let img = document.createElement("img");
+      const img = document.createElement("img");
       img.src = getImagePath(piece);
       img.alt = piece;
       div.appendChild(img);
@@ -726,8 +724,12 @@ if (typeof document !== "undefined") {
         }
         handleOnlineRPSResult({ result: "draw" });
       } else {
-        const winnerRole =
-          result === 1 ? localPlayerRole : localPlayerRole === "host" ? "guest" : "host";
+        let winnerRole;
+        if (result === 1) {
+          winnerRole = localPlayerRole;
+        } else {
+          winnerRole = localPlayerRole === "host" ? "guest" : "host";
+        }
         const rpsResult = { result: "win", winner: winnerRole };
         if (networkProtocol) {
           networkProtocol.sendRPSResult(rpsResult);
@@ -887,8 +889,8 @@ if (typeof document !== "undefined") {
   }
 
   // --- Rock-Paper-Scissors logic ---
-  let rpsP1Choice = null;
-  let rpsP2Choice = null;
+  var rpsP1Choice = null;
+  var rpsP2Choice = null;
 
   function startGame(firstTeam) {
     showGameArea();
@@ -1002,9 +1004,7 @@ if (typeof document !== "undefined") {
   // Online mode button
   const btnOnline = document.getElementById("btn-online");
   if (btnOnline) {
-    if (!RoomUI.isSupported()) {
-      btnOnline.style.display = "none";
-    } else {
+    if (RoomUI.isSupported()) {
       btnOnline.addEventListener("click", () => {
         roomUI = new RoomUI({
           onConnectionEstablished: (connection, protocol, role) => {
@@ -1023,6 +1023,8 @@ if (typeof document !== "undefined") {
         });
         roomUI.show();
       });
+    } else {
+      btnOnline.style.display = "none";
     }
   }
 
@@ -1167,7 +1169,6 @@ if (typeof document !== "undefined") {
     // Click opponent face-up card (no selection)
     if (card?.faceUp && card.team !== currentTeam) {
       showMessage("这不是你的棋子", "error");
-      return;
     }
   });
 
@@ -1200,34 +1201,37 @@ if (typeof document !== "undefined") {
       if (gameState.teamAssigned && gameState.currentTeam === gameState.aiTeam) {
         // Team assigned, AI turn
         triggerAI();
-      } else if (!gameState.teamAssigned && gameState.aiFirst) {
-        // Team not assigned but computer first (player flips after first flip)
-        showMessage("请翻开一张牌", "");
-      } else if (!gameState.teamAssigned) {
-        showMessage("请翻开一张牌", "");
-      } else {
+      } else if (gameState.teamAssigned) {
         showMessage("你的回合", "");
+      } else {
+        showMessage("请翻开一张牌", "");
       }
     } else if (gameState.mode === "online") {
-      if (!gameState.teamAssigned) {
-        showMessage("请翻开一张牌", "");
-      } else if (gameState.currentTeam === localTeam) {
-        showMessage("你的回合", "");
+      if (gameState.teamAssigned) {
+        if (gameState.currentTeam === localTeam) {
+          showMessage("你的回合", "");
+        } else {
+          showMessage("等待对方操作...", "info");
+        }
       } else {
-        showMessage("等待对方操作...", "info");
+        showMessage("请翻开一张牌", "");
       }
+    } else if (gameState.teamAssigned) {
+      const sidesOrder = gameState.firstPlayer
+        ? [gameState.firstPlayer, gameState.firstPlayer === "dragon" ? "tiger" : "dragon"]
+        : ["dragon", "tiger"];
+      const idx = sidesOrder.indexOf(gameState.currentTeam);
+      const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
+      showMessage(playerName + "的回合", "");
     } else {
       // PVP - show 玩家1 / 玩家2 instead of dragon/tiger
-      if (!gameState.teamAssigned) {
-        showMessage("请翻开一张牌", "");
-      } else {
-        const sidesOrder = gameState.firstPlayer
-          ? [gameState.firstPlayer, gameState.firstPlayer === "dragon" ? "tiger" : "dragon"]
-          : ["dragon", "tiger"];
-        const idx = sidesOrder.indexOf(gameState.currentTeam);
-        const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
-        showMessage(playerName + "的回合", "");
-      }
+      showMessage("请翻开一张牌", "");
+      const sidesOrder = gameState.firstPlayer
+        ? [gameState.firstPlayer, gameState.firstPlayer === "dragon" ? "tiger" : "dragon"]
+        : ["dragon", "tiger"];
+      const idx = sidesOrder.indexOf(gameState.currentTeam);
+      const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
+      showMessage(playerName + "的回合", "");
     }
   }
 

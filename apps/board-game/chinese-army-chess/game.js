@@ -1,12 +1,13 @@
-/* eslint-disable no-let, no-undef */
+/* eslint-disable no-var, no-undef */
 // ============================================================
 // Army Chess (Open) - Game Core Logic
 // ============================================================
 
-if (judgeRPS === undefined && typeof require !== "undefined") {
+let judgeRPS, getRPSName;
+if (typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  let judgeRPS = _gameUtils.judgeRPS;
-  let getRPSName = _gameUtils.getRPSName;
+  judgeRPS = _gameUtils.judgeRPS;
+  getRPSName = _gameUtils.getRPSName;
 }
 
 // ============================================================
@@ -115,7 +116,7 @@ function isMovable(piece) {
 }
 
 function getRank(name) {
-  return RANK_MAP[name] !== undefined ? RANK_MAP[name] : null;
+  return RANK_MAP[name] === undefined ? null : RANK_MAP[name];
 }
 
 function inBounds(x, y) {
@@ -123,15 +124,15 @@ function inBounds(x, y) {
 }
 
 function isCamp(x, y) {
-  for (let i = 0; i < CAMPS.length; i++) {
-    if (CAMPS[i].x === x && CAMPS[i].y === y) return true;
+  for (const camp of CAMPS) {
+    if (camp.x === x && camp.y === y) return true;
   }
   return false;
 }
 
 function isBaseCamp(x, y) {
-  for (let i = 0; i < BASE_CAMPS.length; i++) {
-    if (BASE_CAMPS[i].x === x && BASE_CAMPS[i].y === y) return true;
+  for (const camp2 of BASE_CAMPS) {
+    if (camp2.x === x && camp2.y === y) return true;
   }
   return false;
 }
@@ -223,40 +224,32 @@ function resolveCombat(attacker, defender) {
 // Create Game State
 // ============================================================
 
-function createGameState(mode, seed) {
-  const gameType = mode.gameType || "open";
-  const oppType = mode.oppType || "pvp";
-  const rng = seed ? createSeededRandom(seed) : null;
-
-  const pieces = [];
-
-  // Red team 25 pieces
-  const redNames = [];
+/**
+ * Create piece list for both teams (50 pieces total).
+ * @returns {Array} array of piece objects
+ */
+function createAllPieces() {
+  const nameList = [];
   for (const name in PIECE_COUNTS) {
     for (let i = 0; i < PIECE_COUNTS[name]; i++) {
-      redNames.push(name);
+      nameList.push(name);
     }
   }
-  for (let i = 0; i < redNames.length; i++) {
-    pieces.push({
-      name: redNames[i],
-      team: RED,
-      rank: getRank(redNames[i]),
-      state: STATE_FACE_UP,
-    });
+  const pieces = [];
+  for (const name of nameList) {
+    pieces.push({ name, team: RED, rank: getRank(name), state: STATE_FACE_UP });
   }
-
-  // Blue team 25 pieces
-  for (let i = 0; i < redNames.length; i++) {
-    pieces.push({
-      name: redNames[i],
-      team: BLUE,
-      rank: getRank(redNames[i]),
-      state: STATE_FACE_UP,
-    });
+  for (const name of nameList) {
+    pieces.push({ name, team: BLUE, rank: getRank(name), state: STATE_FACE_UP });
   }
+  return pieces;
+}
 
-  // Place pieces
+/**
+ * Create an empty ROWS x COLS board.
+ * @returns {Array}
+ */
+function createEmptyBoard() {
   const board = [];
   for (let y = 0; y < ROWS; y++) {
     board[y] = [];
@@ -264,25 +257,44 @@ function createGameState(mode, seed) {
       board[y][x] = null;
     }
   }
+  return board;
+}
 
+/**
+ * Place pieces on board according to game type.
+ * @param {Array} board
+ * @param {Array} pieces
+ * @param {string} gameType - "flip" | "open" | "hidden"
+ * @param {Object|null} rng - seeded RNG or null
+ */
+function placePiecesByType(board, pieces, gameType, rng) {
   if (gameType === "flip") {
-    // Flip mode: 50 pieces randomly placed on full board, all face down
     placePiecesRandom(board, pieces, rng);
-  } else {
-    // Open/hidden mode: constrained placement in halves
-    placePiecesForTeam(board, pieces.slice(0, 25), 0, rng); // Red -> y 6-11
-    placePiecesForTeam(board, pieces.slice(25, 50), 1, rng); // Blue -> y 0-5
+    return;
+  }
+  // Open/hidden mode: constrained placement in halves
+  placePiecesForTeam(board, pieces.slice(0, 25), 0, rng); // Red -> y 6-11
+  placePiecesForTeam(board, pieces.slice(25, 50), 1, rng); // Blue -> y 0-5
 
-    // Hidden mode: opponent pieces face down
-    if (gameType === "hidden") {
-      for (let y = 0; y < ROWS; y++) {
-        for (let x = 0; x < COLS; x++) {
-          const p = board[y][x];
-          if (p) p.state = STATE_FACE_DOWN;
-        }
+  // Hidden mode: opponent pieces face down
+  if (gameType === "hidden") {
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        const p = board[y][x];
+        if (p) p.state = STATE_FACE_DOWN;
       }
     }
   }
+}
+
+function createGameState(mode, seed) {
+  const gameType = mode.gameType || "open";
+  const oppType = mode.oppType || "pvp";
+  const rng = seed ? createSeededRandom(seed) : null;
+
+  const pieces = createAllPieces();
+  const board = createEmptyBoard();
+  placePiecesByType(board, pieces, gameType, rng);
 
   return {
     gameType: gameType,
@@ -302,32 +314,59 @@ function createGameState(mode, seed) {
   };
 }
 
-function placePiecesForTeam(board, pieces, halfIndex, rng) {
-  const yStart = halfIndex === 0 ? 6 : 0;
-
-  // Classify pieces
+/**
+ * Classify pieces into flags, mines, bombs, and others.
+ * @param {Array} pieces
+ * @returns {{flags: Array, mines: Array, bombs: Array, others: Array}}
+ */
+function classifyPieces(pieces) {
   const flags = [];
   const mines = [];
   const bombs = [];
   const others = [];
-
-  for (let i = 0; i < pieces.length; i++) {
-    const p = pieces[i];
+  for (const p of pieces) {
     if (isFlag(p.name)) flags.push(p);
     else if (isMine(p.name)) mines.push(p);
     else if (isBomb(p.name)) bombs.push(p);
     else others.push(p);
   }
+  return { flags, mines, bombs, others };
+}
 
-  // Collect all positions in this half (excluding camps)
-  const allPositions = [];
+/**
+ * Collect all non-camp positions in the given half of the board.
+ * @param {number} yStart - starting row for this half
+ * @returns {Array<{x: number, y: number}>}
+ */
+function collectHalfPositions(yStart) {
+  const positions = [];
   for (let y = yStart; y < yStart + 6; y++) {
     for (let x = 0; x < COLS; x++) {
-      if (!isCamp(x, y)) {
-        allPositions.push({ x: x, y: y });
-      }
+      if (!isCamp(x, y)) positions.push({ x, y });
     }
   }
+  return positions;
+}
+
+/**
+ * Place pieces at shuffled positions from the candidate list.
+ * @param {Array} board
+ * @param {Array} pieces - pieces to place
+ * @param {Array} candidates - candidate positions (will be consumed from front)
+ * @param {Function} occupy - marks a position as occupied
+ */
+function placeAtShuffled(board, pieces, candidates, occupy) {
+  for (let i = 0; i < pieces.length; i++) {
+    const pos = candidates[i];
+    board[pos.y][pos.x] = pieces[i];
+    occupy(pos.x, pos.y);
+  }
+}
+
+function placePiecesForTeam(board, pieces, halfIndex, rng) {
+  const yStart = halfIndex === 0 ? 6 : 0;
+  const { flags, mines, bombs, others } = classifyPieces(pieces);
+  const allPositions = collectHalfPositions(yStart);
 
   // Mark occupied positions
   const occupied = {};
@@ -341,61 +380,30 @@ function placePiecesForTeam(board, pieces, halfIndex, rng) {
     return rng ? shuffleSeeded(arr, rng) : shuffle(arr);
   }
 
-  // 1. Place flag: must be in base camp
-  const baseCampPositions = [];
-  for (let i = 0; i < BASE_CAMPS.length; i++) {
-    const bc = BASE_CAMPS[i];
-    if (bc.y >= yStart && bc.y < yStart + 6) {
-      baseCampPositions.push(bc);
-    }
-  }
+  // 1. Place flags: must be in base camp
+  const baseCampPositions = BASE_CAMPS.filter((bc) => bc.y >= yStart && bc.y < yStart + 6);
   doShuffle(baseCampPositions);
-  for (let i = 0; i < flags.length; i++) {
-    let pos = baseCampPositions[i];
-    board[pos.y][pos.x] = flags[i];
-    occupy(pos.x, pos.y);
-  }
+  placeAtShuffled(board, flags, baseCampPositions, occupy);
 
   // 2. Place mines: only in last two rows (excluding camps)
   const mineRows = [];
   for (let y = yStart + 4; y < yStart + 6; y++) {
     for (let x = 0; x < COLS; x++) {
-      if (!isCamp(x, y) && !isOccupied(x, y)) mineRows.push({ x: x, y: y });
+      if (!isCamp(x, y) && !isOccupied(x, y)) mineRows.push({ x, y });
     }
   }
   doShuffle(mineRows);
-  for (let i = 0; i < mines.length; i++) {
-    let pos = mineRows[i];
-    board[pos.y][pos.x] = mines[i];
-    occupy(pos.x, pos.y);
-  }
+  placeAtShuffled(board, mines, mineRows, occupy);
 
   // 3. Place bombs: not in first row (excluding camps)
-  const bombPositions = [];
-  for (let i = 0; i < allPositions.length; i++) {
-    let pos = allPositions[i];
-    if (pos.y === yStart) continue; // Exclude first row
-    if (!isOccupied(pos.x, pos.y)) bombPositions.push(pos);
-  }
+  const bombPositions = allPositions.filter((pos) => pos.y !== yStart && !isOccupied(pos.x, pos.y));
   doShuffle(bombPositions);
-  for (let i = 0; i < bombs.length; i++) {
-    let pos = bombPositions[i];
-    board[pos.y][pos.x] = bombs[i];
-    occupy(pos.x, pos.y);
-  }
+  placeAtShuffled(board, bombs, bombPositions, occupy);
 
   // 4. Place remaining pieces (excluding camps)
-  const remaining = [];
-  for (let i = 0; i < allPositions.length; i++) {
-    let pos = allPositions[i];
-    if (!isOccupied(pos.x, pos.y)) remaining.push(pos);
-  }
+  const remaining = allPositions.filter((pos) => !isOccupied(pos.x, pos.y));
   doShuffle(remaining);
-  for (let i = 0; i < others.length; i++) {
-    let pos = remaining[i];
-    board[pos.y][pos.x] = others[i];
-    occupy(pos.x, pos.y);
-  }
+  placeAtShuffled(board, others, remaining, occupy);
 }
 
 function placePiecesRandom(board, pieces, rng) {
@@ -412,8 +420,8 @@ function placePiecesRandom(board, pieces, rng) {
   else shuffle(allPositions);
 
   // All pieces face down
-  for (let i = 0; i < pieces.length; i++) {
-    pieces[i].state = STATE_FACE_DOWN;
+  for (const piece of pieces) {
+    piece.state = STATE_FACE_DOWN;
   }
 
   // Place randomly
@@ -477,11 +485,10 @@ function getValidMoves(board, x, y, team, gameType) {
 
   // Add diagonal moves (camp entry/exit)
   const diagMoves = getDiagonalMoves(board, x, y, team);
-  for (let i = 0; i < diagMoves.length; i++) {
-    const dm = diagMoves[i];
+  for (const dm of diagMoves) {
     let dup = false;
-    for (let j = 0; j < moves.length; j++) {
-      if (moves[j].x === dm.x && moves[j].y === dm.y) {
+    for (const move of moves) {
+      if (move.x === dm.x && move.y === dm.y) {
         dup = true;
         break;
       }
@@ -501,9 +508,9 @@ function getNormalMoves(board, x, y, team) {
     { dx: 1, dy: 0 },
   ];
 
-  for (let d = 0; d < dirs.length; d++) {
-    let nx = x + dirs[d].dx;
-    let ny = y + dirs[d].dy;
+  for (const dir2 of dirs) {
+    const nx = x + dir2.dx;
+    const ny = y + dir2.dy;
     if (!inBounds(nx, ny)) continue;
 
     // Gap row crossing: only middle column(x=2) or side vertical railways(x=0,4) can cross
@@ -512,7 +519,7 @@ function getNormalMoves(board, x, y, team) {
     }
 
     // Normal piece can move one step to adjacent position
-    let target = board[ny][nx];
+    const target = board[ny][nx];
     if (target === null) {
       moves.push({ x: nx, y: ny, type: "move" });
     } else if (target.team !== team) {
@@ -529,23 +536,23 @@ function getNormalMoves(board, x, y, team) {
 
   // Non-engineer pieces on railway: extra step along railway
   if (isOnRailway(x, y)) {
-    for (let d = 0; d < dirs.length; d++) {
-      let nx = x + dirs[d].dx;
-      let ny = y + dirs[d].dy;
+    for (const dir of dirs) {
+      const nx = x + dir.dx;
+      const ny = y + dir.dy;
       if (!inBounds(nx, ny)) continue;
       if (!areOnSameRailway(x, y, nx, ny)) continue;
 
       // Check if already included
       let dup = false;
-      for (let j = 0; j < moves.length; j++) {
-        if (moves[j].x === nx && moves[j].y === ny) {
+      for (const move2 of moves) {
+        if (move2.x === nx && move2.y === ny) {
           dup = true;
           break;
         }
       }
       if (dup) continue;
 
-      let target = board[ny][nx];
+      const target = board[ny][nx];
       if (target === null) {
         moves.push({ x: nx, y: ny, type: "move" });
       } else if (target.team !== team) {
@@ -575,9 +582,9 @@ function getEngineerMoves(board, x, y, team) {
   ];
 
   // One orthogonal step (to adjacent non-railway cell, like camp)
-  for (let d = 0; d < dirs.length; d++) {
-    let nx = x + dirs[d].dx;
-    let ny = y + dirs[d].dy;
+  for (const dir of dirs) {
+    const nx = x + dir.dx;
+    const ny = y + dir.dy;
     if (!inBounds(nx, ny)) continue;
 
     // Gap row crossing check
@@ -588,9 +595,9 @@ function getEngineerMoves(board, x, y, team) {
     // Skip railway cells, leave for BFS
     if (isOnRailway(nx, ny)) continue;
 
-    let key = nx + "," + ny;
+    const key = nx + "," + ny;
     if (visited[key]) continue;
-    let target = board[ny][nx];
+    const target = board[ny][nx];
     if (target === null) {
       moves.push({ x: nx, y: ny, type: "move" });
     } else if (target.team !== team) {
@@ -605,10 +612,10 @@ function getEngineerMoves(board, x, y, team) {
 
   while (queue.length > 0) {
     const cur = queue.shift();
-    for (let d = 0; d < dirs.length; d++) {
-      let nx = cur.x + dirs[d].dx;
-      let ny = cur.y + dirs[d].dy;
-      let key = nx + "," + ny;
+    for (const dir3 of dirs) {
+      const nx = cur.x + dir3.dx;
+      const ny = cur.y + dir3.dy;
+      const key = nx + "," + ny;
       if (visited[key]) continue;
       if (!inBounds(nx, ny)) continue;
 
@@ -616,7 +623,7 @@ function getEngineerMoves(board, x, y, team) {
       if (!areOnSameRailway(cur.x, cur.y, nx, ny)) continue;
 
       visited[key] = true;
-      let target = board[ny][nx];
+      const target = board[ny][nx];
       if (target === null) {
         moves.push({ x: nx, y: ny, type: "move" });
         queue.push({ x: nx, y: ny });
@@ -656,17 +663,17 @@ function getDiagonalMoves(board, x, y, team) {
     { dx: 1, dy: 1 },
   ];
 
-  for (let d = 0; d < diagDirs.length; d++) {
-    const nx = x + diagDirs[d].dx;
-    const ny = y + diagDirs[d].dy;
+  for (const dir4 of diagDirs) {
+    const nx = x + dir4.dx;
+    const ny = y + dir4.dy;
     if (!inBounds(nx, ny)) continue;
 
     if (inCamp) {
       // In camp: move diagonally, can pass through empty non-camp cells to reach another camp
-      let cx = x + diagDirs[d].dx;
-      let cy = y + diagDirs[d].dy;
+      let cx = x + dir4.dx;
+      let cy = y + dir4.dy;
       while (inBounds(cx, cy)) {
-        let target = board[cy][cx];
+        const target = board[cy][cx];
         if (isCamp(cx, cy)) {
           // Reached another camp
           if (target === null) {
@@ -683,33 +690,29 @@ function getDiagonalMoves(board, x, y, team) {
           if (target.state === STATE_FACE_DOWN) break;
           if (isFlag(target.name) && piece.name === "工兵") {
             moves.push({ x: cx, y: cy, type: "capture_flag" });
-          } else {
-            if (canCapture(piece, target)) {
-              moves.push({ x: cx, y: cy, type: "capture" });
-            }
+          } else if (canCapture(piece, target)) {
+            moves.push({ x: cx, y: cy, type: "capture" });
           }
           break;
         } else {
           // Encountered own piece, cannot pass through
           break;
         }
-        cx += diagDirs[d].dx;
-        cy += diagDirs[d].dy;
+        cx += dir4.dx;
+        cy += dir4.dy;
       }
-    } else {
+    } else if (isCamp(nx, ny) || isBaseCamp(nx, ny)) {
       // Not in camp: can only enter camp or base camp
-      if (isCamp(nx, ny) || isBaseCamp(nx, ny)) {
-        let target = board[ny][nx];
-        if (target === null) {
-          moves.push({ x: nx, y: ny, type: "move" });
-        } else if (
-          target.team !== team &&
-          target.state !== STATE_FACE_DOWN &&
-          isFlag(target.name) &&
-          piece.name === "工兵"
-        ) {
-          moves.push({ x: nx, y: ny, type: "capture_flag" });
-        }
+      const target = board[ny][nx];
+      if (target === null) {
+        moves.push({ x: nx, y: ny, type: "move" });
+      } else if (
+        target.team !== team &&
+        target.state !== STATE_FACE_DOWN &&
+        isFlag(target.name) &&
+        piece.name === "工兵"
+      ) {
+        moves.push({ x: nx, y: ny, type: "capture_flag" });
       }
     }
   }
@@ -728,9 +731,9 @@ function moveCard(state, from, to) {
 
   const validMoves = getValidMoves(state.board, from.x, from.y, state.currentTeam);
   let valid = null;
-  for (let i = 0; i < validMoves.length; i++) {
-    if (validMoves[i].x === to.x && validMoves[i].y === to.y) {
-      valid = validMoves[i];
+  for (const move3 of validMoves) {
+    if (move3.x === to.x && move3.y === to.y) {
+      valid = move3;
       break;
     }
   }
@@ -883,7 +886,7 @@ function aiDecide(state, aiTeam) {
     }
     if (faceDown.length > 0) {
       // Prioritize flipping near own pieces, or flip randomly
-      let pick = faceDown[Math.floor(Math.random() * faceDown.length)];
+      const pick = faceDown[Math.floor(Math.random() * faceDown.length)];
       return { type: "flip", from: { x: pick.x, y: pick.y }, to: { x: pick.x, y: pick.y } };
     }
   }
@@ -891,13 +894,13 @@ function aiDecide(state, aiTeam) {
   // Priority 1: engineer captures flag
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
-      let piece = board[y][x];
+      const piece = board[y][x];
       if (!piece || piece.team !== aiTeam || piece.name !== "工兵") continue;
       if (piece.state === STATE_FACE_DOWN) continue;
-      let moves = getValidMoves(board, x, y, aiTeam, gameType);
-      for (let i = 0; i < moves.length; i++) {
-        if (moves[i].type === "capture_flag") {
-          return { type: "move", from: { x: x, y: y }, to: { x: moves[i].x, y: moves[i].y } };
+      const moves = getValidMoves(board, x, y, aiTeam, gameType);
+      for (const move5 of moves) {
+        if (move5.type === "capture_flag") {
+          return { type: "move", from: { x: x, y: y }, to: { x: move5.x, y: move5.y } };
         }
       }
     }
@@ -908,13 +911,13 @@ function aiDecide(state, aiTeam) {
   let bestScore = -999;
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
-      let piece = board[y][x];
+      const piece = board[y][x];
       if (!piece || piece.team !== aiTeam || !isMovable(piece)) continue;
       if (piece.state === STATE_FACE_DOWN) continue;
-      let moves = getValidMoves(board, x, y, aiTeam, gameType);
-      for (let i = 0; i < moves.length; i++) {
-        if (moves[i].type !== "capture") continue;
-        const target = board[moves[i].y][moves[i].x];
+      const moves = getValidMoves(board, x, y, aiTeam, gameType);
+      for (const move7 of moves) {
+        if (move7.type !== "capture") continue;
+        const target = board[move7.y][move7.x];
         if (target.state === STATE_FACE_DOWN) continue;
         const result = resolveCombat(piece, target);
         let score = 0;
@@ -926,7 +929,7 @@ function aiDecide(state, aiTeam) {
         }
         if (score > bestScore) {
           bestScore = score;
-          bestCapture = { from: { x: x, y: y }, to: { x: moves[i].x, y: moves[i].y } };
+          bestCapture = { from: { x: x, y: y }, to: { x: move7.x, y: move7.y } };
         }
       }
     }
@@ -939,13 +942,13 @@ function aiDecide(state, aiTeam) {
   const allMoves = [];
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
-      let piece = board[y][x];
+      const piece = board[y][x];
       if (!piece || piece.team !== aiTeam || !isMovable(piece)) continue;
       if (piece.state === STATE_FACE_DOWN) continue;
-      let moves = getValidMoves(board, x, y, aiTeam, gameType);
-      for (let i = 0; i < moves.length; i++) {
-        if (moves[i].type === "move") {
-          allMoves.push({ from: { x: x, y: y }, to: { x: moves[i].x, y: moves[i].y } });
+      const moves = getValidMoves(board, x, y, aiTeam, gameType);
+      for (const move4 of moves) {
+        if (move4.type === "move") {
+          allMoves.push({ from: { x: x, y: y }, to: { x: move4.x, y: move4.y } });
         }
       }
     }
@@ -953,17 +956,17 @@ function aiDecide(state, aiTeam) {
   // Railway moves preferred
   const railwayMoves = [];
   const normalMoves = [];
-  for (let i = 0; i < allMoves.length; i++) {
-    if (isOnRailway(allMoves[i].from.x, allMoves[i].from.y)) {
-      railwayMoves.push(allMoves[i]);
+  for (const move6 of allMoves) {
+    if (isOnRailway(move6.from.x, move6.from.y)) {
+      railwayMoves.push(move6);
     } else {
-      normalMoves.push(allMoves[i]);
+      normalMoves.push(move6);
     }
   }
   let pool = railwayMoves.length > 0 ? railwayMoves : normalMoves;
   if (pool.length === 0) pool = allMoves;
   if (pool.length > 0) {
-    let pick = pool[Math.floor(Math.random() * pool.length)];
+    const pick = pool[Math.floor(Math.random() * pool.length)];
     return { type: "move", from: pick.from, to: pick.to };
   }
 
@@ -1043,7 +1046,6 @@ if (typeof document !== "undefined") {
   let roomUI = null;
   let localPlayerRole = null; // 'host' | 'guest'
   let localTeam = null; // RED or BLUE
-  let remoteTeam = null; // RED or BLUE
   let pendingBoardSeed = null; // For guest: seed from host for deterministic board
   let onlineTeamsAssigned = false; // Track if teams have been assigned in flip mode
 
@@ -1127,12 +1129,11 @@ if (typeof document !== "undefined") {
     // ---- Highways (gray thin lines) ----
     // Horizontal highways
     const hHighwayRows = [0, 2, 3, 4, 7, 8, 9, 11];
-    for (let i = 0; i < hHighwayRows.length; i++) {
-      let y = hHighwayRows[i];
+    for (const y of hHighwayRows) {
       addSVGLine(gHighway, ns, svgX(0), svgY(y), svgX(4), svgY(y), "gray", 1);
     }
     // Vertical highways
-    for (let x = 0; x < COLS; x++) {
+    for (var x = 0; x < COLS; x++) {
       addSVGLine(gHighway, ns, svgX(x), svgY(0), svgX(x), svgY(5), "gray", 1);
       addSVGLine(gHighway, ns, svgX(x), svgY(6), svgX(x), svgY(11), "gray", 1);
     }
@@ -1140,8 +1141,7 @@ if (typeof document !== "undefined") {
     // ---- Railways (gold/black striped thick lines) ----
     // Horizontal railways
     const hRailRows = [1, 5, 6, 10];
-    for (let i = 0; i < hRailRows.length; i++) {
-      let y = hRailRows[i];
+    for (const y of hRailRows) {
       addSVGLine(gRailway, ns, svgX(0), svgY(y), svgX(4), svgY(y), "url(#rail-stripe)", 4);
     }
     // Vertical railways
@@ -1151,8 +1151,8 @@ if (typeof document !== "undefined") {
 
     // ---- Diagonals (gray dashed lines) ----
     const drawn = {};
-    for (let y = 0; y < ROWS; y++) {
-      for (let x = 0; x < COLS; x++) {
+    for (var y = 0; y < ROWS; y++) {
+      for (var x = 0; x < COLS; x++) {
         if (!hasDiagonalEligibility(x, y) && !isCamp(x, y)) continue;
         const diagDirs = [
           { dx: -1, dy: -1 },
@@ -1160,9 +1160,9 @@ if (typeof document !== "undefined") {
           { dx: 1, dy: -1 },
           { dx: 1, dy: 1 },
         ];
-        for (let d = 0; d < diagDirs.length; d++) {
-          const nx = x + diagDirs[d].dx;
-          const ny = y + diagDirs[d].dy;
+        for (const dir3 of diagDirs) {
+          const nx = x + dir3.dx;
+          const ny = y + dir3.dy;
           if (!inBounds(nx, ny)) continue;
           if (!hasDiagonalEligibility(nx, ny) && !isCamp(nx, ny) && !isBaseCamp(nx, ny)) continue;
           const key =
@@ -1188,8 +1188,8 @@ if (typeof document !== "undefined") {
     const CAMP_RX = 38;
     const CAMP_RY = 28;
 
-    for (let y = 0; y < ROWS; y++) {
-      for (let x = 0; x < COLS; x++) {
+    for (var y = 0; y < ROWS; y++) {
+      for (var x = 0; x < COLS; x++) {
         const cx = svgX(x),
           cy = svgY(y);
         let label = "兵 站";
@@ -1342,10 +1342,11 @@ if (typeof document !== "undefined") {
 
     // Remove old highlights
     const old = layer.querySelectorAll(".move-highlight");
-    for (let i = 0; i < old.length; i++) old[i].remove();
+    for (const el of old) {
+      el.remove();
+    }
 
-    for (let i = 0; i < moves.length; i++) {
-      const m = moves[i];
+    for (const m of moves) {
       const div = document.createElement("div");
       div.className = "move-highlight";
       if (m.type === "capture" || m.type === "capture_flag") {
@@ -1367,7 +1368,9 @@ if (typeof document !== "undefined") {
     const layer = document.getElementById("pieces-layer");
     if (!layer) return;
     const old = layer.querySelectorAll(".move-highlight");
-    for (let i = 0; i < old.length; i++) old[i].remove();
+    for (const el2 of old) {
+      el2.remove();
+    }
     // Remove selection state
     const selDiv = layer.querySelector(".chess-selected");
     if (selDiv) selDiv.classList.remove("chess-selected");
@@ -1396,7 +1399,7 @@ if (typeof document !== "undefined") {
 
     // Flip mode: click face-down piece to flip
     if (gameType === "flip" && piece?.state === STATE_FACE_DOWN) {
-      let result = flipPiece(gameState, x, y);
+      var result = flipPiece(gameState, x, y);
       if (result) {
         sendNetworkAction({ type: "flip", x: x, y: y });
         clearHighlights();
@@ -1409,8 +1412,8 @@ if (typeof document !== "undefined") {
     // Click highlight target (move/capture)
     if (target.classList.contains("move-highlight")) {
       if (gameState.selectedCell) {
-        let sel = gameState.selectedCell;
-        let result = moveCard(gameState, sel, { x: x, y: y });
+        var sel = gameState.selectedCell;
+        var result = moveCard(gameState, sel, { x: x, y: y });
         if (result) {
           sendNetworkAction({ type: "move", fx: sel.x, fy: sel.y, tx: x, ty: y });
           gameState.selectedCell = null;
@@ -1424,7 +1427,7 @@ if (typeof document !== "undefined") {
 
     // Already has selected piece
     if (gameState.selectedCell) {
-      let sel = gameState.selectedCell;
+      var sel = gameState.selectedCell;
 
       // Click same cell: deselect
       if (sel.x === x && sel.y === y) {
@@ -1435,7 +1438,7 @@ if (typeof document !== "undefined") {
       }
 
       // Try move/capture
-      let result = moveCard(gameState, sel, { x: x, y: y });
+      var result = moveCard(gameState, sel, { x: x, y: y });
       if (result) {
         sendNetworkAction({ type: "move", fx: sel.x, fy: sel.y, tx: x, ty: y });
         gameState.selectedCell = null;
@@ -1450,7 +1453,7 @@ if (typeof document !== "undefined") {
         gameState.selectedCell = { x: x, y: y };
         clearHighlights();
         drawBoard();
-        let moves = getValidMoves(gameState.board, x, y, team, gameType);
+        var moves = getValidMoves(gameState.board, x, y, team, gameType);
         highlightMoves(moves);
         return;
       }
@@ -1464,7 +1467,7 @@ if (typeof document !== "undefined") {
       gameState.selectedCell = { x: x, y: y };
       clearHighlights();
       drawBoard();
-      let moves = getValidMoves(gameState.board, x, y, team, gameType);
+      var moves = getValidMoves(gameState.board, x, y, team, gameType);
       highlightMoves(moves);
       return;
     }
@@ -1534,10 +1537,10 @@ if (typeof document !== "undefined") {
 
   function renderCaptured(container, list, team) {
     container.innerHTML = "";
-    for (let i = 0; i < list.length; i++) {
+    for (const item of list) {
       const span = document.createElement("span");
       span.className = "captured-piece " + (team === RED ? "red-text" : "blue-text");
-      span.textContent = list[i];
+      span.textContent = item;
       container.appendChild(span);
     }
   }
@@ -1769,6 +1772,7 @@ if (typeof document !== "undefined") {
   // Rock-Paper-Scissors
   // ============================================================
   function handleRPSChoice(player, choice, ev) {
+    let resultEl;
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
@@ -1780,7 +1784,7 @@ if (typeof document !== "undefined") {
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      let resultEl = document.getElementById("rps-result");
+      resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -1824,7 +1828,7 @@ if (typeof document !== "undefined") {
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        let resultEl = document.getElementById("rps-result");
+        resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
@@ -1875,7 +1879,6 @@ if (typeof document !== "undefined") {
     }
     localPlayerRole = null;
     localTeam = null;
-    remoteTeam = null;
     pendingBoardSeed = null;
     onlineTeamsAssigned = false;
   }
@@ -1999,56 +2002,77 @@ if (typeof document !== "undefined") {
     }, 1500);
   }
 
-  function startOnlineGame(firstPlayerRole) {
-    const gameType = pendingMode.gameType;
-    const seed = Math.floor(Math.random() * 2147483646) + 1;
-
-    if (localPlayerRole === "host") {
-      gameState = createGameState({ gameType: gameType, oppType: "online" }, seed);
-
-      localTeam = RED;
-      remoteTeam = BLUE;
-
-      if (gameType !== "flip") {
-        gameState.currentTeam = firstPlayerRole === "host" ? RED : BLUE;
-        gameState.firstPlayer = gameState.currentTeam;
-      } else {
-        gameState.currentTeam = RED;
-        gameState.firstPlayer = RED;
-      }
-
-      networkProtocol.sendAction({ a: "board_sync", seed: seed, gameType: gameType });
+  /**
+   * Assign the first player and current team for online mode.
+   * @param {string} gameType
+   * @param {string} firstPlayerRole - "host" or "guest"
+   */
+  function assignOnlineTeams(gameType, firstPlayerRole) {
+    if (gameType === "flip") {
+      gameState.currentTeam = RED;
+      gameState.firstPlayer = RED;
     } else {
-      // Guest: use seed from host if available, otherwise generate locally
-      const actualSeed = pendingBoardSeed || seed;
-      pendingBoardSeed = null;
-      gameState = createGameState({ gameType: gameType, oppType: "online" }, actualSeed);
-
-      localTeam = BLUE;
-      remoteTeam = RED;
-
-      if (gameType !== "flip") {
-        gameState.currentTeam = firstPlayerRole === "host" ? RED : BLUE;
-        gameState.firstPlayer = gameState.currentTeam;
-      } else {
-        gameState.currentTeam = RED;
-        gameState.firstPlayer = RED;
-      }
+      gameState.currentTeam = firstPlayerRole === "host" ? RED : BLUE;
+      gameState.firstPlayer = gameState.currentTeam;
     }
+  }
 
-    onlineTeamsAssigned = gameType !== "flip";
-
-    buildBoardSVG();
-
-    // Switch rules panel
+  /**
+   * Show the rules panel matching the game type.
+   * @param {string} gameType
+   */
+  function showRulesPanel(gameType) {
     document.querySelectorAll(".rules-content").forEach((el) => {
       el.style.display = "none";
     });
     const rulesId = "rules-" + gameType;
     const rulesEl = document.getElementById(rulesId);
     if (rulesEl) rulesEl.style.display = "block";
+  }
 
-    // Bind click event
+  /**
+   * Show the initial message for the online game.
+   * @param {string} gameType
+   */
+  function showOnlineStartMessage(gameType) {
+    if (gameType === "flip") {
+      showMessage("翻棋模式，请翻开棋子", "");
+      return;
+    }
+    const sidesOrder = gameState.firstPlayer
+      ? [gameState.firstPlayer, gameState.firstPlayer === RED ? BLUE : RED]
+      : [RED, BLUE];
+    const firstLabel = getCurrentPlayerLabel({
+      mode: "online",
+      currentSide: gameState.currentTeam,
+      playerSide: localTeam,
+      sidesOrder,
+    });
+    showMessage(firstLabel.text + "先行，请选择棋子移动", "");
+  }
+
+  function startOnlineGame(firstPlayerRole) {
+    const gameType = pendingMode.gameType;
+    const seed = Math.floor(Math.random() * 2147483646) + 1;
+
+    if (localPlayerRole === "host") {
+      gameState = createGameState({ gameType, oppType: "online" }, seed);
+      localTeam = RED;
+      assignOnlineTeams(gameType, firstPlayerRole);
+      networkProtocol.sendAction({ a: "board_sync", seed, gameType });
+    } else {
+      const actualSeed = pendingBoardSeed || seed;
+      pendingBoardSeed = null;
+      gameState = createGameState({ gameType, oppType: "online" }, actualSeed);
+      localTeam = BLUE;
+      assignOnlineTeams(gameType, firstPlayerRole);
+    }
+
+    onlineTeamsAssigned = gameType !== "flip";
+
+    buildBoardSVG();
+    showRulesPanel(gameType);
+
     const layer = document.getElementById("pieces-layer");
     if (layer) layer.addEventListener("click", onBoardClick);
 
@@ -2059,20 +2083,7 @@ if (typeof document !== "undefined") {
 
     drawBoard();
     updateStatus();
-
-    if (gameType === "flip") {
-      showMessage("翻棋模式，请翻开棋子", "");
-    } else {
-      const firstLabel = getCurrentPlayerLabel({
-        mode: "online",
-        currentSide: gameState.currentTeam,
-        playerSide: localTeam,
-        sidesOrder: gameState.firstPlayer
-          ? [gameState.firstPlayer, gameState.firstPlayer === RED ? BLUE : RED]
-          : [RED, BLUE],
-      });
-      showMessage(firstLabel.text + "先行，请选择棋子移动", "");
-    }
+    showOnlineStartMessage(gameType);
   }
 
   function applyRemoteAction(actionData) {
@@ -2131,8 +2142,8 @@ if (typeof document !== "undefined") {
   // Event Binding
   // ============================================================
   const modeButtons = document.querySelectorAll(".mode-section .btn:not(.btn-online)");
-  for (let i = 0; i < modeButtons.length; i++) {
-    modeButtons[i].addEventListener("click", function () {
+  for (const btn2 of modeButtons) {
+    btn2.addEventListener("click", function () {
       const gameType = this.dataset.gameType;
       const oppType = this.dataset.oppType;
       pendingMode = { gameType: gameType, oppType: oppType };
@@ -2143,9 +2154,7 @@ if (typeof document !== "undefined") {
   // Online mode button
   const btnOnline = document.getElementById("btn-online");
   if (btnOnline) {
-    if (!RoomUI.isSupported()) {
-      btnOnline.style.display = "none";
-    } else {
+    if (RoomUI.isSupported()) {
       btnOnline.addEventListener("click", () => {
         roomUI = new RoomUI({
           onConnectionEstablished: (connection, protocol, role) => {
@@ -2164,6 +2173,8 @@ if (typeof document !== "undefined") {
         });
         roomUI.show();
       });
+    } else {
+      btnOnline.style.display = "none";
     }
   }
 

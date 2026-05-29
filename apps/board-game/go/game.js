@@ -1,12 +1,13 @@
-/* eslint-disable no-let, no-undef */
+/* eslint-disable no-var, no-undef */
 // ============================================================
 // Go (Weiqi) - Game core logic
 // ============================================================
 
-if (judgeRPS === undefined && typeof require !== "undefined") {
+let judgeRPS, getRPSName;
+if (typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  let judgeRPS = _gameUtils.judgeRPS;
-  let getRPSName = _gameUtils.getRPSName;
+  judgeRPS = _gameUtils.judgeRPS;
+  getRPSName = _gameUtils.getRPSName;
 }
 
 const BOARD_SIZE = 19;
@@ -71,9 +72,9 @@ function getGroup(board, x, y) {
     const pos = queue.shift();
     stones.push(pos);
 
-    for (let i = 0; i < DIRECTIONS.length; i++) {
-      const nx = pos.x + DIRECTIONS[i].dx;
-      const ny = pos.y + DIRECTIONS[i].dy;
+    for (const dir of DIRECTIONS) {
+      const nx = pos.x + dir.dx;
+      const ny = pos.y + dir.dy;
       const key = nx + "," + ny;
 
       if (isValidPosition(nx, ny) && !visited[key] && board[ny][nx] === color) {
@@ -96,12 +97,10 @@ function getLiberties(board, group) {
   const liberties = [];
   const visited = {};
 
-  for (let i = 0; i < group.length; i++) {
-    const stone = group[i];
-
-    for (let j = 0; j < DIRECTIONS.length; j++) {
-      const nx = stone.x + DIRECTIONS[j].dx;
-      const ny = stone.y + DIRECTIONS[j].dy;
+  for (const stone of group) {
+    for (const dir2 of DIRECTIONS) {
+      const nx = stone.x + dir2.dx;
+      const ny = stone.y + dir2.dy;
       const key = nx + "," + ny;
 
       if (isValidPosition(nx, ny) && !visited[key] && board[ny][nx] === EMPTY) {
@@ -122,8 +121,8 @@ function getLiberties(board, group) {
  */
 function removeGroup(board, group) {
   const newBoard = copyBoard(board);
-  for (let i = 0; i < group.length; i++) {
-    newBoard[group[i].y][group[i].x] = EMPTY;
+  for (const item of group) {
+    newBoard[item.y][item.x] = EMPTY;
   }
   return newBoard;
 }
@@ -158,9 +157,9 @@ function playMove(board, x, y, player) {
   let lastCaptured = null;
 
   // Check and capture opponent groups with no liberties
-  for (let i = 0; i < DIRECTIONS.length; i++) {
-    const nx = x + DIRECTIONS[i].dx;
-    const ny = y + DIRECTIONS[i].dy;
+  for (const dir3 of DIRECTIONS) {
+    const nx = x + dir3.dx;
+    const ny = y + dir3.dy;
 
     if (isValidPosition(nx, ny) && newBoard[ny][nx] === opponent) {
       const group = getGroup(newBoard, nx, ny);
@@ -168,10 +167,10 @@ function playMove(board, x, y, player) {
 
       if (liberties.length === 0) {
         // Capture stones
-        for (let j = 0; j < group.stones.length; j++) {
-          newBoard[group.stones[j].y][group.stones[j].x] = EMPTY;
+        for (const stone of group.stones) {
+          newBoard[stone.y][stone.x] = EMPTY;
           totalCaptures++;
-          lastCaptured = { x: group.stones[j].x, y: group.stones[j].y };
+          lastCaptured = { x: stone.x, y: stone.y };
         }
       }
     }
@@ -281,9 +280,9 @@ function calculateScore(board) {
         const pos = queue.shift();
         territory.push(pos);
 
-        for (let i = 0; i < DIRECTIONS.length; i++) {
-          const nx = pos.x + DIRECTIONS[i].dx;
-          const ny = pos.y + DIRECTIONS[i].dy;
+        for (const dir3 of DIRECTIONS) {
+          const nx = pos.x + dir3.dx;
+          const ny = pos.y + dir3.dy;
           const nkey = nx + "," + ny;
 
           if (!isValidPosition(nx, ny) || visited[nkey]) continue;
@@ -345,7 +344,6 @@ function getBestAIMove(board, aiPlayer, koPoint, capturesBlack, capturesWhite) {
     return legalMoves[0];
   }
 
-  const humanPlayer = getOpponent(aiPlayer);
   const simulations = 20; // Reduced for performance on 19x19 board
   let bestMove = null;
   let bestScore = -Infinity;
@@ -355,15 +353,15 @@ function getBestAIMove(board, aiPlayer, koPoint, capturesBlack, capturesWhite) {
 
   // Score candidates by heuristic first, keep top N
   const scored = [];
-  for (let i = 0; i < candidateMoves.length; i++) {
-    const h = evaluateMove(board, candidateMoves[i], aiPlayer);
-    scored.push({ move: candidateMoves[i], heuristic: h });
+  for (const candidate of candidateMoves) {
+    const h = evaluateMove(board, candidate, aiPlayer);
+    scored.push({ move: candidate, heuristic: h });
   }
   scored.sort((a, b) => b.heuristic - a.heuristic);
   const topCandidates = scored.slice(0, 12);
 
-  for (let i = 0; i < topCandidates.length; i++) {
-    const move = topCandidates[i].move;
+  for (const candidate2 of topCandidates) {
+    const move = candidate2.move;
     let wins = 0;
 
     for (let s = 0; s < simulations; s++) {
@@ -372,7 +370,7 @@ function getBestAIMove(board, aiPlayer, koPoint, capturesBlack, capturesWhite) {
     }
 
     const winRate = wins / simulations;
-    const score = winRate * 100 + topCandidates[i].heuristic;
+    const score = winRate * 100 + candidate2.heuristic;
 
     if (score > bestScore) {
       bestScore = score;
@@ -391,8 +389,7 @@ function filterCandidateMoves(board, legalMoves) {
   const filtered = [];
   const radius = 2;
 
-  for (let i = 0; i < legalMoves.length; i++) {
-    const move = legalMoves[i];
+  for (const move of legalMoves) {
     let nearStone = false;
 
     // Check if there are stones nearby
@@ -443,9 +440,9 @@ function evaluateMove(board, move, player) {
   const newBoard = copyBoard(board);
   newBoard[move.y][move.x] = player;
 
-  for (let i = 0; i < DIRECTIONS.length; i++) {
-    const nx = move.x + DIRECTIONS[i].dx;
-    const ny = move.y + DIRECTIONS[i].dy;
+  for (const dir3 of DIRECTIONS) {
+    const nx = move.x + dir3.dx;
+    const ny = move.y + dir3.dy;
 
     if (isValidPosition(nx, ny) && newBoard[ny][nx] === opponent) {
       const group = getGroup(newBoard, nx, ny);
@@ -544,7 +541,6 @@ function simulateGame(board, firstMove, aiPlayer, koPoint, capturesBlack, captur
  */
 function getQuickMoves(board, player, koPoint, lastX, lastY) {
   const moves = [];
-  const captureMoves = [];
   const nearMoves = [];
   const radius = 1;
 
@@ -552,17 +548,6 @@ function getQuickMoves(board, player, koPoint, lastX, lastY) {
     for (let x = 0; x < BOARD_SIZE; x++) {
       if (board[y][x] !== EMPTY) continue;
       if (koPoint?.x === x && koPoint.y === y) continue;
-
-      // Quick suicide check: see if any neighbor is empty or opponent with 1 liberty
-      let hasEmptyNeighbor = false;
-      const canCapture = false;
-      for (let d = 0; d < DIRECTIONS.length; d++) {
-        const nx = x + DIRECTIONS[d].dx;
-        const ny = y + DIRECTIONS[d].dy;
-        if (isValidPosition(nx, ny)) {
-          if (board[ny][nx] === EMPTY) hasEmptyNeighbor = true;
-        }
-      }
 
       const dist = Math.abs(x - lastX) + Math.abs(y - lastY);
       if (dist <= radius) {
@@ -684,7 +669,7 @@ if (typeof document !== "undefined") {
     // Grid lines
     context.strokeStyle = "#8b7355";
     context.lineWidth = 1;
-    for (let i = 0; i < BOARD_SIZE; i++) {
+    for (var i = 0; i < BOARD_SIZE; i++) {
       const pos = MARGIN + i * CELL_SIZE;
       // Vertical lines
       context.beginPath();
@@ -711,9 +696,9 @@ if (typeof document !== "undefined") {
       { x: 15, y: 15 },
     ];
     context.fillStyle = "#8b7355";
-    for (let i = 0; i < starPoints.length; i++) {
-      const sx = MARGIN + starPoints[i].x * CELL_SIZE;
-      const sy = MARGIN + starPoints[i].y * CELL_SIZE;
+    for (const pt of starPoints) {
+      const sx = MARGIN + pt.x * CELL_SIZE;
+      const sy = MARGIN + pt.y * CELL_SIZE;
       context.beginPath();
       context.arc(sx, sy, 3, 0, Math.PI * 2);
       context.fill();
@@ -1244,19 +1229,20 @@ if (typeof document !== "undefined") {
     cleanupNetwork();
   }
 
-  function handleRPSChoice(player, choice) {
+  function handleRPSChoice(player, choice, ev) {
+    let resultEl;
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
 
       const choices = ["rock", "scissors", "paper"];
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      let resultEl = document.getElementById("rps-result");
+      resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -1294,13 +1280,13 @@ if (typeof document !== "undefined") {
       document.querySelectorAll("#rps-p" + player + "-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
 
       const statusEl = document.getElementById("rps-p" + player + "-status");
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        let resultEl = document.getElementById("rps-result");
+        resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
@@ -1362,9 +1348,7 @@ if (typeof document !== "undefined") {
     // Online mode button
     const btnOnline = document.getElementById("btn-online");
     if (btnOnline) {
-      if (!RoomUI.isSupported()) {
-        btnOnline.style.display = "none";
-      } else {
+      if (RoomUI.isSupported()) {
         btnOnline.addEventListener("click", () => {
           roomUI = new RoomUI({
             onConnectionEstablished: (connection, protocol, role) => {
@@ -1383,6 +1367,8 @@ if (typeof document !== "undefined") {
           });
           roomUI.show();
         });
+      } else {
+        btnOnline.style.display = "none";
       }
     }
 
@@ -1398,7 +1384,7 @@ if (typeof document !== "undefined") {
       button.addEventListener("click", (ev) => {
         const player = ev.target.dataset.player;
         const choice = ev.target.dataset.choice;
-        handleRPSChoice(player, choice);
+        handleRPSChoice(player, choice, ev);
       });
     });
 

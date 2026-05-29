@@ -167,63 +167,86 @@ class NetworkGameProtocol {
     try {
       msg = JSON.parse(raw);
     } catch {
-      if (this._callbacks.onProtocolError) {
-        this._callbacks.onProtocolError("Invalid JSON message");
-      }
+      this._reportError("Invalid JSON message");
       return;
     }
 
     if (!msg || typeof msg.t !== "string") {
-      if (this._callbacks.onProtocolError) {
-        this._callbacks.onProtocolError("Missing message type");
-      }
+      this._reportError("Missing message type");
       return;
     }
 
     switch (msg.t) {
-      case "a": // Action
-        if (validateAction(msg.d)) {
-          if (this._callbacks.onAction) this._callbacks.onAction(msg.d);
-        } else if (this._callbacks.onProtocolError) {
-          this._callbacks.onProtocolError("Invalid action data");
-        }
+      case "a":
+        this._dispatchAction(msg.d);
         break;
-
-      case "r": // RPS choice
-        if (validateRPSChoice(msg.d)) {
-          if (this._callbacks.onRPSChoice) this._callbacks.onRPSChoice(msg.d);
-        } else if (this._callbacks.onProtocolError) {
-          this._callbacks.onProtocolError("Invalid RPS choice");
-        }
+      case "r":
+        this._dispatchRPSChoice(msg.d);
         break;
-
-      case "R": // RPS result
-        if (msg.d && typeof msg.d === "object") {
-          if (this._callbacks.onRPSResult) {
-            this._callbacks.onRPSResult({
-              hostChoice: msg.d.h,
-              guestChoice: msg.d.g,
-              firstPlayer: msg.d.f,
-            });
-          }
-        } else if (this._callbacks.onProtocolError) {
-          this._callbacks.onProtocolError("Invalid RPS result");
-        }
+      case "R":
+        this._dispatchRPSResult(msg.d);
         break;
-
-      case "n": // Restart
+      case "n":
         if (this._callbacks.onRestart) this._callbacks.onRestart();
         break;
-
-      case "h": // Heartbeat
+      case "h":
         // Already handled by updating _lastReceived above
         break;
-
       default:
-        if (this._callbacks.onProtocolError) {
-          this._callbacks.onProtocolError("Unknown message type: " + msg.t);
-        }
+        this._reportError("Unknown message type: " + msg.t);
         break;
+    }
+  }
+
+  /**
+   * @private
+   * @param {string} error
+   */
+  _reportError(error) {
+    if (this._callbacks.onProtocolError) {
+      this._callbacks.onProtocolError(error);
+    }
+  }
+
+  /**
+   * @private
+   * @param {Object} data
+   */
+  _dispatchAction(data) {
+    if (validateAction(data)) {
+      if (this._callbacks.onAction) this._callbacks.onAction(data);
+    } else {
+      this._reportError("Invalid action data");
+    }
+  }
+
+  /**
+   * @private
+   * @param {Object} data
+   */
+  _dispatchRPSChoice(data) {
+    if (validateRPSChoice(data)) {
+      if (this._callbacks.onRPSChoice) this._callbacks.onRPSChoice(data);
+    } else {
+      this._reportError("Invalid RPS choice");
+    }
+  }
+
+  /**
+   * @private
+   * @param {Object} data
+   */
+  _dispatchRPSResult(data) {
+    if (data && typeof data === "object") {
+      if (this._callbacks.onRPSResult) {
+        this._callbacks.onRPSResult({
+          hostChoice: data.h,
+          guestChoice: data.g,
+          firstPlayer: data.f,
+        });
+      }
+    } else {
+      this._reportError("Invalid RPS result");
     }
   }
 

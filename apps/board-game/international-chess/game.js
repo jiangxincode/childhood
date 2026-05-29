@@ -1,12 +1,13 @@
-/* eslint-disable no-let, no-undef */
+/* eslint-disable no-var, no-undef */
 // ============================================================
 // International Chess - Game Core Logic
 // ============================================================
 
-if (judgeRPS === undefined && typeof require !== "undefined") {
+let judgeRPS, getRPSName;
+if (typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  let judgeRPS = _gameUtils.judgeRPS;
-  let getRPSName = _gameUtils.getRPSName;
+  judgeRPS = _gameUtils.judgeRPS;
+  getRPSName = _gameUtils.getRPSName;
 }
 
 const BOARD_SIZE = 8;
@@ -248,10 +249,10 @@ function getValidMoves(board, c, r, hasMoved) {
 
   // Filter moves that leave own king in check
   const validMoves = [];
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move of moves) {
+    const newBoard = applyMove(board, move);
     if (!isInCheck(newBoard, color)) {
-      validMoves.push(moves[i]);
+      validMoves.push(move);
     }
   }
   return validMoves;
@@ -282,8 +283,8 @@ function isSquareAttacked(board, tc, tr, byColor) {
       const piece = board[c][r];
       if (piece === EMPTY || getOwner(piece) !== byColor) continue;
       const attacks = getRawAttacks(board, c, r, piece);
-      for (let i = 0; i < attacks.length; i++) {
-        if (attacks[i].toC === tc && attacks[i].toR === tr) return true;
+      for (const attack of attacks) {
+        if (attack.toC === tc && attack.toR === tr) return true;
       }
     }
   }
@@ -317,10 +318,10 @@ function getDiagonalAttacks(board, c, r, color) {
     [1, -1],
     [1, 1],
   ];
-  for (let d = 0; d < dirs.length; d++) {
+  for (const dir of dirs) {
     for (let i = 1; i < 8; i++) {
-      const nc = c + dirs[d][0] * i,
-        nr = r + dirs[d][1] * i;
+      const nc = c + dir[0] * i,
+        nr = r + dir[1] * i;
       if (!inBounds(nc, nr)) break;
       if (board[nc][nr] === EMPTY) {
         moves.push({ toC: nc, toR: nr });
@@ -341,10 +342,10 @@ function getOrthogonalAttacks(board, c, r, color) {
     [-1, 0],
     [1, 0],
   ];
-  for (let d = 0; d < dirs.length; d++) {
+  for (const dir2 of dirs) {
     for (let i = 1; i < 8; i++) {
-      const nc = c + dirs[d][0] * i,
-        nr = r + dirs[d][1] * i;
+      const nc = c + dir2[0] * i,
+        nr = r + dir2[1] * i;
       if (!inBounds(nc, nr)) break;
       if (board[nc][nr] === EMPTY) {
         moves.push({ toC: nc, toR: nr });
@@ -369,9 +370,9 @@ function getKnightAttacks(board, c, r, color) {
     [2, -1],
     [2, 1],
   ];
-  for (let i = 0; i < jumps.length; i++) {
-    const nc = c + jumps[i][0],
-      nr = r + jumps[i][1];
+  for (const jump of jumps) {
+    const nc = c + jump[0],
+      nr = r + jump[1];
     if (inBounds(nc, nr)) moves.push({ toC: nc, toR: nr });
   }
   return moves;
@@ -389,9 +390,9 @@ function getKingAttacks(board, c, r, color) {
     [1, 0],
     [1, 1],
   ];
-  for (let i = 0; i < dirs.length; i++) {
-    const nc = c + dirs[i][0],
-      nr = r + dirs[i][1];
+  for (const dir of dirs) {
+    const nc = c + dir[0],
+      nr = r + dir[1];
     if (inBounds(nc, nr)) moves.push({ toC: nc, toR: nr });
   }
   return moves;
@@ -405,10 +406,10 @@ function getLineMoves(board, c, r, color) {
     [-1, 0],
     [1, 0],
   ];
-  for (let d = 0; d < dirs.length; d++) {
+  for (const dir3 of dirs) {
     for (let i = 1; i < 8; i++) {
-      const nc = c + dirs[d][0] * i,
-        nr = r + dirs[d][1] * i;
+      const nc = c + dir3[0] * i,
+        nr = r + dir3[1] * i;
       if (!inBounds(nc, nr)) break;
       if (board[nc][nr] === EMPTY) {
         moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -431,10 +432,10 @@ function getDiagonalMoves(board, c, r, color) {
     [1, -1],
     [1, 1],
   ];
-  for (let d = 0; d < dirs.length; d++) {
+  for (const dir4 of dirs) {
     for (let i = 1; i < 8; i++) {
-      const nc = c + dirs[d][0] * i,
-        nr = r + dirs[d][1] * i;
+      const nc = c + dir4[0] * i,
+        nr = r + dir4[1] * i;
       if (!inBounds(nc, nr)) break;
       if (board[nc][nr] === EMPTY) {
         moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -471,9 +472,9 @@ function getKnightMoves(board, c, r, color) {
     [2, -1],
     [2, 1],
   ];
-  for (let i = 0; i < jumps.length; i++) {
-    const nc = c + jumps[i][0],
-      nr = r + jumps[i][1];
+  for (const jump2 of jumps) {
+    const nc = c + jump2[0],
+      nr = r + jump2[1];
     if (inBounds(nc, nr) && (board[nc][nr] === EMPTY || getOwner(board[nc][nr]) !== color)) {
       moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
     }
@@ -493,9 +494,9 @@ function getKingMoves(board, c, r, color, hasMoved) {
     [1, 0],
     [1, 1],
   ];
-  for (let i = 0; i < dirs.length; i++) {
-    const nc = c + dirs[i][0],
-      nr = r + dirs[i][1];
+  for (const dir2 of dirs) {
+    const nc = c + dir2[0],
+      nr = r + dir2[1];
     if (inBounds(nc, nr) && (board[nc][nr] === EMPTY || getOwner(board[nc][nr]) !== color)) {
       moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
     }
@@ -553,12 +554,12 @@ function getPawnMoves(board, c, r, color, hasMoved) {
   // Move forward one step
   if (inBounds(c, r + dir) && board[c][r + dir] === EMPTY) {
     if (r + dir === promoRow) {
-      let promos =
+      const promos =
         color === WHITE
           ? [W_QUEEN, W_ROOK, W_BISHOP, W_KNIGHT]
           : [B_QUEEN, B_ROOK, B_BISHOP, B_KNIGHT];
-      for (let p = 0; p < promos.length; p++) {
-        moves.push({ fromC: c, fromR: r, toC: c, toR: r + dir, promotion: promos[p] });
+      for (const promo of promos) {
+        moves.push({ fromC: c, fromR: r, toC: c, toR: r + dir, promotion: promo });
       }
     } else {
       moves.push({ fromC: c, fromR: r, toC: c, toR: r + dir });
@@ -570,17 +571,17 @@ function getPawnMoves(board, c, r, color, hasMoved) {
   }
   // Capture (diagonal forward)
   const diagDirs = [-1, 1];
-  for (let d = 0; d < diagDirs.length; d++) {
-    const nc = c + diagDirs[d],
+  for (const dir5 of diagDirs) {
+    const nc = c + dir5,
       nr = r + dir;
     if (inBounds(nc, nr) && board[nc][nr] !== EMPTY && getOwner(board[nc][nr]) !== color) {
       if (nr === promoRow) {
-        let promos =
+        const promos =
           color === WHITE
             ? [W_QUEEN, W_ROOK, W_BISHOP, W_KNIGHT]
             : [B_QUEEN, B_ROOK, B_BISHOP, B_KNIGHT];
-        for (let p = 0; p < promos.length; p++) {
-          moves.push({ fromC: c, fromR: r, toC: nc, toR: nr, promotion: promos[p] });
+        for (const promo2 of promos) {
+          moves.push({ fromC: c, fromR: r, toC: nc, toR: nr, promotion: promo2 });
         }
       } else {
         moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -596,7 +597,9 @@ function getAllMoves(board, color, hasMoved) {
     for (let r = 0; r < BOARD_SIZE; r++) {
       if (board[c][r] !== EMPTY && getOwner(board[c][r]) === color) {
         const pieceMoves = getValidMoves(board, c, r, hasMoved);
-        for (let i = 0; i < pieceMoves.length; i++) moves.push(pieceMoves[i]);
+        for (const move of pieceMoves) {
+          moves.push(move);
+        }
       }
     }
   }
@@ -643,7 +646,6 @@ function getPositionValue(piece, c, r) {
 function evaluateBoard(board, aiColor) {
   let aiScore = 0,
     oppScore = 0;
-  const oppColor = getOpponent(aiColor);
   for (let c = 0; c < BOARD_SIZE; c++) {
     for (let r = 0; r < BOARD_SIZE; r++) {
       const piece = board[c][r];
@@ -669,8 +671,8 @@ function alphaBeta(board, depth, alpha, beta, aiColor, isAITurn, hasMoved) {
   const moves = getAllMoves(board, currentPlayer, hasMoved);
   let bestScore = -Infinity;
 
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move2 of moves) {
+    const newBoard = applyMove(board, move2);
     const score = -alphaBeta(newBoard, depth - 1, -beta, -alpha, aiColor, !isAITurn, hasMoved);
     if (score > bestScore) bestScore = score;
     if (bestScore > alpha) alpha = bestScore;
@@ -688,25 +690,31 @@ function getBestAIMove(board, aiColor, hasMoved) {
 
   // Prioritize captures and promotions
   moves.sort((a, b) => {
-    const scoreA = a.promotion
-      ? 800
-      : board[a.toC][a.toR] !== EMPTY
-        ? PIECE_VALUES[board[a.toC][a.toR]]
-        : 0;
-    const scoreB = b.promotion
-      ? 800
-      : board[b.toC][b.toR] !== EMPTY
-        ? PIECE_VALUES[board[b.toC][b.toR]]
-        : 0;
+    let scoreA;
+    if (a.promotion) {
+      scoreA = 800;
+    } else if (board[a.toC][a.toR] === EMPTY) {
+      scoreA = 0;
+    } else {
+      scoreA = PIECE_VALUES[board[a.toC][a.toR]];
+    }
+    let scoreB;
+    if (b.promotion) {
+      scoreB = 800;
+    } else if (board[b.toC][b.toR] === EMPTY) {
+      scoreB = 0;
+    } else {
+      scoreB = PIECE_VALUES[board[b.toC][b.toR]];
+    }
     return scoreB - scoreA;
   });
 
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move2 of moves) {
+    const newBoard = applyMove(board, move2);
     const score = -alphaBeta(newBoard, AI_DEPTH - 1, -Infinity, Infinity, aiColor, false, hasMoved);
     if (score > bestScore) {
       bestScore = score;
-      bestMove = moves[i];
+      bestMove = move2;
     }
   }
   return bestMove;
@@ -834,8 +842,8 @@ if (typeof document !== "undefined") {
   function drawBoard() {
     const lightColor = "#f0d9b5";
     const darkColor = "#b58863";
-    for (let r = 0; r < BOARD_SIZE; r++) {
-      for (let c = 0; c < BOARD_SIZE; c++) {
+    for (var r = 0; r < BOARD_SIZE; r++) {
+      for (var c = 0; c < BOARD_SIZE; c++) {
         context.fillStyle = (c + r) % 2 === 0 ? lightColor : darkColor;
         context.fillRect(toCanvasX(c), toCanvasY(r), CELL_SIZE, CELL_SIZE);
       }
@@ -847,11 +855,11 @@ if (typeof document !== "undefined") {
     context.textBaseline = "middle";
     const files = "abcdefgh";
     const flipped = gameState?.boardFlipped;
-    for (let c = 0; c < BOARD_SIZE; c++) {
+    for (var c = 0; c < BOARD_SIZE; c++) {
       const fileIdx = flipped ? 7 - c : c;
       context.fillText(files[fileIdx], PADDING + c * CELL_SIZE + CELL_SIZE / 2, CANVAS_SIZE - 8);
     }
-    for (let r = 0; r < BOARD_SIZE; r++) {
+    for (var r = 0; r < BOARD_SIZE; r++) {
       const rankNum = flipped ? r + 1 : 8 - r;
       context.fillText(String(rankNum), 10, PADDING + r * CELL_SIZE + CELL_SIZE / 2);
     }
@@ -903,8 +911,7 @@ if (typeof document !== "undefined") {
   }
 
   function drawValidMoves(moves) {
-    for (let i = 0; i < moves.length; i++) {
-      const m = moves[i];
+    for (const m of moves) {
       const cx = toCanvasX(m.toC) + CELL_SIZE / 2;
       const cy = toCanvasY(m.toR) + CELL_SIZE / 2;
       if (gameState.board[m.toC][m.toR] !== EMPTY) {
@@ -1010,7 +1017,13 @@ if (typeof document !== "undefined") {
   function updateMessage(text, type) {
     const el = document.getElementById("message");
     el.textContent = text;
-    el.className = type === "error" ? "error" : type === "info" ? "info" : "";
+    if (type === "error") {
+      el.className = "error";
+    } else if (type === "info") {
+      el.className = "info";
+    } else {
+      el.className = "";
+    }
   }
 
   function showGameOver(state) {
@@ -1132,18 +1145,17 @@ if (typeof document !== "undefined") {
 
   function findMove(moves, toC, toR) {
     // Prefer non-promotion moves, promotion moves need dialog
-    for (let i = 0; i < moves.length; i++) {
-      if (moves[i].toC === toC && moves[i].toR === toR && !moves[i].promotion) return moves[i];
+    for (const move3 of moves) {
+      if (move3.toC === toC && move3.toR === toR && !move3.promotion) return move3;
     }
     // If only promotion moves, return first (triggers promotion dialog)
-    for (let i = 0; i < moves.length; i++) {
-      if (moves[i].toC === toC && moves[i].toR === toR) return moves[i];
+    for (const move2 of moves) {
+      if (move2.toC === toC && move2.toR === toR) return move2;
     }
     return null;
   }
 
   function doMove(move) {
-    const piece = gameState.board[move.fromC][move.fromR];
     gameState.hasMoved.add(move.fromC + "," + move.fromR);
     gameState.hasMoved.add(move.toC + "," + move.toR);
     if (move.castling) {
@@ -1420,17 +1432,18 @@ if (typeof document !== "undefined") {
     cleanupNetwork();
   }
 
-  function handleRPSChoice(player, choice) {
+  function handleRPSChoice(player, choice, ev) {
+    let resultEl;
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
       const choices = ["rock", "scissors", "paper"];
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
-      let resultEl = document.getElementById("rps-result");
+      resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
       if (humanWins === 1) {
         resultEl.textContent =
@@ -1467,11 +1480,11 @@ if (typeof document !== "undefined") {
       document.querySelectorAll("#rps-p" + player + "-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
       document.getElementById("rps-p" + player + "-status").textContent =
         "已选择：" + getRPSName(choice);
       if (rpsChoices.player1 && rpsChoices.player2) {
-        let resultEl = document.getElementById("rps-result");
+        resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
         if (winner === 1) {
           resultEl.textContent = "玩家1赢了！玩家1先手(白方)。";
@@ -1515,9 +1528,7 @@ if (typeof document !== "undefined") {
     // Online mode button
     const btnOnline = document.getElementById("btn-online");
     if (btnOnline) {
-      if (!RoomUI.isSupported()) {
-        btnOnline.style.display = "none";
-      } else {
+      if (RoomUI.isSupported()) {
         btnOnline.addEventListener("click", () => {
           roomUI = new RoomUI({
             onConnectionEstablished: (connection, protocol, role) => {
@@ -1536,6 +1547,8 @@ if (typeof document !== "undefined") {
           });
           roomUI.show();
         });
+      } else {
+        btnOnline.style.display = "none";
       }
     }
 
@@ -1549,7 +1562,7 @@ if (typeof document !== "undefined") {
 
     document.querySelectorAll(".btn-rps").forEach((button) => {
       button.addEventListener("click", (ev) => {
-        handleRPSChoice(ev.target.dataset.player, ev.target.dataset.choice);
+        handleRPSChoice(ev.target.dataset.player, ev.target.dataset.choice, ev);
       });
     });
     document.getElementById("btn-restart").addEventListener("click", restartGame);

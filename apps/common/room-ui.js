@@ -361,19 +361,7 @@ class RoomUI {
 
   async _copyToClipboard(text, button) {
     try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        // Fallback: textarea select + execCommand
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-      }
+      await navigator.clipboard.writeText(text);
       const orig = button.textContent;
       button.textContent = "已复制!";
       setTimeout(() => {

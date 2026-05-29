@@ -1,4 +1,4 @@
-/* eslint-disable no-let, no-undef */
+/* eslint-disable no-var, no-undef */
 /* global DIRECTIONS:writable, inBounds:writable, getValidMoves:writable, getValidCapturesCore:writable, flipCard:writable, moveCard:writable, createBaseState:writable, smartAiDecide:writable, isStalemateDraw:writable, recordCaptureAction:writable */
 // ============================================================
 // Little Emperor - Game Core Logic
@@ -7,10 +7,10 @@
 // ============================================================
 // Shared module loading (Node.js test environment)
 // ============================================================
-if (judgeRPS === undefined && typeof require !== "undefined") {
+if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  let judgeRPS = _gameUtils.judgeRPS;
-  let shuffleArray = _gameUtils.shuffleArray;
+  var judgeRPS = _gameUtils.judgeRPS;
+  var shuffleArray = _gameUtils.shuffleArray;
 }
 if (typeof DIRECTIONS === "undefined" && typeof require !== "undefined") {
   const _core = require("../../common/card-game-core.js");
@@ -106,12 +106,10 @@ function createGameState(mode) {
 
   // Create 16 pieces: 8 red + 8 blue
   const cards = [];
-  for (let i = 0; i < PIECE_NAMES.length; i++) {
-    let name = PIECE_NAMES[i];
+  for (const name of PIECE_NAMES) {
     cards.push({ name: name, team: "red", rank: RANK_MAP[name], faceUp: false });
   }
-  for (let i = 0; i < PIECE_NAMES.length; i++) {
-    let name = PIECE_NAMES[i];
+  for (const name of PIECE_NAMES) {
     cards.push({ name: name, team: "blue", rank: RANK_MAP[name], faceUp: false });
   }
 
@@ -414,11 +412,7 @@ if (typeof document !== "undefined") {
 
         if (!card) {
           cell.classList.add("cell-empty");
-        } else if (!card.faceUp) {
-          const back = document.createElement("div");
-          back.className = "cell-back";
-          cell.appendChild(back);
-        } else {
+        } else if (card.faceUp) {
           cell.classList.add(card.team === "red" ? "cell-red" : "cell-blue");
           const face = document.createElement("div");
           face.className = "cell-face";
@@ -427,6 +421,10 @@ if (typeof document !== "undefined") {
           img.alt = card.name;
           face.appendChild(img);
           cell.appendChild(face);
+        } else {
+          const back = document.createElement("div");
+          back.className = "cell-back";
+          cell.appendChild(back);
         }
       }
     }
@@ -450,12 +448,12 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (let i = 0; i < moveTargets.length; i++) {
-      let tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (const target of moveTargets) {
+      var tc = getCell(target.x, target.y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (let i = 0; i < captureTargets.length; i++) {
-      let tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (const target2 of captureTargets) {
+      var tc = getCell(target2.x, target2.y);
       if (tc) tc.classList.add("cell-capture-target");
     }
   }
@@ -465,10 +463,10 @@ if (typeof document !== "undefined") {
   function updateStatus(state) {
     // Current team
     if (state.mode === "online") {
-      if (!state.teamAssigned) {
-        $currentTeam.textContent = localIsFirstPlayer ? "你的回合" : "对方回合";
-      } else {
+      if (state.teamAssigned) {
         $currentTeam.textContent = state.currentTeam === localTeam ? "你的回合" : "对方回合";
+      } else {
+        $currentTeam.textContent = localIsFirstPlayer ? "你的回合" : "对方回合";
       }
       if (state.teamAssigned) {
         $currentTeam.className =
@@ -514,11 +512,10 @@ if (typeof document !== "undefined") {
 
     // Captured pieces
     $capturedRed.innerHTML = "";
-    for (let i = 0; i < state.capturedRed.length; i++) {
-      let name = state.capturedRed[i];
-      let div = document.createElement("div");
+    for (const name of state.capturedRed) {
+      const div = document.createElement("div");
       div.className = "captured-card";
-      let img = document.createElement("img");
+      const img = document.createElement("img");
       img.src = getImagePath("red", name);
       img.alt = name;
       div.appendChild(img);
@@ -526,11 +523,10 @@ if (typeof document !== "undefined") {
     }
 
     $capturedBlue.innerHTML = "";
-    for (let i = 0; i < state.capturedBlue.length; i++) {
-      let name = state.capturedBlue[i];
-      let div = document.createElement("div");
+    for (const name of state.capturedBlue) {
+      const div = document.createElement("div");
       div.className = "captured-card";
-      let img = document.createElement("img");
+      const img = document.createElement("img");
       img.src = getImagePath("blue", name);
       img.alt = name;
       div.appendChild(img);
@@ -582,8 +578,8 @@ if (typeof document !== "undefined") {
 
   // ---- Rock-Paper-Scissors logic ----
 
-  let rpsP1Choice = null;
-  let rpsP2Choice = null;
+  var rpsP1Choice = null;
+  var rpsP2Choice = null;
 
   function startGame(firstTeam) {
     showGameArea();
@@ -830,7 +826,6 @@ if (typeof document !== "undefined") {
     // Click opponent face-up card (no selection)
     if (card?.faceUp && card.team !== currentTeam) {
       showMessage("这不是你的棋子", "error");
-      return;
     }
   });
 
@@ -926,36 +921,40 @@ if (typeof document !== "undefined") {
 
     // Update message
     if (gameState.mode === "online") {
-      if (!gameState.teamAssigned) {
+      if (gameState.teamAssigned) {
+        showMessage(gameState.currentTeam === localTeam ? "你的回合" : "等待对方操作...", "");
+      } else {
         if (localIsFirstPlayer) {
           showMessage("请翻开一张牌", "");
         } else {
           showMessage("等待对方操作...", "info");
         }
-      } else {
-        showMessage(gameState.currentTeam === localTeam ? "你的回合" : "等待对方操作...", "");
       }
     } else if (gameState.mode === "pve") {
       if (gameState.teamAssigned && gameState.currentTeam === gameState.aiTeam) {
         // AI turn
         triggerAI();
-      } else if (!gameState.teamAssigned) {
-        showMessage("请翻开一张牌", "");
-      } else {
+      } else if (gameState.teamAssigned) {
         showMessage("你的回合", "");
+      } else {
+        showMessage("请翻开一张牌", "");
       }
+    } else if (gameState.teamAssigned) {
+      const sidesOrder = gameState.firstPlayer
+        ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
+        : ["red", "blue"];
+      const idx = sidesOrder.indexOf(gameState.currentTeam);
+      const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
+      showMessage(playerName + "的回合", "");
     } else {
       // PVP - show 玩家1 / 玩家2 instead of color
-      if (!gameState.teamAssigned) {
-        showMessage("请翻开一张牌", "");
-      } else {
-        const sidesOrder = gameState.firstPlayer
-          ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
-          : ["red", "blue"];
-        const idx = sidesOrder.indexOf(gameState.currentTeam);
-        const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
-        showMessage(playerName + "的回合", "");
-      }
+      showMessage("请翻开一张牌", "");
+      const sidesOrder = gameState.firstPlayer
+        ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
+        : ["red", "blue"];
+      const idx = sidesOrder.indexOf(gameState.currentTeam);
+      const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
+      showMessage(playerName + "的回合", "");
     }
   }
 
@@ -1047,8 +1046,12 @@ if (typeof document !== "undefined") {
         }
         handleOnlineRPSResult({ result: "draw" });
       } else {
-        const winnerRole =
-          result === 1 ? localPlayerRole : localPlayerRole === "host" ? "guest" : "host";
+        let winnerRole;
+        if (result === 1) {
+          winnerRole = localPlayerRole;
+        } else {
+          winnerRole = localPlayerRole === "host" ? "guest" : "host";
+        }
         const rpsResult = { result: "win", winner: winnerRole };
         if (networkProtocol) {
           networkProtocol.sendRPSResult(rpsResult);

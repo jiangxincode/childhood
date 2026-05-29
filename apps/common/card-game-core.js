@@ -88,9 +88,9 @@ function getValidMoves(board, x, y) {
   const card = board[y][x];
   if (!card) return [];
   const moves = [];
-  for (let i = 0; i < DIRECTIONS.length; i++) {
-    const nx = x + DIRECTIONS[i].dx;
-    const ny = y + DIRECTIONS[i].dy;
+  for (const dir of DIRECTIONS) {
+    const nx = x + dir.dx;
+    const ny = y + dir.dy;
     if (inBounds(nx, ny) && board[ny][nx] === null) {
       moves.push({ x: nx, y: ny });
     }
@@ -111,9 +111,9 @@ function getValidCaptures(board, x, y, team, canCaptureFn) {
   const card = board[y][x];
   if (!card || !card.faceUp || card.team !== team) return [];
   const captures = [];
-  for (let i = 0; i < DIRECTIONS.length; i++) {
-    const nx = x + DIRECTIONS[i].dx;
-    const ny = y + DIRECTIONS[i].dy;
+  for (const dir2 of DIRECTIONS) {
+    const nx = x + dir2.dx;
+    const ny = y + dir2.dy;
     if (!inBounds(nx, ny)) continue;
     const target = board[ny][nx];
     if (!target || !target.faceUp || target.team === team) continue;
@@ -129,8 +129,8 @@ function getValidCaptures(board, x, y, team, canCaptureFn) {
 // Expose the core function under a separate name so those wrappers can still
 // reach it after shadowing. In Node, those scripts assign this via require()
 // instead, but exposing it here keeps the symbol consistent.
-// eslint-disable-next-line no-let, no-unused-vars
-let getValidCapturesCore = getValidCaptures;
+// eslint-disable-next-line no-unused-vars
+const getValidCapturesCore = getValidCaptures;
 
 /**
  * Execute flip operation (modifies state in place)
@@ -147,7 +147,9 @@ function flipCard(state, x, y) {
 
   card.faceUp = true;
 
-  if (!state.teamAssigned) {
+  if (state.teamAssigned) {
+    state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
+  } else {
     state.teamAssigned = true;
     if (state.mode === "pve") {
       if (state.aiFirst) {
@@ -164,8 +166,6 @@ function flipCard(state, x, y) {
     } else {
       state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
     }
-  } else {
-    state.currentTeam = state.currentTeam === "red" ? "blue" : "red";
   }
   state.turnCount++;
   recordNonCaptureAction(state);
@@ -231,9 +231,9 @@ function isPositionUnderThreat(board, x, y, ownTeam, canCaptureFn, inBoundsFn) {
   const card = board[y][x];
   if (!card || !card.faceUp) return false;
   const dims = _boardDims(board, inBoundsFn);
-  for (let i = 0; i < DIRECTIONS.length; i++) {
-    const nx = x + DIRECTIONS[i].dx;
-    const ny = y + DIRECTIONS[i].dy;
+  for (const dir2 of DIRECTIONS) {
+    const nx = x + dir2.dx;
+    const ny = y + dir2.dy;
     if (!dims.inBounds(nx, ny)) continue;
     const enemy = board[ny][nx];
     if (!enemy || !enemy.faceUp || enemy.team === ownTeam) continue;
@@ -285,6 +285,46 @@ function simulateCapture(board, from, to, mutual) {
 }
 
 /**
+ * Score a single capture candidate with one-step lookahead.
+ * @param {Array} board
+ * @param {Object} card - attacker
+ * @param {{x,y}} from - attacker position
+ * @param {{x,y}} to - defender position
+ * @param {Object} deps
+ * @param {string} aiTeam
+ * @returns {{score: number, mutual: boolean}}
+ */
+function _scoreCapture(board, card, from, to, deps, aiTeam) {
+  const target = board[to.y][to.x];
+  const mutual = deps.isMutualDestruction(card, target);
+  const attVal = deps.pieceValue(card, target, "attacker");
+  const defVal = deps.pieceValue(target, card, "defender");
+  if (mutual) {
+    return { score: defVal - attVal, mutual: true };
+  }
+  const futureBoard = simulateCapture(board, from, to, false);
+  const exposed = isPositionUnderThreat(
+    futureBoard,
+    to.x,
+    to.y,
+    aiTeam,
+    deps.canCapture,
+    deps.inBounds
+  );
+  return { score: defVal - (exposed ? attVal : 0), mutual: false };
+}
+
+/**
+ * Compare two capture candidates for sorting (best first).
+ */
+function _compareCaptures(a, b) {
+  if (a.score !== b.score) return b.score - a.score;
+  if (a.mutual !== b.mutual) return a.mutual ? 1 : -1;
+  if (a.defenderRank !== b.defenderRank) return a.defenderRank - b.defenderRank;
+  return b.attackerRank - a.attackerRank;
+}
+
+/**
  * Pick the best capture among all legal captures (one-step lookahead).
  * @param {Array} board
  * @param {string} aiTeam
@@ -295,41 +335,20 @@ function simulateCapture(board, from, to, mutual) {
 function chooseBestCapture(board, aiTeam, deps, size) {
   const dims = _boardDims(board, deps.inBounds);
   const N = size || dims.size;
-  const { canCapture, isMutualDestruction, pieceValue, getValidCaptures } = deps;
+  const { getValidCaptures } = deps;
   const allCaptures = [];
   for (let y = 0; y < N; y++) {
     for (let x = 0; x < N; x++) {
       const card = board[y][x];
       if (!card || !card.faceUp || card.team !== aiTeam) continue;
       const targets = getValidCaptures(board, x, y, aiTeam);
-      for (let k = 0; k < targets.length; k++) {
-        const t = targets[k];
-        const target = board[t.y][t.x];
-        const mutual = isMutualDestruction(card, target);
-        const attVal = pieceValue(card, target, "attacker");
-        const defVal = pieceValue(target, card, "defender");
-        let score;
-        if (mutual) {
-          // Mutual destruction: net = enemy loss - own loss
-          score = defVal - attVal;
-        } else {
-          // Normal capture: simulate and check if attacker would be captured next turn
-          const futureBoard = simulateCapture(board, { x, y }, t, false);
-          const exposed = isPositionUnderThreat(
-            futureBoard,
-            t.x,
-            t.y,
-            aiTeam,
-            canCapture,
-            deps.inBounds
-          );
-          score = defVal - (exposed ? attVal : 0);
-        }
+      for (const t of targets) {
+        const { score, mutual } = _scoreCapture(board, card, { x, y }, t, deps, aiTeam);
         allCaptures.push({
           from: { x, y },
           to: t,
           score,
-          defenderRank: target.rank,
+          defenderRank: board[t.y][t.x].rank,
           attackerRank: card.rank,
           mutual,
         });
@@ -337,12 +356,7 @@ function chooseBestCapture(board, aiTeam, deps, size) {
     }
   }
   if (allCaptures.length === 0) return null;
-  allCaptures.sort((a, b) => {
-    if (a.score !== b.score) return b.score - a.score;
-    if (a.mutual !== b.mutual) return a.mutual ? 1 : -1;
-    if (a.defenderRank !== b.defenderRank) return a.defenderRank - b.defenderRank;
-    return b.attackerRank - a.attackerRank;
-  });
+  allCaptures.sort(_compareCaptures);
   return { type: "capture", from: allCaptures[0].from, to: allCaptures[0].to };
 }
 
@@ -372,9 +386,9 @@ function chooseBestFlip(board, aiTeam, deps, size) {
   const scored = faceDownCells.map((pos) => {
     let maxAdjOwnVal = 0;
     let adjEnemyCount = 0;
-    for (let i = 0; i < DIRECTIONS.length; i++) {
-      const nx = pos.x + DIRECTIONS[i].dx;
-      const ny = pos.y + DIRECTIONS[i].dy;
+    for (const dir3 of DIRECTIONS) {
+      const nx = pos.x + dir3.dx;
+      const ny = pos.y + dir3.dy;
       if (!dims.inBounds(nx, ny)) continue;
       const c = board[ny][nx];
       if (!c || !c.faceUp) continue;
@@ -394,6 +408,48 @@ function chooseBestFlip(board, aiTeam, deps, size) {
   const top = scored.filter((s) => s.score === topScore);
   const pick = top[Math.floor(Math.random() * top.length)].pos;
   return { type: "flip", x: pick.x, y: pick.y };
+}
+
+/**
+ * Score a move based on whether it escapes or enters a threatened position.
+ * @param {number} cardVal - value of the moving piece
+ * @param {boolean} currThreatened - whether current position is under threat
+ * @param {boolean} futureThreatened - whether destination is under threat
+ * @returns {number} threat-based score adjustment
+ */
+function _scoreMoveThreat(cardVal, currThreatened, futureThreatened) {
+  if (currThreatened && !futureThreatened) return cardVal;
+  if (!currThreatened && futureThreatened) return -cardVal * 1.5;
+  if (currThreatened && futureThreatened) return -cardVal * 0.5;
+  return 0;
+}
+
+/**
+ * Calculate the best approach bonus: the highest value enemy adjacent to the
+ * destination that the moving piece could capture next turn.
+ * @param {Array} board - future board after the move
+ * @param {{x,y}} target - destination cell
+ * @param {Object} card - the moving piece
+ * @param {string} aiTeam - AI team identifier
+ * @param {Object} dims - board dimensions helper
+ * @param {Function} canCapture - capture predicate
+ * @param {Function} pieceValue - value function
+ * @returns {number} approach bonus value
+ */
+function _calcApproachBonus(board, target, card, aiTeam, dims, canCapture, pieceValue) {
+  let approachBonus = 0;
+  for (const dir of DIRECTIONS) {
+    const nx = target.x + dir.dx;
+    const ny = target.y + dir.dy;
+    if (!dims.inBounds(nx, ny)) continue;
+    const enemy = board[ny][nx];
+    if (!enemy || !enemy.faceUp || enemy.team === aiTeam) continue;
+    if (canCapture(card, enemy)) {
+      const ev = pieceValue(enemy, card, "defender");
+      if (ev > approachBonus) approachBonus = ev;
+    }
+  }
+  return approachBonus;
 }
 
 /**
@@ -418,10 +474,8 @@ function chooseBestMove(board, aiTeam, deps, size) {
       const card = board[y][x];
       if (!card || !card.faceUp || card.team !== aiTeam) continue;
       const targets = getValidMoves(board, x, y);
-      for (let k = 0; k < targets.length; k++) {
-        const t = targets[k];
+      for (const t of targets) {
         const cardVal = pieceValue(card, null, "self");
-        let score = 0;
 
         const currThreatened = isPositionUnderThreat(
           board,
@@ -441,30 +495,10 @@ function chooseBestMove(board, aiTeam, deps, size) {
           deps.inBounds
         );
 
-        if (currThreatened && !futureThreatened) {
-          score += cardVal;
-        } else if (!currThreatened && futureThreatened) {
-          score -= cardVal * 1.5;
-        } else if (currThreatened && futureThreatened) {
-          score -= cardVal * 0.5;
-        }
-
-        let approachBonus = 0;
-        for (let i = 0; i < DIRECTIONS.length; i++) {
-          const nx = t.x + DIRECTIONS[i].dx;
-          const ny = t.y + DIRECTIONS[i].dy;
-          if (!dims.inBounds(nx, ny)) continue;
-          const enemy = futureBoard[ny][nx];
-          if (!enemy || !enemy.faceUp || enemy.team === aiTeam) continue;
-          if (canCapture(card, enemy)) {
-            const ev = pieceValue(enemy, card, "defender");
-            if (ev > approachBonus) approachBonus = ev;
-          }
-        }
-        score += approachBonus * 0.5;
-
-        const enemyDistDelta = nearestEnemyDelta(board, x, y, t, aiTeam, N);
-        score += enemyDistDelta * 0.05;
+        let score = _scoreMoveThreat(cardVal, currThreatened, futureThreatened);
+        score +=
+          _calcApproachBonus(futureBoard, t, card, aiTeam, dims, canCapture, pieceValue) * 0.5;
+        score += nearestEnemyDelta(board, x, y, t, aiTeam, N) * 0.05;
 
         allMoves.push({ from: { x, y }, to: t, score });
       }

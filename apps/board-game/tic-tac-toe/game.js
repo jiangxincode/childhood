@@ -1,12 +1,13 @@
-/* eslint-disable no-let, no-undef */
+/* eslint-disable no-undef */
 // ============================================================
 // Tic-Tac-Toe - Game Core Logic
 // ============================================================
 
-if (judgeRPS === undefined && typeof require !== "undefined") {
+let judgeRPS, getRPSName;
+if (typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  let judgeRPS = _gameUtils.judgeRPS;
-  let getRPSName = _gameUtils.getRPSName;
+  judgeRPS = _gameUtils.judgeRPS;
+  getRPSName = _gameUtils.getRPSName;
 }
 
 const PLAYER_X = "X";
@@ -81,8 +82,7 @@ function createGameState(mode) {
 }
 
 function checkWin(board) {
-  for (let i = 0; i < WIN_LINES.length; i++) {
-    const line = WIN_LINES[i];
+  for (const line of WIN_LINES) {
     const a = board[line[0].y][line[0].x];
     const b = board[line[1].y][line[1].x];
     const c = board[line[2].y][line[2].x];
@@ -141,18 +141,18 @@ function minimax(board, depth, isMaximizing, aiPlayer) {
   const moves = getValidMoves(board);
   if (isMaximizing) {
     let best = -100;
-    for (let i = 0; i < moves.length; i++) {
-      let newBoard = makeMove(board, moves[i].x, moves[i].y, aiPlayer);
-      let score = minimax(newBoard, depth + 1, false, aiPlayer);
+    for (const move2 of moves) {
+      const newBoard = makeMove(board, move2.x, move2.y, aiPlayer);
+      const score = minimax(newBoard, depth + 1, false, aiPlayer);
       if (score > best) best = score;
     }
     return best;
   } else {
     let best = 100;
     const opponent = getOpponent(aiPlayer);
-    for (let i = 0; i < moves.length; i++) {
-      let newBoard = makeMove(board, moves[i].x, moves[i].y, opponent);
-      let score = minimax(newBoard, depth + 1, true, aiPlayer);
+    for (const move of moves) {
+      const newBoard = makeMove(board, move.x, move.y, opponent);
+      const score = minimax(newBoard, depth + 1, true, aiPlayer);
       if (score < best) best = score;
     }
     return best;
@@ -164,27 +164,27 @@ function getBestAIMove(board, aiPlayer) {
   if (moves.length === 0) return null;
 
   // First check if AI can win immediately
-  for (let i = 0; i < moves.length; i++) {
-    let newBoard = makeMove(board, moves[i].x, moves[i].y, aiPlayer);
-    if (checkWin(newBoard)) return moves[i];
+  for (const move of moves) {
+    const newBoard = makeMove(board, move.x, move.y, aiPlayer);
+    if (checkWin(newBoard)) return move;
   }
 
   // Then check if opponent can win immediately (need to block)
   const opponent = getOpponent(aiPlayer);
-  for (let i = 0; i < moves.length; i++) {
-    let newBoard = makeMove(board, moves[i].x, moves[i].y, opponent);
-    if (checkWin(newBoard)) return moves[i];
+  for (const move2 of moves) {
+    const newBoard = makeMove(board, move2.x, move2.y, opponent);
+    if (checkWin(newBoard)) return move2;
   }
 
   // Minimax selects optimal move
   let bestScore = -100;
   let bestMove = moves[0];
-  for (let i = 0; i < moves.length; i++) {
-    let newBoard = makeMove(board, moves[i].x, moves[i].y, aiPlayer);
+  for (const move3 of moves) {
+    const newBoard = makeMove(board, move3.x, move3.y, aiPlayer);
     const score = minimax(newBoard, 0, false, aiPlayer);
     if (score > bestScore) {
       bestScore = score;
-      bestMove = moves[i];
+      bestMove = move3;
     }
   }
   return bestMove;
@@ -290,8 +290,7 @@ if (typeof document !== "undefined") {
 
     // Highlight winning line
     if (state.winLine) {
-      for (let i = 0; i < state.winLine.length; i++) {
-        const pos = state.winLine[i];
+      for (const pos of state.winLine) {
         const sel = '.cell[data-x="' + pos.x + '"][data-y="' + pos.y + '"]';
         const winCell = document.querySelector(sel);
         if (winCell) winCell.classList.add("cell-win");
@@ -312,7 +311,13 @@ if (typeof document !== "undefined") {
   function updateMessage(text, type) {
     const el = document.getElementById("message");
     el.textContent = text;
-    el.className = type === "error" ? "error" : type === "info" ? "info" : "";
+    if (type === "error") {
+      el.className = "error";
+    } else if (type === "info") {
+      el.className = "info";
+    } else {
+      el.className = "";
+    }
   }
 
   function showGameOver(state) {
@@ -621,19 +626,20 @@ if (typeof document !== "undefined") {
     cleanupNetwork();
   }
 
-  function handleRPSChoice(player, choice) {
+  function handleRPSChoice(player, choice, ev) {
+    let resultEl;
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
 
       const choices = ["rock", "scissors", "paper"];
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      let resultEl = document.getElementById("rps-result");
+      resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -671,13 +677,13 @@ if (typeof document !== "undefined") {
       document.querySelectorAll("#rps-p" + player + "-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
 
       const statusEl = document.getElementById("rps-p" + player + "-status");
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        let resultEl = document.getElementById("rps-result");
+        resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
@@ -739,9 +745,7 @@ if (typeof document !== "undefined") {
     // Online mode button
     const btnOnline = document.getElementById("btn-online");
     if (btnOnline) {
-      if (!RoomUI.isSupported()) {
-        btnOnline.style.display = "none";
-      } else {
+      if (RoomUI.isSupported()) {
         btnOnline.addEventListener("click", () => {
           roomUI = new RoomUI({
             onConnectionEstablished: (connection, protocol, role) => {
@@ -760,6 +764,8 @@ if (typeof document !== "undefined") {
           });
           roomUI.show();
         });
+      } else {
+        btnOnline.style.display = "none";
       }
     }
 
@@ -775,7 +781,7 @@ if (typeof document !== "undefined") {
       button.addEventListener("click", (ev) => {
         const player = ev.target.dataset.player;
         const choice = ev.target.dataset.choice;
-        handleRPSChoice(player, choice);
+        handleRPSChoice(player, choice, ev);
       });
     });
 

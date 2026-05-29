@@ -154,14 +154,14 @@ function selectCoordValue(coordId) {
   if (!coordId) {
     return null;
   }
-  for (let j = 0; j < COORD.length; j++) {
-    if (COORD[j].id == coordId) {
-      coord.top = COORD[j].top + "px";
-      coord.left = COORD[j].left + "px";
-      coord.coordColor = COORD[j].color;
-      coord.superCoord = COORD[j].super;
-      coord.r = COORD[j].r;
-      coord.state = COORD[j].state;
+  for (const coord2 of COORD) {
+    if (coord2.id == coordId) {
+      coord.top = coord2.top + "px";
+      coord.left = coord2.left + "px";
+      coord.coordColor = coord2.color;
+      coord.superCoord = coord2.super;
+      coord.r = coord2.r;
+      coord.state = coord2.state;
     }
   }
   return coord;
@@ -182,9 +182,9 @@ function createDefaultUserList() {
  * @returns {string|undefined}
  */
 function userState(color, userList) {
-  for (let i = 0; i < userList.length; i++) {
-    if (color === userList[i].color) {
-      return userList[i].state;
+  for (const item of userList) {
+    if (color === item.color) {
+      return item.state;
     }
   }
   return undefined;
@@ -207,9 +207,9 @@ function getNextColor(currentColor) {
  * @returns {boolean}
  */
 function hasRelayMarker(coordId) {
-  for (let i = 0; i < COORD.length; i++) {
-    if (COORD[i].id == coordId) {
-      return COORD[i].r === "yes";
+  for (const coord of COORD) {
+    if (coord.id == coordId) {
+      return coord.r === "yes";
     }
   }
   return false;
@@ -221,9 +221,9 @@ function hasRelayMarker(coordId) {
  * @returns {string|null}
  */
 function getSuperTarget(coordId) {
-  for (let i = 0; i < COORD.length; i++) {
-    if (COORD[i].id == coordId) {
-      return COORD[i].super || null;
+  for (const coord2 of COORD) {
+    if (coord2.id == coordId) {
+      return coord2.super || null;
     }
   }
   return null;
@@ -293,8 +293,8 @@ function isWinCell(coordId) {
  */
 function checkVictory(planes, color) {
   let winCount = 0;
-  for (let i = 0; i < planes.length; i++) {
-    if (planes[i].type === color && planes[i].state === "win") {
+  for (const plane of planes) {
+    if (plane.type === color && plane.state === "win") {
       winCount++;
     }
   }
@@ -310,9 +310,9 @@ function checkVictory(planes, color) {
 function getInitCoord(color, planeNum) {
   const coords = INIT_COORDS[color];
   if (!coords) return null;
-  for (let i = 0; i < coords.length; i++) {
-    if (coords[i].id === planeNum) {
-      return { top: coords[i].top, left: coords[i].left };
+  for (const coord3 of coords) {
+    if (coord3.id === planeNum) {
+      return { top: coord3.top, left: coord3.left };
     }
   }
   return null;
@@ -646,7 +646,6 @@ if (typeof $j !== "undefined") {
         if (nextStep) {
           $j("#dice").trigger("click");
           clearTimeout(nextSt);
-          return;
         } else {
           diceClick();
         }
@@ -689,20 +688,20 @@ if (typeof $j !== "undefined") {
    */
   function createPlane(type) {
     if (type?.length > 0) {
-      for (let i = 0; i < type.length; i++) {
-        if (type[i].state != "close") {
-          switch (type[i].color) {
+      for (const item2 of type) {
+        if (item2.state != "close") {
+          switch (item2.color) {
             case "red":
-              addPlaneDiv(type[i].color, 73, 770);
+              addPlaneDiv(item2.color, 73, 770);
               break;
             case "blue":
-              addPlaneDiv(type[i].color, 771, 770);
+              addPlaneDiv(item2.color, 771, 770);
               break;
             case "yellow":
-              addPlaneDiv(type[i].color, 771, 71);
+              addPlaneDiv(item2.color, 771, 71);
               break;
             case "green":
-              addPlaneDiv(type[i].color, 73, 71);
+              addPlaneDiv(item2.color, 73, 71);
               break;
           }
         }
@@ -793,15 +792,13 @@ if (typeof $j !== "undefined") {
               .addClass("pointer");
             flag = true;
           }
-        } else {
-          if ($j(this).attr("state") == "ready" || $j(this).attr("state") == "running") {
-            currentUserPlane
-              .on("click", function () {
-                movePlane(this);
-              })
-              .addClass("pointer");
-            flag = true;
-          }
+        } else if ($j(this).attr("state") == "ready" || $j(this).attr("state") == "running") {
+          currentUserPlane
+            .on("click", function () {
+              movePlane(this);
+            })
+            .addClass("pointer");
+          flag = true;
         }
       }
     });
@@ -858,11 +855,11 @@ if (typeof $j !== "undefined") {
           .attr({ state: "ready", coordId: coordId, step: step })
           .off("click")
           .removeClass("pointer");
-        if (diceNum != 6) {
-          nextUser();
-        } else {
+        if (diceNum == 6) {
           addDiceEvent();
           nextStep = true;
+        } else {
+          nextUser();
         }
       });
     } else {
@@ -942,11 +939,11 @@ if (typeof $j !== "undefined") {
               .attr({ coordId: coordValue.id, step: step })
               .off("click")
               .removeClass("pointer");
-            if (diceNum != 6) {
-              nextUser();
-            } else {
+            if (diceNum == 6) {
               addDiceEvent();
               nextStep = true;
+            } else {
+              nextUser();
             }
           }
           return;
@@ -1015,9 +1012,9 @@ if (typeof $j !== "undefined") {
    */
   function userStateBrowser(color) {
     let state;
-    for (let i = 0; i < planeOption.userList.length; i++) {
-      if (color == planeOption.userList[i].color) {
-        state = planeOption.userList[i].state;
+    for (const item2 of planeOption.userList) {
+      if (color == item2.color) {
+        state = item2.state;
       }
     }
     return state;
@@ -1075,8 +1072,8 @@ if (typeof $j !== "undefined") {
     // Count totals first
     let humanTotal = 0;
     let aiTotal = 0;
-    for (let i = 0; i < planeOption.userList.length; i++) {
-      const st = planeOption.userList[i].state;
+    for (const item3 of planeOption.userList) {
+      const st = item3.state;
       if (st === "normal") humanTotal++;
       else if (st === "computer") aiTotal++;
     }
@@ -1084,8 +1081,7 @@ if (typeof $j !== "undefined") {
     let humanIdx = 0;
     let aiIdx = 0;
     let currentLabel = "玩家";
-    for (let i = 0; i < planeOption.userList.length; i++) {
-      const user = planeOption.userList[i];
+    for (const user of planeOption.userList) {
       let label;
       if (user.state === "normal") {
         humanIdx++;
@@ -1299,13 +1295,13 @@ if (typeof $j !== "undefined") {
       if (planeOption.currentUser !== remoteColor) return;
       const pn = actionData.pn;
       let targetPlane = null;
-      $j(".plane").each(function () {
+      $j(".plane").each((_idx, el) => {
         if (
-          $j(this).attr("type") === remoteColor &&
-          $j(this).attr("num") == pn &&
-          $j(this).hasClass("pointer")
+          $j(el).attr("type") === remoteColor &&
+          $j(el).attr("num") == pn &&
+          $j(el).hasClass("pointer")
         ) {
-          targetPlane = this;
+          targetPlane = el;
           return false; // break
         }
       });
@@ -1332,22 +1328,8 @@ if (typeof $j !== "undefined") {
       }
     };
     window.onkeydown = function (e) {
-      if (e.which) {
-        if (e.which == 116) {
-          if (confirm("确定刷新页面吗？刷新后页面数据将被清除！")) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      } else if (e.keyCode) {
-        if (e.keyCode == 116) {
-          if (confirm("确定刷新页面吗？刷新后页面数据将被清除！")) {
-            return true;
-          } else {
-            return false;
-          }
-        }
+      if (e.key === "F5") {
+        return confirm("确定刷新页面吗？刷新后页面数据将被清除！");
       }
     };
     DICE = new SlotMachine(document.getElementById("dice"), {

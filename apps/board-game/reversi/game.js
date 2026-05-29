@@ -1,12 +1,13 @@
-/* eslint-disable no-let, no-undef */
+/* eslint-disable no-undef */
 // ============================================================
 // Reversi (Othello) - Game Core Logic
 // ============================================================
 
-if (judgeRPS === undefined && typeof require !== "undefined") {
+let judgeRPS, getRPSName;
+if (typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  let judgeRPS = _gameUtils.judgeRPS;
-  let getRPSName = _gameUtils.getRPSName;
+  judgeRPS = _gameUtils.judgeRPS;
+  getRPSName = _gameUtils.getRPSName;
 }
 
 // ============================================================
@@ -110,7 +111,6 @@ function isValidMove(board, x, y, player) {
   // Position must be empty
   if (board[y][x] !== null) return null;
 
-  const opponent = getOpponent(player);
   const allFlipped = [];
 
   // Check all directions
@@ -304,7 +304,7 @@ function aiTurn(state) {
 
     if (bestMove) {
       // AI has valid move position
-      const flipped = makeMove(state.board, bestMove.x, bestMove.y, state.aiTeam);
+      makeMove(state.board, bestMove.x, bestMove.y, state.aiTeam);
       state.lastMove = { x: bestMove.x, y: bestMove.y };
       state.turnCount++;
 
@@ -561,7 +561,7 @@ function handleCellClick(x, y) {
   }
 
   // Execute move
-  const flipped = makeMove(gameState.board, x, y, gameState.currentPlayer);
+  makeMove(gameState.board, x, y, gameState.currentPlayer);
   gameState.lastMove = { x, y };
   gameState.turnCount++;
 
@@ -858,13 +858,13 @@ let rpsChoices = { player1: null, player2: null, human: null };
  * @param {string} player - '1' | '2' | 'human'
  * @param {string} choice - 'rock' | 'scissors' | 'paper'
  */
-function handleRPSChoice(player, choice) {
+function handleRPSChoice(player, choice, ev) {
   if (player === "human") {
     rpsChoices.human = choice;
     document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
       btn.classList.remove("selected");
     });
-    event.target.classList.add("selected");
+    ev.target.classList.add("selected");
 
     // AI random choice
     const choices = ["rock", "scissors", "paper"];
@@ -891,7 +891,7 @@ function handleRPSChoice(player, choice) {
     document.querySelectorAll(`#rps-p${player}-buttons .btn-rps`).forEach((btn) => {
       btn.classList.remove("selected");
     });
-    event.target.classList.add("selected");
+    ev.target.classList.add("selected");
 
     const statusElement = document.getElementById(`rps-p${player}-status`);
     statusElement.textContent = `已选择：${getRPSName(choice)}`;
@@ -968,9 +968,7 @@ if (typeof document !== "undefined") {
     // Online mode button
     const btnOnline = document.getElementById("btn-online");
     if (btnOnline) {
-      if (!RoomUI.isSupported()) {
-        btnOnline.style.display = "none";
-      } else {
+      if (RoomUI.isSupported()) {
         btnOnline.addEventListener("click", () => {
           roomUI = new RoomUI({
             onConnectionEstablished: (connection, protocol, role) => {
@@ -989,6 +987,8 @@ if (typeof document !== "undefined") {
           });
           roomUI.show();
         });
+      } else {
+        btnOnline.style.display = "none";
       }
     }
 
@@ -1002,10 +1002,10 @@ if (typeof document !== "undefined") {
 
     // RPS buttons
     document.querySelectorAll(".btn-rps").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        const player = event.target.dataset.player;
-        const choice = event.target.dataset.choice;
-        handleRPSChoice(player, choice);
+      button.addEventListener("click", (ev) => {
+        const player = ev.target.dataset.player;
+        const choice = ev.target.dataset.choice;
+        handleRPSChoice(player, choice, ev);
       });
     });
 

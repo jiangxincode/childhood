@@ -1,4 +1,4 @@
-/* eslint-disable no-let, no-undef */
+/* eslint-disable no-var, no-undef */
 // ============================================================
 // 小猫钓鱼 / 鸡毛蒜皮 (Xiao Mao Diao Yu / Ji Mao Suan Pi)
 // 2 players, cross-shaped board, 2 pieces each.
@@ -8,22 +8,23 @@
 // Win: capture all opponent pieces OR opponent has no legal move.
 // ============================================================
 
-if (judgeRPS === undefined && typeof require !== "undefined") {
-  let _gameUtils = require("../../common/game-utils.js");
-  let judgeRPS = _gameUtils.judgeRPS;
-  let getRPSName = _gameUtils.getRPSName;
+let judgeRPS, getRPSName;
+if (typeof require !== "undefined") {
+  const _gameUtils = require("../../common/game-utils.js");
+  judgeRPS = _gameUtils.judgeRPS;
+  getRPSName = _gameUtils.getRPSName;
 }
 
-let PLAYER_A = "A";
-let PLAYER_B = "B";
-let EMPTY = null;
+const PLAYER_A = "A";
+const PLAYER_B = "B";
+const EMPTY = null;
 
 // 12 nodes laid out on a 4x4 grid (corners empty)
 //        0   1            (1,0) (2,0)
 //    2   3   4   5        (0,1) (1,1) (2,1) (3,1)
 //    6   7   8   9        (0,2) (1,2) (2,2) (3,2)
 //       10  11            (1,3) (2,3)
-let BOARD_POSITIONS = [
+const BOARD_POSITIONS = [
   { x: 1, y: 0 }, // 0
   { x: 2, y: 0 }, // 1
   { x: 0, y: 1 }, // 2
@@ -39,7 +40,7 @@ let BOARD_POSITIONS = [
 ];
 
 // Edges = sides of the five squares forming the cross
-let ADJACENCY = [
+const ADJACENCY = [
   [1, 3], // 0
   [0, 4], // 1
   [3, 6], // 2
@@ -54,20 +55,20 @@ let ADJACENCY = [
   [8, 10], // 11
 ];
 
-let PIECES_EACH = 4;
-let INITIAL_POSITIONS_A = [0, 1, 3, 4];
-let INITIAL_POSITIONS_B = [7, 8, 10, 11];
+const PIECES_EACH = 4;
+const INITIAL_POSITIONS_A = [0, 1, 3, 4];
+const INITIAL_POSITIONS_B = [7, 8, 10, 11];
 
 // Grid size for rendering (4x4 with the four corners blank)
-let GRID_COLS = 4;
-let GRID_ROWS = 4;
+const GRID_COLS = 4;
+const GRID_ROWS = 4;
 
 // Move types
-let MOVE_SINGLE = "single";
-let MOVE_TRIPLE = "triple"; // 鸡毛蒜皮 (origin + 3 hops)
+const MOVE_SINGLE = "single";
+const MOVE_TRIPLE = "triple"; // 鸡毛蒜皮 (origin + 3 hops)
 
 function createBoard() {
-  let board = [];
+  const board = [];
   for (let i = 0; i < BOARD_POSITIONS.length; i++) {
     board.push(EMPTY);
   }
@@ -75,12 +76,12 @@ function createBoard() {
 }
 
 function createGameState(mode) {
-  let board = createBoard();
-  for (let i = 0; i < INITIAL_POSITIONS_A.length; i++) {
-    board[INITIAL_POSITIONS_A[i]] = PLAYER_A;
+  const board = createBoard();
+  for (const pos of INITIAL_POSITIONS_A) {
+    board[pos] = PLAYER_A;
   }
-  for (let j = 0; j < INITIAL_POSITIONS_B.length; j++) {
-    board[INITIAL_POSITIONS_B[j]] = PLAYER_B;
+  for (const pos2 of INITIAL_POSITIONS_B) {
+    board[pos2] = PLAYER_B;
   }
   return {
     mode: mode,
@@ -105,7 +106,7 @@ function getNeighbors(posIndex) {
 }
 
 function getPlayerPieces(board, player) {
-  let pieces = [];
+  const pieces = [];
   for (let i = 0; i < board.length; i++) {
     if (board[i] === player) {
       pieces.push(i);
@@ -116,8 +117,8 @@ function getPlayerPieces(board, player) {
 
 function countPieces(board, player) {
   let n = 0;
-  for (let i = 0; i < board.length; i++) {
-    if (board[i] === player) n++;
+  for (const item of board) {
+    if (item === player) n++;
   }
   return n;
 }
@@ -125,16 +126,15 @@ function countPieces(board, player) {
 // Returns true if a node is a valid landing spot for `player`
 // (empty, or occupied by the opponent so we can capture it).
 function isLandable(board, node, player) {
-  let v = board[node];
+  const v = board[node];
   return v === EMPTY || v === getOpponent(player);
 }
 
 // Get all single-step moves for one piece.
 function getSingleMovesForPiece(board, from, player) {
-  let moves = [];
-  let neighbors = ADJACENCY[from];
-  for (let i = 0; i < neighbors.length; i++) {
-    let to = neighbors[i];
+  const moves = [];
+  const neighbors = ADJACENCY[from];
+  for (const to of neighbors) {
     if (isLandable(board, to, player)) {
       moves.push({
         type: MOVE_SINGLE,
@@ -154,23 +154,20 @@ function getSingleMovesForPiece(board, from, player) {
 // nodes can be anything (empty / own / opponent) as long as the path does not
 // revisit a node.
 function getTripleMovesForPiece(board, from, player) {
-  let moves = [];
-  let opponent = getOpponent(player);
-  let visited = {};
+  const moves = [];
+  const opponent = getOpponent(player);
+  const visited = {};
   visited[from] = true;
-  let step1Neighbors = ADJACENCY[from];
-  for (let i = 0; i < step1Neighbors.length; i++) {
-    let n1 = step1Neighbors[i];
+  const step1Neighbors = ADJACENCY[from];
+  for (const n1 of step1Neighbors) {
     if (visited[n1]) continue;
     visited[n1] = true;
-    let step2Neighbors = ADJACENCY[n1];
-    for (let j = 0; j < step2Neighbors.length; j++) {
-      let n2 = step2Neighbors[j];
+    const step2Neighbors = ADJACENCY[n1];
+    for (const n2 of step2Neighbors) {
       if (visited[n2]) continue;
       visited[n2] = true;
-      let step3Neighbors = ADJACENCY[n2];
-      for (let k = 0; k < step3Neighbors.length; k++) {
-        let n3 = step3Neighbors[k];
+      const step3Neighbors = ADJACENCY[n2];
+      for (const n3 of step3Neighbors) {
         if (visited[n3]) continue;
         // Only valid if the final landing captures an opponent piece
         if (board[n3] !== opponent) continue;
@@ -190,28 +187,32 @@ function getTripleMovesForPiece(board, from, player) {
 }
 
 function getValidMoves(board, player) {
-  let moves = [];
-  let pieces = getPlayerPieces(board, player);
-  for (let p = 0; p < pieces.length; p++) {
-    let single = getSingleMovesForPiece(board, pieces[p], player);
-    for (let s = 0; s < single.length; s++) moves.push(single[s]);
-    let triple = getTripleMovesForPiece(board, pieces[p], player);
-    for (let t = 0; t < triple.length; t++) moves.push(triple[t]);
+  const moves = [];
+  const pieces = getPlayerPieces(board, player);
+  for (const piece of pieces) {
+    const single = getSingleMovesForPiece(board, piece, player);
+    for (const move of single) {
+      moves.push(move);
+    }
+    const triple = getTripleMovesForPiece(board, piece, player);
+    for (const move2 of triple) {
+      moves.push(move2);
+    }
   }
   return moves;
 }
 
 function hasValidMoves(board, player) {
-  let pieces = getPlayerPieces(board, player);
-  for (let p = 0; p < pieces.length; p++) {
-    if (getSingleMovesForPiece(board, pieces[p], player).length > 0) return true;
-    if (getTripleMovesForPiece(board, pieces[p], player).length > 0) return true;
+  const pieces = getPlayerPieces(board, player);
+  for (const piece of pieces) {
+    if (getSingleMovesForPiece(board, piece, player).length > 0) return true;
+    if (getTripleMovesForPiece(board, piece, player).length > 0) return true;
   }
   return false;
 }
 
 function applyMove(board, move) {
-  let newBoard = board.slice();
+  const newBoard = board.slice();
   newBoard[move.from] = EMPTY;
   // capture happens to be the same node as `to`, so a single assignment
   // overwrites both the captured piece and lands the moving piece.
@@ -234,15 +235,15 @@ function checkWin(board, nextPlayer) {
 // ============================================================
 
 function evaluateBoard(board, aiPlayer) {
-  let opponent = getOpponent(aiPlayer);
-  let aiPieces = countPieces(board, aiPlayer);
-  let oppPieces = countPieces(board, opponent);
+  const opponent = getOpponent(aiPlayer);
+  const aiPieces = countPieces(board, aiPlayer);
+  const oppPieces = countPieces(board, opponent);
 
   if (oppPieces === 0) return 100000;
   if (aiPieces === 0) return -100000;
 
-  let aiMoves = getValidMoves(board, aiPlayer).length;
-  let oppMoves = getValidMoves(board, opponent).length;
+  const aiMoves = getValidMoves(board, aiPlayer).length;
+  const oppMoves = getValidMoves(board, opponent).length;
 
   if (oppMoves === 0) return 100000;
   if (aiMoves === 0) return -100000;
@@ -252,14 +253,14 @@ function evaluateBoard(board, aiPlayer) {
 }
 
 function minimax(board, depth, isMaximizing, aiPlayer, alpha, beta) {
-  let opponent = getOpponent(aiPlayer);
-  let winner = checkWin(board, isMaximizing ? aiPlayer : opponent);
+  const opponent = getOpponent(aiPlayer);
+  const winner = checkWin(board, isMaximizing ? aiPlayer : opponent);
   if (winner === aiPlayer) return { score: 100000 + depth, move: null };
   if (winner === opponent) return { score: -100000 - depth, move: null };
   if (depth === 0) return { score: evaluateBoard(board, aiPlayer), move: null };
 
-  let currentPlayer = isMaximizing ? aiPlayer : opponent;
-  let moves = getValidMoves(board, currentPlayer);
+  const currentPlayer = isMaximizing ? aiPlayer : opponent;
+  const moves = getValidMoves(board, currentPlayer);
   if (moves.length === 0) {
     return { score: isMaximizing ? -100000 - depth : 100000 + depth, move: null };
   }
@@ -267,12 +268,12 @@ function minimax(board, depth, isMaximizing, aiPlayer, alpha, beta) {
   let bestMove = moves[0];
   if (isMaximizing) {
     let maxScore = -Infinity;
-    for (let i = 0; i < moves.length; i++) {
-      let nb = applyMove(board, moves[i]);
-      let r = minimax(nb, depth - 1, false, aiPlayer, alpha, beta);
+    for (const move4 of moves) {
+      const nb = applyMove(board, move4);
+      const r = minimax(nb, depth - 1, false, aiPlayer, alpha, beta);
       if (r.score > maxScore) {
         maxScore = r.score;
-        bestMove = moves[i];
+        bestMove = move4;
       }
       alpha = Math.max(alpha, r.score);
       if (beta <= alpha) break;
@@ -280,12 +281,12 @@ function minimax(board, depth, isMaximizing, aiPlayer, alpha, beta) {
     return { score: maxScore, move: bestMove };
   }
   let minScore = Infinity;
-  for (let j = 0; j < moves.length; j++) {
-    let nb2 = applyMove(board, moves[j]);
-    let r2 = minimax(nb2, depth - 1, true, aiPlayer, alpha, beta);
+  for (const move3 of moves) {
+    const nb2 = applyMove(board, move3);
+    const r2 = minimax(nb2, depth - 1, true, aiPlayer, alpha, beta);
     if (r2.score < minScore) {
       minScore = r2.score;
-      bestMove = moves[j];
+      bestMove = move3;
     }
     beta = Math.min(beta, r2.score);
     if (beta <= alpha) break;
@@ -294,18 +295,18 @@ function minimax(board, depth, isMaximizing, aiPlayer, alpha, beta) {
 }
 
 function getBestAIMove(state) {
-  let aiPlayer = state.aiTeam;
-  let moves = getValidMoves(state.board, aiPlayer);
+  const aiPlayer = state.aiTeam;
+  const moves = getValidMoves(state.board, aiPlayer);
   if (moves.length === 0) return null;
 
   // Take an immediate capture-and-win if available
-  for (let i = 0; i < moves.length; i++) {
-    let nb = applyMove(state.board, moves[i]);
-    if (countPieces(nb, getOpponent(aiPlayer)) === 0) return moves[i];
+  for (const move3 of moves) {
+    const nb = applyMove(state.board, move3);
+    if (countPieces(nb, getOpponent(aiPlayer)) === 0) return move3;
   }
 
-  let depth = 4;
-  let result = minimax(state.board, depth, true, aiPlayer, -Infinity, Infinity);
+  const depth = 4;
+  const result = minimax(state.board, depth, true, aiPlayer, -Infinity, Infinity);
   return result.move || moves[0];
 }
 
@@ -347,50 +348,49 @@ if (typeof module !== "undefined" && module.exports) {
 // Browser UI
 // ============================================================
 if (typeof document !== "undefined") {
-  let state = null;
-  let selectedPiece = null;
+  var state = null;
+  var selectedPiece = null;
 
   // Online mode state
-  let networkProtocol = null;
-  let networkConnection = null;
-  let roomUI = null;
-  let localPlayerRole = null; // 'host' | 'guest'
-  let localTeam = null;
-  let remoteTeam = null;
+  var networkProtocol = null;
+  var networkConnection = null;
+  var roomUI = null;
+  var localPlayerRole = null; // 'host' | 'guest'
+  var localTeam = null;
+  var remoteTeam = null;
   // Pending move type for the selected piece: MOVE_SINGLE or MOVE_TRIPLE
-  let moveMode = MOVE_SINGLE;
+  var moveMode = MOVE_SINGLE;
   // Chant for the triple move. The game is named after this chant: 小→猫→钓→鱼.
   // Some regions instead chant 鸡→毛→蒜→皮; the rules are identical.
-  let CHANT = ["小", "猫", "钓", "鱼"];
+  var CHANT = ["小", "猫", "钓", "鱼"];
 
   function initBoard() {
-    let boardEl = document.getElementById("board");
+    var boardEl = document.getElementById("board");
     boardEl.innerHTML = "";
 
     // Layout constants for the SVG board
-    let pad = 30;
-    let unit = 90; // distance between adjacent grid points
-    let nodeR = 22;
-    let width = pad * 2 + unit * 3;
-    let height = pad * 2 + unit * 3;
+    var pad = 30;
+    var unit = 90; // distance between adjacent grid points
+    var nodeR = 22;
+    var width = pad * 2 + unit * 3;
+    var height = pad * 2 + unit * 3;
 
     // Build SVG element
-    let svgNS = "http://www.w3.org/2000/svg";
-    let svg = document.createElementNS(svgNS, "svg");
+    var svgNS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(svgNS, "svg");
     svg.setAttribute("viewBox", "0 0 " + width + " " + height);
     svg.setAttribute("width", width);
     svg.setAttribute("height", height);
     svg.setAttribute("class", "board-svg");
 
     // Draw edges first (so nodes paint on top)
-    for (let i = 0; i < ADJACENCY.length; i++) {
-      let neighbors = ADJACENCY[i];
-      for (let n = 0; n < neighbors.length; n++) {
-        let j = neighbors[n];
+    for (var i = 0; i < ADJACENCY.length; i++) {
+      var neighbors = ADJACENCY[i];
+      for (const j of neighbors) {
         if (j <= i) continue;
-        let p1 = BOARD_POSITIONS[i];
-        let p2 = BOARD_POSITIONS[j];
-        let line = document.createElementNS(svgNS, "line");
+        var p1 = BOARD_POSITIONS[i];
+        var p2 = BOARD_POSITIONS[j];
+        var line = document.createElementNS(svgNS, "line");
         line.setAttribute("x1", pad + p1.x * unit);
         line.setAttribute("y1", pad + p1.y * unit);
         line.setAttribute("x2", pad + p2.x * unit);
@@ -401,22 +401,22 @@ if (typeof document !== "undefined") {
     }
 
     // Draw nodes (interactive)
-    for (let k = 0; k < BOARD_POSITIONS.length; k++) {
-      let pos = BOARD_POSITIONS[k];
-      let cx = pad + pos.x * unit;
-      let cy = pad + pos.y * unit;
+    for (var k = 0; k < BOARD_POSITIONS.length; k++) {
+      var pos = BOARD_POSITIONS[k];
+      var cx = pad + pos.x * unit;
+      var cy = pad + pos.y * unit;
 
-      let g = document.createElementNS(svgNS, "g");
+      var g = document.createElementNS(svgNS, "g");
       g.setAttribute("class", "node");
       g.setAttribute("data-pos", k);
       g.setAttribute("transform", "translate(" + cx + "," + cy + ")");
 
-      let circle = document.createElementNS(svgNS, "circle");
+      var circle = document.createElementNS(svgNS, "circle");
       circle.setAttribute("r", nodeR);
       circle.setAttribute("class", "node-circle");
       g.appendChild(circle);
 
-      let text = document.createElementNS(svgNS, "text");
+      var text = document.createElementNS(svgNS, "text");
       text.setAttribute("class", "node-text");
       text.setAttribute("text-anchor", "middle");
       text.setAttribute("dominant-baseline", "central");
@@ -443,24 +443,24 @@ if (typeof document !== "undefined") {
 
   function renderGame() {
     if (!state) return;
-    let nodes = document.querySelectorAll("#board .node");
-    let reachableMap = {};
+    var nodes = document.querySelectorAll("#board .node");
+    var reachableMap = {};
     if (selectedPiece !== null) {
-      let reachable = getReachableTargets(
+      var reachable = getReachableTargets(
         state.board,
         selectedPiece,
         state.currentPlayer,
         moveMode
       );
-      for (let r = 0; r < reachable.length; r++) {
-        reachableMap[reachable[r].to] = reachable[r];
+      for (const item2 of reachable) {
+        reachableMap[item2.to] = item2;
       }
     }
 
     nodes.forEach((g) => {
-      let pos = Number.parseInt(g.getAttribute("data-pos"));
-      let classes = ["node"];
-      let label = "";
+      var pos = Number.parseInt(g.getAttribute("data-pos"));
+      var classes = ["node"];
+      var label = "";
       if (state.board[pos] === PLAYER_A) {
         classes.push("node-a");
         label = "猫";
@@ -471,20 +471,21 @@ if (typeof document !== "undefined") {
         classes.push("node-empty");
       }
       if (selectedPiece === pos) classes.push("node-selected");
-      let hit = reachableMap[pos];
+      var hit = reachableMap[pos];
       if (hit) {
-        if (hit.capture !== null) classes.push("node-capture");
-        else classes.push(moveMode === MOVE_TRIPLE ? "node-triple" : "node-highlight");
+        if (hit.capture === null)
+          classes.push(moveMode === MOVE_TRIPLE ? "node-triple" : "node-highlight");
+        else classes.push("node-capture");
       }
       g.setAttribute("class", classes.join(" "));
-      let text = g.querySelector(".node-text");
+      var text = g.querySelector(".node-text");
       if (text) text.textContent = label;
     });
 
     // Status bar - shown as 玩家/电脑 (PVE), 玩家1/玩家2 (PVP), or 你/对方 (online)
-    let label;
+    var label;
     if (state.mode === "online") {
-      let isMyTurn = state.currentPlayer === localTeam;
+      var isMyTurn = state.currentPlayer === localTeam;
       label = { text: isMyTurn ? "你" : "对方" };
     } else {
       label = getCurrentPlayerLabel({
@@ -504,22 +505,22 @@ if (typeof document !== "undefined") {
     document.getElementById("pieces-b").textContent = countPieces(state.board, PLAYER_B);
 
     // Move-mode toggle highlight
-    let btnSingle = document.getElementById("btn-mode-single");
-    let btnTriple = document.getElementById("btn-mode-triple");
+    var btnSingle = document.getElementById("btn-mode-single");
+    var btnTriple = document.getElementById("btn-mode-triple");
     if (btnSingle && btnTriple) {
       btnSingle.classList.toggle("active", moveMode === MOVE_SINGLE);
       btnTriple.classList.toggle("active", moveMode === MOVE_TRIPLE);
     }
 
     // Last-move chant trail
-    let trailEl = document.getElementById("chant-trail");
+    var trailEl = document.getElementById("chant-trail");
     if (trailEl) {
       if (state.lastMove?.type === MOVE_TRIPLE) {
         trailEl.textContent =
           "上一步：" + state.lastMove.path.map((node, idx) => CHANT[idx]).join(" → ") + "（吃子）";
       } else if (state.lastMove?.type === MOVE_SINGLE) {
         trailEl.textContent =
-          "上一步：一步移动" + (state.lastMove.capture !== null ? "（吃子）" : "");
+          "上一步：一步移动" + (state.lastMove.capture === null ? "" : "（吃子）");
       } else {
         trailEl.textContent = "";
       }
@@ -534,11 +535,11 @@ if (typeof document !== "undefined") {
     }
 
     if (state.gameOver) {
-      let winnerText;
+      var winnerText;
       if (state.mode === "online") {
         winnerText = state.winner === localTeam ? "你" : "对方";
       } else {
-        let winnerLabel = getCurrentPlayerLabel({
+        var winnerLabel = getCurrentPlayerLabel({
           mode: state.mode,
           currentSide: state.winner,
           playerSide: state.playerTeam,
@@ -565,7 +566,7 @@ if (typeof document !== "undefined") {
     moveMode = MOVE_SINGLE;
     state.currentPlayer = getOpponent(state.currentPlayer);
     state.turnCount++;
-    let winner = checkWin(state.board, state.currentPlayer);
+    var winner = checkWin(state.board, state.currentPlayer);
     if (winner) {
       state.gameOver = true;
       state.winner = winner;
@@ -591,19 +592,19 @@ if (typeof document !== "undefined") {
     }
 
     if (selectedPiece !== null) {
-      let moves = getReachableTargets(state.board, selectedPiece, state.currentPlayer, moveMode);
-      for (let i = 0; i < moves.length; i++) {
-        if (moves[i].to === pos) {
+      var moves = getReachableTargets(state.board, selectedPiece, state.currentPlayer, moveMode);
+      for (const move5 of moves) {
+        if (move5.to === pos) {
           if (state.mode === "online" && networkProtocol) {
             networkProtocol.sendAction({
               a: "move",
-              f: moves[i].from,
-              t: moves[i].to,
-              mt: moves[i].type,
-              p: moves[i].path,
+              f: move5.from,
+              t: move5.to,
+              mt: move5.type,
+              p: move5.path,
             });
           }
-          commitMove(moves[i]);
+          commitMove(move5);
           return;
         }
       }
@@ -618,7 +619,7 @@ if (typeof document !== "undefined") {
     state.aiThinking = true;
     renderGame();
     setTimeout(() => {
-      let aiMove = getBestAIMove(state);
+      var aiMove = getBestAIMove(state);
       state.aiThinking = false;
       if (!aiMove) {
         state.gameOver = true;
@@ -652,10 +653,10 @@ if (typeof document !== "undefined") {
   }
 
   function handleRPSChoice(choice) {
-    let aiChoices = ["rock", "scissors", "paper"];
-    let aiChoice = aiChoices[Math.floor(Math.random() * 3)];
-    let result = judgeRPS(choice, aiChoice);
-    let resultDiv = document.getElementById("rps-result");
+    var aiChoices = ["rock", "scissors", "paper"];
+    var aiChoice = aiChoices[Math.floor(Math.random() * 3)];
+    var result = judgeRPS(choice, aiChoice);
+    var resultDiv = document.getElementById("rps-result");
     if (result === 1) {
       resultDiv.innerHTML =
         "<p>你出" + getRPSName(choice) + "，AI出" + getRPSName(aiChoice) + "，你先手！</p>";
@@ -724,7 +725,7 @@ if (typeof document !== "undefined") {
     });
   }
 
-  let rpsChoices = { online: null, remote: null };
+  var rpsChoices = { online: null, remote: null };
 
   function startOnlineRPS() {
     document.getElementById("mode-selection").style.display = "none";
@@ -757,8 +758,8 @@ if (typeof document !== "undefined") {
     if (!rpsChoices.online || !rpsChoices.remote) return;
 
     if (localPlayerRole === "host") {
-      let winner = judgeRPS(rpsChoices.online, rpsChoices.remote);
-      let firstPlayer;
+      var winner = judgeRPS(rpsChoices.online, rpsChoices.remote);
+      var firstPlayer;
       if (winner === 1) {
         firstPlayer = "host";
       } else if (winner === -1) {
@@ -784,7 +785,7 @@ if (typeof document !== "undefined") {
   }
 
   function handleOnlineRPSResult(result) {
-    let resultEl = document.getElementById("rps-online-result");
+    var resultEl = document.getElementById("rps-online-result");
     if (result.firstPlayer === null) {
       rpsChoices.online = null;
       rpsChoices.remote = null;
@@ -795,9 +796,9 @@ if (typeof document !== "undefined") {
       return;
     }
 
-    let myChoice = rpsChoices.online;
-    let theirChoice = rpsChoices.remote;
-    let iWin = result.firstPlayer === localPlayerRole;
+    var myChoice = rpsChoices.online;
+    var theirChoice = rpsChoices.remote;
+    var iWin = result.firstPlayer === localPlayerRole;
 
     resultEl.textContent =
       "你选择了" +
@@ -814,8 +815,8 @@ if (typeof document !== "undefined") {
   function startOnlineGame(firstPlayerRole) {
     state = createGameState("online");
 
-    let hostPiece = PLAYER_A;
-    let guestPiece = PLAYER_B;
+    var hostPiece = PLAYER_A;
+    var guestPiece = PLAYER_B;
 
     if (localPlayerRole === "host") {
       localTeam = firstPlayerRole === "host" ? hostPiece : guestPiece;
@@ -842,12 +843,12 @@ if (typeof document !== "undefined") {
     if (!state || state.gameOver) return;
     if (state.currentPlayer !== remoteTeam) return;
     // actionData = { a: "move", f: fromNode, t: toNode, mt: "single"|"triple", p?: path }
-    let from = actionData.f;
-    let to = actionData.t;
-    let moves = getReachableTargets(state.board, from, state.currentPlayer, actionData.mt);
-    for (let i = 0; i < moves.length; i++) {
-      if (moves[i].to === to) {
-        commitMove(moves[i]);
+    var from = actionData.f;
+    var to = actionData.t;
+    var moves = getReachableTargets(state.board, from, state.currentPlayer, actionData.mt);
+    for (const move3 of moves) {
+      if (move3.to === to) {
+        commitMove(move3);
         return;
       }
     }
@@ -872,11 +873,9 @@ if (typeof document !== "undefined") {
     });
 
     // Online mode button
-    let btnOnline = document.getElementById("btn-online");
+    var btnOnline = document.getElementById("btn-online");
     if (btnOnline) {
-      if (!RoomUI.isSupported()) {
-        btnOnline.style.display = "none";
-      } else {
+      if (RoomUI.isSupported()) {
         btnOnline.addEventListener("click", () => {
           roomUI = new RoomUI({
             onConnectionEstablished: function (connection, protocol, role) {
@@ -895,13 +894,15 @@ if (typeof document !== "undefined") {
           });
           roomUI.show();
         });
+      } else {
+        btnOnline.style.display = "none";
       }
     }
 
     // Online RPS buttons
     document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((button) => {
       button.addEventListener("click", (ev) => {
-        let choice = ev.target.dataset.choice;
+        var choice = ev.target.dataset.choice;
         handleOnlineRPSChoice(choice, ev);
       });
     });
@@ -913,8 +914,8 @@ if (typeof document !== "undefined") {
       });
     });
     document.getElementById("btn-restart").addEventListener("click", restartGame);
-    let btnSingle = document.getElementById("btn-mode-single");
-    let btnTriple = document.getElementById("btn-mode-triple");
+    var btnSingle = document.getElementById("btn-mode-single");
+    var btnTriple = document.getElementById("btn-mode-triple");
     if (btnSingle)
       btnSingle.addEventListener("click", () => {
         setMoveMode(MOVE_SINGLE);

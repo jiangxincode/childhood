@@ -1,12 +1,13 @@
-/* eslint-disable no-let, no-undef */
+/* eslint-disable no-undef */
 // ============================================================
 // Chinese Chess (Xiangqi) - Game Core Logic
 // ============================================================
 
-if (judgeRPS === undefined && typeof require !== "undefined") {
+let judgeRPS, getRPSName;
+if (typeof require !== "undefined") {
   const _gameUtils = require("../../common/game-utils.js");
-  let judgeRPS = _gameUtils.judgeRPS;
-  let getRPSName = _gameUtils.getRPSName;
+  judgeRPS = _gameUtils.judgeRPS;
+  getRPSName = _gameUtils.getRPSName;
 }
 
 const COLS = 9;
@@ -239,10 +240,10 @@ function getValidMoves(board, c, r) {
 
   // General facing rule: illegal if own general faces opponent general after move
   const validMoves = [];
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move of moves) {
+    const newBoard = applyMove(board, move);
     if (!isGeneralFacing(newBoard, color)) {
-      validMoves.push(moves[i]);
+      validMoves.push(move);
     }
   }
   return validMoves;
@@ -294,10 +295,10 @@ function getLineMoves(board, c, r, color) {
     [-1, 0],
     [1, 0],
   ];
-  for (let d = 0; d < dirs.length; d++) {
+  for (const dir of dirs) {
     for (let i = 1; i < 10; i++) {
-      const nc = c + dirs[d][0] * i;
-      const nr = r + dirs[d][1] * i;
+      const nc = c + dir[0] * i;
+      const nr = r + dir[1] * i;
       if (!inBounds(nc, nr)) break;
       if (board[nc][nr] === EMPTY) {
         moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -324,11 +325,11 @@ function getCannonMoves(board, c, r, color) {
     [-1, 0],
     [1, 0],
   ];
-  for (let d = 0; d < dirs.length; d++) {
+  for (const dir2 of dirs) {
     let jumped = false;
     for (let i = 1; i < 10; i++) {
-      const nc = c + dirs[d][0] * i;
-      const nr = r + dirs[d][1] * i;
+      const nc = c + dir2[0] * i;
+      const nr = r + dir2[1] * i;
       if (!inBounds(nc, nr)) break;
       if (!jumped) {
         if (board[nc][nr] === EMPTY) {
@@ -336,13 +337,11 @@ function getCannonMoves(board, c, r, color) {
         } else {
           jumped = true;
         }
-      } else {
-        if (board[nc][nr] !== EMPTY) {
-          if (getOwner(board[nc][nr]) !== color) {
-            moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
-          }
-          break;
+      } else if (board[nc][nr] !== EMPTY) {
+        if (getOwner(board[nc][nr]) !== color) {
+          moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
         }
+        break;
       }
     }
   }
@@ -361,8 +360,7 @@ function getHorseMoves(board, c, r, color) {
     { bx: 1, by: 0, dx: 2, dy: -1 },
     { bx: 1, by: 0, dx: 2, dy: 1 },
   ];
-  for (let i = 0; i < jumps.length; i++) {
-    const j = jumps[i];
+  for (const j of jumps) {
     const bc = c + j.bx,
       br = r + j.by;
     const nc = c + j.dx,
@@ -386,8 +384,7 @@ function getElephantMoves(board, c, r, color) {
   ];
   const minR = color === RED ? 5 : 0;
   const maxR = color === RED ? 9 : 4;
-  for (let i = 0; i < jumps.length; i++) {
-    const j = jumps[i];
+  for (const j of jumps) {
     const nc = c + j.dx,
       nr = r + j.dy;
     if (!inBounds(nc, nr) || nr < minR || nr > maxR) continue;
@@ -411,9 +408,9 @@ function getAdvisorMoves(board, c, r, color) {
   ];
   const minR = color === RED ? 7 : 0;
   const maxR = color === RED ? 9 : 2;
-  for (let i = 0; i < dirs.length; i++) {
-    const nc = c + dirs[i][0],
-      nr = r + dirs[i][1];
+  for (const dir of dirs) {
+    const nc = c + dir[0],
+      nr = r + dir[1];
     if (nc < 3 || nc > 5 || nr < minR || nr > maxR) continue;
     if (board[nc][nr] === EMPTY || getOwner(board[nc][nr]) !== color) {
       moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -432,9 +429,9 @@ function getGeneralMoves(board, c, r, color) {
   ];
   const minR = color === RED ? 7 : 0;
   const maxR = color === RED ? 9 : 2;
-  for (let i = 0; i < dirs.length; i++) {
-    const nc = c + dirs[i][0],
-      nr = r + dirs[i][1];
+  for (const dir2 of dirs) {
+    const nc = c + dir2[0],
+      nr = r + dir2[1];
     if (nc < 3 || nc > 5 || nr < minR || nr > maxR) continue;
     if (board[nc][nr] === EMPTY || getOwner(board[nc][nr]) !== color) {
       moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -473,8 +470,8 @@ function getAllMoves(board, color) {
     for (let r = 0; r < ROWS; r++) {
       if (board[c][r] !== EMPTY && getOwner(board[c][r]) === color) {
         const pieceMoves = getValidMoves(board, c, r);
-        for (let i = 0; i < pieceMoves.length; i++) {
-          moves.push(pieceMoves[i]);
+        for (const move of pieceMoves) {
+          moves.push(move);
         }
       }
     }
@@ -512,34 +509,33 @@ function checkGameOver(board, nextPlayer) {
 function evaluateBoard(board, aiColor) {
   let aiScore = 0,
     oppScore = 0;
-  const oppColor = getOpponent(aiColor);
 
   const aiAttackPos = create2DArray(COLS, ROWS, 0);
   const oppAttackPos = create2DArray(COLS, ROWS, 0);
 
   for (let c = 0; c < COLS; c++) {
     for (let r = 0; r < ROWS; r++) {
-      let piece = board[c][r];
+      const piece = board[c][r];
       if (piece === EMPTY) continue;
       const moves = getValidMoves(board, c, r);
-      let owner = getOwner(piece);
+      const owner = getOwner(piece);
       const attackMap = owner === aiColor ? aiAttackPos : oppAttackPos;
-      for (let i = 0; i < moves.length; i++) {
-        attackMap[moves[i].toC][moves[i].toR]++;
+      for (const move2 of moves) {
+        attackMap[move2.toC][move2.toR]++;
       }
     }
   }
 
   for (let c = 0; c < COLS; c++) {
     for (let r = 0; r < ROWS; r++) {
-      let piece = board[c][r];
+      const piece = board[c][r];
       if (piece === EMPTY) continue;
       let val = PIECE_VALUES[piece];
 
       if (piece === R_PAWN) val += SOLDIER_POS_RED[c][r];
       else if (piece === B_PAWN) val += SOLDIER_POS_BLACK[c][r];
 
-      let owner = getOwner(piece);
+      const owner = getOwner(piece);
       if (owner === aiColor) {
         if (oppAttackPos[c][r] > 0 && aiAttackPos[c][r] === 0) val = Math.floor(val * 0.7);
         aiScore += val;
@@ -574,8 +570,8 @@ function alphaBeta(board, depth, alpha, beta, aiColor, isAITurn) {
   const moves = getAllMoves(board, currentPlayer);
   let bestScore = -Infinity;
 
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move3 of moves) {
+    const newBoard = applyMove(board, move3);
     const score = -alphaBeta(newBoard, depth - 1, -beta, -alpha, aiColor, !isAITurn);
     if (score > bestScore) bestScore = score;
     if (bestScore > alpha) alpha = bestScore;
@@ -591,12 +587,12 @@ function getBestAIMove(board, aiColor) {
   let bestMove = null;
   let bestScore = -Infinity;
 
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move3 of moves) {
+    const newBoard = applyMove(board, move3);
     const score = -alphaBeta(newBoard, AI_DEPTH - 1, -Infinity, Infinity, aiColor, false);
     if (score > bestScore) {
       bestScore = score;
-      bestMove = moves[i];
+      bestMove = move3;
     }
   }
   return bestMove;
@@ -836,21 +832,20 @@ if (typeof document !== "undefined") {
   }
 
   function drawValidMoves(moves) {
-    for (let i = 0; i < moves.length; i++) {
-      const m = moves[i];
+    for (const m of moves) {
       const cx = toCanvasX(m.toC);
       const cy = toCanvasY(m.toR);
-      if (gameState.board[m.toC][m.toR] !== EMPTY) {
+      if (gameState.board[m.toC][m.toR] === EMPTY) {
+        context.fillStyle = "rgba(76, 175, 80, 0.6)";
+        context.beginPath();
+        context.arc(cx, cy, 8, 0, Math.PI * 2);
+        context.fill();
+      } else {
         context.strokeStyle = "rgba(229, 57, 53, 0.7)";
         context.lineWidth = 3;
         context.beginPath();
         context.arc(cx, cy, PIECE_RADIUS + 2, 0, Math.PI * 2);
         context.stroke();
-      } else {
-        context.fillStyle = "rgba(76, 175, 80, 0.6)";
-        context.beginPath();
-        context.arc(cx, cy, 8, 0, Math.PI * 2);
-        context.fill();
       }
     }
   }
@@ -947,7 +942,13 @@ if (typeof document !== "undefined") {
   function updateMessage(text, type) {
     const el = document.getElementById("message");
     el.textContent = text;
-    el.className = type === "error" ? "error" : type === "info" ? "info" : "";
+    if (type === "error") {
+      el.className = "error";
+    } else if (type === "info") {
+      el.className = "info";
+    } else {
+      el.className = "";
+    }
   }
 
   function showGameOver(state) {
@@ -1028,8 +1029,8 @@ if (typeof document !== "undefined") {
   }
 
   function findMove(moves, toC, toR) {
-    for (let i = 0; i < moves.length; i++) {
-      if (moves[i].toC === toC && moves[i].toR === toR) return moves[i];
+    for (const move3 of moves) {
+      if (move3.toC === toC && move3.toR === toR) return move3;
     }
     return null;
   }
@@ -1310,19 +1311,20 @@ if (typeof document !== "undefined") {
     cleanupNetwork();
   }
 
-  function handleRPSChoice(player, choice) {
+  function handleRPSChoice(player, choice, ev) {
+    let resultEl;
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
 
       const choices = ["rock", "scissors", "paper"];
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      let resultEl = document.getElementById("rps-result");
+      resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -1360,13 +1362,13 @@ if (typeof document !== "undefined") {
       document.querySelectorAll("#rps-p" + player + "-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
 
       const statusEl = document.getElementById("rps-p" + player + "-status");
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        let resultEl = document.getElementById("rps-result");
+        resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
@@ -1413,9 +1415,7 @@ if (typeof document !== "undefined") {
     // Online mode button
     const btnOnline = document.getElementById("btn-online");
     if (btnOnline) {
-      if (!RoomUI.isSupported()) {
-        btnOnline.style.display = "none";
-      } else {
+      if (RoomUI.isSupported()) {
         btnOnline.addEventListener("click", () => {
           roomUI = new RoomUI({
             onConnectionEstablished: (connection, protocol, role) => {
@@ -1434,6 +1434,8 @@ if (typeof document !== "undefined") {
           });
           roomUI.show();
         });
+      } else {
+        btnOnline.style.display = "none";
       }
     }
 
@@ -1449,7 +1451,7 @@ if (typeof document !== "undefined") {
       button.addEventListener("click", (ev) => {
         const player = ev.target.dataset.player;
         const choice = ev.target.dataset.choice;
-        handleRPSChoice(player, choice);
+        handleRPSChoice(player, choice, ev);
       });
     });
 
