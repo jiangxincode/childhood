@@ -386,7 +386,7 @@ function chooseBestFlip(board, aiTeam, deps, size) {
       }
     }
     const distFromCenter = Math.abs(pos.x - center) + Math.abs(pos.y - center);
-    const score = adjEnemyCount * 0.5 - maxAdjOwnVal * 1.0 - distFromCenter * 0.1;
+    const score = adjEnemyCount * 0.5 - maxAdjOwnVal * 1 - distFromCenter * 0.1;
     return { pos, score };
   });
   scored.sort((a, b) => b.score - a.score);
@@ -527,7 +527,7 @@ function chooseBestMove(board, aiTeam, deps, size) {
 function smartAiDecide(state, aiTeam, deps) {
   // Wrap a legacy pieceValue(rank) signature so the new helpers can call
   // pieceValue(card, otherCard?, role?) uniformly.
-  const wrappedDeps = Object.assign({}, deps, { pieceValue: wrapPieceValue(deps.pieceValue) });
+  const wrappedDeps = { ...deps, pieceValue: wrapPieceValue(deps.pieceValue) };
   const board = state.board;
 
   const cap = chooseBestCapture(board, aiTeam, wrappedDeps);
@@ -578,7 +578,7 @@ function nearestEnemyDelta(board, fromX, fromY, to, ownTeam, size) {
       if (dAfter < bestAfter) bestAfter = dAfter;
     }
   }
-  if (!isFinite(bestBefore) || !isFinite(bestAfter)) return 0;
+  if (!Number.isFinite(bestBefore) || !Number.isFinite(bestAfter)) return 0;
   return bestBefore - bestAfter;
 }
 
