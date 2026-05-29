@@ -687,16 +687,22 @@ function getBestAIMove(board, aiColor, hasMoved) {
 
   // Prioritize captures and promotions
   moves.sort((a, b) => {
-    const scoreA = a.promotion
-      ? 800
-      : board[a.toC][a.toR] !== EMPTY
-        ? PIECE_VALUES[board[a.toC][a.toR]]
-        : 0;
-    const scoreB = b.promotion
-      ? 800
-      : board[b.toC][b.toR] !== EMPTY
-        ? PIECE_VALUES[board[b.toC][b.toR]]
-        : 0;
+    let scoreA;
+    if (a.promotion) {
+      scoreA = 800;
+    } else if (board[a.toC][a.toR] !== EMPTY) {
+      scoreA = PIECE_VALUES[board[a.toC][a.toR]];
+    } else {
+      scoreA = 0;
+    }
+    let scoreB;
+    if (b.promotion) {
+      scoreB = 800;
+    } else if (board[b.toC][b.toR] !== EMPTY) {
+      scoreB = PIECE_VALUES[board[b.toC][b.toR]];
+    } else {
+      scoreB = 0;
+    }
     return scoreB - scoreA;
   });
 
@@ -1009,7 +1015,13 @@ if (typeof document !== "undefined") {
   function updateMessage(text, type) {
     const el = document.getElementById("message");
     el.textContent = text;
-    el.className = type === "error" ? "error" : type === "info" ? "info" : "";
+    if (type === "error") {
+      el.className = "error";
+    } else if (type === "info") {
+      el.className = "info";
+    } else {
+      el.className = "";
+    }
   }
 
   function showGameOver(state) {
