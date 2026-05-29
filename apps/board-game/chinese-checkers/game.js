@@ -435,16 +435,6 @@ function evaluateMove(board, player, from, to, allPlayers) {
   }
 
   // Factor 5: Blocking opponents
-  const opponents = [];
-  if (allPlayers) {
-    for (let i = 0; i < allPlayers.length; i++) {
-      if (allPlayers[i] !== player) opponents.push(allPlayers[i]);
-    }
-  } else {
-    for (let p = RED; p <= ORANGE; p++) {
-      if (p !== player) opponents.push(p);
-    }
-  }
   const blockingScore = calculateBlockingScore(board, player, to);
   score += blockingScore * AI_WEIGHTS.BLOCKING;
 
