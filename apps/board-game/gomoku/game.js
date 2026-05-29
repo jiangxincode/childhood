@@ -189,16 +189,16 @@ function getBestAIMove(board, aiPlayer) {
 
     if (aiCount > 0 && humanCount === 0) {
       // AI's line, add score to empty positions
-      for (let k = 0; k < line.length; k++) {
-        if (board[line[k].y][line[k].x] === EMPTY) {
-          scoreAI[line[k].x][line[k].y] += SCORE_AI[aiCount];
+      for (const point of line) {
+        if (board[point.y][point.x] === EMPTY) {
+          scoreAI[point.x][point.y] += SCORE_AI[aiCount];
         }
       }
     } else if (humanCount > 0 && aiCount === 0) {
       // Human's line, add score to empty positions (defense score)
-      for (let k = 0; k < line.length; k++) {
-        if (board[line[k].y][line[k].x] === EMPTY) {
-          scoreHuman[line[k].x][line[k].y] += SCORE_HUMAN[humanCount];
+      for (const point of line) {
+        if (board[point.y][point.x] === EMPTY) {
+          scoreHuman[point.x][point.y] += SCORE_HUMAN[humanCount];
         }
       }
     }

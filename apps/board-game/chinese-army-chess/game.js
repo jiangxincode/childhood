@@ -496,9 +496,9 @@ function getNormalMoves(board, x, y, team) {
     { dx: 1, dy: 0 },
   ];
 
-  for (let d = 0; d < dirs.length; d++) {
-    const nx = x + dirs[d].dx;
-    const ny = y + dirs[d].dy;
+  for (const dir of dirs) {
+    const nx = x + dir.dx;
+    const ny = y + dir.dy;
     if (!inBounds(nx, ny)) continue;
 
     // Gap row crossing: only middle column(x=2) or side vertical railways(x=0,4) can cross
@@ -524,9 +524,9 @@ function getNormalMoves(board, x, y, team) {
 
   // Non-engineer pieces on railway: extra step along railway
   if (isOnRailway(x, y)) {
-    for (let d = 0; d < dirs.length; d++) {
-      const nx = x + dirs[d].dx;
-      const ny = y + dirs[d].dy;
+    for (const dir of dirs) {
+      const nx = x + dir.dx;
+      const ny = y + dir.dy;
       if (!inBounds(nx, ny)) continue;
       if (!areOnSameRailway(x, y, nx, ny)) continue;
 
@@ -570,9 +570,9 @@ function getEngineerMoves(board, x, y, team) {
   ];
 
   // One orthogonal step (to adjacent non-railway cell, like camp)
-  for (let d = 0; d < dirs.length; d++) {
-    const nx = x + dirs[d].dx;
-    const ny = y + dirs[d].dy;
+  for (const dir of dirs) {
+    const nx = x + dir.dx;
+    const ny = y + dir.dy;
     if (!inBounds(nx, ny)) continue;
 
     // Gap row crossing check
@@ -600,9 +600,9 @@ function getEngineerMoves(board, x, y, team) {
 
   while (queue.length > 0) {
     const cur = queue.shift();
-    for (let d = 0; d < dirs.length; d++) {
-      const nx = cur.x + dirs[d].dx;
-      const ny = cur.y + dirs[d].dy;
+    for (const dir of dirs) {
+      const nx = cur.x + dir.dx;
+      const ny = cur.y + dir.dy;
       const key = nx + "," + ny;
       if (visited[key]) continue;
       if (!inBounds(nx, ny)) continue;

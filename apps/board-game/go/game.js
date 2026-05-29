@@ -359,8 +359,8 @@ function getBestAIMove(board, aiPlayer, koPoint, capturesBlack, capturesWhite) {
   scored.sort((a, b) => b.heuristic - a.heuristic);
   const topCandidates = scored.slice(0, 12);
 
-  for (let i = 0; i < topCandidates.length; i++) {
-    const move = topCandidates[i].move;
+  for (const candidate of topCandidates) {
+    const move = candidate.move;
     let wins = 0;
 
     for (let s = 0; s < simulations; s++) {
@@ -369,7 +369,7 @@ function getBestAIMove(board, aiPlayer, koPoint, capturesBlack, capturesWhite) {
     }
 
     const winRate = wins / simulations;
-    const score = winRate * 100 + topCandidates[i].heuristic;
+    const score = winRate * 100 + candidate.heuristic;
 
     if (score > bestScore) {
       bestScore = score;
