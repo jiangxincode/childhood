@@ -393,8 +393,8 @@ if (typeof document !== "undefined") {
         var pt = nodeToPx(x, y);
         var g = document.createElementNS(svgNS, "g");
         g.setAttribute("class", "node");
-        g.setAttribute("data-x", x);
-        g.setAttribute("data-y", y);
+        g.dataset.x = x;
+        g.dataset.y = y;
         g.setAttribute("transform", "translate(" + pt.cx + "," + pt.cy + ")");
 
         // Wide invisible hit area for easier tapping
@@ -459,8 +459,8 @@ if (typeof document !== "undefined") {
 
     var nodes = document.querySelectorAll("#board .node");
     nodes.forEach((g) => {
-      var nx = Number.parseInt(g.getAttribute("data-x"));
-      var ny = Number.parseInt(g.getAttribute("data-y"));
+      var nx = Number.parseInt(g.dataset.x);
+      var ny = Number.parseInt(g.dataset.y);
       var classes = ["node"];
       var label = "";
       if (state.board[ny][nx] === PLAYER_A) {

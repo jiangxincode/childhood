@@ -463,7 +463,7 @@ if (typeof document !== "undefined") {
     for (var i = 0; i < TOTAL_POSITIONS; i++) {
       var g = document.createElementNS(svgNS, "g");
       g.setAttribute("class", "node");
-      g.setAttribute("data-pos", i);
+      g.dataset.pos = i;
       g.setAttribute("transform", "translate(" + POSITIONS[i].x + "," + POSITIONS[i].y + ")");
 
       var circle = document.createElementNS(svgNS, "circle");
@@ -511,7 +511,7 @@ if (typeof document !== "undefined") {
     }
 
     nodes.forEach((g) => {
-      var pos = Number.parseInt(g.getAttribute("data-pos"));
+      var pos = Number.parseInt(g.dataset.pos);
       var classes = ["node"];
       var label = "";
       if (state.board[pos] === PLAYER_A) {
