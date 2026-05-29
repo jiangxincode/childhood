@@ -465,10 +465,8 @@ if (typeof document !== "undefined") {
       var label = "";
       if (state.board[ny][nx] === PLAYER_A) {
         classes.push("node-a");
-        label = "";
       } else if (state.board[ny][nx] === PLAYER_B) {
         classes.push("node-b");
-        label = "";
       } else {
         classes.push("node-empty");
       }
