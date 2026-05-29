@@ -97,7 +97,7 @@ const V_RAILWAY_MIDDLE = { x: 2, yMin: 5, yMax: 6 };
 // ============================================================
 
 function isNormalPiece(name) {
-  return NORMAL_PIECE_NAMES.indexOf(name) !== -1;
+  return NORMAL_PIECE_NAMES.includes(name);
 }
 
 function isBomb(name) {
@@ -150,7 +150,7 @@ function hasDiagonalEligibility(x, y) {
 
 // Check if on railway
 function isOnHRailway(y) {
-  return H_RAILWAYS.indexOf(y) !== -1;
+  return H_RAILWAYS.includes(y);
 }
 
 function isOnVRailway(x, y) {

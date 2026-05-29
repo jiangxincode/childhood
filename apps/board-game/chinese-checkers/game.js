@@ -575,7 +575,7 @@ if (typeof document !== "undefined") {
   // Determine which color zone a position belongs to - only color start positions
   function getAreaColor(cell) {
     for (let p = 1; p <= 6; p++) {
-      if (START_POSITIONS[p].indexOf(cell) !== -1) {
+      if (START_POSITIONS[p].includes(cell)) {
         return PLAYER_COLORS[p].color;
       }
     }
@@ -647,7 +647,7 @@ if (typeof document !== "undefined") {
       hex.setAttribute("fill", areaColor);
       hex.setAttribute("stroke", "#333");
       hex.setAttribute("stroke-width", "1");
-      hex.setAttribute("data-cell", cell);
+      hex.dataset.cell = cell;
       hex.style.cursor = "pointer";
       g.appendChild(hex);
 
@@ -658,7 +658,7 @@ if (typeof document !== "undefined") {
       inner.setAttribute("r", CELL_SIZE * 0.32);
       inner.setAttribute("fill", "white");
       inner.setAttribute("stroke", "none");
-      inner.setAttribute("data-cell", cell);
+      inner.dataset.cell = cell;
       inner.style.cursor = "pointer";
       g.appendChild(inner);
     }
@@ -682,7 +682,7 @@ if (typeof document !== "undefined") {
         indicator.setAttribute("fill", "#4CAF50");
         indicator.setAttribute("opacity", "0.8");
         indicator.setAttribute("class", "valid-move");
-        indicator.setAttribute("data-cell", moveCell);
+        indicator.dataset.cell = moveCell;
         indicator.style.cursor = "pointer";
         g.appendChild(indicator);
       }
@@ -699,7 +699,7 @@ if (typeof document !== "undefined") {
     piece.setAttribute("stroke", "#333");
     piece.setAttribute("stroke-width", "2");
     piece.setAttribute("class", "piece");
-    piece.setAttribute("data-cell", cell);
+    piece.dataset.cell = cell;
 
     if (gameState.selectedPiece === cell) {
       piece.classList.add("selected");
@@ -769,7 +769,7 @@ if (typeof document !== "undefined") {
     if (gameState.mode === "online" && gameState.currentPlayer !== localTeam) return;
 
     const target = e.target;
-    const cell = Number.parseInt(target.getAttribute("data-cell"));
+    const cell = Number.parseInt(target.dataset.cell);
     if (Number.isNaN(cell)) return;
 
     if (target.classList.contains("piece")) {
@@ -795,7 +795,7 @@ if (typeof document !== "undefined") {
         gameState.validMoves = getLegalMoves(gameState.board, cell);
         drawBoard();
         updateMessage("已选择棋子，点击绿色位置移动", "info");
-      } else if (gameState.selectedPiece !== null && gameState.validMoves.indexOf(cell) !== -1) {
+      } else if (gameState.selectedPiece !== null && gameState.validMoves.includes(cell)) {
         const fromCell = gameState.selectedPiece;
         doMove(fromCell, cell);
         if (gameState.mode === "online" && networkProtocol) {
