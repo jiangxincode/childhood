@@ -802,13 +802,11 @@ if (typeof document !== "undefined") {
           networkProtocol.sendAction({ a: "move", from: fromCell, to: cell });
         }
       }
-    } else {
-      if (gameState.selectedPiece !== null) {
-        gameState.selectedPiece = null;
-        gameState.validMoves = [];
-        drawBoard();
-        updateMessage("请选择要移动的棋子", "info");
-      }
+    } else if (gameState.selectedPiece !== null) {
+      gameState.selectedPiece = null;
+      gameState.validMoves = [];
+      drawBoard();
+      updateMessage("请选择要移动的棋子", "info");
     }
   }
 

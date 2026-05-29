@@ -280,9 +280,10 @@ function evaluateBoard(board, aiPlayer) {
         if (isAI) {
           if (aiPlayer === RED) score += sign * r * WEIGHT_ADVANCE;
           else score += sign * (BOARD_SIZE - 1 - r) * WEIGHT_ADVANCE;
+        } else if (opponent === RED) {
+          score += sign * r * WEIGHT_ADVANCE;
         } else {
-          if (opponent === RED) score += sign * r * WEIGHT_ADVANCE;
-          else score += sign * (BOARD_SIZE - 1 - r) * WEIGHT_ADVANCE;
+          score += sign * (BOARD_SIZE - 1 - r) * WEIGHT_ADVANCE;
         }
       }
 

@@ -683,10 +683,8 @@ function getDiagonalMoves(board, x, y, team) {
           if (target.state === STATE_FACE_DOWN) break;
           if (isFlag(target.name) && piece.name === "工兵") {
             moves.push({ x: cx, y: cy, type: "capture_flag" });
-          } else {
-            if (canCapture(piece, target)) {
-              moves.push({ x: cx, y: cy, type: "capture" });
-            }
+          } else if (canCapture(piece, target)) {
+            moves.push({ x: cx, y: cy, type: "capture" });
           }
           break;
         } else {
@@ -696,20 +694,18 @@ function getDiagonalMoves(board, x, y, team) {
         cx += diagDirs[d].dx;
         cy += diagDirs[d].dy;
       }
-    } else {
+    } else if (isCamp(nx, ny) || isBaseCamp(nx, ny)) {
       // Not in camp: can only enter camp or base camp
-      if (isCamp(nx, ny) || isBaseCamp(nx, ny)) {
-        var target = board[ny][nx];
-        if (target === null) {
-          moves.push({ x: nx, y: ny, type: "move" });
-        } else if (
-          target.team !== team &&
-          target.state !== STATE_FACE_DOWN &&
-          isFlag(target.name) &&
-          piece.name === "工兵"
-        ) {
-          moves.push({ x: nx, y: ny, type: "capture_flag" });
-        }
+      var target = board[ny][nx];
+      if (target === null) {
+        moves.push({ x: nx, y: ny, type: "move" });
+      } else if (
+        target.team !== team &&
+        target.state !== STATE_FACE_DOWN &&
+        isFlag(target.name) &&
+        piece.name === "工兵"
+      ) {
+        moves.push({ x: nx, y: ny, type: "capture_flag" });
       }
     }
   }

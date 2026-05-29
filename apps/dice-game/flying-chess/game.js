@@ -792,15 +792,13 @@ if (typeof $j !== "undefined") {
               .addClass("pointer");
             flag = true;
           }
-        } else {
-          if ($j(this).attr("state") == "ready" || $j(this).attr("state") == "running") {
-            currentUserPlane
-              .on("click", function () {
-                movePlane(this);
-              })
-              .addClass("pointer");
-            flag = true;
-          }
+        } else if ($j(this).attr("state") == "ready" || $j(this).attr("state") == "running") {
+          currentUserPlane
+            .on("click", function () {
+              movePlane(this);
+            })
+            .addClass("pointer");
+          flag = true;
         }
       }
     });

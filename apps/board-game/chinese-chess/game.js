@@ -336,13 +336,11 @@ function getCannonMoves(board, c, r, color) {
         } else {
           jumped = true;
         }
-      } else {
-        if (board[nc][nr] !== EMPTY) {
-          if (getOwner(board[nc][nr]) !== color) {
-            moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
-          }
-          break;
+      } else if (board[nc][nr] !== EMPTY) {
+        if (getOwner(board[nc][nr]) !== color) {
+          moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
         }
+        break;
       }
     }
   }
