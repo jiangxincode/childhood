@@ -68,10 +68,7 @@ const MOVE_SINGLE = "single";
 const MOVE_TRIPLE = "triple"; // 鸡毛蒜皮 (origin + 3 hops)
 
 function createBoard() {
-  const board = [];
-  for (let i = 0; i < BOARD_POSITIONS.length; i++) {
-    board.push(EMPTY);
-  }
+  const board = new Array(BOARD_POSITIONS.length).fill(EMPTY);
   return board;
 }
 
