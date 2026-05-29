@@ -1078,7 +1078,7 @@ if (typeof document !== "undefined") {
     if (selected) selected.classList.add("cell-selected");
 
     for (const t of moveTargets) {
-      var tc = getCell(t.x, t.y);
+      const tc = getCell(t.x, t.y);
       if (tc) {
         if (t.type === "capture_flag") {
           tc.classList.add("cell-flag-target");
@@ -1089,7 +1089,7 @@ if (typeof document !== "undefined") {
     }
 
     for (const target of captureTargets) {
-      var tc = getCell(target.x, target.y);
+      const tc = getCell(target.x, target.y);
       if (tc) tc.classList.add("cell-capture-target");
     }
   }
@@ -1454,12 +1454,10 @@ if (typeof document !== "undefined") {
     if (gameState.mode === "online") {
       if (gameState.teamAssigned) {
         showMessage(gameState.currentTeam === localTeam ? "你的回合" : "等待对方操作...", "");
+      } else if (localIsFirstPlayer) {
+        showMessage("请翻开一张牌", "");
       } else {
-        if (localIsFirstPlayer) {
-          showMessage("请翻开一张牌", "");
-        } else {
-          showMessage("等待对方操作...", "info");
-        }
+        showMessage("等待对方操作...", "info");
       }
     } else if (gameState.mode === "pve") {
       if (gameState.teamAssigned && gameState.currentTeam === gameState.aiTeam) {
