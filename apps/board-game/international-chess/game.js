@@ -643,7 +643,6 @@ function getPositionValue(piece, c, r) {
 function evaluateBoard(board, aiColor) {
   let aiScore = 0,
     oppScore = 0;
-  const oppColor = getOpponent(aiColor);
   for (let c = 0; c < BOARD_SIZE; c++) {
     for (let r = 0; r < BOARD_SIZE; r++) {
       const piece = board[c][r];
@@ -1143,7 +1142,6 @@ if (typeof document !== "undefined") {
   }
 
   function doMove(move) {
-    const piece = gameState.board[move.fromC][move.fromR];
     gameState.hasMoved.add(move.fromC + "," + move.fromR);
     gameState.hasMoved.add(move.toC + "," + move.toR);
     if (move.castling) {

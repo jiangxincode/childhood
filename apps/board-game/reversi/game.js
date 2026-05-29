@@ -110,7 +110,6 @@ function isValidMove(board, x, y, player) {
   // Position must be empty
   if (board[y][x] !== null) return null;
 
-  const opponent = getOpponent(player);
   const allFlipped = [];
 
   // Check all directions
@@ -304,7 +303,7 @@ function aiTurn(state) {
 
     if (bestMove) {
       // AI has valid move position
-      const flipped = makeMove(state.board, bestMove.x, bestMove.y, state.aiTeam);
+      makeMove(state.board, bestMove.x, bestMove.y, state.aiTeam);
       state.lastMove = { x: bestMove.x, y: bestMove.y };
       state.turnCount++;
 
@@ -561,7 +560,7 @@ function handleCellClick(x, y) {
   }
 
   // Execute move
-  const flipped = makeMove(gameState.board, x, y, gameState.currentPlayer);
+  makeMove(gameState.board, x, y, gameState.currentPlayer);
   gameState.lastMove = { x, y };
   gameState.turnCount++;
 

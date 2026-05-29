@@ -454,7 +454,6 @@ if (typeof document !== "undefined") {
   const CELL_SIZE = 56;
   const BOARD_PX = CELL_SIZE * BOARD_SIZE;
   const PIECE_RADIUS = 22;
-  const KING_RADIUS = 16;
 
   function initBoard() {
     canvas = document.getElementById("board-canvas");

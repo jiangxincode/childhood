@@ -345,7 +345,6 @@ function getBestAIMove(board, aiPlayer, koPoint, capturesBlack, capturesWhite) {
     return legalMoves[0];
   }
 
-  const humanPlayer = getOpponent(aiPlayer);
   const simulations = 20; // Reduced for performance on 19x19 board
   let bestMove = null;
   let bestScore = -Infinity;
@@ -544,7 +543,6 @@ function simulateGame(board, firstMove, aiPlayer, koPoint, capturesBlack, captur
  */
 function getQuickMoves(board, player, koPoint, lastX, lastY) {
   const moves = [];
-  const captureMoves = [];
   const nearMoves = [];
   const radius = 1;
 
@@ -555,7 +553,6 @@ function getQuickMoves(board, player, koPoint, lastX, lastY) {
 
       // Quick suicide check: see if any neighbor is empty or opponent with 1 liberty
       let hasEmptyNeighbor = false;
-      const canCapture = false;
       for (let d = 0; d < DIRECTIONS.length; d++) {
         const nx = x + DIRECTIONS[d].dx;
         const ny = y + DIRECTIONS[d].dy;

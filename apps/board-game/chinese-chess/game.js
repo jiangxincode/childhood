@@ -512,8 +512,6 @@ function checkGameOver(board, nextPlayer) {
 function evaluateBoard(board, aiColor) {
   let aiScore = 0,
     oppScore = 0;
-  const oppColor = getOpponent(aiColor);
-
   const aiAttackPos = create2DArray(COLS, ROWS, 0);
   const oppAttackPos = create2DArray(COLS, ROWS, 0);
 

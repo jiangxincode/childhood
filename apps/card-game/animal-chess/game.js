@@ -1068,7 +1068,6 @@ if (typeof document !== "undefined") {
   }
 
   function handleOnlineRPSResult(rpsResult) {
-    const choiceNames = { rock: "石头", scissors: "剪刀", paper: "布" };
     const $rpsOnlineResult = document.getElementById("rps-online-result");
 
     if (rpsResult.result === "draw") {
