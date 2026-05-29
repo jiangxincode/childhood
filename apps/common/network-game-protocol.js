@@ -247,9 +247,9 @@ class NetworkGameProtocol {
   }
 }
 
-// Expose on window for browser use
-if (typeof window !== "undefined") {
-  window.NetworkGameProtocol = NetworkGameProtocol;
+// Expose on globalThis for browser use
+if (typeof globalThis.window !== "undefined") {
+  globalThis.NetworkGameProtocol = NetworkGameProtocol;
 }
 
 // Module exports for Node.js testing
