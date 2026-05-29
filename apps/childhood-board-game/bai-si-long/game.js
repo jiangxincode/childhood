@@ -55,42 +55,33 @@ const DIRECTIONS = [
 // Pre-compute every winning line: 4 consecutive intersections in a row,
 // column, or diagonal direction. With BOARD_SIZE = 5 and PIECES_EACH = 4
 // this yields 28 lines total.
-const WIN_LINES = (function () {
+function _generateLines() {
   const lines = [];
-  // Horizontal
-  for (let y = 0; y < BOARD_SIZE; y++) {
-    for (let x = 0; x <= BOARD_SIZE - PIECES_EACH; x++) {
-      const hLine = [];
-      for (let i = 0; i < PIECES_EACH; i++) hLine.push({ x: x + i, y: y });
-      lines.push(hLine);
+  const B = BOARD_SIZE;
+  const P = PIECES_EACH;
+  for (let y = 0; y < B; y++) {
+    for (let x = 0; x <= B - P; x++) {
+      lines.push(Array.from({ length: P }, (_, i) => ({ x: x + i, y })));
     }
   }
-  // Vertical
-  for (let x2 = 0; x2 < BOARD_SIZE; x2++) {
-    for (let y2 = 0; y2 <= BOARD_SIZE - PIECES_EACH; y2++) {
-      const vLine = [];
-      for (let j = 0; j < PIECES_EACH; j++) vLine.push({ x: x2, y: y2 + j });
-      lines.push(vLine);
+  for (let x = 0; x < B; x++) {
+    for (let y = 0; y <= B - P; y++) {
+      lines.push(Array.from({ length: P }, (_, i) => ({ x, y: y + i })));
     }
   }
-  // Diagonal "\"
-  for (let y3 = 0; y3 <= BOARD_SIZE - PIECES_EACH; y3++) {
-    for (let x3 = 0; x3 <= BOARD_SIZE - PIECES_EACH; x3++) {
-      const dLine = [];
-      for (let k = 0; k < PIECES_EACH; k++) dLine.push({ x: x3 + k, y: y3 + k });
-      lines.push(dLine);
+  for (let y = 0; y <= B - P; y++) {
+    for (let x = 0; x <= B - P; x++) {
+      lines.push(Array.from({ length: P }, (_, i) => ({ x: x + i, y: y + i })));
     }
   }
-  // Diagonal "/"
-  for (let y4 = 0; y4 <= BOARD_SIZE - PIECES_EACH; y4++) {
-    for (let x4 = PIECES_EACH - 1; x4 < BOARD_SIZE; x4++) {
-      const aLine = [];
-      for (let l = 0; l < PIECES_EACH; l++) aLine.push({ x: x4 - l, y: y4 + l });
-      lines.push(aLine);
+  for (let y = 0; y <= B - P; y++) {
+    for (let x = P - 1; x < B; x++) {
+      lines.push(Array.from({ length: P }, (_, i) => ({ x: x - i, y: y + i })));
     }
   }
   return lines;
-})();
+}
+const WIN_LINES = _generateLines();
 
 function createBoard() {
   const board = [];
