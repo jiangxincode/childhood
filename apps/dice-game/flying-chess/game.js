@@ -646,7 +646,6 @@ if (typeof $j !== "undefined") {
         if (nextStep) {
           $j("#dice").trigger("click");
           clearTimeout(nextSt);
-          return;
         } else {
           diceClick();
         }

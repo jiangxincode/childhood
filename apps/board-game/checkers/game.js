@@ -730,7 +730,6 @@ if (typeof document !== "undefined") {
       } else {
         updateMessage("无效的目标位置", "error");
       }
-      return;
     }
   }
 

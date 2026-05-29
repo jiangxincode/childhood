@@ -835,7 +835,6 @@ if (typeof document !== "undefined") {
     // Click opponent face-up card (no selection)
     if (card && card.faceUp && card.team !== currentTeam) {
       showMessage("这不是你的棋子", "error");
-      return;
     }
   });
 

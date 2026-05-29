@@ -1251,7 +1251,6 @@ if (typeof document !== "undefined") {
 
     if (piece && piece.faceUp && piece.team !== currentTeam) {
       showMessage("这不是你的棋子", "error");
-      return;
     }
   });
 
