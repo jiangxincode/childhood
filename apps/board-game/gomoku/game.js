@@ -120,12 +120,11 @@ function getPlayerName(player) {
  */
 function checkWinAt(board, x, y, player) {
   const lines = WINS_MAP[x][y];
-  for (let i = 0; i < lines.length; i++) {
-    const lineId = lines[i];
+  for (const lineId of lines) {
     const line = WIN_LINES[lineId];
     let count = 0;
-    for (let k = 0; k < line.length; k++) {
-      if (board[line[k].y][line[k].x] === player) {
+    for (const pos of line) {
+      if (board[pos.y][pos.x] === player) {
         count++;
       }
     }
@@ -347,9 +346,9 @@ if (typeof document !== "undefined") {
       { x: 11, y: 11 },
     ];
     context.fillStyle = "#8b7355";
-    for (let i = 0; i < starPoints.length; i++) {
-      const sx = MARGIN + starPoints[i].x * CELL_SIZE;
-      const sy = MARGIN + starPoints[i].y * CELL_SIZE;
+    for (const sp of starPoints) {
+      const sx = MARGIN + sp.x * CELL_SIZE;
+      const sy = MARGIN + sp.y * CELL_SIZE;
       context.beginPath();
       context.arc(sx, sy, 3, 0, Math.PI * 2);
       context.fill();

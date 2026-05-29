@@ -88,9 +88,9 @@ function getValidMoves(board, x, y) {
   const card = board[y][x];
   if (!card) return [];
   const moves = [];
-  for (let i = 0; i < DIRECTIONS.length; i++) {
-    const nx = x + DIRECTIONS[i].dx;
-    const ny = y + DIRECTIONS[i].dy;
+  for (const dir of DIRECTIONS) {
+    const nx = x + dir.dx;
+    const ny = y + dir.dy;
     if (inBounds(nx, ny) && board[ny][nx] === null) {
       moves.push({ x: nx, y: ny });
     }
@@ -231,9 +231,9 @@ function isPositionUnderThreat(board, x, y, ownTeam, canCaptureFn, inBoundsFn) {
   const card = board[y][x];
   if (!card || !card.faceUp) return false;
   const dims = _boardDims(board, inBoundsFn);
-  for (let i = 0; i < DIRECTIONS.length; i++) {
-    const nx = x + DIRECTIONS[i].dx;
-    const ny = y + DIRECTIONS[i].dy;
+  for (const dir of DIRECTIONS) {
+    const nx = x + dir.dx;
+    const ny = y + dir.dy;
     if (!dims.inBounds(nx, ny)) continue;
     const enemy = board[ny][nx];
     if (!enemy || !enemy.faceUp || enemy.team === ownTeam) continue;
@@ -372,9 +372,9 @@ function chooseBestFlip(board, aiTeam, deps, size) {
   const scored = faceDownCells.map((pos) => {
     let maxAdjOwnVal = 0;
     let adjEnemyCount = 0;
-    for (let i = 0; i < DIRECTIONS.length; i++) {
-      const nx = pos.x + DIRECTIONS[i].dx;
-      const ny = pos.y + DIRECTIONS[i].dy;
+    for (const dir of DIRECTIONS) {
+      const nx = pos.x + dir.dx;
+      const ny = pos.y + dir.dy;
       if (!dims.inBounds(nx, ny)) continue;
       const c = board[ny][nx];
       if (!c || !c.faceUp) continue;
@@ -450,9 +450,9 @@ function chooseBestMove(board, aiTeam, deps, size) {
         }
 
         let approachBonus = 0;
-        for (let i = 0; i < DIRECTIONS.length; i++) {
-          const nx = t.x + DIRECTIONS[i].dx;
-          const ny = t.y + DIRECTIONS[i].dy;
+        for (const dir of DIRECTIONS) {
+          const nx = t.x + dir.dx;
+          const ny = t.y + dir.dy;
           if (!dims.inBounds(nx, ny)) continue;
           const enemy = futureBoard[ny][nx];
           if (!enemy || !enemy.faceUp || enemy.team === aiTeam) continue;

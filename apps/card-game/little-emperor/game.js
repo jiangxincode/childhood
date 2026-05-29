@@ -106,12 +106,10 @@ function createGameState(mode) {
 
   // Create 16 pieces: 8 red + 8 blue
   const cards = [];
-  for (let i = 0; i < PIECE_NAMES.length; i++) {
-    const name = PIECE_NAMES[i];
+  for (const name of PIECE_NAMES) {
     cards.push({ name: name, team: "red", rank: RANK_MAP[name], faceUp: false });
   }
-  for (let i = 0; i < PIECE_NAMES.length; i++) {
-    const name = PIECE_NAMES[i];
+  for (const name of PIECE_NAMES) {
     cards.push({ name: name, team: "blue", rank: RANK_MAP[name], faceUp: false });
   }
 
@@ -450,12 +448,12 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (let i = 0; i < moveTargets.length; i++) {
-      const tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (const t of moveTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (let i = 0; i < captureTargets.length; i++) {
-      const tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (const t of captureTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-capture-target");
     }
   }
@@ -514,8 +512,7 @@ if (typeof document !== "undefined") {
 
     // Captured pieces
     $capturedRed.innerHTML = "";
-    for (let i = 0; i < state.capturedRed.length; i++) {
-      const name = state.capturedRed[i];
+    for (const name of state.capturedRed) {
       const div = document.createElement("div");
       div.className = "captured-card";
       const img = document.createElement("img");
@@ -526,8 +523,7 @@ if (typeof document !== "undefined") {
     }
 
     $capturedBlue.innerHTML = "";
-    for (let i = 0; i < state.capturedBlue.length; i++) {
-      const name = state.capturedBlue[i];
+    for (const name of state.capturedBlue) {
       const div = document.createElement("div");
       div.className = "captured-card";
       const img = document.createElement("img");

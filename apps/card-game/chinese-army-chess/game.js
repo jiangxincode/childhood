@@ -1011,8 +1011,7 @@ if (typeof document !== "undefined") {
 
     // Captured piece images
     $capturedRed.innerHTML = "";
-    for (let i = 0; i < state.capturedRed.length; i++) {
-      const name = state.capturedRed[i];
+    for (const name of state.capturedRed) {
       const div = document.createElement("div");
       div.className = "captured-card";
       const img = document.createElement("img");
@@ -1023,8 +1022,7 @@ if (typeof document !== "undefined") {
     }
 
     $capturedBlue.innerHTML = "";
-    for (let i = 0; i < state.capturedBlue.length; i++) {
-      const name = state.capturedBlue[i];
+    for (const name of state.capturedBlue) {
       const div = document.createElement("div");
       div.className = "captured-card";
       const img = document.createElement("img");
@@ -1079,8 +1077,7 @@ if (typeof document !== "undefined") {
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
 
-    for (let i = 0; i < moveTargets.length; i++) {
-      const t = moveTargets[i];
+    for (const t of moveTargets) {
       const tc = getCell(t.x, t.y);
       if (tc) {
         if (t.type === "capture_flag") {
@@ -1091,8 +1088,8 @@ if (typeof document !== "undefined") {
       }
     }
 
-    for (let i = 0; i < captureTargets.length; i++) {
-      const tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (const t of captureTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-capture-target");
     }
   }

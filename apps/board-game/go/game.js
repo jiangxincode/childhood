@@ -96,12 +96,10 @@ function getLiberties(board, group) {
   const liberties = [];
   const visited = {};
 
-  for (let i = 0; i < group.length; i++) {
-    const stone = group[i];
-
-    for (let j = 0; j < DIRECTIONS.length; j++) {
-      const nx = stone.x + DIRECTIONS[j].dx;
-      const ny = stone.y + DIRECTIONS[j].dy;
+  for (const stone of group) {
+    for (const dir of DIRECTIONS) {
+      const nx = stone.x + dir.dx;
+      const ny = stone.y + dir.dy;
       const key = nx + "," + ny;
 
       if (isValidPosition(nx, ny) && !visited[key] && board[ny][nx] === EMPTY) {
@@ -122,8 +120,8 @@ function getLiberties(board, group) {
  */
 function removeGroup(board, group) {
   const newBoard = copyBoard(board);
-  for (let i = 0; i < group.length; i++) {
-    newBoard[group[i].y][group[i].x] = EMPTY;
+  for (const stone of group) {
+    newBoard[stone.y][stone.x] = EMPTY;
   }
   return newBoard;
 }
@@ -158,9 +156,9 @@ function playMove(board, x, y, player) {
   let lastCaptured = null;
 
   // Check and capture opponent groups with no liberties
-  for (let i = 0; i < DIRECTIONS.length; i++) {
-    const nx = x + DIRECTIONS[i].dx;
-    const ny = y + DIRECTIONS[i].dy;
+  for (const dir of DIRECTIONS) {
+    const nx = x + dir.dx;
+    const ny = y + dir.dy;
 
     if (isValidPosition(nx, ny) && newBoard[ny][nx] === opponent) {
       const group = getGroup(newBoard, nx, ny);
@@ -168,10 +166,10 @@ function playMove(board, x, y, player) {
 
       if (liberties.length === 0) {
         // Capture stones
-        for (let j = 0; j < group.stones.length; j++) {
-          newBoard[group.stones[j].y][group.stones[j].x] = EMPTY;
+        for (const stone of group.stones) {
+          newBoard[stone.y][stone.x] = EMPTY;
           totalCaptures++;
-          lastCaptured = { x: group.stones[j].x, y: group.stones[j].y };
+          lastCaptured = { x: stone.x, y: stone.y };
         }
       }
     }
@@ -281,9 +279,9 @@ function calculateScore(board) {
         const pos = queue.shift();
         territory.push(pos);
 
-        for (let i = 0; i < DIRECTIONS.length; i++) {
-          const nx = pos.x + DIRECTIONS[i].dx;
-          const ny = pos.y + DIRECTIONS[i].dy;
+        for (const dir of DIRECTIONS) {
+          const nx = pos.x + dir.dx;
+          const ny = pos.y + dir.dy;
           const nkey = nx + "," + ny;
 
           if (!isValidPosition(nx, ny) || visited[nkey]) continue;
@@ -354,9 +352,9 @@ function getBestAIMove(board, aiPlayer, koPoint, capturesBlack, capturesWhite) {
 
   // Score candidates by heuristic first, keep top N
   const scored = [];
-  for (let i = 0; i < candidateMoves.length; i++) {
-    const h = evaluateMove(board, candidateMoves[i], aiPlayer);
-    scored.push({ move: candidateMoves[i], heuristic: h });
+  for (const cm of candidateMoves) {
+    const h = evaluateMove(board, cm, aiPlayer);
+    scored.push({ move: cm, heuristic: h });
   }
   scored.sort((a, b) => b.heuristic - a.heuristic);
   const topCandidates = scored.slice(0, 12);
@@ -390,8 +388,7 @@ function filterCandidateMoves(board, legalMoves) {
   const filtered = [];
   const radius = 2;
 
-  for (let i = 0; i < legalMoves.length; i++) {
-    const move = legalMoves[i];
+  for (const move of legalMoves) {
     let nearStone = false;
 
     // Check if there are stones nearby
@@ -442,9 +439,9 @@ function evaluateMove(board, move, player) {
   const newBoard = copyBoard(board);
   newBoard[move.y][move.x] = player;
 
-  for (let i = 0; i < DIRECTIONS.length; i++) {
-    const nx = move.x + DIRECTIONS[i].dx;
-    const ny = move.y + DIRECTIONS[i].dy;
+  for (const dir of DIRECTIONS) {
+    const nx = move.x + dir.dx;
+    const ny = move.y + dir.dy;
 
     if (isValidPosition(nx, ny) && newBoard[ny][nx] === opponent) {
       const group = getGroup(newBoard, nx, ny);
@@ -698,9 +695,9 @@ if (typeof document !== "undefined") {
       { x: 15, y: 15 },
     ];
     context.fillStyle = "#8b7355";
-    for (let i = 0; i < starPoints.length; i++) {
-      const sx = MARGIN + starPoints[i].x * CELL_SIZE;
-      const sy = MARGIN + starPoints[i].y * CELL_SIZE;
+    for (const sp of starPoints) {
+      const sx = MARGIN + sp.x * CELL_SIZE;
+      const sy = MARGIN + sp.y * CELL_SIZE;
       context.beginPath();
       context.arc(sx, sy, 3, 0, Math.PI * 2);
       context.fill();

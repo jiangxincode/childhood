@@ -248,10 +248,10 @@ function getValidMoves(board, c, r, hasMoved) {
 
   // Filter moves that leave own king in check
   const validMoves = [];
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move of moves) {
+    const newBoard = applyMove(board, move);
     if (!isInCheck(newBoard, color)) {
-      validMoves.push(moves[i]);
+      validMoves.push(move);
     }
   }
   return validMoves;
@@ -282,8 +282,8 @@ function isSquareAttacked(board, tc, tr, byColor) {
       const piece = board[c][r];
       if (piece === EMPTY || getOwner(piece) !== byColor) continue;
       const attacks = getRawAttacks(board, c, r, piece);
-      for (let i = 0; i < attacks.length; i++) {
-        if (attacks[i].toC === tc && attacks[i].toR === tr) return true;
+      for (const a of attacks) {
+        if (a.toC === tc && a.toR === tr) return true;
       }
     }
   }
@@ -369,9 +369,9 @@ function getKnightAttacks(board, c, r, color) {
     [2, -1],
     [2, 1],
   ];
-  for (let i = 0; i < jumps.length; i++) {
-    const nc = c + jumps[i][0],
-      nr = r + jumps[i][1];
+  for (const j of jumps) {
+    const nc = c + j[0],
+      nr = r + j[1];
     if (inBounds(nc, nr)) moves.push({ toC: nc, toR: nr });
   }
   return moves;
@@ -389,9 +389,9 @@ function getKingAttacks(board, c, r, color) {
     [1, 0],
     [1, 1],
   ];
-  for (let i = 0; i < dirs.length; i++) {
-    const nc = c + dirs[i][0],
-      nr = r + dirs[i][1];
+  for (const d of dirs) {
+    const nc = c + d[0],
+      nr = r + d[1];
     if (inBounds(nc, nr)) moves.push({ toC: nc, toR: nr });
   }
   return moves;
@@ -493,9 +493,9 @@ function getKingMoves(board, c, r, color, hasMoved) {
     [1, 0],
     [1, 1],
   ];
-  for (let i = 0; i < dirs.length; i++) {
-    const nc = c + dirs[i][0],
-      nr = r + dirs[i][1];
+  for (const d of dirs) {
+    const nc = c + d[0],
+      nr = r + d[1];
     if (inBounds(nc, nr) && (board[nc][nr] === EMPTY || getOwner(board[nc][nr]) !== color)) {
       moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
     }
@@ -596,7 +596,7 @@ function getAllMoves(board, color, hasMoved) {
     for (let r = 0; r < BOARD_SIZE; r++) {
       if (board[c][r] !== EMPTY && getOwner(board[c][r]) === color) {
         const pieceMoves = getValidMoves(board, c, r, hasMoved);
-        for (let i = 0; i < pieceMoves.length; i++) moves.push(pieceMoves[i]);
+        for (const pm of pieceMoves) moves.push(pm);
       }
     }
   }
@@ -668,8 +668,8 @@ function alphaBeta(board, depth, alpha, beta, aiColor, isAITurn, hasMoved) {
   const moves = getAllMoves(board, currentPlayer, hasMoved);
   let bestScore = -Infinity;
 
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move of moves) {
+    const newBoard = applyMove(board, move);
     const score = -alphaBeta(newBoard, depth - 1, -beta, -alpha, aiColor, !isAITurn, hasMoved);
     if (score > bestScore) bestScore = score;
     if (bestScore > alpha) alpha = bestScore;
@@ -706,12 +706,12 @@ function getBestAIMove(board, aiColor, hasMoved) {
     return scoreB - scoreA;
   });
 
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move of moves) {
+    const newBoard = applyMove(board, move);
     const score = -alphaBeta(newBoard, AI_DEPTH - 1, -Infinity, Infinity, aiColor, false, hasMoved);
     if (score > bestScore) {
       bestScore = score;
-      bestMove = moves[i];
+      bestMove = move;
     }
   }
   return bestMove;
@@ -908,8 +908,7 @@ if (typeof document !== "undefined") {
   }
 
   function drawValidMoves(moves) {
-    for (let i = 0; i < moves.length; i++) {
-      const m = moves[i];
+    for (const m of moves) {
       const cx = toCanvasX(m.toC) + CELL_SIZE / 2;
       const cy = toCanvasY(m.toR) + CELL_SIZE / 2;
       if (gameState.board[m.toC][m.toR] !== EMPTY) {
@@ -1143,12 +1142,12 @@ if (typeof document !== "undefined") {
 
   function findMove(moves, toC, toR) {
     // Prefer non-promotion moves, promotion moves need dialog
-    for (let i = 0; i < moves.length; i++) {
-      if (moves[i].toC === toC && moves[i].toR === toR && !moves[i].promotion) return moves[i];
+    for (const move of moves) {
+      if (move.toC === toC && move.toR === toR && !move.promotion) return move;
     }
     // If only promotion moves, return first (triggers promotion dialog)
-    for (let i = 0; i < moves.length; i++) {
-      if (moves[i].toC === toC && moves[i].toR === toR) return moves[i];
+    for (const move of moves) {
+      if (move.toC === toC && move.toR === toR) return move;
     }
     return null;
   }

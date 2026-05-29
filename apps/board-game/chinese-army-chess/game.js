@@ -123,15 +123,15 @@ function inBounds(x, y) {
 }
 
 function isCamp(x, y) {
-  for (let i = 0; i < CAMPS.length; i++) {
-    if (CAMPS[i].x === x && CAMPS[i].y === y) return true;
+  for (const camp of CAMPS) {
+    if (camp.x === x && camp.y === y) return true;
   }
   return false;
 }
 
 function isBaseCamp(x, y) {
-  for (let i = 0; i < BASE_CAMPS.length; i++) {
-    if (BASE_CAMPS[i].x === x && BASE_CAMPS[i].y === y) return true;
+  for (const baseCamp of BASE_CAMPS) {
+    if (baseCamp.x === x && baseCamp.y === y) return true;
   }
   return false;
 }
@@ -232,26 +232,26 @@ function createGameState(mode, seed) {
 
   // Red team 25 pieces
   const redNames = [];
-  for (const name in PIECE_COUNTS) {
+  for (const name of Object.keys(PIECE_COUNTS)) {
     for (let i = 0; i < PIECE_COUNTS[name]; i++) {
       redNames.push(name);
     }
   }
-  for (let i = 0; i < redNames.length; i++) {
+  for (const name of redNames) {
     pieces.push({
-      name: redNames[i],
+      name: name,
       team: RED,
-      rank: getRank(redNames[i]),
+      rank: getRank(name),
       state: STATE_FACE_UP,
     });
   }
 
   // Blue team 25 pieces
-  for (let i = 0; i < redNames.length; i++) {
+  for (const name of redNames) {
     pieces.push({
-      name: redNames[i],
+      name: name,
       team: BLUE,
-      rank: getRank(redNames[i]),
+      rank: getRank(name),
       state: STATE_FACE_UP,
     });
   }
@@ -311,8 +311,7 @@ function placePiecesForTeam(board, pieces, halfIndex, rng) {
   const bombs = [];
   const others = [];
 
-  for (let i = 0; i < pieces.length; i++) {
-    const p = pieces[i];
+  for (const p of pieces) {
     if (isFlag(p.name)) flags.push(p);
     else if (isMine(p.name)) mines.push(p);
     else if (isBomb(p.name)) bombs.push(p);
@@ -343,8 +342,7 @@ function placePiecesForTeam(board, pieces, halfIndex, rng) {
 
   // 1. Place flag: must be in base camp
   const baseCampPositions = [];
-  for (let i = 0; i < BASE_CAMPS.length; i++) {
-    const bc = BASE_CAMPS[i];
+  for (const bc of BASE_CAMPS) {
     if (bc.y >= yStart && bc.y < yStart + 6) {
       baseCampPositions.push(bc);
     }
@@ -372,8 +370,7 @@ function placePiecesForTeam(board, pieces, halfIndex, rng) {
 
   // 3. Place bombs: not in first row (excluding camps)
   const bombPositions = [];
-  for (let i = 0; i < allPositions.length; i++) {
-    const pos = allPositions[i];
+  for (const pos of allPositions) {
     if (pos.y === yStart) continue; // Exclude first row
     if (!isOccupied(pos.x, pos.y)) bombPositions.push(pos);
   }
@@ -386,8 +383,7 @@ function placePiecesForTeam(board, pieces, halfIndex, rng) {
 
   // 4. Place remaining pieces (excluding camps)
   const remaining = [];
-  for (let i = 0; i < allPositions.length; i++) {
-    const pos = allPositions[i];
+  for (const pos of allPositions) {
     if (!isOccupied(pos.x, pos.y)) remaining.push(pos);
   }
   doShuffle(remaining);
@@ -412,8 +408,8 @@ function placePiecesRandom(board, pieces, rng) {
   else shuffle(allPositions);
 
   // All pieces face down
-  for (let i = 0; i < pieces.length; i++) {
-    pieces[i].state = STATE_FACE_DOWN;
+  for (const piece of pieces) {
+    piece.state = STATE_FACE_DOWN;
   }
 
   // Place randomly
@@ -477,8 +473,7 @@ function getValidMoves(board, x, y, team, gameType) {
 
   // Add diagonal moves (camp entry/exit)
   const diagMoves = getDiagonalMoves(board, x, y, team);
-  for (let i = 0; i < diagMoves.length; i++) {
-    const dm = diagMoves[i];
+  for (const dm of diagMoves) {
     let dup = false;
     for (let j = 0; j < moves.length; j++) {
       if (moves[j].x === dm.x && moves[j].y === dm.y) {
@@ -724,9 +719,9 @@ function moveCard(state, from, to) {
 
   const validMoves = getValidMoves(state.board, from.x, from.y, state.currentTeam);
   let valid = null;
-  for (let i = 0; i < validMoves.length; i++) {
-    if (validMoves[i].x === to.x && validMoves[i].y === to.y) {
-      valid = validMoves[i];
+  for (const vm of validMoves) {
+    if (vm.x === to.x && vm.y === to.y) {
+      valid = vm;
       break;
     }
   }
@@ -891,9 +886,9 @@ function aiDecide(state, aiTeam) {
       if (!piece || piece.team !== aiTeam || piece.name !== "工兵") continue;
       if (piece.state === STATE_FACE_DOWN) continue;
       const moves = getValidMoves(board, x, y, aiTeam, gameType);
-      for (let i = 0; i < moves.length; i++) {
-        if (moves[i].type === "capture_flag") {
-          return { type: "move", from: { x: x, y: y }, to: { x: moves[i].x, y: moves[i].y } };
+      for (const m of moves) {
+        if (m.type === "capture_flag") {
+          return { type: "move", from: { x: x, y: y }, to: { x: m.x, y: m.y } };
         }
       }
     }
@@ -908,9 +903,9 @@ function aiDecide(state, aiTeam) {
       if (!piece || piece.team !== aiTeam || !isMovable(piece)) continue;
       if (piece.state === STATE_FACE_DOWN) continue;
       const moves = getValidMoves(board, x, y, aiTeam, gameType);
-      for (let i = 0; i < moves.length; i++) {
-        if (moves[i].type !== "capture") continue;
-        const target = board[moves[i].y][moves[i].x];
+      for (const m of moves) {
+        if (m.type !== "capture") continue;
+        const target = board[m.y][m.x];
         if (target.state === STATE_FACE_DOWN) continue;
         const result = resolveCombat(piece, target);
         let score = 0;
@@ -922,7 +917,7 @@ function aiDecide(state, aiTeam) {
         }
         if (score > bestScore) {
           bestScore = score;
-          bestCapture = { from: { x: x, y: y }, to: { x: moves[i].x, y: moves[i].y } };
+          bestCapture = { from: { x: x, y: y }, to: { x: m.x, y: m.y } };
         }
       }
     }
@@ -939,9 +934,9 @@ function aiDecide(state, aiTeam) {
       if (!piece || piece.team !== aiTeam || !isMovable(piece)) continue;
       if (piece.state === STATE_FACE_DOWN) continue;
       const moves = getValidMoves(board, x, y, aiTeam, gameType);
-      for (let i = 0; i < moves.length; i++) {
-        if (moves[i].type === "move") {
-          allMoves.push({ from: { x: x, y: y }, to: { x: moves[i].x, y: moves[i].y } });
+      for (const m of moves) {
+        if (m.type === "move") {
+          allMoves.push({ from: { x: x, y: y }, to: { x: m.x, y: m.y } });
         }
       }
     }
@@ -949,11 +944,11 @@ function aiDecide(state, aiTeam) {
   // Railway moves preferred
   const railwayMoves = [];
   const normalMoves = [];
-  for (let i = 0; i < allMoves.length; i++) {
-    if (isOnRailway(allMoves[i].from.x, allMoves[i].from.y)) {
-      railwayMoves.push(allMoves[i]);
+  for (const m of allMoves) {
+    if (isOnRailway(m.from.x, m.from.y)) {
+      railwayMoves.push(m);
     } else {
-      normalMoves.push(allMoves[i]);
+      normalMoves.push(m);
     }
   }
   let pool = railwayMoves.length > 0 ? railwayMoves : normalMoves;
@@ -1122,8 +1117,7 @@ if (typeof document !== "undefined") {
     // ---- Highways (gray thin lines) ----
     // Horizontal highways
     const hHighwayRows = [0, 2, 3, 4, 7, 8, 9, 11];
-    for (let i = 0; i < hHighwayRows.length; i++) {
-      const y = hHighwayRows[i];
+    for (const y of hHighwayRows) {
       addSVGLine(gHighway, ns, svgX(0), svgY(y), svgX(4), svgY(y), "gray", 1);
     }
     // Vertical highways
@@ -1135,8 +1129,7 @@ if (typeof document !== "undefined") {
     // ---- Railways (gold/black striped thick lines) ----
     // Horizontal railways
     const hRailRows = [1, 5, 6, 10];
-    for (let i = 0; i < hRailRows.length; i++) {
-      const y = hRailRows[i];
+    for (const y of hRailRows) {
       addSVGLine(gRailway, ns, svgX(0), svgY(y), svgX(4), svgY(y), "url(#rail-stripe)", 4);
     }
     // Vertical railways
@@ -1337,10 +1330,9 @@ if (typeof document !== "undefined") {
 
     // Remove old highlights
     const old = layer.querySelectorAll(".move-highlight");
-    for (let i = 0; i < old.length; i++) old[i].remove();
+    for (const el of old) el.remove();
 
-    for (let i = 0; i < moves.length; i++) {
-      const m = moves[i];
+    for (const m of moves) {
       const div = document.createElement("div");
       div.className = "move-highlight";
       if (m.type === "capture" || m.type === "capture_flag") {
@@ -1362,7 +1354,7 @@ if (typeof document !== "undefined") {
     const layer = document.getElementById("pieces-layer");
     if (!layer) return;
     const old = layer.querySelectorAll(".move-highlight");
-    for (let i = 0; i < old.length; i++) old[i].remove();
+    for (const el of old) el.remove();
     // Remove selection state
     const selDiv = layer.querySelector(".chess-selected");
     if (selDiv) selDiv.classList.remove("chess-selected");
@@ -1529,10 +1521,10 @@ if (typeof document !== "undefined") {
 
   function renderCaptured(container, list, team) {
     container.innerHTML = "";
-    for (let i = 0; i < list.length; i++) {
+    for (const item of list) {
       const span = document.createElement("span");
       span.className = "captured-piece " + (team === RED ? "red-text" : "blue-text");
-      span.textContent = list[i];
+      span.textContent = item;
       container.appendChild(span);
     }
   }

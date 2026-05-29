@@ -524,12 +524,12 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (let i = 0; i < moveTargets.length; i++) {
-      const tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (const t of moveTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (let i = 0; i < captureTargets.length; i++) {
-      const tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (const t of captureTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-capture-target");
     }
   }
@@ -583,8 +583,7 @@ if (typeof document !== "undefined") {
 
     // Captured cards
     $capturedDragon.innerHTML = "";
-    for (let i = 0; i < state.capturedDragon.length; i++) {
-      const piece = state.capturedDragon[i];
+    for (const piece of state.capturedDragon) {
       const div = document.createElement("div");
       div.className = "captured-card";
       const img = document.createElement("img");
@@ -595,8 +594,7 @@ if (typeof document !== "undefined") {
     }
 
     $capturedTiger.innerHTML = "";
-    for (let i = 0; i < state.capturedTiger.length; i++) {
-      const piece = state.capturedTiger[i];
+    for (const piece of state.capturedTiger) {
       const div = document.createElement("div");
       div.className = "captured-card";
       const img = document.createElement("img");

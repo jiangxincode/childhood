@@ -182,9 +182,9 @@ function createDefaultUserList() {
  * @returns {string|undefined}
  */
 function userState(color, userList) {
-  for (let i = 0; i < userList.length; i++) {
-    if (color === userList[i].color) {
-      return userList[i].state;
+  for (const user of userList) {
+    if (color === user.color) {
+      return user.state;
     }
   }
   return undefined;
@@ -207,9 +207,9 @@ function getNextColor(currentColor) {
  * @returns {boolean}
  */
 function hasRelayMarker(coordId) {
-  for (let i = 0; i < COORD.length; i++) {
-    if (COORD[i].id == coordId) {
-      return COORD[i].r === "yes";
+  for (const c of COORD) {
+    if (c.id == coordId) {
+      return c.r === "yes";
     }
   }
   return false;
@@ -221,9 +221,9 @@ function hasRelayMarker(coordId) {
  * @returns {string|null}
  */
 function getSuperTarget(coordId) {
-  for (let i = 0; i < COORD.length; i++) {
-    if (COORD[i].id == coordId) {
-      return COORD[i].super || null;
+  for (const c of COORD) {
+    if (c.id == coordId) {
+      return c.super || null;
     }
   }
   return null;
@@ -293,8 +293,8 @@ function isWinCell(coordId) {
  */
 function checkVictory(planes, color) {
   let winCount = 0;
-  for (let i = 0; i < planes.length; i++) {
-    if (planes[i].type === color && planes[i].state === "win") {
+  for (const plane of planes) {
+    if (plane.type === color && plane.state === "win") {
       winCount++;
     }
   }
@@ -310,9 +310,9 @@ function checkVictory(planes, color) {
 function getInitCoord(color, planeNum) {
   const coords = INIT_COORDS[color];
   if (!coords) return null;
-  for (let i = 0; i < coords.length; i++) {
-    if (coords[i].id === planeNum) {
-      return { top: coords[i].top, left: coords[i].left };
+  for (const c of coords) {
+    if (c.id === planeNum) {
+      return { top: c.top, left: c.left };
     }
   }
   return null;
@@ -688,20 +688,20 @@ if (typeof $j !== "undefined") {
    */
   function createPlane(type) {
     if (type && type.length > 0) {
-      for (let i = 0; i < type.length; i++) {
-        if (type[i].state != "close") {
-          switch (type[i].color) {
+      for (const plane of type) {
+        if (plane.state != "close") {
+          switch (plane.color) {
             case "red":
-              addPlaneDiv(type[i].color, 73, 770);
+              addPlaneDiv(plane.color, 73, 770);
               break;
             case "blue":
-              addPlaneDiv(type[i].color, 771, 770);
+              addPlaneDiv(plane.color, 771, 770);
               break;
             case "yellow":
-              addPlaneDiv(type[i].color, 771, 71);
+              addPlaneDiv(plane.color, 771, 71);
               break;
             case "green":
-              addPlaneDiv(type[i].color, 73, 71);
+              addPlaneDiv(plane.color, 73, 71);
               break;
           }
         }
@@ -1012,9 +1012,9 @@ if (typeof $j !== "undefined") {
    */
   function userStateBrowser(color) {
     let state;
-    for (let i = 0; i < planeOption.userList.length; i++) {
-      if (color == planeOption.userList[i].color) {
-        state = planeOption.userList[i].state;
+    for (const user of planeOption.userList) {
+      if (color == user.color) {
+        state = user.state;
       }
     }
     return state;
@@ -1072,8 +1072,8 @@ if (typeof $j !== "undefined") {
     // Count totals first
     let humanTotal = 0;
     let aiTotal = 0;
-    for (let i = 0; i < planeOption.userList.length; i++) {
-      const st = planeOption.userList[i].state;
+    for (const user of planeOption.userList) {
+      const st = user.state;
       if (st === "normal") humanTotal++;
       else if (st === "computer") aiTotal++;
     }
@@ -1081,8 +1081,7 @@ if (typeof $j !== "undefined") {
     let humanIdx = 0;
     let aiIdx = 0;
     let currentLabel = "玩家";
-    for (let i = 0; i < planeOption.userList.length; i++) {
-      const user = planeOption.userList[i];
+    for (const user of planeOption.userList) {
       let label;
       if (user.state === "normal") {
         humanIdx++;

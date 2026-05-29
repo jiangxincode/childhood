@@ -214,16 +214,16 @@ function initPositionScores() {
     POSITION_SCORES[player] = [];
     const targets = TARGET_POSITIONS[player];
     const targetSet = {};
-    for (let i = 0; i < targets.length; i++) {
-      targetSet[targets[i]] = true;
+    for (const t of targets) {
+      targetSet[t] = true;
     }
 
     // Calculate target area centroid
     let cx = 0,
       cy = 0;
-    for (let i = 0; i < targets.length; i++) {
-      cx += positions[targets[i]].x;
-      cy += positions[targets[i]].y;
+    for (const t of targets) {
+      cx += positions[t].x;
+      cy += positions[t].y;
     }
     cx /= targets.length;
     cy /= targets.length;
@@ -231,13 +231,13 @@ function initPositionScores() {
     // Calculate target area depth reference point (farthest vertex)
     let maxDistFromCenter = 0;
     let tipIdx = targets[0];
-    for (let i = 0; i < targets.length; i++) {
-      const dx = positions[targets[i]].x - cx;
-      const dy = positions[targets[i]].y - cy;
+    for (const t of targets) {
+      const dx = positions[t].x - cx;
+      const dy = positions[t].y - cy;
       const dist = Math.abs(dx) + Math.abs(dy);
       if (dist > maxDistFromCenter) {
         maxDistFromCenter = dist;
-        tipIdx = targets[i];
+        tipIdx = t;
       }
     }
     const tipPos = positions[tipIdx];
@@ -273,17 +273,17 @@ function createBoard() {
 
 function placePieces(board, player) {
   const pos = START_POSITIONS[player];
-  for (let i = 0; i < pos.length; i++) {
-    board[pos[i]] = player;
+  for (const p of pos) {
+    board[p] = player;
   }
 }
 
 function getAdjacentMoves(board, cell) {
   const moves = [];
   const neighbors = ADJACENT[cell];
-  for (let i = 0; i < neighbors.length; i++) {
-    if (board[neighbors[i]] === EMPTY) {
-      moves.push(neighbors[i]);
+  for (const n of neighbors) {
+    if (board[n] === EMPTY) {
+      moves.push(n);
     }
   }
   return moves;
@@ -293,8 +293,7 @@ function getJumpMoves(board, cell, visited) {
   let moves = [];
   const neighbors = ADJACENT[cell];
 
-  for (let i = 0; i < neighbors.length; i++) {
-    const mid = neighbors[i];
+  for (const mid of neighbors) {
     if (board[mid] !== EMPTY) {
       const p1 = positions[cell];
       const p2 = positions[mid];
@@ -322,8 +321,8 @@ function getLegalMoves(board, cell) {
   moves = moves.concat(adjacentMoves);
 
   const visited = {};
-  for (let i = 0; i < adjacentMoves.length; i++) {
-    visited[adjacentMoves[i]] = true;
+  for (const am of adjacentMoves) {
+    visited[am] = true;
   }
   const jumpMoves = getJumpMoves(board, cell, visited);
   moves = moves.concat(jumpMoves);
@@ -345,8 +344,8 @@ function makeMove(board, from, to) {
 
 function checkWin(board, player) {
   const targets = TARGET_POSITIONS[player];
-  for (let i = 0; i < targets.length; i++) {
-    if (board[targets[i]] !== player) {
+  for (const t of targets) {
+    if (board[t] !== player) {
       return false;
     }
   }
@@ -354,9 +353,9 @@ function checkWin(board, player) {
 }
 
 function checkGameOver(board, players) {
-  for (let i = 0; i < players.length; i++) {
-    if (checkWin(board, players[i])) {
-      return players[i];
+  for (const player of players) {
+    if (checkWin(board, player)) {
+      return player;
     }
   }
   return null;
@@ -368,8 +367,8 @@ function checkGameOver(board, players) {
 
 function isInTargetArea(cell, player) {
   const targets = TARGET_POSITIONS[player];
-  for (let i = 0; i < targets.length; i++) {
-    if (targets[i] === cell) return true;
+  for (const t of targets) {
+    if (t === cell) return true;
   }
   return false;
 }
@@ -377,8 +376,7 @@ function isInTargetArea(cell, player) {
 function calculateBlockingScore(board, player, position) {
   let score = 0;
   const neighbors = ADJACENT[position];
-  for (let i = 0; i < neighbors.length; i++) {
-    const neighborCell = neighbors[i];
+  for (const neighborCell of neighbors) {
     if (board[neighborCell] !== EMPTY && board[neighborCell] !== player) {
       // Opponent piece next to target position, forming a block
       const opponent = board[neighborCell];
@@ -393,8 +391,8 @@ function calculateBlockingScore(board, player, position) {
 function calculateFormationScore(board, player, position) {
   let score = 0;
   const neighbors = ADJACENT[position];
-  for (let i = 0; i < neighbors.length; i++) {
-    if (board[neighbors[i]] === player) {
+  for (const n of neighbors) {
+    if (board[n] === player) {
       score += 1;
     }
   }
@@ -457,11 +455,11 @@ function getBestAIMove(board, player, allPlayers) {
   for (let cell = 0; cell < TOTAL_POSITIONS; cell++) {
     if (board[cell] === player) {
       const moves = getLegalMoves(board, cell);
-      for (let i = 0; i < moves.length; i++) {
-        const score = evaluateMove(board, player, cell, moves[i], allPlayers);
+      for (const m of moves) {
+        const score = evaluateMove(board, player, cell, m, allPlayers);
         if (score > bestScore) {
           bestScore = score;
-          bestMove = { from: cell, to: moves[i] };
+          bestMove = { from: cell, to: m };
         }
       }
     }
@@ -498,8 +496,8 @@ function createGameState(mode, playerCount) {
 }
 
 function initGame(state) {
-  for (let i = 0; i < state.players.length; i++) {
-    placePieces(state.board, state.players[i]);
+  for (const player of state.players) {
+    placePieces(state.board, player);
   }
 }
 
@@ -672,8 +670,7 @@ if (typeof document !== "undefined") {
 
     // Draw valid move positions
     if (gameState.validMoves.length > 0) {
-      for (let i = 0; i < gameState.validMoves.length; i++) {
-        const moveCell = gameState.validMoves[i];
+      for (const moveCell of gameState.validMoves) {
         const pos = cellToPixel(moveCell);
         const indicator = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         indicator.setAttribute("cx", pos.x);
@@ -911,9 +908,9 @@ if (typeof document !== "undefined") {
         gameState.playerTeam = firstPlayer;
         // AI gets other players
         const aiPlayers = [];
-        for (let i = 0; i < gameState.players.length; i++) {
-          if (gameState.players[i] !== firstPlayer) {
-            aiPlayers.push(gameState.players[i]);
+        for (const p of gameState.players) {
+          if (p !== firstPlayer) {
+            aiPlayers.push(p);
           }
         }
         gameState.aiTeam = aiPlayers[0]; // Primary opponent
@@ -935,8 +932,7 @@ if (typeof document !== "undefined") {
     document.getElementById("game-over").style.display = "none";
 
     let colorRulesHtml = "";
-    for (let i = 0; i < gameState.players.length; i++) {
-      const player = gameState.players[i];
+    for (const player of gameState.players) {
       const config = PLAYER_COLORS[player];
       let prefix = "";
       if (mode === "pve") {

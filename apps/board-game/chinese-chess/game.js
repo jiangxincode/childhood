@@ -239,10 +239,10 @@ function getValidMoves(board, c, r) {
 
   // General facing rule: illegal if own general faces opponent general after move
   const validMoves = [];
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move of moves) {
+    const newBoard = applyMove(board, move);
     if (!isGeneralFacing(newBoard, color)) {
-      validMoves.push(moves[i]);
+      validMoves.push(move);
     }
   }
   return validMoves;
@@ -359,8 +359,7 @@ function getHorseMoves(board, c, r, color) {
     { bx: 1, by: 0, dx: 2, dy: -1 },
     { bx: 1, by: 0, dx: 2, dy: 1 },
   ];
-  for (let i = 0; i < jumps.length; i++) {
-    const j = jumps[i];
+  for (const j of jumps) {
     const bc = c + j.bx,
       br = r + j.by;
     const nc = c + j.dx,
@@ -384,8 +383,7 @@ function getElephantMoves(board, c, r, color) {
   ];
   const minR = color === RED ? 5 : 0;
   const maxR = color === RED ? 9 : 4;
-  for (let i = 0; i < jumps.length; i++) {
-    const j = jumps[i];
+  for (const j of jumps) {
     const nc = c + j.dx,
       nr = r + j.dy;
     if (!inBounds(nc, nr) || nr < minR || nr > maxR) continue;
@@ -409,9 +407,9 @@ function getAdvisorMoves(board, c, r, color) {
   ];
   const minR = color === RED ? 7 : 0;
   const maxR = color === RED ? 9 : 2;
-  for (let i = 0; i < dirs.length; i++) {
-    const nc = c + dirs[i][0],
-      nr = r + dirs[i][1];
+  for (const d of dirs) {
+    const nc = c + d[0],
+      nr = r + d[1];
     if (nc < 3 || nc > 5 || nr < minR || nr > maxR) continue;
     if (board[nc][nr] === EMPTY || getOwner(board[nc][nr]) !== color) {
       moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -430,9 +428,9 @@ function getGeneralMoves(board, c, r, color) {
   ];
   const minR = color === RED ? 7 : 0;
   const maxR = color === RED ? 9 : 2;
-  for (let i = 0; i < dirs.length; i++) {
-    const nc = c + dirs[i][0],
-      nr = r + dirs[i][1];
+  for (const d of dirs) {
+    const nc = c + d[0],
+      nr = r + d[1];
     if (nc < 3 || nc > 5 || nr < minR || nr > maxR) continue;
     if (board[nc][nr] === EMPTY || getOwner(board[nc][nr]) !== color) {
       moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -471,8 +469,8 @@ function getAllMoves(board, color) {
     for (let r = 0; r < ROWS; r++) {
       if (board[c][r] !== EMPTY && getOwner(board[c][r]) === color) {
         const pieceMoves = getValidMoves(board, c, r);
-        for (let i = 0; i < pieceMoves.length; i++) {
-          moves.push(pieceMoves[i]);
+        for (const pm of pieceMoves) {
+          moves.push(pm);
         }
       }
     }
@@ -520,8 +518,8 @@ function evaluateBoard(board, aiColor) {
       const moves = getValidMoves(board, c, r);
       const owner = getOwner(piece);
       const attackMap = owner === aiColor ? aiAttackPos : oppAttackPos;
-      for (let i = 0; i < moves.length; i++) {
-        attackMap[moves[i].toC][moves[i].toR]++;
+      for (const m of moves) {
+        attackMap[m.toC][m.toR]++;
       }
     }
   }
@@ -570,8 +568,8 @@ function alphaBeta(board, depth, alpha, beta, aiColor, isAITurn) {
   const moves = getAllMoves(board, currentPlayer);
   let bestScore = -Infinity;
 
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move of moves) {
+    const newBoard = applyMove(board, move);
     const score = -alphaBeta(newBoard, depth - 1, -beta, -alpha, aiColor, !isAITurn);
     if (score > bestScore) bestScore = score;
     if (bestScore > alpha) alpha = bestScore;
@@ -587,12 +585,12 @@ function getBestAIMove(board, aiColor) {
   let bestMove = null;
   let bestScore = -Infinity;
 
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move of moves) {
+    const newBoard = applyMove(board, move);
     const score = -alphaBeta(newBoard, AI_DEPTH - 1, -Infinity, Infinity, aiColor, false);
     if (score > bestScore) {
       bestScore = score;
-      bestMove = moves[i];
+      bestMove = move;
     }
   }
   return bestMove;
@@ -832,8 +830,7 @@ if (typeof document !== "undefined") {
   }
 
   function drawValidMoves(moves) {
-    for (let i = 0; i < moves.length; i++) {
-      const m = moves[i];
+    for (const m of moves) {
       const cx = toCanvasX(m.toC);
       const cy = toCanvasY(m.toR);
       if (gameState.board[m.toC][m.toR] !== EMPTY) {
@@ -1030,8 +1027,8 @@ if (typeof document !== "undefined") {
   }
 
   function findMove(moves, toC, toR) {
-    for (let i = 0; i < moves.length; i++) {
-      if (moves[i].toC === toC && moves[i].toR === toR) return moves[i];
+    for (const move of moves) {
+      if (move.toC === toC && move.toR === toR) return move;
     }
     return null;
   }

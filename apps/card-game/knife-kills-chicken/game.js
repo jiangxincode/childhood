@@ -120,8 +120,7 @@ function createGameState(mode) {
 
   // Generate 16 cards: 8 red + 8 blue, one of each role per side
   const cards = [];
-  for (let i = 0; i < ROLES.length; i++) {
-    const role = ROLES[i];
+  for (const role of ROLES) {
     cards.push(
       { role: role, team: "red", faceUp: false, carrying: null },
       { role: role, team: "blue", faceUp: false, carrying: null }
@@ -686,16 +685,16 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (let i = 0; i < moveTargets.length; i++) {
-      const tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (const t of moveTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (let i = 0; i < captureTargets.length; i++) {
-      const tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (const t of captureTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-capture-target");
     }
-    for (let i = 0; i < carryTargets.length; i++) {
-      const tc = getCell(carryTargets[i].x, carryTargets[i].y);
+    for (const t of carryTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-carry-target");
     }
   }
