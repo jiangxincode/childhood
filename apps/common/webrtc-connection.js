@@ -71,7 +71,7 @@ function encodeRoomData(sdp, candidates) {
   // Keep only the first ICE candidate
   const first = allCandidates.length > 0 ? [allCandidates[0]] : [];
   const payload = JSON.stringify({ s: minSdp, c: first });
-  return btoa(String.fromCharCode(...new TextEncoder().encode(payload)));
+  return btoa(String.fromCodePoint(...new TextEncoder().encode(payload)));
 }
 
 /**
@@ -80,7 +80,9 @@ function encodeRoomData(sdp, candidates) {
  * @returns {{ sdp: string, candidates: string[] }}
  */
 function decodeRoomData(code) {
-  const payload = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(code.trim()), c => c.charCodeAt(0))));
+  const payload = JSON.parse(
+    new TextDecoder().decode(Uint8Array.from(atob(code.trim()), (c) => c.codePointAt(0)))
+  );
   // Reconstruct SDP by appending candidate lines
   let sdp = payload.s;
   if (payload.c?.length > 0) {
