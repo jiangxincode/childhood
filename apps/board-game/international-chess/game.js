@@ -1430,13 +1430,13 @@ if (typeof document !== "undefined") {
     cleanupNetwork();
   }
 
-  function handleRPSChoice(player, choice) {
+  function handleRPSChoice(player, choice, ev) {
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
       const choices = ["rock", "scissors", "paper"];
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
@@ -1559,7 +1559,7 @@ if (typeof document !== "undefined") {
 
     document.querySelectorAll(".btn-rps").forEach((button) => {
       button.addEventListener("click", (ev) => {
-        handleRPSChoice(ev.target.dataset.player, ev.target.dataset.choice);
+        handleRPSChoice(ev.target.dataset.player, ev.target.dataset.choice, ev);
       });
     });
     document.getElementById("btn-restart").addEventListener("click", restartGame);

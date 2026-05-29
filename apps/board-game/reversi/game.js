@@ -857,13 +857,13 @@ let rpsChoices = { player1: null, player2: null, human: null };
  * @param {string} player - '1' | '2' | 'human'
  * @param {string} choice - 'rock' | 'scissors' | 'paper'
  */
-function handleRPSChoice(player, choice) {
+function handleRPSChoice(player, choice, ev) {
   if (player === "human") {
     rpsChoices.human = choice;
     document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
       btn.classList.remove("selected");
     });
-    event.target.classList.add("selected");
+    ev.target.classList.add("selected");
 
     // AI random choice
     const choices = ["rock", "scissors", "paper"];
@@ -1001,10 +1001,10 @@ if (typeof document !== "undefined") {
 
     // RPS buttons
     document.querySelectorAll(".btn-rps").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        const player = event.target.dataset.player;
-        const choice = event.target.dataset.choice;
-        handleRPSChoice(player, choice);
+      button.addEventListener("click", (ev) => {
+        const player = ev.target.dataset.player;
+        const choice = ev.target.dataset.choice;
+        handleRPSChoice(player, choice, ev);
       });
     });
 
