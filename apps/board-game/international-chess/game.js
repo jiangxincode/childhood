@@ -166,7 +166,7 @@ function isKing(piece) {
 
 function createBoard() {
   const board = [];
-  for (var c = 0; c < BOARD_SIZE; c++) {
+  for (let c = 0; c < BOARD_SIZE; c++) {
     const col = [];
     for (let r = 0; r < BOARD_SIZE; r++) col.push(EMPTY);
     board.push(col);
@@ -180,7 +180,7 @@ function createBoard() {
   board[5][0] = B_BISHOP;
   board[6][0] = B_KNIGHT;
   board[7][0] = B_ROOK;
-  for (var c = 0; c < 8; c++) board[c][1] = B_PAWN;
+  for (let c = 0; c < 8; c++) board[c][1] = B_PAWN;
   // White (bottom, row 6-7)
   board[0][7] = W_ROOK;
   board[1][7] = W_KNIGHT;
@@ -190,7 +190,7 @@ function createBoard() {
   board[5][7] = W_BISHOP;
   board[6][7] = W_KNIGHT;
   board[7][7] = W_ROOK;
-  for (var c = 0; c < 8; c++) board[c][6] = W_PAWN;
+  for (let c = 0; c < 8; c++) board[c][6] = W_PAWN;
   return board;
 }
 
@@ -553,11 +553,11 @@ function getPawnMoves(board, c, r, color, hasMoved) {
   // Move forward one step
   if (inBounds(c, r + dir) && board[c][r + dir] === EMPTY) {
     if (r + dir === promoRow) {
-      var promos =
+      const promos =
         color === WHITE
           ? [W_QUEEN, W_ROOK, W_BISHOP, W_KNIGHT]
           : [B_QUEEN, B_ROOK, B_BISHOP, B_KNIGHT];
-      for (var p = 0; p < promos.length; p++) {
+      for (let p = 0; p < promos.length; p++) {
         moves.push({ fromC: c, fromR: r, toC: c, toR: r + dir, promotion: promos[p] });
       }
     } else {
@@ -575,11 +575,11 @@ function getPawnMoves(board, c, r, color, hasMoved) {
       nr = r + dir;
     if (inBounds(nc, nr) && board[nc][nr] !== EMPTY && getOwner(board[nc][nr]) !== color) {
       if (nr === promoRow) {
-        var promos =
+        const promos =
           color === WHITE
             ? [W_QUEEN, W_ROOK, W_BISHOP, W_KNIGHT]
             : [B_QUEEN, B_ROOK, B_BISHOP, B_KNIGHT];
-        for (var p = 0; p < promos.length; p++) {
+        for (let p = 0; p < promos.length; p++) {
           moves.push({ fromC: c, fromR: r, toC: nc, toR: nr, promotion: promos[p] });
         }
       } else {
@@ -839,8 +839,8 @@ if (typeof document !== "undefined") {
   function drawBoard() {
     const lightColor = "#f0d9b5";
     const darkColor = "#b58863";
-    for (var r = 0; r < BOARD_SIZE; r++) {
-      for (var c = 0; c < BOARD_SIZE; c++) {
+    for (let r = 0; r < BOARD_SIZE; r++) {
+      for (let c = 0; c < BOARD_SIZE; c++) {
         context.fillStyle = (c + r) % 2 === 0 ? lightColor : darkColor;
         context.fillRect(toCanvasX(c), toCanvasY(r), CELL_SIZE, CELL_SIZE);
       }
@@ -852,11 +852,11 @@ if (typeof document !== "undefined") {
     context.textBaseline = "middle";
     const files = "abcdefgh";
     const flipped = gameState && gameState.boardFlipped;
-    for (var c = 0; c < BOARD_SIZE; c++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
       const fileIdx = flipped ? 7 - c : c;
       context.fillText(files[fileIdx], PADDING + c * CELL_SIZE + CELL_SIZE / 2, CANVAS_SIZE - 8);
     }
-    for (var r = 0; r < BOARD_SIZE; r++) {
+    for (let r = 0; r < BOARD_SIZE; r++) {
       const rankNum = flipped ? r + 1 : 8 - r;
       context.fillText(String(rankNum), 10, PADDING + r * CELL_SIZE + CELL_SIZE / 2);
     }
@@ -1143,11 +1143,11 @@ if (typeof document !== "undefined") {
 
   function findMove(moves, toC, toR) {
     // Prefer non-promotion moves, promotion moves need dialog
-    for (var i = 0; i < moves.length; i++) {
+    for (let i = 0; i < moves.length; i++) {
       if (moves[i].toC === toC && moves[i].toR === toR && !moves[i].promotion) return moves[i];
     }
     // If only promotion moves, return first (triggers promotion dialog)
-    for (var i = 0; i < moves.length; i++) {
+    for (let i = 0; i < moves.length; i++) {
       if (moves[i].toC === toC && moves[i].toR === toR) return moves[i];
     }
     return null;
@@ -1440,7 +1440,7 @@ if (typeof document !== "undefined") {
       const choices = ["rock", "scissors", "paper"];
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
-      var resultEl = document.getElementById("rps-result");
+      const resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
       if (humanWins === 1) {
         resultEl.textContent =
@@ -1481,7 +1481,7 @@ if (typeof document !== "undefined") {
       document.getElementById("rps-p" + player + "-status").textContent =
         "已选择：" + getRPSName(choice);
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById("rps-result");
+        const resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
         if (winner === 1) {
           resultEl.textContent = "玩家1赢了！玩家1先手(白方)。";

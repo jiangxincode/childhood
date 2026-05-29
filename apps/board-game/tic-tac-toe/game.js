@@ -140,19 +140,19 @@ function minimax(board, depth, isMaximizing, aiPlayer) {
 
   const moves = getValidMoves(board);
   if (isMaximizing) {
-    var best = -100;
-    for (var i = 0; i < moves.length; i++) {
-      var newBoard = makeMove(board, moves[i].x, moves[i].y, aiPlayer);
-      var score = minimax(newBoard, depth + 1, false, aiPlayer);
+    let best = -100;
+    for (let i = 0; i < moves.length; i++) {
+      const newBoard = makeMove(board, moves[i].x, moves[i].y, aiPlayer);
+      const score = minimax(newBoard, depth + 1, false, aiPlayer);
       if (score > best) best = score;
     }
     return best;
   } else {
-    var best = 100;
+    let best = 100;
     const opponent = getOpponent(aiPlayer);
-    for (var i = 0; i < moves.length; i++) {
-      var newBoard = makeMove(board, moves[i].x, moves[i].y, opponent);
-      var score = minimax(newBoard, depth + 1, true, aiPlayer);
+    for (let i = 0; i < moves.length; i++) {
+      const newBoard = makeMove(board, moves[i].x, moves[i].y, opponent);
+      const score = minimax(newBoard, depth + 1, true, aiPlayer);
       if (score < best) best = score;
     }
     return best;
@@ -164,23 +164,23 @@ function getBestAIMove(board, aiPlayer) {
   if (moves.length === 0) return null;
 
   // First check if AI can win immediately
-  for (var i = 0; i < moves.length; i++) {
-    var newBoard = makeMove(board, moves[i].x, moves[i].y, aiPlayer);
+  for (let i = 0; i < moves.length; i++) {
+    const newBoard = makeMove(board, moves[i].x, moves[i].y, aiPlayer);
     if (checkWin(newBoard)) return moves[i];
   }
 
   // Then check if opponent can win immediately (need to block)
   const opponent = getOpponent(aiPlayer);
-  for (var i = 0; i < moves.length; i++) {
-    var newBoard = makeMove(board, moves[i].x, moves[i].y, opponent);
+  for (let i = 0; i < moves.length; i++) {
+    const newBoard = makeMove(board, moves[i].x, moves[i].y, opponent);
     if (checkWin(newBoard)) return moves[i];
   }
 
   // Minimax selects optimal move
   let bestScore = -100;
   let bestMove = moves[0];
-  for (var i = 0; i < moves.length; i++) {
-    var newBoard = makeMove(board, moves[i].x, moves[i].y, aiPlayer);
+  for (let i = 0; i < moves.length; i++) {
+    const newBoard = makeMove(board, moves[i].x, moves[i].y, aiPlayer);
     const score = minimax(newBoard, 0, false, aiPlayer);
     if (score > bestScore) {
       bestScore = score;
@@ -639,7 +639,7 @@ if (typeof document !== "undefined") {
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      var resultEl = document.getElementById("rps-result");
+      const resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -683,7 +683,7 @@ if (typeof document !== "undefined") {
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById("rps-result");
+        const resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {

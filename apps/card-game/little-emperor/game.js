@@ -106,12 +106,12 @@ function createGameState(mode) {
 
   // Create 16 pieces: 8 red + 8 blue
   const cards = [];
-  for (var i = 0; i < PIECE_NAMES.length; i++) {
-    var name = PIECE_NAMES[i];
+  for (let i = 0; i < PIECE_NAMES.length; i++) {
+    const name = PIECE_NAMES[i];
     cards.push({ name: name, team: "red", rank: RANK_MAP[name], faceUp: false });
   }
-  for (var i = 0; i < PIECE_NAMES.length; i++) {
-    var name = PIECE_NAMES[i];
+  for (let i = 0; i < PIECE_NAMES.length; i++) {
+    const name = PIECE_NAMES[i];
     cards.push({ name: name, team: "blue", rank: RANK_MAP[name], faceUp: false });
   }
 
@@ -450,12 +450,12 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (var i = 0; i < moveTargets.length; i++) {
-      var tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (let i = 0; i < moveTargets.length; i++) {
+      const tc = getCell(moveTargets[i].x, moveTargets[i].y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (var i = 0; i < captureTargets.length; i++) {
-      var tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (let i = 0; i < captureTargets.length; i++) {
+      const tc = getCell(captureTargets[i].x, captureTargets[i].y);
       if (tc) tc.classList.add("cell-capture-target");
     }
   }
@@ -514,11 +514,11 @@ if (typeof document !== "undefined") {
 
     // Captured pieces
     $capturedRed.innerHTML = "";
-    for (var i = 0; i < state.capturedRed.length; i++) {
-      var name = state.capturedRed[i];
-      var div = document.createElement("div");
+    for (let i = 0; i < state.capturedRed.length; i++) {
+      const name = state.capturedRed[i];
+      const div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      const img = document.createElement("img");
       img.src = getImagePath("red", name);
       img.alt = name;
       div.appendChild(img);
@@ -526,11 +526,11 @@ if (typeof document !== "undefined") {
     }
 
     $capturedBlue.innerHTML = "";
-    for (var i = 0; i < state.capturedBlue.length; i++) {
-      var name = state.capturedBlue[i];
-      var div = document.createElement("div");
+    for (let i = 0; i < state.capturedBlue.length; i++) {
+      const name = state.capturedBlue[i];
+      const div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      const img = document.createElement("img");
       img.src = getImagePath("blue", name);
       img.alt = name;
       div.appendChild(img);
@@ -582,8 +582,8 @@ if (typeof document !== "undefined") {
 
   // ---- Rock-Paper-Scissors logic ----
 
-  var rpsP1Choice = null;
-  var rpsP2Choice = null;
+  let rpsP1Choice = null;
+  let rpsP2Choice = null;
 
   function startGame(firstTeam) {
     showGameArea();

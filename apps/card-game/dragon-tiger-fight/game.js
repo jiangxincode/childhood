@@ -524,12 +524,12 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (var i = 0; i < moveTargets.length; i++) {
-      var tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (let i = 0; i < moveTargets.length; i++) {
+      const tc = getCell(moveTargets[i].x, moveTargets[i].y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (var i = 0; i < captureTargets.length; i++) {
-      var tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (let i = 0; i < captureTargets.length; i++) {
+      const tc = getCell(captureTargets[i].x, captureTargets[i].y);
       if (tc) tc.classList.add("cell-capture-target");
     }
   }
@@ -583,11 +583,11 @@ if (typeof document !== "undefined") {
 
     // Captured cards
     $capturedDragon.innerHTML = "";
-    for (var i = 0; i < state.capturedDragon.length; i++) {
-      var piece = state.capturedDragon[i];
-      var div = document.createElement("div");
+    for (let i = 0; i < state.capturedDragon.length; i++) {
+      const piece = state.capturedDragon[i];
+      const div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      const img = document.createElement("img");
       img.src = getImagePath(piece);
       img.alt = piece;
       div.appendChild(img);
@@ -595,11 +595,11 @@ if (typeof document !== "undefined") {
     }
 
     $capturedTiger.innerHTML = "";
-    for (var i = 0; i < state.capturedTiger.length; i++) {
-      var piece = state.capturedTiger[i];
-      var div = document.createElement("div");
+    for (let i = 0; i < state.capturedTiger.length; i++) {
+      const piece = state.capturedTiger[i];
+      const div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      const img = document.createElement("img");
       img.src = getImagePath(piece);
       img.alt = piece;
       div.appendChild(img);
@@ -891,8 +891,8 @@ if (typeof document !== "undefined") {
   }
 
   // --- Rock-Paper-Scissors logic ---
-  var rpsP1Choice = null;
-  var rpsP2Choice = null;
+  let rpsP1Choice = null;
+  let rpsP2Choice = null;
 
   function startGame(firstTeam) {
     showGameArea();

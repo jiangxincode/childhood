@@ -1011,11 +1011,11 @@ if (typeof document !== "undefined") {
 
     // Captured piece images
     $capturedRed.innerHTML = "";
-    for (var i = 0; i < state.capturedRed.length; i++) {
-      var name = state.capturedRed[i];
-      var div = document.createElement("div");
+    for (let i = 0; i < state.capturedRed.length; i++) {
+      const name = state.capturedRed[i];
+      const div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      const img = document.createElement("img");
       img.src = getImagePath({ name: name, team: "red", rank: getRank(name), faceUp: true });
       img.alt = name;
       div.appendChild(img);
@@ -1023,11 +1023,11 @@ if (typeof document !== "undefined") {
     }
 
     $capturedBlue.innerHTML = "";
-    for (var i = 0; i < state.capturedBlue.length; i++) {
-      var name = state.capturedBlue[i];
-      var div = document.createElement("div");
+    for (let i = 0; i < state.capturedBlue.length; i++) {
+      const name = state.capturedBlue[i];
+      const div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      const img = document.createElement("img");
       img.src = getImagePath({ name: name, team: "blue", rank: getRank(name), faceUp: true });
       img.alt = name;
       div.appendChild(img);
@@ -1079,9 +1079,9 @@ if (typeof document !== "undefined") {
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
 
-    for (var i = 0; i < moveTargets.length; i++) {
+    for (let i = 0; i < moveTargets.length; i++) {
       const t = moveTargets[i];
-      var tc = getCell(t.x, t.y);
+      const tc = getCell(t.x, t.y);
       if (tc) {
         if (t.type === "capture_flag") {
           tc.classList.add("cell-flag-target");
@@ -1091,8 +1091,8 @@ if (typeof document !== "undefined") {
       }
     }
 
-    for (var i = 0; i < captureTargets.length; i++) {
-      var tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (let i = 0; i < captureTargets.length; i++) {
+      const tc = getCell(captureTargets[i].x, captureTargets[i].y);
       if (tc) tc.classList.add("cell-capture-target");
     }
   }
@@ -1150,7 +1150,7 @@ if (typeof document !== "undefined") {
 
       // Click face-up flag: try to capture flag (moveCard)
       if (piece && piece.faceUp && isFlag(piece.name)) {
-        var result = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
+        const result = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
         if (result) {
           gameState.selectedCell = null;
           clearHighlights();
@@ -1170,7 +1170,7 @@ if (typeof document !== "undefined") {
         const captures = getValidCaptures(gameState.board, sel.x, sel.y, currentTeam);
         const canDo = captures.some((t) => t.x === x && t.y === y);
         if (canDo) {
-          var result = captureCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
+          const result = captureCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
           if (result) {
             gameState.selectedCell = null;
             clearHighlights();
@@ -1188,7 +1188,7 @@ if (typeof document !== "undefined") {
 
       // Click empty cell: try move
       if (!piece) {
-        var result = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
+        const result = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
         if (result) {
           gameState.selectedCell = null;
           clearHighlights();
@@ -1218,7 +1218,7 @@ if (typeof document !== "undefined") {
     // No piece selected
     if (piece && !piece.faceUp) {
       // Click face-down piece: flip
-      var result = flipCard(gameState, x, y);
+      const result = flipCard(gameState, x, y);
       if (result) {
         clearHighlights();
         // In online mode, assign teams on first non-flag flip
@@ -1331,8 +1331,8 @@ if (typeof document !== "undefined") {
     }
   }
 
-  var rpsP1Choice = null;
-  var rpsP2Choice = null;
+  let rpsP1Choice = null;
+  let rpsP2Choice = null;
 
   function handleRPSResult(choice1, choice2, mode) {
     const result = judgeRPS(choice1, choice2);

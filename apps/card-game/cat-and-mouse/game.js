@@ -96,12 +96,12 @@ function createGameState(mode) {
 
   // Create 16 pieces: 8 red + 8 blue
   const cards = [];
-  for (var i = 0; i < PIECE_NAMES.length; i++) {
-    var name = PIECE_NAMES[i];
+  for (let i = 0; i < PIECE_NAMES.length; i++) {
+    const name = PIECE_NAMES[i];
     cards.push({ name: name, team: "red", rank: RANK_MAP[name], faceUp: false });
   }
-  for (var i = 0; i < PIECE_NAMES.length; i++) {
-    var name = PIECE_NAMES[i];
+  for (let i = 0; i < PIECE_NAMES.length; i++) {
+    const name = PIECE_NAMES[i];
     cards.push({ name: name, team: "blue", rank: RANK_MAP[name], faceUp: false });
   }
 
@@ -584,8 +584,8 @@ if (typeof document !== "undefined") {
 
   // ---- 4.5 PVP Rock-Paper-Scissors button events ----
 
-  var rpsP1Choice = null;
-  var rpsP2Choice = null;
+  let rpsP1Choice = null;
+  let rpsP2Choice = null;
 
   document.querySelectorAll("#rps-pvp .btn-rps").forEach((btn) => {
     btn.addEventListener("click", () => {

@@ -686,16 +686,16 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (var i = 0; i < moveTargets.length; i++) {
-      var tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (let i = 0; i < moveTargets.length; i++) {
+      const tc = getCell(moveTargets[i].x, moveTargets[i].y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (var i = 0; i < captureTargets.length; i++) {
-      var tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (let i = 0; i < captureTargets.length; i++) {
+      const tc = getCell(captureTargets[i].x, captureTargets[i].y);
       if (tc) tc.classList.add("cell-capture-target");
     }
-    for (var i = 0; i < carryTargets.length; i++) {
-      var tc = getCell(carryTargets[i].x, carryTargets[i].y);
+    for (let i = 0; i < carryTargets.length; i++) {
+      const tc = getCell(carryTargets[i].x, carryTargets[i].y);
       if (tc) tc.classList.add("cell-carry-target");
     }
   }

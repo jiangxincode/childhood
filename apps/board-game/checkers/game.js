@@ -167,7 +167,7 @@ function getAllMoves(board, player) {
     for (let c = 0; c < BOARD_SIZE; c++) {
       if (getOwner(board[r][c]) === player) {
         const caps = getCaptureMoves(board, r, c);
-        for (var i = 0; i < caps.length; i++) {
+        for (let i = 0; i < caps.length; i++) {
           allCaptures.push(caps[i]);
         }
         const sims = getSimpleMoves(board, r, c);
@@ -182,7 +182,7 @@ function getAllMoves(board, player) {
   if (allCaptures.length > 0) {
     // Expand multi-jump: check if each capture can continue
     const expanded = [];
-    for (var i = 0; i < allCaptures.length; i++) {
+    for (let i = 0; i < allCaptures.length; i++) {
       expandChainCaptures(board, allCaptures[i], player, expanded);
     }
     return expanded;
@@ -336,9 +336,9 @@ function alphaBeta(board, depth, alpha, beta, isMaximizing, aiPlayer) {
 
   if (isMaximizing) {
     let maxEval = -Infinity;
-    for (var i = 0; i < moves.length; i++) {
-      var newBoard = applyMove(board, moves[i]);
-      var eval_ = alphaBeta(newBoard, depth - 1, alpha, beta, false, aiPlayer);
+    for (let i = 0; i < moves.length; i++) {
+      const newBoard = applyMove(board, moves[i]);
+      const eval_ = alphaBeta(newBoard, depth - 1, alpha, beta, false, aiPlayer);
       if (eval_ > maxEval) maxEval = eval_;
       if (maxEval > alpha) alpha = maxEval;
       if (beta <= alpha) break;
@@ -346,9 +346,9 @@ function alphaBeta(board, depth, alpha, beta, isMaximizing, aiPlayer) {
     return maxEval;
   } else {
     let minEval = Infinity;
-    for (var i = 0; i < moves.length; i++) {
-      var newBoard = applyMove(board, moves[i]);
-      var eval_ = alphaBeta(newBoard, depth - 1, alpha, beta, true, aiPlayer);
+    for (let i = 0; i < moves.length; i++) {
+      const newBoard = applyMove(board, moves[i]);
+      const eval_ = alphaBeta(newBoard, depth - 1, alpha, beta, true, aiPlayer);
       if (eval_ < minEval) minEval = eval_;
       if (minEval < beta) beta = minEval;
       if (beta <= alpha) break;
@@ -679,24 +679,24 @@ if (typeof document !== "undefined") {
     if (gameState.mode === "online" && gameState.currentPlayer !== localTeam) return;
     // During chain capture, only allow clicking current piece
     if (gameState.multiJumpPiece) {
-      var rect = canvas.getBoundingClientRect();
-      var scaleX = canvas.width / rect.width;
-      var scaleY = canvas.height / rect.height;
-      var px = (e.clientX - rect.left) * scaleX;
-      var py = (e.clientY - rect.top) * scaleY;
-      var col = Math.floor(px / CELL_SIZE);
-      var row = Math.floor(py / CELL_SIZE);
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const px = (e.clientX - rect.left) * scaleX;
+      const py = (e.clientY - rect.top) * scaleY;
+      const col = Math.floor(px / CELL_SIZE);
+      const row = Math.floor(py / CELL_SIZE);
       handleMultiJumpClick(row, col);
       return;
     }
 
-    var rect = canvas.getBoundingClientRect();
-    var scaleX = canvas.width / rect.width;
-    var scaleY = canvas.height / rect.height;
-    var px = (e.clientX - rect.left) * scaleX;
-    var py = (e.clientY - rect.top) * scaleY;
-    var col = Math.floor(px / CELL_SIZE);
-    var row = Math.floor(py / CELL_SIZE);
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const px = (e.clientX - rect.left) * scaleX;
+    const py = (e.clientY - rect.top) * scaleY;
+    const col = Math.floor(px / CELL_SIZE);
+    const row = Math.floor(py / CELL_SIZE);
 
     if (!inBounds(row, col)) return;
 
@@ -1174,7 +1174,7 @@ if (typeof document !== "undefined") {
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      var resultEl = document.getElementById("rps-result");
+      const resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -1218,7 +1218,7 @@ if (typeof document !== "undefined") {
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById("rps-result");
+        const resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
