@@ -1297,19 +1297,17 @@ if (typeof $j !== "undefined") {
       // Remote player selects a plane
       if (planeOption.currentUser !== remoteColor) return;
       const pn = actionData.pn;
-      let targetPlane = null;
-      $j(".plane").each(function () {
-        if (
-          $j(this).attr("type") === remoteColor &&
-          $j(this).attr("num") == pn &&
-          $j(this).hasClass("pointer")
-        ) {
-          targetPlane = this;
-          return false; // break
-        }
-      });
-      if (targetPlane) {
-        $j(targetPlane).trigger("click");
+      const targetPlane = $j(".plane")
+        .filter(function () {
+          return (
+            $j(this).attr("type") === remoteColor &&
+            $j(this).attr("num") == pn &&
+            $j(this).hasClass("pointer")
+          );
+        })
+        .first();
+      if (targetPlane.length) {
+        targetPlane.trigger("click");
       }
     }
   }
@@ -1333,19 +1331,11 @@ if (typeof $j !== "undefined") {
     window.onkeydown = function (e) {
       if (e.which) {
         if (e.which == 116) {
-          if (confirm("确定刷新页面吗？刷新后页面数据将被清除！")) {
-            return true;
-          } else {
-            return false;
-          }
+          return confirm("确定刷新页面吗？刷新后页面数据将被清除！");
         }
       } else if (e.keyCode) {
         if (e.keyCode == 116) {
-          if (confirm("确定刷新页面吗？刷新后页面数据将被清除！")) {
-            return true;
-          } else {
-            return false;
-          }
+          return confirm("确定刷新页面吗？刷新后页面数据将被清除！");
         }
       }
     };
