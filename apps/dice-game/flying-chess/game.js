@@ -382,7 +382,7 @@ if (typeof $j !== "undefined") {
 
   // ---- Audio ----
   // Use shared SoundManager for audio playback
-  SoundManager.init("../../../audio");
+  SoundManager.init("../../audio");
 
   // ---- Option ----
   function PLANEUSER(color, state) {
