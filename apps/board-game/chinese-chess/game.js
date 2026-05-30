@@ -697,16 +697,12 @@ if (typeof document !== "undefined") {
 
   function initBoard() {
     canvas = document.getElementById("board-canvas");
-    canvas.width = BOARD_W;
-    canvas.height = BOARD_H;
-    if (window.devicePixelRatio > 1) {
-      canvas.width = BOARD_W * window.devicePixelRatio;
-      canvas.height = BOARD_H * window.devicePixelRatio;
-      canvas.style.width = BOARD_W + "px";
-      canvas.style.height = BOARD_H + "px";
-    }
-    context = canvas.getContext("2d");
     const ratio = window.devicePixelRatio || 1;
+    canvas.width = BOARD_W * ratio;
+    canvas.height = BOARD_H * ratio;
+    canvas.style.width = BOARD_W + "px";
+    canvas.style.height = BOARD_H + "px";
+    context = canvas.getContext("2d");
     context.scale(ratio, ratio);
     drawBoard();
   }
