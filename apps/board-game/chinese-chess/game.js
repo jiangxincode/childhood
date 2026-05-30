@@ -1043,7 +1043,7 @@ if (typeof document !== "undefined") {
 
   function doMove(move) {
     // Play sound based on move type
-    const targetPiece = gameState.board[move.toRow][move.toCol];
+    const targetPiece = gameState.board[move.toR][move.toC];
     if (targetPiece !== EMPTY) {
       SoundManager.play("take");
     } else {
@@ -1087,7 +1087,7 @@ if (typeof document !== "undefined") {
       gameState.aiThinking = false;
       if (move) {
         // Play sound based on move type
-        const targetPiece = gameState.board[move.toRow][move.toCol];
+        const targetPiece = gameState.board[move.toR][move.toC];
         if (targetPiece !== EMPTY) {
           SoundManager.play("take");
         } else {
