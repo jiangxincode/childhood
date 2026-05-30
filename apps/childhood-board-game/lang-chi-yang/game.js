@@ -378,6 +378,8 @@ if (typeof module !== "undefined" && module.exports) {
 // Browser UI
 // ============================================================
 if (typeof document !== "undefined") {
+  // Initialize sound manager
+  SoundManager.init("../../audio");
   var state = null;
   var selectedPiece = null;
 
@@ -590,6 +592,8 @@ if (typeof document !== "undefined") {
       var stepMoves = getStepMoves(state.board, selectedPiece.r, selectedPiece.c);
       for (var i = 0; i < stepMoves.length; i++) {
         if (stepMoves[i].toR === r && stepMoves[i].toC === c) {
+          SoundManager.play("slide");
+          if (state.currentPlayer === PLAYER_A) SoundManager.play("sheep");
           state.board = applyMove(state.board, stepMoves[i]);
           state.lastJump = null;
           if (state.mode === "online" && networkProtocol) {
@@ -612,6 +616,7 @@ if (typeof document !== "undefined") {
         var jumpMoves = getJumpMoves(state.board, selectedPiece.r, selectedPiece.c);
         for (var j = 0; j < jumpMoves.length; j++) {
           if (jumpMoves[j].toR === r && jumpMoves[j].toC === c) {
+            SoundManager.play("wolf");
             state.board = applyMove(state.board, jumpMoves[j]);
             state.piecesA = countPieces(state.board, PLAYER_A);
             state.lastJump = { captureR: r, captureC: c };
@@ -646,6 +651,8 @@ if (typeof document !== "undefined") {
     if (winner) {
       state.gameOver = true;
       state.winner = winner;
+      var isPlayerWin = state.mode === "pve" ? state.winner === state.playerTeam : true;
+      SoundManager.play(isPlayerWin ? "victory" : "lose");
     }
 
     state.currentPlayer = getOpponent(state.currentPlayer);
@@ -671,6 +678,7 @@ if (typeof document !== "undefined") {
       }
 
       state.board = applyMove(state.board, aiMove);
+      SoundManager.play(aiMove.type === "jump" ? "wolf" : "slide");
       if (aiMove.type === "jump") {
         state.piecesA = countPieces(state.board, PLAYER_A);
         state.lastJump = { captureR: aiMove.captureR, captureC: aiMove.captureC };
@@ -704,24 +712,28 @@ if (typeof document !== "undefined") {
   }
 
   function handleRPSChoice(player, choice) {
+    SoundManager.play("click");
     if (player === "human") {
       var aiChoices = ["rock", "scissors", "paper"];
       var aiChoice = aiChoices[Math.floor(Math.random() * 3)];
       var result = judgeRPS(choice, aiChoice);
       var resultDiv = document.getElementById("rps-result");
       if (result === 1) {
+        SoundManager.play("victory");
         resultDiv.innerHTML =
           "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，你先手！</p>";
         setTimeout(() => {
           startGame("pve", PLAYER_A);
         }, 1500);
       } else if (result === -1) {
+        SoundManager.play("lose");
         resultDiv.innerHTML =
           "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，电脑先手！</p>";
         setTimeout(() => {
           startGame("pve", PLAYER_B);
         }, 1500);
       } else {
+        SoundManager.play("draw");
         resultDiv.innerHTML = "<p>平局！再来一次</p>";
       }
     }
@@ -908,6 +920,8 @@ if (typeof document !== "undefined") {
     var stepMoves = getStepMoves(state.board, fromR, fromC);
     for (var i = 0; i < stepMoves.length; i++) {
       if (stepMoves[i].toR === toR && stepMoves[i].toC === toC) {
+        SoundManager.play("slide");
+        if (state.currentPlayer === PLAYER_A) SoundManager.play("sheep");
         state.board = applyMove(state.board, stepMoves[i]);
         state.lastJump = null;
         finishTurn();
@@ -919,6 +933,7 @@ if (typeof document !== "undefined") {
       var jumpMoves = getJumpMoves(state.board, fromR, fromC);
       for (var j = 0; j < jumpMoves.length; j++) {
         if (jumpMoves[j].toR === toR && jumpMoves[j].toC === toC) {
+          SoundManager.play("wolf");
           state.board = applyMove(state.board, jumpMoves[j]);
           state.piecesA = countPieces(state.board, PLAYER_A);
           state.lastJump = { captureR: toR, captureC: toC };

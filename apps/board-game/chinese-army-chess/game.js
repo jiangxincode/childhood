@@ -731,6 +731,7 @@ function moveCard(state, from, to) {
 
   if (valid.type === "capture_flag") {
     // Engineer captures flag for victory
+    if (typeof SoundManager !== "undefined") SoundManager.play("take");
     state.board[to.y][to.x] = piece;
     state.board[from.y][from.x] = null;
     state.gameOver = true;
@@ -740,6 +741,7 @@ function moveCard(state, from, to) {
   }
 
   if (valid.type === "capture") {
+    if (typeof SoundManager !== "undefined") SoundManager.play("take");
     const result = resolveCombat(piece, target);
     if (result === "attacker_wins") {
       addCaptured(state, target);
@@ -764,6 +766,7 @@ function moveCard(state, from, to) {
     }
   } else {
     // Normal move
+    if (typeof SoundManager !== "undefined") SoundManager.play("place");
     state.board[to.y][to.x] = piece;
     state.board[from.y][from.x] = null;
   }
@@ -779,6 +782,8 @@ function flipPiece(state, x, y) {
   const piece = state.board[y][x];
   if (!piece || piece.state !== STATE_FACE_DOWN) return null;
 
+  // Play flip sound (SoundManager available in browser context)
+  if (typeof SoundManager !== "undefined") SoundManager.play("flip");
   piece.state = STATE_FACE_UP;
   state.currentTeam = state.currentTeam === RED ? BLUE : RED;
   state.turnCount++;
@@ -1026,6 +1031,8 @@ if (typeof module !== "undefined" && module.exports) {
 // Browser UI (SVG + DOM rendering, junqi-master style)
 // ============================================================
 if (typeof document !== "undefined") {
+  // Initialize sound manager
+  SoundManager.init("../../audio");
   let gameState = null;
 
   // Online mode state
@@ -1577,6 +1584,9 @@ if (typeof document !== "undefined") {
 
   function showGameOverScreen(winner) {
     if (winner) {
+      // Play victory/lose sound
+      const isPlayerWin = gameState.oppType === "pve" ? winner === gameState.playerTeam : true;
+      SoundManager.play(isPlayerWin ? "victory" : "lose");
       // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
       const label = getCurrentPlayerLabel({
         mode: gameState.oppType,
@@ -1588,6 +1598,7 @@ if (typeof document !== "undefined") {
       });
       $winnerText.textContent = label.text + " 获胜！";
     } else {
+      SoundManager.play("draw");
       $winnerText.textContent = "平局！";
     }
     $gameOver.style.display = "flex";
@@ -1728,6 +1739,13 @@ if (typeof document !== "undefined") {
     }
 
     setTimeout(() => {
+      // Play sound based on whether capturing a piece
+      const targetPiece = gameState.board[decision.to.y][decision.to.x];
+      if (targetPiece && targetPiece !== "empty") {
+        SoundManager.play("take");
+      } else {
+        SoundManager.play("slide");
+      }
       moveCard(gameState, decision.from, decision.to);
       clearHighlights();
       drawBoard();
@@ -1763,6 +1781,7 @@ if (typeof document !== "undefined") {
     }
 
     setTimeout(() => {
+      SoundManager.play("flip");
       flipPiece(gameState, decision.from.x, decision.from.y);
       clearHighlights();
       drawBoard();
@@ -1780,6 +1799,7 @@ if (typeof document !== "undefined") {
   // Rock-Paper-Scissors
   // ============================================================
   function handleRPSChoice(player, choice, ev) {
+    SoundManager.play("click");
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
@@ -1839,16 +1859,19 @@ if (typeof document !== "undefined") {
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
+          SoundManager.play("victory");
           resultEl.textContent = "红方赢了！红方先手。";
           setTimeout(() => {
             startGame(pendingMode, RED);
           }, 1500);
         } else if (winner === -1) {
+          SoundManager.play("victory");
           resultEl.textContent = "蓝方赢了！蓝方先手。";
           setTimeout(() => {
             startGame(pendingMode, BLUE);
           }, 1500);
         } else {
+          SoundManager.play("draw");
           resultEl.textContent = "平局！重新选择。";
           rpsChoices.player1 = null;
           rpsChoices.player2 = null;
@@ -2117,6 +2140,7 @@ if (typeof document !== "undefined") {
     if (gameState && !gameState.gameOver) {
       gameState.gameOver = true;
       showMessage("对方已断开连接", "error");
+      SoundManager.play("victory");
       $winnerText.textContent = "对方已断开连接，你获胜！";
       $gameOver.style.display = "flex";
     }

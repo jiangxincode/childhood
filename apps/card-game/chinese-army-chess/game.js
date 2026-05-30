@@ -881,6 +881,8 @@ if (typeof module !== "undefined" && module.exports) {
 // Task 5.1, 5.2, 5.3
 // ============================================================
 if (typeof document !== "undefined") {
+  // Initialize sound manager
+  SoundManager.init("../../audio");
   let gameState = null;
 
   // DOM elements
@@ -1168,6 +1170,7 @@ if (typeof document !== "undefined") {
         const canDo = captures.some((t) => t.x === x && t.y === y);
         if (canDo) {
           const result = captureCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
+          SoundManager.play("capture");
           if (result) {
             gameState.selectedCell = null;
             clearHighlights();
@@ -1295,11 +1298,13 @@ if (typeof document !== "undefined") {
 
   function showGameOverScreen(winner) {
     if (winner === "draw") {
+      SoundManager.play("draw");
       $winnerText.textContent = "平局！";
       $gameOver.style.display = "flex";
       return;
     }
     if (gameState.mode === "online") {
+      SoundManager.play("victory");
       $winnerText.textContent = winner === localTeam ? "你获胜了！" : "你失败了！";
     } else {
       // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
@@ -1311,6 +1316,7 @@ if (typeof document !== "undefined") {
           ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
           : ["red", "blue"],
       });
+      SoundManager.play("victory");
       $winnerText.textContent = label.text + "获胜！";
     }
     $gameOver.style.display = "flex";
@@ -1336,6 +1342,7 @@ if (typeof document !== "undefined") {
     const choiceNames = { rock: "石头", scissors: "剪刀", paper: "布" };
 
     if (result === 0) {
+      SoundManager.play("draw");
       $rpsResult.textContent = "双方都出了" + choiceNames[choice1] + "，平局！重新选择";
       setTimeout(() => {
         showRPSSelection(mode);
@@ -1344,6 +1351,7 @@ if (typeof document !== "undefined") {
     }
 
     if (mode === "pvp") {
+      SoundManager.play("victory");
       const winner = result === 1 ? "玩家1" : "玩家2";
       $rpsResult.textContent = winner + " 获胜！" + winner + "先手";
       const firstTeam = result === 1 ? "red" : "blue";
@@ -1355,6 +1363,7 @@ if (typeof document !== "undefined") {
       const aiChoiceName = choiceNames[choice2];
       if (result === 1) {
         // Player won: player goes first
+        SoundManager.play("victory");
         $rpsResult.textContent = "电脑出了" + aiChoiceName + "，你赢了！你先手";
         gameState.aiFirst = false;
         setTimeout(() => {
@@ -1362,6 +1371,7 @@ if (typeof document !== "undefined") {
         }, 1500);
       } else {
         // Computer won: computer goes first
+        SoundManager.play("lose");
         $rpsResult.textContent = "电脑出了" + aiChoiceName + "，电脑赢了！电脑先手";
         gameState.aiFirst = true;
         setTimeout(() => {
@@ -1701,6 +1711,7 @@ if (typeof document !== "undefined") {
 
     if (actionData.a === "flip") {
       const flipResult = flipCard(gameState, actionData.x, actionData.y);
+      SoundManager.play("flip");
       if (flipResult) {
         // Assign teams on first non-flag flip
         if (!gameState.teamAssigned) {

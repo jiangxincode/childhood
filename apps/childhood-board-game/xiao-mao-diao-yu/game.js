@@ -347,6 +347,8 @@ if (typeof module !== "undefined" && module.exports) {
 // Browser UI
 // ============================================================
 if (typeof document !== "undefined") {
+  // Initialize sound manager
+  SoundManager.init("../../audio");
   var state = null;
   var selectedPiece = null;
 
@@ -559,6 +561,7 @@ if (typeof document !== "undefined") {
   }
 
   function commitMove(move) {
+    SoundManager.play(move.type === MOVE_TRIPLE ? "fishing" : "slide");
     state.board = applyMove(state.board, move);
     state.lastMove = move;
     selectedPiece = null;
@@ -569,6 +572,8 @@ if (typeof document !== "undefined") {
     if (winner) {
       state.gameOver = true;
       state.winner = winner;
+      var isPlayerWin = state.mode === "pve" ? state.winner === state.playerTeam : true;
+      SoundManager.play(isPlayerWin ? "victory" : "lose");
     }
     renderGame();
     if (!state.gameOver && state.mode === "pve" && state.currentPlayer === state.aiTeam) {
@@ -652,19 +657,23 @@ if (typeof document !== "undefined") {
   }
 
   function handleRPSChoice(choice) {
+    SoundManager.play("click");
     var aiChoices = ["rock", "scissors", "paper"];
     var aiChoice = aiChoices[Math.floor(Math.random() * 3)];
     var result = judgeRPS(choice, aiChoice);
     var resultDiv = document.getElementById("rps-result");
     if (result === 1) {
+      SoundManager.play("victory");
       resultDiv.innerHTML =
         "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，你先手！</p>";
       setTimeout(() => startGame("pve", PLAYER_A), 1200);
     } else if (result === -1) {
+      SoundManager.play("lose");
       resultDiv.innerHTML =
         "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，电脑先手！</p>";
       setTimeout(() => startGame("pve", PLAYER_B), 1200);
     } else {
+      SoundManager.play("draw");
       resultDiv.innerHTML = "<p>平局！再来一次</p>";
     }
   }

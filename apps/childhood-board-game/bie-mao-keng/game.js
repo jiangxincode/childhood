@@ -297,6 +297,8 @@ if (typeof module !== "undefined" && module.exports) {
 // Browser UI
 // ============================================================
 if (typeof document !== "undefined") {
+  // Initialize sound manager
+  SoundManager.init("../../audio");
   var state = null;
   var selectedPiece = null;
   var rpsChoices = { player1: null, player2: null, human: null };
@@ -488,6 +490,7 @@ if (typeof document !== "undefined") {
             return;
           }
           var fromPos = selectedPiece;
+          SoundManager.play("slide");
           state.board = movePiece(state.board, selectedPiece, pos);
           selectedPiece = null;
 
@@ -495,6 +498,9 @@ if (typeof document !== "undefined") {
           if (winner) {
             state.gameOver = true;
             state.winner = winner;
+            SoundManager.play("block");
+            var isPlayerWin = state.mode === "pve" ? state.winner === state.playerTeam : true;
+            SoundManager.play(isPlayerWin ? "victory" : "lose");
           }
 
           state.currentPlayer = getOpponent(state.currentPlayer);
@@ -532,11 +538,15 @@ if (typeof document !== "undefined") {
       }
 
       state.board = movePiece(state.board, aiMove.from, aiMove.to);
+      SoundManager.play("slide");
 
       var winner = checkWin(state.board);
       if (winner) {
         state.gameOver = true;
         state.winner = winner;
+        SoundManager.play("block");
+        var isPlayerWin = state.mode === "pve" ? state.winner === state.playerTeam : true;
+        SoundManager.play(isPlayerWin ? "victory" : "lose");
       }
 
       state.currentPlayer = getOpponent(state.currentPlayer);
@@ -724,6 +734,7 @@ if (typeof document !== "undefined") {
   function applyRemoteAction(actionData) {
     if (!state || state.gameOver) return;
     if (state.currentPlayer !== remoteTeam) return;
+    SoundManager.play("slide");
     state.board = movePiece(state.board, actionData.from, actionData.to);
     selectedPiece = null;
 
@@ -731,6 +742,9 @@ if (typeof document !== "undefined") {
     if (winner) {
       state.gameOver = true;
       state.winner = winner;
+      SoundManager.play("block");
+      var isPlayerWin = state.mode === "online" ? state.winner === localTeam : true;
+      SoundManager.play(isPlayerWin ? "victory" : "lose");
     }
 
     state.currentPlayer = getOpponent(state.currentPlayer);
@@ -772,12 +786,14 @@ if (typeof document !== "undefined") {
   }
 
   function handleRPSChoice(player, choice) {
+    SoundManager.play("click");
     if (player === "human") {
       var aiChoices = ["rock", "scissors", "paper"];
       var aiChoice = aiChoices[Math.floor(Math.random() * 3)];
       var result = judgeRPS(choice, aiChoice);
       var resultDiv = document.getElementById("rps-result");
       if (result === 1) {
+        SoundManager.play("victory");
         // Player wins RPS, player goes first (player is B in PvE)
         resultDiv.innerHTML =
           "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，你先手！</p>";
@@ -785,6 +801,7 @@ if (typeof document !== "undefined") {
           startGame("pve", PLAYER_B);
         }, 1500);
       } else if (result === -1) {
+        SoundManager.play("lose");
         // AI wins RPS, AI goes first (AI is A in PvE)
         resultDiv.innerHTML =
           "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，电脑先手！</p>";
@@ -792,6 +809,7 @@ if (typeof document !== "undefined") {
           startGame("pve", PLAYER_A);
         }, 1500);
       } else {
+        SoundManager.play("draw");
         resultDiv.innerHTML = "<p>平局！再来一次</p>";
       }
     }
