@@ -19,6 +19,13 @@ var INITIAL_A = 10; // Sheep starts with 10 pieces
 var INITIAL_B = 2; // Wolf starts with 2 pieces
 var MIN_A_TO_LOSE = 3; // If sheep has fewer than 3 pieces, wolf wins
 
+// SVG board rendering constants
+var BOARD_PADDING = 40;
+var CELL_SIZE = 100;
+var BOARD_VIEW_W = BOARD_PADDING * 2 + (COL_COUNT - 1) * CELL_SIZE;
+var BOARD_VIEW_H = BOARD_PADDING * 2 + (ROW_COUNT - 1) * CELL_SIZE;
+var svgNS = "http://www.w3.org/2000/svg";
+
 var DIRECTIONS = [
   { dr: -1, dc: 0 },
   { dr: 1, dc: 0 },
@@ -382,68 +389,141 @@ if (typeof document !== "undefined") {
   var localTeam = null;
   var remoteTeam = null;
 
+  function nodeToPx(x, y) {
+    return {
+      cx: BOARD_PADDING + x * CELL_SIZE,
+      cy: BOARD_PADDING + y * CELL_SIZE,
+    };
+  }
+
   function initBoard() {
     var boardEl = document.getElementById("board");
     boardEl.innerHTML = "";
+    var svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", "0 0 " + BOARD_VIEW_W + " " + BOARD_VIEW_H);
+    svg.setAttribute("class", "board-svg");
+
+    // Draw horizontal lines (one per row)
     for (var r = 0; r < ROW_COUNT; r++) {
-      for (var c = 0; c < COL_COUNT; c++) {
-        var cell = document.createElement("div");
-        cell.className = "cell";
-        cell.dataset.r = r;
-        cell.dataset.c = c;
-        cell.addEventListener(
+      var p0 = nodeToPx(0, r);
+      var p1 = nodeToPx(COL_COUNT - 1, r);
+      var hLine = document.createElementNS(svgNS, "line");
+      hLine.setAttribute("x1", p0.cx);
+      hLine.setAttribute("y1", p0.cy);
+      hLine.setAttribute("x2", p1.cx);
+      hLine.setAttribute("y2", p1.cy);
+      hLine.setAttribute("class", "board-line");
+      svg.appendChild(hLine);
+    }
+
+    // Draw vertical lines (one per column)
+    for (var c = 0; c < COL_COUNT; c++) {
+      var q0 = nodeToPx(c, 0);
+      var q1 = nodeToPx(c, ROW_COUNT - 1);
+      var vLine = document.createElementNS(svgNS, "line");
+      vLine.setAttribute("x1", q0.cx);
+      vLine.setAttribute("y1", q0.cy);
+      vLine.setAttribute("x2", q1.cx);
+      vLine.setAttribute("y2", q1.cy);
+      vLine.setAttribute("class", "board-line");
+      svg.appendChild(vLine);
+    }
+
+    // Interactive intersection nodes
+    for (var y = 0; y < ROW_COUNT; y++) {
+      for (var x = 0; x < COL_COUNT; x++) {
+        var pt = nodeToPx(x, y);
+        var g = document.createElementNS(svgNS, "g");
+        g.setAttribute("class", "node");
+        g.dataset.x = x;
+        g.dataset.y = y;
+        g.setAttribute("transform", "translate(" + pt.cx + "," + pt.cy + ")");
+
+        // Wide invisible hit area for easier tapping
+        var hit = document.createElementNS(svgNS, "circle");
+        hit.setAttribute("r", CELL_SIZE / 2 - 2);
+        hit.setAttribute("class", "node-hit");
+        g.appendChild(hit);
+
+        // Small dot showing the intersection when no piece is placed
+        var dot = document.createElementNS(svgNS, "circle");
+        dot.setAttribute("r", 4);
+        dot.setAttribute("class", "node-dot");
+        g.appendChild(dot);
+
+        // Piece circle (hidden when empty)
+        var circle = document.createElementNS(svgNS, "circle");
+        circle.setAttribute("r", 22);
+        circle.setAttribute("class", "node-circle");
+        g.appendChild(circle);
+
+        // Text label for the piece
+        var text = document.createElementNS(svgNS, "text");
+        text.setAttribute("class", "node-text");
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("dominant-baseline", "central");
+        g.appendChild(text);
+
+        g.addEventListener(
           "click",
-          (function (cr, cc) {
+          (function (cx, cy) {
             return function () {
-              handleCellClick(cr, cc);
+              handlePositionClick(cx, cy);
             };
-          })(r, c)
+          })(x, y)
         );
-        boardEl.appendChild(cell);
+        svg.appendChild(g);
       }
     }
+
+    boardEl.appendChild(svg);
   }
 
   function renderGame() {
     if (!state) return;
-    var cells = document.querySelectorAll("#board .cell");
-    cells.forEach((cell) => {
-      var r = Number.parseInt(cell.dataset.r);
-      var c = Number.parseInt(cell.dataset.c);
-      cell.textContent = "";
-      cell.className = "cell";
-      if (state.board[r][c] === PLAYER_A) {
-        cell.classList.add("cell-a");
-        cell.textContent = "羊";
-      } else if (state.board[r][c] === PLAYER_B) {
-        cell.classList.add("cell-b");
-        cell.textContent = "狼";
+    var nodes = document.querySelectorAll("#board .node");
+    nodes.forEach((g) => {
+      var nx = Number.parseInt(g.dataset.x);
+      var ny = Number.parseInt(g.dataset.y);
+      var classes = ["node"];
+      var label = "";
+      if (state.board[ny][nx] === PLAYER_A) {
+        classes.push("node-a");
+        label = "羊";
+      } else if (state.board[ny][nx] === PLAYER_B) {
+        classes.push("node-b");
+        label = "狼";
+      } else {
+        classes.push("node-empty");
       }
-      if (selectedPiece && selectedPiece.r === r && selectedPiece.c === c) {
-        cell.classList.add("cell-selected");
+      if (selectedPiece && selectedPiece.r === ny && selectedPiece.c === nx) {
+        classes.push("node-selected");
       }
       if (selectedPiece) {
         // Highlight step moves
         var stepMoves = getStepMoves(state.board, selectedPiece.r, selectedPiece.c);
         for (var i = 0; i < stepMoves.length; i++) {
-          if (stepMoves[i].toR === r && stepMoves[i].toC === c) {
-            cell.classList.add("cell-highlight");
+          if (stepMoves[i].toR === ny && stepMoves[i].toC === nx) {
+            classes.push("node-highlight");
           }
         }
         // Highlight jump moves for wolf
         if (state.currentPlayer === PLAYER_B) {
           var jumpMoves = getJumpMoves(state.board, selectedPiece.r, selectedPiece.c);
           for (var j = 0; j < jumpMoves.length; j++) {
-            if (jumpMoves[j].toR === r && jumpMoves[j].toC === c) {
-              cell.classList.add("cell-jump");
+            if (jumpMoves[j].toR === ny && jumpMoves[j].toC === nx) {
+              classes.push("node-highlight");
             }
           }
         }
       }
       // Highlight last jump capture
-      if (state.lastJump && state.lastJump.captureR === r && state.lastJump.captureC === c) {
-        cell.classList.add("cell-captured");
+      if (state.lastJump && state.lastJump.captureR === ny && state.lastJump.captureC === nx) {
+        classes.push("node-captured");
       }
+      g.setAttribute("class", classes.join(" "));
+      var text = g.querySelector(".node-text");
+      if (text) text.textContent = label;
     });
 
     // Current acting side - shown as 玩家/电脑 (PVE), 玩家1/玩家2 (PVP), or 你/对方 (online)
@@ -488,10 +568,14 @@ if (typeof document !== "undefined") {
     }
   }
 
-  function handleCellClick(r, c) {
+  function handlePositionClick(x, y) {
     if (!state || state.gameOver) return;
     if (state.mode === "online" && state.currentPlayer !== localTeam) return;
     if (state.mode === "pve" && state.currentPlayer === state.aiTeam) return;
+
+    // SVG (x, y) maps to board (r=y, c=x)
+    var r = y;
+    var c = x;
 
     // Select own piece
     if (state.board[r][c] === state.currentPlayer) {
@@ -549,7 +633,7 @@ if (typeof document !== "undefined") {
         }
       }
 
-      // Clicked on invalid cell, deselect
+      // Clicked on invalid position, deselect
       selectedPiece = null;
       renderGame();
     }
