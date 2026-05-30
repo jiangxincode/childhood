@@ -117,11 +117,11 @@ function isValidPos(x, y) {
 
 function initAdjacency() {
   ADJACENT = [];
-  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+  for (let i = 0; i < TOTAL_POSITIONS; i++) {
     ADJACENT[i] = [];
   }
 
-  for (var i = 0; i < TOTAL_POSITIONS; i++) {
+  for (let i = 0; i < TOTAL_POSITIONS; i++) {
     const p = positions[i];
     for (let d = 0; d < DIRECTION_VECTORS.length; d++) {
       const nx = p.x + DIRECTION_VECTORS[d].x;
@@ -146,48 +146,48 @@ const TARGET_POSITIONS = {};
 function initPlayerPositions() {
   // Player A (Red): top triangle area x=5,y=1 non-special
   START_POSITIONS[RED] = [];
-  for (var i = 0; i < 4; i++) {
-    for (var j = i; j < 4; j++) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = i; j < 4; j++) {
       START_POSITIONS[RED].push(posKey[getPosKey(5 + i, 1 + j)]);
     }
   }
 
   // Player C (Blue): bottom-right triangle area x=14,y=10 non-special
   START_POSITIONS[BLUE] = [];
-  for (var i = 0; i < 4; i++) {
-    for (var j = i; j < 4; j++) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = i; j < 4; j++) {
       START_POSITIONS[BLUE].push(posKey[getPosKey(14 + i, 10 + j)]);
     }
   }
 
   // Player E (Green): upper-left triangle area x=1,y=5 special
   START_POSITIONS[GREEN] = [];
-  for (var i = 0; i < 4; i++) {
-    for (var j = 0; j <= i; j++) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j <= i; j++) {
       START_POSITIONS[GREEN].push(posKey[getPosKey(1 + i, 5 + j)]);
     }
   }
 
   // Player B (Yellow): right triangle area x=10,y=5 special
   START_POSITIONS[YELLOW] = [];
-  for (var i = 0; i < 4; i++) {
-    for (var j = 0; j <= i; j++) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j <= i; j++) {
       START_POSITIONS[YELLOW].push(posKey[getPosKey(10 + i, 5 + j)]);
     }
   }
 
   // Player D (Purple): bottom triangle area x=10,y=14 special
   START_POSITIONS[PURPLE] = [];
-  for (var i = 0; i < 4; i++) {
-    for (var j = 0; j <= i; j++) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j <= i; j++) {
       START_POSITIONS[PURPLE].push(posKey[getPosKey(10 + i, 14 + j)]);
     }
   }
 
   // Player F (Orange): left triangle area x=5,y=10 non-special
   START_POSITIONS[ORANGE] = [];
-  for (var i = 0; i < 4; i++) {
-    for (var j = i; j < 4; j++) {
+  for (let i = 0; i < 4; i++) {
+    for (let j = i; j < 4; j++) {
       START_POSITIONS[ORANGE].push(posKey[getPosKey(5 + i, 10 + j)]);
     }
   }
@@ -214,16 +214,16 @@ function initPositionScores() {
     POSITION_SCORES[player] = [];
     const targets = TARGET_POSITIONS[player];
     const targetSet = {};
-    for (var i = 0; i < targets.length; i++) {
-      targetSet[targets[i]] = true;
+    for (const t of targets) {
+      targetSet[t] = true;
     }
 
     // Calculate target area centroid
     let cx = 0,
       cy = 0;
-    for (var i = 0; i < targets.length; i++) {
-      cx += positions[targets[i]].x;
-      cy += positions[targets[i]].y;
+    for (const t of targets) {
+      cx += positions[t].x;
+      cy += positions[t].y;
     }
     cx /= targets.length;
     cy /= targets.length;
@@ -231,13 +231,13 @@ function initPositionScores() {
     // Calculate target area depth reference point (farthest vertex)
     let maxDistFromCenter = 0;
     let tipIdx = targets[0];
-    for (var i = 0; i < targets.length; i++) {
-      const dx = positions[targets[i]].x - cx;
-      const dy = positions[targets[i]].y - cy;
+    for (const t of targets) {
+      const dx = positions[t].x - cx;
+      const dy = positions[t].y - cy;
       const dist = Math.abs(dx) + Math.abs(dy);
       if (dist > maxDistFromCenter) {
         maxDistFromCenter = dist;
-        tipIdx = targets[i];
+        tipIdx = t;
       }
     }
     const tipPos = positions[tipIdx];
@@ -273,17 +273,17 @@ function createBoard() {
 
 function placePieces(board, player) {
   const pos = START_POSITIONS[player];
-  for (let i = 0; i < pos.length; i++) {
-    board[pos[i]] = player;
+  for (const p of pos) {
+    board[p] = player;
   }
 }
 
 function getAdjacentMoves(board, cell) {
   const moves = [];
   const neighbors = ADJACENT[cell];
-  for (let i = 0; i < neighbors.length; i++) {
-    if (board[neighbors[i]] === EMPTY) {
-      moves.push(neighbors[i]);
+  for (const n of neighbors) {
+    if (board[n] === EMPTY) {
+      moves.push(n);
     }
   }
   return moves;
@@ -293,8 +293,7 @@ function getJumpMoves(board, cell, visited) {
   let moves = [];
   const neighbors = ADJACENT[cell];
 
-  for (let i = 0; i < neighbors.length; i++) {
-    const mid = neighbors[i];
+  for (const mid of neighbors) {
     if (board[mid] !== EMPTY) {
       const p1 = positions[cell];
       const p2 = positions[mid];
@@ -322,8 +321,8 @@ function getLegalMoves(board, cell) {
   moves = moves.concat(adjacentMoves);
 
   const visited = {};
-  for (let i = 0; i < adjacentMoves.length; i++) {
-    visited[adjacentMoves[i]] = true;
+  for (const am of adjacentMoves) {
+    visited[am] = true;
   }
   const jumpMoves = getJumpMoves(board, cell, visited);
   moves = moves.concat(jumpMoves);
@@ -345,8 +344,8 @@ function makeMove(board, from, to) {
 
 function checkWin(board, player) {
   const targets = TARGET_POSITIONS[player];
-  for (let i = 0; i < targets.length; i++) {
-    if (board[targets[i]] !== player) {
+  for (const t of targets) {
+    if (board[t] !== player) {
       return false;
     }
   }
@@ -354,9 +353,9 @@ function checkWin(board, player) {
 }
 
 function checkGameOver(board, players) {
-  for (let i = 0; i < players.length; i++) {
-    if (checkWin(board, players[i])) {
-      return players[i];
+  for (const player of players) {
+    if (checkWin(board, player)) {
+      return player;
     }
   }
   return null;
@@ -368,8 +367,8 @@ function checkGameOver(board, players) {
 
 function isInTargetArea(cell, player) {
   const targets = TARGET_POSITIONS[player];
-  for (let i = 0; i < targets.length; i++) {
-    if (targets[i] === cell) return true;
+  for (const t of targets) {
+    if (t === cell) return true;
   }
   return false;
 }
@@ -377,8 +376,7 @@ function isInTargetArea(cell, player) {
 function calculateBlockingScore(board, player, position) {
   let score = 0;
   const neighbors = ADJACENT[position];
-  for (let i = 0; i < neighbors.length; i++) {
-    const neighborCell = neighbors[i];
+  for (const neighborCell of neighbors) {
     if (board[neighborCell] !== EMPTY && board[neighborCell] !== player) {
       // Opponent piece next to target position, forming a block
       const opponent = board[neighborCell];
@@ -393,8 +391,8 @@ function calculateBlockingScore(board, player, position) {
 function calculateFormationScore(board, player, position) {
   let score = 0;
   const neighbors = ADJACENT[position];
-  for (let i = 0; i < neighbors.length; i++) {
-    if (board[neighbors[i]] === player) {
+  for (const n of neighbors) {
+    if (board[n] === player) {
       score += 1;
     }
   }
@@ -435,16 +433,6 @@ function evaluateMove(board, player, from, to, allPlayers) {
   }
 
   // Factor 5: Blocking opponents
-  const opponents = [];
-  if (allPlayers) {
-    for (let i = 0; i < allPlayers.length; i++) {
-      if (allPlayers[i] !== player) opponents.push(allPlayers[i]);
-    }
-  } else {
-    for (let p = RED; p <= ORANGE; p++) {
-      if (p !== player) opponents.push(p);
-    }
-  }
   const blockingScore = calculateBlockingScore(board, player, to);
   score += blockingScore * AI_WEIGHTS.BLOCKING;
 
@@ -467,11 +455,11 @@ function getBestAIMove(board, player, allPlayers) {
   for (let cell = 0; cell < TOTAL_POSITIONS; cell++) {
     if (board[cell] === player) {
       const moves = getLegalMoves(board, cell);
-      for (let i = 0; i < moves.length; i++) {
-        const score = evaluateMove(board, player, cell, moves[i], allPlayers);
+      for (const m of moves) {
+        const score = evaluateMove(board, player, cell, m, allPlayers);
         if (score > bestScore) {
           bestScore = score;
-          bestMove = { from: cell, to: moves[i] };
+          bestMove = { from: cell, to: m };
         }
       }
     }
@@ -508,8 +496,8 @@ function createGameState(mode, playerCount) {
 }
 
 function initGame(state) {
-  for (let i = 0; i < state.players.length; i++) {
-    placePieces(state.board, state.players[i]);
+  for (const player of state.players) {
+    placePieces(state.board, player);
   }
 }
 
@@ -585,7 +573,7 @@ if (typeof document !== "undefined") {
   // Determine which color zone a position belongs to - only color start positions
   function getAreaColor(cell) {
     for (let p = 1; p <= 6; p++) {
-      if (START_POSITIONS[p].indexOf(cell) !== -1) {
+      if (START_POSITIONS[p].includes(cell)) {
         return PLAYER_COLORS[p].color;
       }
     }
@@ -617,7 +605,7 @@ if (typeof document !== "undefined") {
     // Calculate canvas size
     let maxPx = 0;
     let maxPy = 0;
-    for (var i = 0; i < TOTAL_POSITIONS; i++) {
+    for (let i = 0; i < TOTAL_POSITIONS; i++) {
       const cp = cellToPixel(i);
       if (cp.x > maxPx) maxPx = cp.x;
       if (cp.y > maxPy) maxPy = cp.y;
@@ -646,8 +634,8 @@ if (typeof document !== "undefined") {
     g.appendChild(bg);
 
     // Draw all valid positions (with area colors)
-    for (var cell = 0; cell < TOTAL_POSITIONS; cell++) {
-      var pos = cellToPixel(cell);
+    for (let cell = 0; cell < TOTAL_POSITIONS; cell++) {
+      const pos = cellToPixel(cell);
       const areaColor = getAreaColor(cell);
 
       const hex = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -657,7 +645,7 @@ if (typeof document !== "undefined") {
       hex.setAttribute("fill", areaColor);
       hex.setAttribute("stroke", "#333");
       hex.setAttribute("stroke-width", "1");
-      hex.setAttribute("data-cell", cell);
+      hex.dataset.cell = cell;
       hex.style.cursor = "pointer";
       g.appendChild(hex);
 
@@ -668,13 +656,13 @@ if (typeof document !== "undefined") {
       inner.setAttribute("r", CELL_SIZE * 0.32);
       inner.setAttribute("fill", "white");
       inner.setAttribute("stroke", "none");
-      inner.setAttribute("data-cell", cell);
+      inner.dataset.cell = cell;
       inner.style.cursor = "pointer";
       g.appendChild(inner);
     }
 
     // Draw pieces
-    for (var cell = 0; cell < TOTAL_POSITIONS; cell++) {
+    for (let cell = 0; cell < TOTAL_POSITIONS; cell++) {
       if (gameState.board[cell] !== EMPTY) {
         drawPiece(g, cell, gameState.board[cell]);
       }
@@ -682,9 +670,8 @@ if (typeof document !== "undefined") {
 
     // Draw valid move positions
     if (gameState.validMoves.length > 0) {
-      for (var i = 0; i < gameState.validMoves.length; i++) {
-        const moveCell = gameState.validMoves[i];
-        var pos = cellToPixel(moveCell);
+      for (const moveCell of gameState.validMoves) {
+        const pos = cellToPixel(moveCell);
         const indicator = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         indicator.setAttribute("cx", pos.x);
         indicator.setAttribute("cy", pos.y);
@@ -692,7 +679,7 @@ if (typeof document !== "undefined") {
         indicator.setAttribute("fill", "#4CAF50");
         indicator.setAttribute("opacity", "0.8");
         indicator.setAttribute("class", "valid-move");
-        indicator.setAttribute("data-cell", moveCell);
+        indicator.dataset.cell = moveCell;
         indicator.style.cursor = "pointer";
         g.appendChild(indicator);
       }
@@ -709,7 +696,7 @@ if (typeof document !== "undefined") {
     piece.setAttribute("stroke", "#333");
     piece.setAttribute("stroke-width", "2");
     piece.setAttribute("class", "piece");
-    piece.setAttribute("data-cell", cell);
+    piece.dataset.cell = cell;
 
     if (gameState.selectedPiece === cell) {
       piece.classList.add("selected");
@@ -744,7 +731,13 @@ if (typeof document !== "undefined") {
   function updateMessage(text, type) {
     const el = document.getElementById("message");
     el.textContent = text;
-    el.className = type === "error" ? "error" : type === "info" ? "info" : "";
+    if (type === "error") {
+      el.className = "error";
+    } else if (type === "info") {
+      el.className = "info";
+    } else {
+      el.className = "";
+    }
   }
 
   function showGameOver() {
@@ -779,7 +772,7 @@ if (typeof document !== "undefined") {
     if (gameState.mode === "online" && gameState.currentPlayer !== localTeam) return;
 
     const target = e.target;
-    const cell = Number.parseInt(target.getAttribute("data-cell"));
+    const cell = Number.parseInt(target.dataset.cell);
     if (Number.isNaN(cell)) return;
 
     if (target.classList.contains("piece")) {
@@ -805,20 +798,18 @@ if (typeof document !== "undefined") {
         gameState.validMoves = getLegalMoves(gameState.board, cell);
         drawBoard();
         updateMessage("已选择棋子，点击绿色位置移动", "info");
-      } else if (gameState.selectedPiece !== null && gameState.validMoves.indexOf(cell) !== -1) {
+      } else if (gameState.selectedPiece !== null && gameState.validMoves.includes(cell)) {
         const fromCell = gameState.selectedPiece;
         doMove(fromCell, cell);
         if (gameState.mode === "online" && networkProtocol) {
           networkProtocol.sendAction({ a: "move", from: fromCell, to: cell });
         }
       }
-    } else {
-      if (gameState.selectedPiece !== null) {
-        gameState.selectedPiece = null;
-        gameState.validMoves = [];
-        drawBoard();
-        updateMessage("请选择要移动的棋子", "info");
-      }
+    } else if (gameState.selectedPiece !== null) {
+      gameState.selectedPiece = null;
+      gameState.validMoves = [];
+      drawBoard();
+      updateMessage("请选择要移动的棋子", "info");
     }
   }
 
@@ -917,9 +908,9 @@ if (typeof document !== "undefined") {
         gameState.playerTeam = firstPlayer;
         // AI gets other players
         const aiPlayers = [];
-        for (var i = 0; i < gameState.players.length; i++) {
-          if (gameState.players[i] !== firstPlayer) {
-            aiPlayers.push(gameState.players[i]);
+        for (const p of gameState.players) {
+          if (p !== firstPlayer) {
+            aiPlayers.push(p);
           }
         }
         gameState.aiTeam = aiPlayers[0]; // Primary opponent
@@ -941,8 +932,7 @@ if (typeof document !== "undefined") {
     document.getElementById("game-over").style.display = "none";
 
     let colorRulesHtml = "";
-    for (var i = 0; i < gameState.players.length; i++) {
-      const player = gameState.players[i];
+    for (const player of gameState.players) {
       const config = PLAYER_COLORS[player];
       let prefix = "";
       if (mode === "pve") {
@@ -1206,19 +1196,19 @@ if (typeof document !== "undefined") {
     cleanupNetwork();
   }
 
-  function handleRPSChoice(player, choice) {
+  function handleRPSChoice(player, choice, ev) {
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
 
       const choices = ["rock", "scissors", "paper"];
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      var resultEl = document.getElementById("rps-result");
+      const resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -1266,7 +1256,7 @@ if (typeof document !== "undefined") {
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById("rps-result");
+        const resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
@@ -1402,7 +1392,7 @@ if (typeof document !== "undefined") {
       button.addEventListener("click", (ev) => {
         const player = ev.target.dataset.player;
         const choice = ev.target.dataset.choice;
-        handleRPSChoice(player, choice);
+        handleRPSChoice(player, choice, ev);
       });
     });
 

@@ -81,8 +81,7 @@ function createGameState(mode) {
 }
 
 function checkWin(board) {
-  for (let i = 0; i < WIN_LINES.length; i++) {
-    const line = WIN_LINES[i];
+  for (const line of WIN_LINES) {
     const a = board[line[0].y][line[0].x];
     const b = board[line[1].y][line[1].x];
     const c = board[line[2].y][line[2].x];
@@ -140,19 +139,19 @@ function minimax(board, depth, isMaximizing, aiPlayer) {
 
   const moves = getValidMoves(board);
   if (isMaximizing) {
-    var best = -100;
-    for (var i = 0; i < moves.length; i++) {
-      var newBoard = makeMove(board, moves[i].x, moves[i].y, aiPlayer);
-      var score = minimax(newBoard, depth + 1, false, aiPlayer);
+    let best = -100;
+    for (const move of moves) {
+      const newBoard = makeMove(board, move.x, move.y, aiPlayer);
+      const score = minimax(newBoard, depth + 1, false, aiPlayer);
       if (score > best) best = score;
     }
     return best;
   } else {
-    var best = 100;
+    let best = 100;
     const opponent = getOpponent(aiPlayer);
-    for (var i = 0; i < moves.length; i++) {
-      var newBoard = makeMove(board, moves[i].x, moves[i].y, opponent);
-      var score = minimax(newBoard, depth + 1, true, aiPlayer);
+    for (const move of moves) {
+      const newBoard = makeMove(board, move.x, move.y, opponent);
+      const score = minimax(newBoard, depth + 1, true, aiPlayer);
       if (score < best) best = score;
     }
     return best;
@@ -164,27 +163,27 @@ function getBestAIMove(board, aiPlayer) {
   if (moves.length === 0) return null;
 
   // First check if AI can win immediately
-  for (var i = 0; i < moves.length; i++) {
-    var newBoard = makeMove(board, moves[i].x, moves[i].y, aiPlayer);
-    if (checkWin(newBoard)) return moves[i];
+  for (const move of moves) {
+    const newBoard = makeMove(board, move.x, move.y, aiPlayer);
+    if (checkWin(newBoard)) return move;
   }
 
   // Then check if opponent can win immediately (need to block)
   const opponent = getOpponent(aiPlayer);
-  for (var i = 0; i < moves.length; i++) {
-    var newBoard = makeMove(board, moves[i].x, moves[i].y, opponent);
-    if (checkWin(newBoard)) return moves[i];
+  for (const move of moves) {
+    const newBoard = makeMove(board, move.x, move.y, opponent);
+    if (checkWin(newBoard)) return move;
   }
 
   // Minimax selects optimal move
   let bestScore = -100;
   let bestMove = moves[0];
-  for (var i = 0; i < moves.length; i++) {
-    var newBoard = makeMove(board, moves[i].x, moves[i].y, aiPlayer);
+  for (const move of moves) {
+    const newBoard = makeMove(board, move.x, move.y, aiPlayer);
     const score = minimax(newBoard, 0, false, aiPlayer);
     if (score > bestScore) {
       bestScore = score;
-      bestMove = moves[i];
+      bestMove = move;
     }
   }
   return bestMove;
@@ -290,8 +289,7 @@ if (typeof document !== "undefined") {
 
     // Highlight winning line
     if (state.winLine) {
-      for (let i = 0; i < state.winLine.length; i++) {
-        const pos = state.winLine[i];
+      for (const pos of state.winLine) {
         const sel = '.cell[data-x="' + pos.x + '"][data-y="' + pos.y + '"]';
         const winCell = document.querySelector(sel);
         if (winCell) winCell.classList.add("cell-win");
@@ -312,7 +310,13 @@ if (typeof document !== "undefined") {
   function updateMessage(text, type) {
     const el = document.getElementById("message");
     el.textContent = text;
-    el.className = type === "error" ? "error" : type === "info" ? "info" : "";
+    if (type === "error") {
+      el.className = "error";
+    } else if (type === "info") {
+      el.className = "info";
+    } else {
+      el.className = "";
+    }
   }
 
   function showGameOver(state) {
@@ -621,19 +625,19 @@ if (typeof document !== "undefined") {
     cleanupNetwork();
   }
 
-  function handleRPSChoice(player, choice) {
+  function handleRPSChoice(player, choice, ev) {
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
 
       const choices = ["rock", "scissors", "paper"];
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      var resultEl = document.getElementById("rps-result");
+      const resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -677,7 +681,7 @@ if (typeof document !== "undefined") {
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById("rps-result");
+        const resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
@@ -775,7 +779,7 @@ if (typeof document !== "undefined") {
       button.addEventListener("click", (ev) => {
         const player = ev.target.dataset.player;
         const choice = ev.target.dataset.choice;
-        handleRPSChoice(player, choice);
+        handleRPSChoice(player, choice, ev);
       });
     });
 

@@ -31,11 +31,11 @@ function initWinLines() {
   let lineId = 0;
 
   // Horizontal
-  for (var y = 0; y < BOARD_SIZE; y++) {
-    for (var x = 0; x <= BOARD_SIZE - WIN_COUNT; x++) {
-      var line = [];
-      for (var k = 0; k < WIN_COUNT; k++) {
-        var pos = { x: x + k, y: y };
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x <= BOARD_SIZE - WIN_COUNT; x++) {
+      const line = [];
+      for (let k = 0; k < WIN_COUNT; k++) {
+        const pos = { x: x + k, y: y };
         line.push(pos);
         WINS_MAP[pos.x][pos.y].push(lineId);
       }
@@ -45,11 +45,11 @@ function initWinLines() {
   }
 
   // Vertical
-  for (var x = 0; x < BOARD_SIZE; x++) {
-    for (var y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
-      var line = [];
-      for (var k = 0; k < WIN_COUNT; k++) {
-        var pos = { x: x, y: y + k };
+  for (let x = 0; x < BOARD_SIZE; x++) {
+    for (let y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
+      const line = [];
+      for (let k = 0; k < WIN_COUNT; k++) {
+        const pos = { x: x, y: y + k };
         line.push(pos);
         WINS_MAP[pos.x][pos.y].push(lineId);
       }
@@ -59,11 +59,11 @@ function initWinLines() {
   }
 
   // Down-right diagonal (\) (\)
-  for (var x = 0; x <= BOARD_SIZE - WIN_COUNT; x++) {
-    for (var y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
-      var line = [];
-      for (var k = 0; k < WIN_COUNT; k++) {
-        var pos = { x: x + k, y: y + k };
+  for (let x = 0; x <= BOARD_SIZE - WIN_COUNT; x++) {
+    for (let y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
+      const line = [];
+      for (let k = 0; k < WIN_COUNT; k++) {
+        const pos = { x: x + k, y: y + k };
         line.push(pos);
         WINS_MAP[pos.x][pos.y].push(lineId);
       }
@@ -73,11 +73,11 @@ function initWinLines() {
   }
 
   // Down-left diagonal (/) (/)
-  for (var x = WIN_COUNT - 1; x < BOARD_SIZE; x++) {
-    for (var y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
-      var line = [];
-      for (var k = 0; k < WIN_COUNT; k++) {
-        var pos = { x: x - k, y: y + k };
+  for (let x = WIN_COUNT - 1; x < BOARD_SIZE; x++) {
+    for (let y = 0; y <= BOARD_SIZE - WIN_COUNT; y++) {
+      const line = [];
+      for (let k = 0; k < WIN_COUNT; k++) {
+        const pos = { x: x - k, y: y + k };
         line.push(pos);
         WINS_MAP[pos.x][pos.y].push(lineId);
       }
@@ -120,12 +120,11 @@ function getPlayerName(player) {
  */
 function checkWinAt(board, x, y, player) {
   const lines = WINS_MAP[x][y];
-  for (let i = 0; i < lines.length; i++) {
-    const lineId = lines[i];
+  for (const lineId of lines) {
     const line = WIN_LINES[lineId];
     let count = 0;
-    for (let k = 0; k < line.length; k++) {
-      if (board[line[k].y][line[k].x] === player) {
+    for (const pos of line) {
+      if (board[pos.y][pos.x] === player) {
         count++;
       }
     }
@@ -179,7 +178,7 @@ function getBestAIMove(board, aiPlayer) {
     const line = WIN_LINES[lid];
     let aiCount = 0;
     let humanCount = 0;
-    for (var k = 0; k < line.length; k++) {
+    for (let k = 0; k < line.length; k++) {
       const val = board[line[k].y][line[k].x];
       if (val === aiPlayer) aiCount++;
       else if (val === humanPlayer) humanCount++;
@@ -190,16 +189,16 @@ function getBestAIMove(board, aiPlayer) {
 
     if (aiCount > 0 && humanCount === 0) {
       // AI's line, add score to empty positions
-      for (var k = 0; k < line.length; k++) {
-        if (board[line[k].y][line[k].x] === EMPTY) {
-          scoreAI[line[k].x][line[k].y] += SCORE_AI[aiCount];
+      for (const point of line) {
+        if (board[point.y][point.x] === EMPTY) {
+          scoreAI[point.x][point.y] += SCORE_AI[aiCount];
         }
       }
     } else if (humanCount > 0 && aiCount === 0) {
       // Human's line, add score to empty positions (defense score)
-      for (var k = 0; k < line.length; k++) {
-        if (board[line[k].y][line[k].x] === EMPTY) {
-          scoreHuman[line[k].x][line[k].y] += SCORE_HUMAN[humanCount];
+      for (const point of line) {
+        if (board[point.y][point.x] === EMPTY) {
+          scoreHuman[point.x][point.y] += SCORE_HUMAN[humanCount];
         }
       }
     }
@@ -324,7 +323,7 @@ if (typeof document !== "undefined") {
     // Grid lines
     context.strokeStyle = "#8b7355";
     context.lineWidth = 1;
-    for (var i = 0; i < BOARD_SIZE; i++) {
+    for (let i = 0; i < BOARD_SIZE; i++) {
       const pos = MARGIN + i * CELL_SIZE;
       // Vertical lines
       context.beginPath();
@@ -347,9 +346,9 @@ if (typeof document !== "undefined") {
       { x: 11, y: 11 },
     ];
     context.fillStyle = "#8b7355";
-    for (var i = 0; i < starPoints.length; i++) {
-      const sx = MARGIN + starPoints[i].x * CELL_SIZE;
-      const sy = MARGIN + starPoints[i].y * CELL_SIZE;
+    for (const sp of starPoints) {
+      const sx = MARGIN + sp.x * CELL_SIZE;
+      const sy = MARGIN + sp.y * CELL_SIZE;
       context.beginPath();
       context.arc(sx, sy, 3, 0, Math.PI * 2);
       context.fill();
@@ -465,7 +464,13 @@ if (typeof document !== "undefined") {
   function updateMessage(text, type) {
     const el = document.getElementById("message");
     el.textContent = text;
-    el.className = type === "error" ? "error" : type === "info" ? "info" : "";
+    if (type === "error") {
+      el.className = "error";
+    } else if (type === "info") {
+      el.className = "info";
+    } else {
+      el.className = "";
+    }
   }
 
   function showGameOver(state) {
@@ -783,19 +788,19 @@ if (typeof document !== "undefined") {
     cleanupNetwork();
   }
 
-  function handleRPSChoice(player, choice) {
+  function handleRPSChoice(player, choice, ev) {
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
 
       const choices = ["rock", "scissors", "paper"];
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      var resultEl = document.getElementById("rps-result");
+      const resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -839,7 +844,7 @@ if (typeof document !== "undefined") {
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById("rps-result");
+        const resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
@@ -937,7 +942,7 @@ if (typeof document !== "undefined") {
       button.addEventListener("click", (ev) => {
         const player = ev.target.dataset.player;
         const choice = ev.target.dataset.choice;
-        handleRPSChoice(player, choice);
+        handleRPSChoice(player, choice, ev);
       });
     });
 

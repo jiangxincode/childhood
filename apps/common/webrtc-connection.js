@@ -318,10 +318,10 @@ class WebRTCConnection {
   }
 }
 
-// Expose on window for browser use
-if (typeof window !== "undefined") {
-  window.WebRTCConnection = WebRTCConnection;
-  window._webrtcUtils = {
+// Expose on globalThis for browser use
+if (typeof globalThis.window !== "undefined") {
+  globalThis.WebRTCConnection = WebRTCConnection;
+  globalThis._webrtcUtils = {
     encodeRoomData,
     decodeRoomData,
     minimizeSdp,

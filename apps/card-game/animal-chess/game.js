@@ -839,7 +839,6 @@ if (typeof document !== "undefined") {
     // Click opponent face-up card (no selection)
     if (card && card.faceUp && card.team !== currentTeam) {
       showMessage("这不是你的棋子", "error");
-      return;
     }
   });
 
@@ -953,18 +952,16 @@ if (typeof document !== "undefined") {
       } else {
         showMessage(gameState.currentTeam === localTeam ? "你的回合" : "等待对方操作...", "");
       }
+    } else if (gameState.teamAssigned) {
+      const sidesOrder = gameState.firstPlayer
+        ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
+        : ["red", "blue"];
+      const idx = sidesOrder.indexOf(gameState.currentTeam);
+      const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
+      showMessage(playerName + "的回合", "");
     } else {
       // PVP - show 玩家1 / 玩家2 instead of color
-      if (!gameState.teamAssigned) {
-        showMessage("请翻开一张牌", "");
-      } else {
-        const sidesOrder = gameState.firstPlayer
-          ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
-          : ["red", "blue"];
-        const idx = sidesOrder.indexOf(gameState.currentTeam);
-        const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
-        showMessage(playerName + "的回合", "");
-      }
+      showMessage("请翻开一张牌", "");
     }
   }
 
@@ -1056,8 +1053,12 @@ if (typeof document !== "undefined") {
         }
         handleOnlineRPSResult({ result: "draw" });
       } else {
-        const winnerRole =
-          result === 1 ? localPlayerRole : localPlayerRole === "host" ? "guest" : "host";
+        let winnerRole;
+        if (result === 1) {
+          winnerRole = localPlayerRole;
+        } else {
+          winnerRole = localPlayerRole === "host" ? "guest" : "host";
+        }
         const rpsResult = { result: "win", winner: winnerRole };
         if (networkProtocol) {
           networkProtocol.sendRPSResult(rpsResult);
@@ -1068,7 +1069,6 @@ if (typeof document !== "undefined") {
   }
 
   function handleOnlineRPSResult(rpsResult) {
-    const choiceNames = { rock: "石头", scissors: "剪刀", paper: "布" };
     const $rpsOnlineResult = document.getElementById("rps-online-result");
 
     if (rpsResult.result === "draw") {

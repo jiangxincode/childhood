@@ -120,10 +120,11 @@ function createGameState(mode) {
 
   // Generate 16 cards: 8 red + 8 blue, one of each role per side
   const cards = [];
-  for (let i = 0; i < ROLES.length; i++) {
-    const role = ROLES[i];
-    cards.push({ role: role, team: "red", faceUp: false, carrying: null });
-    cards.push({ role: role, team: "blue", faceUp: false, carrying: null });
+  for (const role of ROLES) {
+    cards.push(
+      { role: role, team: "red", faceUp: false, carrying: null },
+      { role: role, team: "blue", faceUp: false, carrying: null }
+    );
   }
 
   // Fisher-Yates shuffle
@@ -684,16 +685,16 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (var i = 0; i < moveTargets.length; i++) {
-      var tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (const t of moveTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (var i = 0; i < captureTargets.length; i++) {
-      var tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (const t of captureTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-capture-target");
     }
-    for (var i = 0; i < carryTargets.length; i++) {
-      var tc = getCell(carryTargets[i].x, carryTargets[i].y);
+    for (const t of carryTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-carry-target");
     }
   }
@@ -1144,7 +1145,6 @@ if (typeof document !== "undefined") {
     // Click opponent face-up card (no selection)
     if (card && card.faceUp && card.team !== currentTeam) {
       showMessage("这不是你的棋子", "error");
-      return;
     }
   });
 
@@ -1204,18 +1204,16 @@ if (typeof document !== "undefined") {
       } else {
         showMessage("你的回合", "");
       }
+    } else if (gameState.teamAssigned) {
+      const sidesOrder = gameState.firstPlayer
+        ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
+        : ["red", "blue"];
+      const idx = sidesOrder.indexOf(gameState.currentTeam);
+      const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
+      showMessage(playerName + "的回合", "");
     } else {
       // PVP - show 玩家1 / 玩家2 instead of color
-      if (!gameState.teamAssigned) {
-        showMessage("请翻开一张牌", "");
-      } else {
-        const sidesOrder = gameState.firstPlayer
-          ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
-          : ["red", "blue"];
-        const idx = sidesOrder.indexOf(gameState.currentTeam);
-        const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
-        showMessage(playerName + "的回合", "");
-      }
+      showMessage("请翻开一张牌", "");
     }
   }
 
@@ -1403,8 +1401,12 @@ if (typeof document !== "undefined") {
         }
         handleOnlineRPSResult({ result: "draw" });
       } else {
-        const winnerRole =
-          result === 1 ? localPlayerRole : localPlayerRole === "host" ? "guest" : "host";
+        let winnerRole;
+        if (result === 1) {
+          winnerRole = localPlayerRole;
+        } else {
+          winnerRole = localPlayerRole === "host" ? "guest" : "host";
+        }
         const rpsResult = { result: "win", winner: winnerRole };
         if (networkProtocol) {
           networkProtocol.sendRPSResult(rpsResult);

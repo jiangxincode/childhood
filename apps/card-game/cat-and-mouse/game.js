@@ -96,12 +96,10 @@ function createGameState(mode) {
 
   // Create 16 pieces: 8 red + 8 blue
   const cards = [];
-  for (var i = 0; i < PIECE_NAMES.length; i++) {
-    var name = PIECE_NAMES[i];
+  for (const name of PIECE_NAMES) {
     cards.push({ name: name, team: "red", rank: RANK_MAP[name], faceUp: false });
   }
-  for (var i = 0; i < PIECE_NAMES.length; i++) {
-    var name = PIECE_NAMES[i];
+  for (const name of PIECE_NAMES) {
     cards.push({ name: name, team: "blue", rank: RANK_MAP[name], faceUp: false });
   }
 
@@ -450,12 +448,12 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (let i = 0; i < moveTargets.length; i++) {
-      const tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (const t of moveTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (let j = 0; j < captureTargets.length; j++) {
-      const cc = getCell(captureTargets[j].x, captureTargets[j].y);
+    for (const t of captureTargets) {
+      const cc = getCell(t.x, t.y);
       if (cc) cc.classList.add("cell-capture-target");
     }
   }
@@ -519,8 +517,7 @@ if (typeof document !== "undefined") {
 
     // Captured cards
     $capturedRed.innerHTML = "";
-    for (let i = 0; i < state.capturedRed.length; i++) {
-      const nameR = state.capturedRed[i];
+    for (const nameR of state.capturedRed) {
       const divR = document.createElement("div");
       divR.className = "captured-card";
       const imgR = document.createElement("img");
@@ -531,8 +528,7 @@ if (typeof document !== "undefined") {
     }
 
     $capturedBlue.innerHTML = "";
-    for (let k = 0; k < state.capturedBlue.length; k++) {
-      const nameB = state.capturedBlue[k];
+    for (const nameB of state.capturedBlue) {
       const divB = document.createElement("div");
       divB.className = "captured-card";
       const imgB = document.createElement("img");
@@ -584,8 +580,8 @@ if (typeof document !== "undefined") {
 
   // ---- 4.5 PVP Rock-Paper-Scissors button events ----
 
-  var rpsP1Choice = null;
-  var rpsP2Choice = null;
+  let rpsP1Choice = null;
+  let rpsP2Choice = null;
 
   document.querySelectorAll("#rps-pvp .btn-rps").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -835,7 +831,6 @@ if (typeof document !== "undefined") {
     // Click opponent face-up card (no selection)
     if (card && card.faceUp && card.team !== currentTeam) {
       showMessage("这不是你的棋子", "error");
-      return;
     }
   });
 
@@ -946,18 +941,16 @@ if (typeof document !== "undefined") {
       } else {
         showMessage(gameState.currentTeam === localTeam ? "你的回合" : "等待对方操作...", "");
       }
+    } else if (gameState.teamAssigned) {
+      const sidesOrder = gameState.firstPlayer
+        ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
+        : ["red", "blue"];
+      const idx = sidesOrder.indexOf(gameState.currentTeam);
+      const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
+      showMessage(playerName + "的回合", "");
     } else {
       // PVP - show 玩家1 / 玩家2 instead of color
-      if (!gameState.teamAssigned) {
-        showMessage("请翻开一张牌", "");
-      } else {
-        const sidesOrder = gameState.firstPlayer
-          ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
-          : ["red", "blue"];
-        const idx = sidesOrder.indexOf(gameState.currentTeam);
-        const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
-        showMessage(playerName + "的回合", "");
-      }
+      showMessage("请翻开一张牌", "");
     }
   }
 
@@ -1049,8 +1042,12 @@ if (typeof document !== "undefined") {
         }
         handleOnlineRPSResult({ result: "draw" });
       } else {
-        const winnerRole =
-          result === 1 ? localPlayerRole : localPlayerRole === "host" ? "guest" : "host";
+        let winnerRole;
+        if (result === 1) {
+          winnerRole = localPlayerRole;
+        } else {
+          winnerRole = localPlayerRole === "host" ? "guest" : "host";
+        }
         const rpsResult = { result: "win", winner: winnerRole };
         if (networkProtocol) {
           networkProtocol.sendRPSResult(rpsResult);

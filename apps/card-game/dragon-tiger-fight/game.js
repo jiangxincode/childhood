@@ -524,12 +524,12 @@ if (typeof document !== "undefined") {
     clearHighlights();
     const selected = getCell(x, y);
     if (selected) selected.classList.add("cell-selected");
-    for (var i = 0; i < moveTargets.length; i++) {
-      var tc = getCell(moveTargets[i].x, moveTargets[i].y);
+    for (const t of moveTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-target");
     }
-    for (var i = 0; i < captureTargets.length; i++) {
-      var tc = getCell(captureTargets[i].x, captureTargets[i].y);
+    for (const t of captureTargets) {
+      const tc = getCell(t.x, t.y);
       if (tc) tc.classList.add("cell-capture-target");
     }
   }
@@ -583,11 +583,10 @@ if (typeof document !== "undefined") {
 
     // Captured cards
     $capturedDragon.innerHTML = "";
-    for (var i = 0; i < state.capturedDragon.length; i++) {
-      var piece = state.capturedDragon[i];
-      var div = document.createElement("div");
+    for (const piece of state.capturedDragon) {
+      const div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      const img = document.createElement("img");
       img.src = getImagePath(piece);
       img.alt = piece;
       div.appendChild(img);
@@ -595,11 +594,10 @@ if (typeof document !== "undefined") {
     }
 
     $capturedTiger.innerHTML = "";
-    for (var i = 0; i < state.capturedTiger.length; i++) {
-      var piece = state.capturedTiger[i];
-      var div = document.createElement("div");
+    for (const piece of state.capturedTiger) {
+      const div = document.createElement("div");
       div.className = "captured-card";
-      var img = document.createElement("img");
+      const img = document.createElement("img");
       img.src = getImagePath(piece);
       img.alt = piece;
       div.appendChild(img);
@@ -726,8 +724,12 @@ if (typeof document !== "undefined") {
         }
         handleOnlineRPSResult({ result: "draw" });
       } else {
-        const winnerRole =
-          result === 1 ? localPlayerRole : localPlayerRole === "host" ? "guest" : "host";
+        let winnerRole;
+        if (result === 1) {
+          winnerRole = localPlayerRole;
+        } else {
+          winnerRole = localPlayerRole === "host" ? "guest" : "host";
+        }
         const rpsResult = { result: "win", winner: winnerRole };
         if (networkProtocol) {
           networkProtocol.sendRPSResult(rpsResult);
@@ -887,8 +889,8 @@ if (typeof document !== "undefined") {
   }
 
   // --- Rock-Paper-Scissors logic ---
-  var rpsP1Choice = null;
-  var rpsP2Choice = null;
+  let rpsP1Choice = null;
+  let rpsP2Choice = null;
 
   function startGame(firstTeam) {
     showGameArea();
@@ -1167,7 +1169,6 @@ if (typeof document !== "undefined") {
     // Click opponent face-up card (no selection)
     if (card && card.faceUp && card.team !== currentTeam) {
       showMessage("这不是你的棋子", "error");
-      return;
     }
   });
 
@@ -1216,18 +1217,16 @@ if (typeof document !== "undefined") {
       } else {
         showMessage("等待对方操作...", "info");
       }
+    } else if (gameState.teamAssigned) {
+      const sidesOrder = gameState.firstPlayer
+        ? [gameState.firstPlayer, gameState.firstPlayer === "dragon" ? "tiger" : "dragon"]
+        : ["dragon", "tiger"];
+      const idx = sidesOrder.indexOf(gameState.currentTeam);
+      const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
+      showMessage(playerName + "的回合", "");
     } else {
       // PVP - show 玩家1 / 玩家2 instead of dragon/tiger
-      if (!gameState.teamAssigned) {
-        showMessage("请翻开一张牌", "");
-      } else {
-        const sidesOrder = gameState.firstPlayer
-          ? [gameState.firstPlayer, gameState.firstPlayer === "dragon" ? "tiger" : "dragon"]
-          : ["dragon", "tiger"];
-        const idx = sidesOrder.indexOf(gameState.currentTeam);
-        const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
-        showMessage(playerName + "的回合", "");
-      }
+      showMessage("请翻开一张牌", "");
     }
   }
 

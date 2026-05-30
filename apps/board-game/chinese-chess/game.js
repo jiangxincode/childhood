@@ -239,10 +239,10 @@ function getValidMoves(board, c, r) {
 
   // General facing rule: illegal if own general faces opponent general after move
   const validMoves = [];
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move of moves) {
+    const newBoard = applyMove(board, move);
     if (!isGeneralFacing(newBoard, color)) {
-      validMoves.push(moves[i]);
+      validMoves.push(move);
     }
   }
   return validMoves;
@@ -254,7 +254,7 @@ function isGeneralFacing(board, myColor) {
     opGC = -1,
     opGR = -1;
   for (let c = 3; c <= 5; c++) {
-    for (var r = 0; r <= 2; r++) {
+    for (let r = 0; r <= 2; r++) {
       if (board[c][r] !== EMPTY && isGeneral(board[c][r])) {
         if (getOwner(board[c][r]) === myColor) {
           myGC = c;
@@ -265,7 +265,7 @@ function isGeneralFacing(board, myColor) {
         }
       }
     }
-    for (var r = 7; r <= 9; r++) {
+    for (let r = 7; r <= 9; r++) {
       if (board[c][r] !== EMPTY && isGeneral(board[c][r])) {
         if (getOwner(board[c][r]) === myColor) {
           myGC = c;
@@ -280,7 +280,7 @@ function isGeneralFacing(board, myColor) {
   if (myGC === -1 || opGC === -1 || myGC !== opGC) return false;
   const minR = Math.min(myGR, opGR);
   const maxR = Math.max(myGR, opGR);
-  for (var r = minR + 1; r < maxR; r++) {
+  for (let r = minR + 1; r < maxR; r++) {
     if (board[myGC][r] !== EMPTY) return false;
   }
   return true;
@@ -336,13 +336,11 @@ function getCannonMoves(board, c, r, color) {
         } else {
           jumped = true;
         }
-      } else {
-        if (board[nc][nr] !== EMPTY) {
-          if (getOwner(board[nc][nr]) !== color) {
-            moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
-          }
-          break;
+      } else if (board[nc][nr] !== EMPTY) {
+        if (getOwner(board[nc][nr]) !== color) {
+          moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
         }
+        break;
       }
     }
   }
@@ -361,8 +359,7 @@ function getHorseMoves(board, c, r, color) {
     { bx: 1, by: 0, dx: 2, dy: -1 },
     { bx: 1, by: 0, dx: 2, dy: 1 },
   ];
-  for (let i = 0; i < jumps.length; i++) {
-    const j = jumps[i];
+  for (const j of jumps) {
     const bc = c + j.bx,
       br = r + j.by;
     const nc = c + j.dx,
@@ -386,8 +383,7 @@ function getElephantMoves(board, c, r, color) {
   ];
   const minR = color === RED ? 5 : 0;
   const maxR = color === RED ? 9 : 4;
-  for (let i = 0; i < jumps.length; i++) {
-    const j = jumps[i];
+  for (const j of jumps) {
     const nc = c + j.dx,
       nr = r + j.dy;
     if (!inBounds(nc, nr) || nr < minR || nr > maxR) continue;
@@ -411,9 +407,9 @@ function getAdvisorMoves(board, c, r, color) {
   ];
   const minR = color === RED ? 7 : 0;
   const maxR = color === RED ? 9 : 2;
-  for (let i = 0; i < dirs.length; i++) {
-    const nc = c + dirs[i][0],
-      nr = r + dirs[i][1];
+  for (const d of dirs) {
+    const nc = c + d[0],
+      nr = r + d[1];
     if (nc < 3 || nc > 5 || nr < minR || nr > maxR) continue;
     if (board[nc][nr] === EMPTY || getOwner(board[nc][nr]) !== color) {
       moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -432,9 +428,9 @@ function getGeneralMoves(board, c, r, color) {
   ];
   const minR = color === RED ? 7 : 0;
   const maxR = color === RED ? 9 : 2;
-  for (let i = 0; i < dirs.length; i++) {
-    const nc = c + dirs[i][0],
-      nr = r + dirs[i][1];
+  for (const d of dirs) {
+    const nc = c + d[0],
+      nr = r + d[1];
     if (nc < 3 || nc > 5 || nr < minR || nr > maxR) continue;
     if (board[nc][nr] === EMPTY || getOwner(board[nc][nr]) !== color) {
       moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
@@ -473,8 +469,8 @@ function getAllMoves(board, color) {
     for (let r = 0; r < ROWS; r++) {
       if (board[c][r] !== EMPTY && getOwner(board[c][r]) === color) {
         const pieceMoves = getValidMoves(board, c, r);
-        for (let i = 0; i < pieceMoves.length; i++) {
-          moves.push(pieceMoves[i]);
+        for (const pm of pieceMoves) {
+          moves.push(pm);
         }
       }
     }
@@ -490,10 +486,10 @@ function checkGameOver(board, nextPlayer) {
   let redGeneral = false,
     blackGeneral = false;
   for (let c = 3; c <= 5; c++) {
-    for (var r = 0; r <= 2; r++) {
+    for (let r = 0; r <= 2; r++) {
       if (board[c][r] === B_GENERAL) blackGeneral = true;
     }
-    for (var r = 7; r <= 9; r++) {
+    for (let r = 7; r <= 9; r++) {
       if (board[c][r] === R_GENERAL) redGeneral = true;
     }
   }
@@ -512,34 +508,32 @@ function checkGameOver(board, nextPlayer) {
 function evaluateBoard(board, aiColor) {
   let aiScore = 0,
     oppScore = 0;
-  const oppColor = getOpponent(aiColor);
-
   const aiAttackPos = create2DArray(COLS, ROWS, 0);
   const oppAttackPos = create2DArray(COLS, ROWS, 0);
 
-  for (var c = 0; c < COLS; c++) {
-    for (var r = 0; r < ROWS; r++) {
-      var piece = board[c][r];
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      const piece = board[c][r];
       if (piece === EMPTY) continue;
       const moves = getValidMoves(board, c, r);
-      var owner = getOwner(piece);
+      const owner = getOwner(piece);
       const attackMap = owner === aiColor ? aiAttackPos : oppAttackPos;
-      for (let i = 0; i < moves.length; i++) {
-        attackMap[moves[i].toC][moves[i].toR]++;
+      for (const m of moves) {
+        attackMap[m.toC][m.toR]++;
       }
     }
   }
 
-  for (var c = 0; c < COLS; c++) {
-    for (var r = 0; r < ROWS; r++) {
-      var piece = board[c][r];
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      const piece = board[c][r];
       if (piece === EMPTY) continue;
       let val = PIECE_VALUES[piece];
 
       if (piece === R_PAWN) val += SOLDIER_POS_RED[c][r];
       else if (piece === B_PAWN) val += SOLDIER_POS_BLACK[c][r];
 
-      var owner = getOwner(piece);
+      const owner = getOwner(piece);
       if (owner === aiColor) {
         if (oppAttackPos[c][r] > 0 && aiAttackPos[c][r] === 0) val = Math.floor(val * 0.7);
         aiScore += val;
@@ -574,8 +568,8 @@ function alphaBeta(board, depth, alpha, beta, aiColor, isAITurn) {
   const moves = getAllMoves(board, currentPlayer);
   let bestScore = -Infinity;
 
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move of moves) {
+    const newBoard = applyMove(board, move);
     const score = -alphaBeta(newBoard, depth - 1, -beta, -alpha, aiColor, !isAITurn);
     if (score > bestScore) bestScore = score;
     if (bestScore > alpha) alpha = bestScore;
@@ -591,12 +585,12 @@ function getBestAIMove(board, aiColor) {
   let bestMove = null;
   let bestScore = -Infinity;
 
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move of moves) {
+    const newBoard = applyMove(board, move);
     const score = -alphaBeta(newBoard, AI_DEPTH - 1, -Infinity, Infinity, aiColor, false);
     if (score > bestScore) {
       bestScore = score;
-      bestMove = moves[i];
+      bestMove = move;
     }
   }
   return bestMove;
@@ -836,8 +830,7 @@ if (typeof document !== "undefined") {
   }
 
   function drawValidMoves(moves) {
-    for (let i = 0; i < moves.length; i++) {
-      const m = moves[i];
+    for (const m of moves) {
       const cx = toCanvasX(m.toC);
       const cy = toCanvasY(m.toR);
       if (gameState.board[m.toC][m.toR] !== EMPTY) {
@@ -947,7 +940,13 @@ if (typeof document !== "undefined") {
   function updateMessage(text, type) {
     const el = document.getElementById("message");
     el.textContent = text;
-    el.className = type === "error" ? "error" : type === "info" ? "info" : "";
+    if (type === "error") {
+      el.className = "error";
+    } else if (type === "info") {
+      el.className = "info";
+    } else {
+      el.className = "";
+    }
   }
 
   function showGameOver(state) {
@@ -1028,8 +1027,8 @@ if (typeof document !== "undefined") {
   }
 
   function findMove(moves, toC, toR) {
-    for (let i = 0; i < moves.length; i++) {
-      if (moves[i].toC === toC && moves[i].toR === toR) return moves[i];
+    for (const move of moves) {
+      if (move.toC === toC && move.toR === toR) return move;
     }
     return null;
   }
@@ -1310,19 +1309,19 @@ if (typeof document !== "undefined") {
     cleanupNetwork();
   }
 
-  function handleRPSChoice(player, choice) {
+  function handleRPSChoice(player, choice, ev) {
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
 
       const choices = ["rock", "scissors", "paper"];
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      var resultEl = document.getElementById("rps-result");
+      const resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -1366,7 +1365,7 @@ if (typeof document !== "undefined") {
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById("rps-result");
+        const resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
@@ -1449,7 +1448,7 @@ if (typeof document !== "undefined") {
       button.addEventListener("click", (ev) => {
         const player = ev.target.dataset.player;
         const choice = ev.target.dataset.choice;
-        handleRPSChoice(player, choice);
+        handleRPSChoice(player, choice, ev);
       });
     });
 

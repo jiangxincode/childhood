@@ -167,12 +167,12 @@ function getAllMoves(board, player) {
     for (let c = 0; c < BOARD_SIZE; c++) {
       if (getOwner(board[r][c]) === player) {
         const caps = getCaptureMoves(board, r, c);
-        for (var i = 0; i < caps.length; i++) {
-          allCaptures.push(caps[i]);
+        for (const cap of caps) {
+          allCaptures.push(cap);
         }
         const sims = getSimpleMoves(board, r, c);
-        for (let j = 0; j < sims.length; j++) {
-          allSimple.push(sims[j]);
+        for (const sim of sims) {
+          allSimple.push(sim);
         }
       }
     }
@@ -182,8 +182,8 @@ function getAllMoves(board, player) {
   if (allCaptures.length > 0) {
     // Expand multi-jump: check if each capture can continue
     const expanded = [];
-    for (var i = 0; i < allCaptures.length; i++) {
-      expandChainCaptures(board, allCaptures[i], player, expanded);
+    for (const capture of allCaptures) {
+      expandChainCaptures(board, capture, player, expanded);
     }
     return expanded;
   }
@@ -209,8 +209,8 @@ function expandChainCaptures(board, move, player, result) {
   if (nextCaps.length === 0) {
     result.push(move);
   } else {
-    for (let i = 0; i < nextCaps.length; i++) {
-      expandChainCaptures(newBoard, nextCaps[i], player, result);
+    for (const nextCap of nextCaps) {
+      expandChainCaptures(newBoard, nextCap, player, result);
     }
   }
 }
@@ -280,9 +280,10 @@ function evaluateBoard(board, aiPlayer) {
         if (isAI) {
           if (aiPlayer === RED) score += sign * r * WEIGHT_ADVANCE;
           else score += sign * (BOARD_SIZE - 1 - r) * WEIGHT_ADVANCE;
+        } else if (opponent === RED) {
+          score += sign * r * WEIGHT_ADVANCE;
         } else {
-          if (opponent === RED) score += sign * r * WEIGHT_ADVANCE;
-          else score += sign * (BOARD_SIZE - 1 - r) * WEIGHT_ADVANCE;
+          score += sign * (BOARD_SIZE - 1 - r) * WEIGHT_ADVANCE;
         }
       }
 
@@ -306,8 +307,8 @@ function evaluateThreats(board, player) {
     for (let c = 0; c < BOARD_SIZE; c++) {
       if (getOwner(board[r][c]) === opponent) {
         const caps = getCaptureMoves(board, r, c);
-        for (let i = 0; i < caps.length; i++) {
-          const target = board[caps[i].capturedR][caps[i].capturedC];
+        for (const cap of caps) {
+          const target = board[cap.capturedR][cap.capturedC];
           if (getOwner(target) === player) {
             score += WEIGHT_THREATENED * (isKing(target) ? 2.5 : 1);
           }
@@ -335,9 +336,9 @@ function alphaBeta(board, depth, alpha, beta, isMaximizing, aiPlayer) {
 
   if (isMaximizing) {
     let maxEval = -Infinity;
-    for (var i = 0; i < moves.length; i++) {
-      var newBoard = applyMove(board, moves[i]);
-      var eval_ = alphaBeta(newBoard, depth - 1, alpha, beta, false, aiPlayer);
+    for (const move of moves) {
+      const newBoard = applyMove(board, move);
+      const eval_ = alphaBeta(newBoard, depth - 1, alpha, beta, false, aiPlayer);
       if (eval_ > maxEval) maxEval = eval_;
       if (maxEval > alpha) alpha = maxEval;
       if (beta <= alpha) break;
@@ -345,9 +346,9 @@ function alphaBeta(board, depth, alpha, beta, isMaximizing, aiPlayer) {
     return maxEval;
   } else {
     let minEval = Infinity;
-    for (var i = 0; i < moves.length; i++) {
-      var newBoard = applyMove(board, moves[i]);
-      var eval_ = alphaBeta(newBoard, depth - 1, alpha, beta, true, aiPlayer);
+    for (const move of moves) {
+      const newBoard = applyMove(board, move);
+      const eval_ = alphaBeta(newBoard, depth - 1, alpha, beta, true, aiPlayer);
       if (eval_ < minEval) minEval = eval_;
       if (minEval < beta) beta = minEval;
       if (beta <= alpha) break;
@@ -363,12 +364,12 @@ function getBestAIMove(board, aiPlayer) {
   let bestMove = null;
   let bestScore = -Infinity;
 
-  for (let i = 0; i < moves.length; i++) {
-    const newBoard = applyMove(board, moves[i]);
+  for (const move of moves) {
+    const newBoard = applyMove(board, move);
     const score = alphaBeta(newBoard, AI_DEPTH - 1, -Infinity, Infinity, false, aiPlayer);
     if (score > bestScore) {
       bestScore = score;
-      bestMove = moves[i];
+      bestMove = move;
     }
   }
   return bestMove;
@@ -454,7 +455,6 @@ if (typeof document !== "undefined") {
   const CELL_SIZE = 56;
   const BOARD_PX = CELL_SIZE * BOARD_SIZE;
   const PIECE_RADIUS = 22;
-  const KING_RADIUS = 16;
 
   function initBoard() {
     canvas = document.getElementById("board-canvas");
@@ -512,8 +512,7 @@ if (typeof document !== "undefined") {
   }
 
   function drawValidMoves(moves) {
-    for (let i = 0; i < moves.length; i++) {
-      const m = moves[i];
+    for (const m of moves) {
       const cx = m.toC * CELL_SIZE + CELL_SIZE / 2;
       const cy = m.toR * CELL_SIZE + CELL_SIZE / 2;
       context.fillStyle = "rgba(76, 175, 80, 0.5)";
@@ -624,7 +623,13 @@ if (typeof document !== "undefined") {
   function updateMessage(text, type) {
     const el = document.getElementById("message");
     el.textContent = text;
-    el.className = type === "error" ? "error" : type === "info" ? "info" : "";
+    if (type === "error") {
+      el.className = "error";
+    } else if (type === "info") {
+      el.className = "info";
+    } else {
+      el.className = "";
+    }
   }
 
   function showGameOver(state) {
@@ -673,24 +678,24 @@ if (typeof document !== "undefined") {
     if (gameState.mode === "online" && gameState.currentPlayer !== localTeam) return;
     // During chain capture, only allow clicking current piece
     if (gameState.multiJumpPiece) {
-      var rect = canvas.getBoundingClientRect();
-      var scaleX = canvas.width / rect.width;
-      var scaleY = canvas.height / rect.height;
-      var px = (e.clientX - rect.left) * scaleX;
-      var py = (e.clientY - rect.top) * scaleY;
-      var col = Math.floor(px / CELL_SIZE);
-      var row = Math.floor(py / CELL_SIZE);
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const px = (e.clientX - rect.left) * scaleX;
+      const py = (e.clientY - rect.top) * scaleY;
+      const col = Math.floor(px / CELL_SIZE);
+      const row = Math.floor(py / CELL_SIZE);
       handleMultiJumpClick(row, col);
       return;
     }
 
-    var rect = canvas.getBoundingClientRect();
-    var scaleX = canvas.width / rect.width;
-    var scaleY = canvas.height / rect.height;
-    var px = (e.clientX - rect.left) * scaleX;
-    var py = (e.clientY - rect.top) * scaleY;
-    var col = Math.floor(px / CELL_SIZE);
-    var row = Math.floor(py / CELL_SIZE);
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const px = (e.clientX - rect.left) * scaleX;
+    const py = (e.clientY - rect.top) * scaleY;
+    const col = Math.floor(px / CELL_SIZE);
+    const row = Math.floor(py / CELL_SIZE);
 
     if (!inBounds(row, col)) return;
 
@@ -731,7 +736,6 @@ if (typeof document !== "undefined") {
       } else {
         updateMessage("无效的目标位置", "error");
       }
-      return;
     }
   }
 
@@ -767,8 +771,8 @@ if (typeof document !== "undefined") {
   }
 
   function findMove(moves, toR, toC) {
-    for (let i = 0; i < moves.length; i++) {
-      if (moves[i].toR === toR && moves[i].toC === toC) return moves[i];
+    for (const move of moves) {
+      if (move.toR === toR && move.toC === toC) return move;
     }
     return null;
   }
@@ -1157,19 +1161,19 @@ if (typeof document !== "undefined") {
     cleanupNetwork();
   }
 
-  function handleRPSChoice(player, choice) {
+  function handleRPSChoice(player, choice, ev) {
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
         btn.classList.remove("selected");
       });
-      event.target.classList.add("selected");
+      ev.target.classList.add("selected");
 
       const choices = ["rock", "scissors", "paper"];
       const aiChoice = choices[Math.floor(Math.random() * 3)];
       rpsChoices.player2 = aiChoice;
 
-      var resultEl = document.getElementById("rps-result");
+      const resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
@@ -1213,7 +1217,7 @@ if (typeof document !== "undefined") {
       statusEl.textContent = "已选择：" + getRPSName(choice);
 
       if (rpsChoices.player1 && rpsChoices.player2) {
-        var resultEl = document.getElementById("rps-result");
+        const resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
@@ -1296,7 +1300,7 @@ if (typeof document !== "undefined") {
       button.addEventListener("click", (ev) => {
         const player = ev.target.dataset.player;
         const choice = ev.target.dataset.choice;
-        handleRPSChoice(player, choice);
+        handleRPSChoice(player, choice, ev);
       });
     });
 

@@ -182,9 +182,9 @@ function createDefaultUserList() {
  * @returns {string|undefined}
  */
 function userState(color, userList) {
-  for (let i = 0; i < userList.length; i++) {
-    if (color === userList[i].color) {
-      return userList[i].state;
+  for (const user of userList) {
+    if (color === user.color) {
+      return user.state;
     }
   }
   return undefined;
@@ -207,9 +207,9 @@ function getNextColor(currentColor) {
  * @returns {boolean}
  */
 function hasRelayMarker(coordId) {
-  for (let i = 0; i < COORD.length; i++) {
-    if (COORD[i].id == coordId) {
-      return COORD[i].r === "yes";
+  for (const c of COORD) {
+    if (c.id == coordId) {
+      return c.r === "yes";
     }
   }
   return false;
@@ -221,9 +221,9 @@ function hasRelayMarker(coordId) {
  * @returns {string|null}
  */
 function getSuperTarget(coordId) {
-  for (let i = 0; i < COORD.length; i++) {
-    if (COORD[i].id == coordId) {
-      return COORD[i].super || null;
+  for (const c of COORD) {
+    if (c.id == coordId) {
+      return c.super || null;
     }
   }
   return null;
@@ -293,8 +293,8 @@ function isWinCell(coordId) {
  */
 function checkVictory(planes, color) {
   let winCount = 0;
-  for (let i = 0; i < planes.length; i++) {
-    if (planes[i].type === color && planes[i].state === "win") {
+  for (const plane of planes) {
+    if (plane.type === color && plane.state === "win") {
       winCount++;
     }
   }
@@ -310,9 +310,9 @@ function checkVictory(planes, color) {
 function getInitCoord(color, planeNum) {
   const coords = INIT_COORDS[color];
   if (!coords) return null;
-  for (let i = 0; i < coords.length; i++) {
-    if (coords[i].id === planeNum) {
-      return { top: coords[i].top, left: coords[i].left };
+  for (const c of coords) {
+    if (c.id === planeNum) {
+      return { top: c.top, left: c.left };
     }
   }
   return null;
@@ -393,14 +393,14 @@ if (typeof $j !== "undefined") {
   const WINMUSICURL = "audio/win_cheer.ogg";
   const FAILMUSICURL = "";
 
-  const PlaneAudio = function () {
-    function playMusic(musicSrc) {
-      if (planeOption.gameMusic) {
-        $j("#yinxiao").attr("src", musicSrc);
-        $j("#yinxiao")[0].play();
-      }
+  function playMusic(musicSrc) {
+    if (planeOption.gameMusic) {
+      $j("#yinxiao").attr("src", musicSrc);
+      $j("#yinxiao")[0].play();
     }
+  }
 
+  const PlaneAudio = function () {
     this.playDiceMusic = function () {
       playMusic(DICEMUSICURL);
     };
@@ -448,11 +448,12 @@ if (typeof $j !== "undefined") {
   const planeAudio = new PlaneAudio();
 
   // ---- Option ----
+  function PLANEUSER(color, state) {
+    this.color = color;
+    this.state = state;
+  }
+
   const PlaneOption = function () {
-    const PLANEUSER = function (color, state) {
-      this.color = color;
-      this.state = state;
-    };
     this.userList = [
       new PLANEUSER("red", "normal"),
       new PLANEUSER("blue", "computer"),
@@ -492,6 +493,14 @@ if (typeof $j !== "undefined") {
   const planeOption = new PlaneOption();
 
   // ---- Rule ----
+  function backCurrentUserAllPlane() {
+    $j(".plane").each(function () {
+      if (planeOption.currentUser == $j(this).attr("type")) {
+        rule.planeBack("attack", planeOption.currentUser, $j(this));
+      }
+    });
+  }
+
   const Rule = function () {
     this.victory = function () {
       let winNum = 0,
@@ -554,14 +563,6 @@ if (typeof $j !== "undefined") {
       }
     };
 
-    function backCurrentUserAllPlane() {
-      $j(".plane").each(function () {
-        if (planeOption.currentUser == $j(this).attr("type")) {
-          rule.planeBack("attack", planeOption.currentUser, $j(this));
-        }
-      });
-    }
-
     this.countSixTime = function () {
       if (diceNum == 6) {
         sixTime++;
@@ -622,6 +623,43 @@ if (typeof $j !== "undefined") {
   const rule = new Rule();
 
   // ---- Computer ----
+  function diceClick() {
+    const nextSt = setTimeout(() => {
+      if (nextStep) {
+        $j("#dice").trigger("click");
+        clearTimeout(nextSt);
+      } else {
+        diceClick();
+      }
+    }, 500);
+  }
+
+  function getComputerRandomIndex(leng) {
+    const num = Math.floor(Math.random() * 10);
+    switch (leng) {
+      case 1:
+        return 0;
+      case 2:
+        if (num == 0 || num == 1) {
+          return num;
+        } else {
+          return getComputerRandomIndex(leng);
+        }
+      case 3:
+        if (num == 0 || num == 1 || num == 2) {
+          return num;
+        } else {
+          return getComputerRandomIndex(leng);
+        }
+      case 4:
+        if (num == 0 || num == 1 || num == 2 || num == 3) {
+          return num;
+        } else {
+          return getComputerRandomIndex(leng);
+        }
+    }
+  }
+
   const Computer = function () {
     this.performing = function () {
       setTimeout(() => {
@@ -632,7 +670,7 @@ if (typeof $j !== "undefined") {
           }
         });
         if (planeList && planeList.length > 0) {
-          const randomNum = obtainRandomNum(planeList.length);
+          const randomNum = getComputerRandomIndex(planeList.length);
           $j(planeList[randomNum]).trigger("click");
           if (diceNum == 6) {
             diceClick();
@@ -640,44 +678,6 @@ if (typeof $j !== "undefined") {
         }
       }, 1500);
     };
-
-    function diceClick() {
-      const nextSt = setTimeout(() => {
-        if (nextStep) {
-          $j("#dice").trigger("click");
-          clearTimeout(nextSt);
-          return;
-        } else {
-          diceClick();
-        }
-      }, 500);
-    }
-
-    function obtainRandomNum(leng) {
-      const num = Math.floor(Math.random() * 10);
-      switch (leng) {
-        case 1:
-          return 0;
-        case 2:
-          if (num == 0 || num == 1) {
-            return num;
-          } else {
-            return obtainRandomNum(leng);
-          }
-        case 3:
-          if (num == 0 || num == 1 || num == 2) {
-            return num;
-          } else {
-            return obtainRandomNum(leng);
-          }
-        case 4:
-          if (num == 0 || num == 1 || num == 2 || num == 3) {
-            return num;
-          } else {
-            return obtainRandomNum(leng);
-          }
-      }
-    }
   };
   const computer = new Computer();
 
@@ -689,20 +689,20 @@ if (typeof $j !== "undefined") {
    */
   function createPlane(type) {
     if (type && type.length > 0) {
-      for (let i = 0; i < type.length; i++) {
-        if (type[i].state != "close") {
-          switch (type[i].color) {
+      for (const plane of type) {
+        if (plane.state != "close") {
+          switch (plane.color) {
             case "red":
-              addPlaneDiv(type[i].color, 73, 770);
+              addPlaneDiv(plane.color, 73, 770);
               break;
             case "blue":
-              addPlaneDiv(type[i].color, 771, 770);
+              addPlaneDiv(plane.color, 771, 770);
               break;
             case "yellow":
-              addPlaneDiv(type[i].color, 771, 71);
+              addPlaneDiv(plane.color, 771, 71);
               break;
             case "green":
-              addPlaneDiv(type[i].color, 73, 71);
+              addPlaneDiv(plane.color, 73, 71);
               break;
           }
         }
@@ -793,15 +793,13 @@ if (typeof $j !== "undefined") {
               .addClass("pointer");
             flag = true;
           }
-        } else {
-          if ($j(this).attr("state") == "ready" || $j(this).attr("state") == "running") {
-            currentUserPlane
-              .on("click", function () {
-                movePlane(this);
-              })
-              .addClass("pointer");
-            flag = true;
-          }
+        } else if ($j(this).attr("state") == "ready" || $j(this).attr("state") == "running") {
+          currentUserPlane
+            .on("click", function () {
+              movePlane(this);
+            })
+            .addClass("pointer");
+          flag = true;
         }
       }
     });
@@ -1015,9 +1013,9 @@ if (typeof $j !== "undefined") {
    */
   function userStateBrowser(color) {
     let state;
-    for (let i = 0; i < planeOption.userList.length; i++) {
-      if (color == planeOption.userList[i].color) {
-        state = planeOption.userList[i].state;
+    for (const user of planeOption.userList) {
+      if (color == user.color) {
+        state = user.state;
       }
     }
     return state;
@@ -1075,8 +1073,8 @@ if (typeof $j !== "undefined") {
     // Count totals first
     let humanTotal = 0;
     let aiTotal = 0;
-    for (let i = 0; i < planeOption.userList.length; i++) {
-      const st = planeOption.userList[i].state;
+    for (const user of planeOption.userList) {
+      const st = user.state;
       if (st === "normal") humanTotal++;
       else if (st === "computer") aiTotal++;
     }
@@ -1084,8 +1082,7 @@ if (typeof $j !== "undefined") {
     let humanIdx = 0;
     let aiIdx = 0;
     let currentLabel = "玩家";
-    for (let i = 0; i < planeOption.userList.length; i++) {
-      const user = planeOption.userList[i];
+    for (const user of planeOption.userList) {
       let label;
       if (user.state === "normal") {
         humanIdx++;
@@ -1298,19 +1295,17 @@ if (typeof $j !== "undefined") {
       // Remote player selects a plane
       if (planeOption.currentUser !== remoteColor) return;
       const pn = actionData.pn;
-      let targetPlane = null;
-      $j(".plane").each(function () {
-        if (
-          $j(this).attr("type") === remoteColor &&
-          $j(this).attr("num") == pn &&
-          $j(this).hasClass("pointer")
-        ) {
-          targetPlane = this;
-          return false; // break
-        }
-      });
-      if (targetPlane) {
-        $j(targetPlane).trigger("click");
+      const targetPlane = $j(".plane")
+        .filter(function () {
+          return (
+            $j(this).attr("type") === remoteColor &&
+            $j(this).attr("num") == pn &&
+            $j(this).hasClass("pointer")
+          );
+        })
+        .first();
+      if (targetPlane.length) {
+        targetPlane.trigger("click");
       }
     }
   }
@@ -1334,19 +1329,11 @@ if (typeof $j !== "undefined") {
     window.onkeydown = function (e) {
       if (e.which) {
         if (e.which == 116) {
-          if (confirm("确定刷新页面吗？刷新后页面数据将被清除！")) {
-            return true;
-          } else {
-            return false;
-          }
+          return confirm("确定刷新页面吗？刷新后页面数据将被清除！");
         }
       } else if (e.keyCode) {
         if (e.keyCode == 116) {
-          if (confirm("确定刷新页面吗？刷新后页面数据将被清除！")) {
-            return true;
-          } else {
-            return false;
-          }
+          return confirm("确定刷新页面吗？刷新后页面数据将被清除！");
         }
       }
     };
