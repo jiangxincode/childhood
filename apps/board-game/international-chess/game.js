@@ -795,6 +795,8 @@ if (typeof module !== "undefined" && module.exports) {
 // ============================================================
 
 if (typeof document !== "undefined") {
+  // Initialize sound manager
+  SoundManager.init("../../audio");
   let gameState = null;
   let rpsChoices = { player1: null, player2: null, human: null };
   let canvas, context;
@@ -1026,6 +1028,9 @@ if (typeof document !== "undefined") {
   function showGameOver(state) {
     const winnerText = document.getElementById("winner-text");
     if (state.winner) {
+      // Play victory/lose sound
+      const isPlayerWin = state.mode === "pve" ? state.winner === state.playerTeam : true;
+      SoundManager.play(isPlayerWin ? "victory" : "lose");
       // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
       const label = getCurrentPlayerLabel({
         mode: state.mode,
@@ -1038,6 +1043,7 @@ if (typeof document !== "undefined") {
       winnerText.textContent = label.text + " 获胜！";
       winnerText.className = state.winner === WHITE ? "text-white-side" : "text-black-side";
     } else {
+      SoundManager.play("draw");
       winnerText.textContent = "和棋！";
       winnerText.className = "";
     }
@@ -1153,6 +1159,14 @@ if (typeof document !== "undefined") {
   }
 
   function doMove(move) {
+    // Play sound based on move type
+    const targetPiece = gameState.board[move.toC][move.toR];
+    if (targetPiece !== EMPTY) {
+      SoundManager.play("take");
+    } else {
+      SoundManager.play("slide");
+    }
+
     gameState.hasMoved.add(move.fromC + "," + move.fromR);
     gameState.hasMoved.add(move.toC + "," + move.toR);
     if (move.castling) {
@@ -1191,6 +1205,13 @@ if (typeof document !== "undefined") {
       const move = getBestAIMove(gameState.board, gameState.aiTeam, gameState.hasMoved);
       gameState.aiThinking = false;
       if (move) {
+        // Play sound based on move type
+        const targetPiece = gameState.board[move.toC][move.toR];
+        if (targetPiece !== EMPTY) {
+          SoundManager.play("take");
+        } else {
+          SoundManager.play("slide");
+        }
         gameState.hasMoved.add(move.fromC + "," + move.fromR);
         gameState.hasMoved.add(move.toC + "," + move.toR);
         if (move.castling) {
@@ -1422,6 +1443,7 @@ if (typeof document !== "undefined") {
     if (gameState && !gameState.gameOver) {
       gameState.gameOver = true;
       updateMessage("对方已断开连接", "error");
+      SoundManager.play("victory");
       const winnerText = document.getElementById("winner-text");
       winnerText.textContent = "对方已断开连接，你获胜！";
       document.getElementById("game-over").style.display = "flex";
@@ -1430,6 +1452,7 @@ if (typeof document !== "undefined") {
   }
 
   function handleRPSChoice(player, choice, ev) {
+    SoundManager.play("click");
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
@@ -1442,6 +1465,7 @@ if (typeof document !== "undefined") {
       const resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
       if (humanWins === 1) {
+        SoundManager.play("victory");
         resultEl.textContent =
           "你选择了" +
           getRPSName(choice) +
@@ -1452,6 +1476,7 @@ if (typeof document !== "undefined") {
           startGame("pve", WHITE);
         }, 1500);
       } else if (humanWins === -1) {
+        SoundManager.play("lose");
         resultEl.textContent =
           "你选择了" +
           getRPSName(choice) +
@@ -1462,6 +1487,7 @@ if (typeof document !== "undefined") {
           startGame("pve", BLACK);
         }, 1500);
       } else {
+        SoundManager.play("draw");
         resultEl.textContent =
           "你选择了" +
           getRPSName(choice) +
@@ -1483,16 +1509,19 @@ if (typeof document !== "undefined") {
         const resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
         if (winner === 1) {
+          SoundManager.play("victory");
           resultEl.textContent = "玩家1赢了！玩家1先手(白方)。";
           setTimeout(() => {
             startGame("pvp", WHITE);
           }, 1500);
         } else if (winner === -1) {
+          SoundManager.play("victory");
           resultEl.textContent = "玩家2赢了！玩家2先手(白方)。";
           setTimeout(() => {
             startGame("pvp", BLACK);
           }, 1500);
         } else {
+          SoundManager.play("draw");
           resultEl.textContent = "平局！重新选择。";
           rpsChoices.player1 = null;
           rpsChoices.player2 = null;

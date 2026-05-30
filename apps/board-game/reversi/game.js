@@ -304,6 +304,7 @@ function aiTurn(state) {
     if (bestMove) {
       // AI has valid move position
       makeMove(state.board, bestMove.x, bestMove.y, state.aiTeam);
+      SoundManager.play("place");
       state.lastMove = { x: bestMove.x, y: bestMove.y };
       state.turnCount++;
 
@@ -511,8 +512,12 @@ function showGameOver(state) {
   const counts = countPieces(state.board);
 
   if (state.winner === "draw") {
+    SoundManager.play("draw");
     winnerText.textContent = `游戏结束！平局！黑棋: ${counts.black} 白棋: ${counts.white}`;
   } else {
+    // Play victory/lose sound
+    const isPlayerWin = state.mode === "pve" ? state.winner === state.playerTeam : true;
+    SoundManager.play(isPlayerWin ? "victory" : "lose");
     let labelText;
     if (state.mode === "online") {
       labelText = state.winner === state.localTeam ? "你" : "对方";
@@ -560,6 +565,7 @@ function handleCellClick(x, y) {
   }
 
   // Execute move
+  SoundManager.play("place");
   makeMove(gameState.board, x, y, gameState.currentPlayer);
   gameState.lastMove = { x, y };
   gameState.turnCount++;
@@ -839,6 +845,7 @@ function handleDisconnect() {
   if (gameState && !gameState.gameOver) {
     gameState.gameOver = true;
     updateMessage("对方已断开连接", "error");
+    SoundManager.play("victory");
     const winnerText = document.getElementById("winner-text");
     winnerText.textContent = "对方已断开连接，你获胜！";
     document.getElementById("game-over").style.display = "flex";
@@ -858,6 +865,7 @@ let rpsChoices = { player1: null, player2: null, human: null };
  * @param {string} choice - 'rock' | 'scissors' | 'paper'
  */
 function handleRPSChoice(player, choice, ev) {
+  SoundManager.play("click");
   if (player === "human") {
     rpsChoices.human = choice;
     document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
@@ -875,12 +883,15 @@ function handleRPSChoice(player, choice, ev) {
     const humanWins = judgeRPS(choice, aiChoice);
 
     if (humanWins === 1) {
+      SoundManager.play("victory");
       resultElement.textContent = `你选择了${getRPSName(choice)}，电脑选择了${getRPSName(aiChoice)}，你赢了！你先手。`;
       setTimeout(() => startGame("pve", PLAYER_BLACK), 1500);
     } else if (humanWins === -1) {
+      SoundManager.play("lose");
       resultElement.textContent = `你选择了${getRPSName(choice)}，电脑选择了${getRPSName(aiChoice)}，你输了！电脑先手。`;
       setTimeout(() => startGame("pve", PLAYER_WHITE), 1500);
     } else {
+      SoundManager.play("draw");
       resultElement.textContent = `你选择了${getRPSName(choice)}，电脑选择了${getRPSName(aiChoice)}，Draw！重新选择。`;
       rpsChoices.human = null;
       rpsChoices.player2 = null;
@@ -901,12 +912,15 @@ function handleRPSChoice(player, choice, ev) {
       const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
       if (winner === 1) {
+        SoundManager.play("victory");
         resultElement.textContent = `玩家1选择了${getRPSName(rpsChoices.player1)}，玩家2选择了${getRPSName(rpsChoices.player2)}，玩家1赢了！玩家1先手。`;
         setTimeout(() => startGame("pvp", PLAYER_BLACK), 1500);
       } else if (winner === -1) {
+        SoundManager.play("victory");
         resultElement.textContent = `玩家1选择了${getRPSName(rpsChoices.player1)}，玩家2选择了${getRPSName(rpsChoices.player2)}，玩家2赢了！玩家2先手。`;
         setTimeout(() => startGame("pvp", PLAYER_WHITE), 1500);
       } else {
+        SoundManager.play("draw");
         resultElement.textContent = `玩家1选择了${getRPSName(rpsChoices.player1)}，玩家2选择了${getRPSName(rpsChoices.player2)}，Draw！重新选择。`;
         rpsChoices.player1 = null;
         rpsChoices.player2 = null;
@@ -946,6 +960,8 @@ if (typeof module !== "undefined" && module.exports) {
 // ============================================================
 
 if (typeof document !== "undefined") {
+  // Initialize sound manager
+  SoundManager.init("../../audio");
   document.addEventListener("DOMContentLoaded", () => {
     // Mode selection buttons
     document.getElementById("btn-pvp").addEventListener("click", () => {

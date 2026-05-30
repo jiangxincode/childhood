@@ -375,6 +375,8 @@ if (typeof module !== "undefined" && module.exports) {
 // Browser UI (SVG board with intersections)
 // ============================================================
 if (typeof document !== "undefined") {
+  // Initialize sound manager
+  SoundManager.init("../../audio");
   var state = null;
   var selectedPiece = null;
   var rpsChoices = { player1: null, player2: null, human: null };
@@ -583,6 +585,7 @@ if (typeof document !== "undefined") {
   }
 
   function commitMove(move) {
+    SoundManager.play("slide");
     var result = applyMoveWithCaptures(state.board, move, state.currentPlayer);
     state.board = result.board;
     state.lastMove = move;
@@ -607,6 +610,8 @@ if (typeof document !== "undefined") {
     if (winResult) {
       state.gameOver = true;
       state.winner = winResult.winner;
+      var isPlayerWin = state.mode === "pve" ? state.winner === state.playerTeam : true;
+      SoundManager.play(isPlayerWin ? "victory" : "lose");
       renderGame();
       return;
     }
@@ -617,6 +622,8 @@ if (typeof document !== "undefined") {
     if (!hasValidMoves(state.board, state.currentPlayer)) {
       state.gameOver = true;
       state.winner = getOpponent(state.currentPlayer);
+      var isPlayerWin2 = state.mode === "pve" ? state.winner === state.playerTeam : true;
+      SoundManager.play(isPlayerWin2 ? "victory" : "lose");
       renderGame();
       return;
     }
@@ -859,21 +866,25 @@ if (typeof document !== "undefined") {
   }
 
   function handleRPSChoice(choice) {
+    SoundManager.play("click");
     var aiChoices = ["rock", "scissors", "paper"];
     var aiChoice = aiChoices[Math.floor(Math.random() * 3)];
     var result = judgeRPS(choice, aiChoice);
     var resultDiv = document.getElementById("rps-result");
     if (result === 1) {
+      SoundManager.play("victory");
       resultDiv.innerHTML =
         "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，你先手！</p>";
       // Player wins RPS -> human (B) goes first.
       setTimeout(() => startGame("pve", PLAYER_B), 1200);
     } else if (result === -1) {
+      SoundManager.play("lose");
       resultDiv.innerHTML =
         "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，电脑先手！</p>";
       // AI wins RPS -> AI (A) goes first.
       setTimeout(() => startGame("pve", PLAYER_A), 1200);
     } else {
+      SoundManager.play("draw");
       resultDiv.innerHTML = "<p>平局！再来一次</p>";
     }
   }

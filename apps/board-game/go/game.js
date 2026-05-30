@@ -635,6 +635,8 @@ if (typeof module !== "undefined" && module.exports) {
 // ============================================================
 
 if (typeof document !== "undefined") {
+  // Initialize sound manager
+  SoundManager.init("../../audio");
   let gameState = null;
   let rpsChoices = { player1: null, player2: null, human: null };
   let canvas, context;
@@ -825,6 +827,10 @@ if (typeof document !== "undefined") {
   function showGameOver(state) {
     const winnerText = document.getElementById("winner-text");
     const scoreDetail = document.getElementById("score-detail");
+
+    // Play victory/lose sound
+    const isPlayerWin = state.mode === "pve" ? state.winner === state.playerTeam : true;
+    SoundManager.play(isPlayerWin ? "victory" : "lose");
     const score = calculateScore(state.board);
     const blackTotal = score.black + state.capturesBlack;
     const whiteTotal = score.white + state.capturesWhite + state.komi;
@@ -910,6 +916,13 @@ if (typeof document !== "undefined") {
     if (result === null) {
       updateMessage("非法落子！", "error");
       return;
+    }
+
+    // Play sound based on whether stones were captured
+    if (result.captures > 0) {
+      SoundManager.play("take");
+    } else {
+      SoundManager.play("place");
     }
 
     gameState.board = result.board;
@@ -1227,6 +1240,7 @@ if (typeof document !== "undefined") {
     if (gameState && !gameState.gameOver) {
       gameState.gameOver = true;
       updateMessage("对方已断开连接", "error");
+      SoundManager.play("victory");
       const winnerText = document.getElementById("winner-text");
       winnerText.textContent = "对方已断开连接，你获胜！";
       document.getElementById("game-over").style.display = "flex";
@@ -1235,6 +1249,7 @@ if (typeof document !== "undefined") {
   }
 
   function handleRPSChoice(player, choice, ev) {
+    SoundManager.play("click");
     if (player === "human") {
       rpsChoices.human = choice;
       document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
@@ -1250,6 +1265,7 @@ if (typeof document !== "undefined") {
       const humanWins = judgeRPS(choice, aiChoice);
 
       if (humanWins === 1) {
+        SoundManager.play("victory");
         resultEl.textContent =
           "你选择了" +
           getRPSName(choice) +
@@ -1260,6 +1276,7 @@ if (typeof document !== "undefined") {
           startGame("pve", BLACK);
         }, 1500);
       } else if (humanWins === -1) {
+        SoundManager.play("lose");
         resultEl.textContent =
           "你选择了" +
           getRPSName(choice) +
@@ -1270,6 +1287,7 @@ if (typeof document !== "undefined") {
           startGame("pve", WHITE);
         }, 1500);
       } else {
+        SoundManager.play("draw");
         resultEl.textContent =
           "你选择了" +
           getRPSName(choice) +
@@ -1294,6 +1312,7 @@ if (typeof document !== "undefined") {
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
 
         if (winner === 1) {
+          SoundManager.play("victory");
           resultEl.textContent =
             "玩家1选择了" +
             getRPSName(rpsChoices.player1) +
@@ -1304,6 +1323,7 @@ if (typeof document !== "undefined") {
             startGame("pvp", BLACK);
           }, 1500);
         } else if (winner === -1) {
+          SoundManager.play("victory");
           resultEl.textContent =
             "玩家1选择了" +
             getRPSName(rpsChoices.player1) +
@@ -1314,6 +1334,7 @@ if (typeof document !== "undefined") {
             startGame("pvp", WHITE);
           }, 1500);
         } else {
+          SoundManager.play("draw");
           resultEl.textContent =
             "玩家1选择了" +
             getRPSName(rpsChoices.player1) +

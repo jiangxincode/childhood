@@ -311,6 +311,8 @@ if (typeof module !== "undefined" && module.exports) {
 // UI controller (browser environment only)
 // ============================================================
 if (typeof document !== "undefined") {
+  // Initialize sound manager
+  SoundManager.init("../../audio");
   let gameState = null;
 
   // DOM elements
@@ -571,11 +573,13 @@ if (typeof document !== "undefined") {
 
   function showGameOverScreen(winner) {
     if (winner === "draw") {
+      SoundManager.play("draw");
       $winnerText.textContent = "平局！";
       $gameOver.style.display = "flex";
       return;
     }
     if (gameState.mode === "online") {
+      SoundManager.play(winner === localTeam ? "victory" : "lose");
       $winnerText.textContent = winner === localTeam ? "你获胜了！" : "你失败了！";
     } else {
       // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of color
@@ -615,6 +619,7 @@ if (typeof document !== "undefined") {
     const choiceNames = { rock: "石头", scissors: "剪刀", paper: "布" };
 
     if (result === 0) {
+      SoundManager.play("draw");
       $rpsResult.textContent = "双方都出了" + choiceNames[choice1] + "，平局！重新选择";
       setTimeout(() => {
         showRPSSelection(mode);
@@ -623,6 +628,7 @@ if (typeof document !== "undefined") {
     }
 
     if (mode === "pvp") {
+      SoundManager.play("victory");
       const winner = result === 1 ? "玩家1" : "玩家2";
       $rpsResult.textContent = winner + " 获胜！" + winner + "先手";
       const firstTeam = result === 1 ? "red" : "blue";
@@ -634,6 +640,7 @@ if (typeof document !== "undefined") {
       const aiChoiceName = choiceNames[choice2];
       if (result === 1) {
         // Player won RPS -> player goes first
+        SoundManager.play("victory");
         $rpsResult.textContent = "电脑出了" + aiChoiceName + "，你赢了！你先手";
         gameState.aiFirst = false;
         setTimeout(() => {
@@ -641,6 +648,7 @@ if (typeof document !== "undefined") {
         }, 1500);
       } else {
         // Computer won RPS -> computer goes first
+        SoundManager.play("lose");
         $rpsResult.textContent = "电脑出了" + aiChoiceName + "，电脑赢了！电脑先手";
         gameState.aiFirst = true;
         setTimeout(() => {
@@ -766,6 +774,7 @@ if (typeof document !== "undefined") {
         ) {
           const result = captureCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
           if (result) {
+            SoundManager.play(gameState.board[sel.y][sel.x] === null ? "destroy" : "capture");
             gameState.selectedCell = null;
             clearHighlights();
             if (gameState.mode === "online" && networkProtocol) {
@@ -784,6 +793,7 @@ if (typeof document !== "undefined") {
       if (!card) {
         const moveResult = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
         if (moveResult) {
+          SoundManager.play("move");
           gameState.selectedCell = null;
           clearHighlights();
           if (gameState.mode === "online" && networkProtocol) {
@@ -813,6 +823,7 @@ if (typeof document !== "undefined") {
     if (card && !card.faceUp) {
       const flipResult = flipCard(gameState, x, y);
       if (flipResult) {
+        SoundManager.play("flip");
         clearHighlights();
         // In online mode, assign teams on first flip
         if (gameState.mode === "online" && !gameState.teamAssigned) {
@@ -869,6 +880,7 @@ if (typeof document !== "undefined") {
       cell.classList.add("cell-ai-highlight");
 
       flipCard(gameState, decision.x, decision.y);
+      SoundManager.play("flip");
       renderBoard(gameState);
 
       // Re-get cell and highlight after flip
@@ -886,6 +898,7 @@ if (typeof document !== "undefined") {
 
       setTimeout(() => {
         moveCard(gameState, decision.from, decision.to);
+        SoundManager.play("move");
         renderBoard(gameState);
 
         const toCell = getCell(decision.to.x, decision.to.y);
@@ -905,6 +918,9 @@ if (typeof document !== "undefined") {
 
       setTimeout(() => {
         captureCard(gameState, decision.from, decision.to);
+        SoundManager.play(
+          gameState.board[decision.from.y][decision.from.x] === null ? "destroy" : "capture"
+        );
         renderBoard(gameState);
 
         const newCell = getCell(decision.to.x, decision.to.y);

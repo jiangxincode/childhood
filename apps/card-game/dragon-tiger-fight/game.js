@@ -442,6 +442,8 @@ if (typeof module !== "undefined" && module.exports) {
 // UI controller (browser environment only)
 // ============================================================
 if (typeof document !== "undefined") {
+  // Initialize sound manager
+  SoundManager.init("../../audio");
   let gameState = null;
 
   // DOM elements
@@ -867,12 +869,15 @@ if (typeof document !== "undefined") {
 
   function showGameOverScreen(winner) {
     if (winner === "draw") {
+      SoundManager.play("draw");
       $winnerText.textContent = "平局！";
       $gameOver.style.display = "flex";
       return;
     }
     if (gameState.mode === "online") {
-      $winnerText.textContent = winner === localTeam ? "你获胜了！" : "你失败了！";
+      const isWin = winner === localTeam;
+      SoundManager.play(isWin ? "victory" : "lose");
+      $winnerText.textContent = isWin ? "你获胜了！" : "你失败了！";
     } else {
       // Show 玩家/电脑 (PVE) or 玩家1/玩家2 (PVP) instead of dragon/tiger
       const label = getCurrentPlayerLabel({
@@ -883,6 +888,9 @@ if (typeof document !== "undefined") {
           ? [gameState.firstPlayer, gameState.firstPlayer === "dragon" ? "tiger" : "dragon"]
           : ["dragon", "tiger"],
       });
+      // Play victory/lose sound based on winner
+      const isPlayerWin = gameState.mode === "pve" ? winner === gameState.playerTeam : true;
+      SoundManager.play(isPlayerWin ? "victory" : "lose");
       $winnerText.textContent = label.text + " 获胜！";
     }
     $gameOver.style.display = "flex";
@@ -911,6 +919,7 @@ if (typeof document !== "undefined") {
     const choiceNames = { rock: "石头", scissors: "剪刀", paper: "布" };
 
     if (result === 0) {
+      SoundManager.play("draw");
       $rpsResult.textContent = "双方都出了" + choiceNames[choice1] + "，平局！重新选择";
       setTimeout(() => {
         showRPSSelection(mode);
@@ -919,6 +928,7 @@ if (typeof document !== "undefined") {
     }
 
     if (mode === "pvp") {
+      SoundManager.play("victory");
       const winner = result === 1 ? "玩家1" : "玩家2";
       $rpsResult.textContent = winner + " 获胜！" + winner + "先手";
       const firstTeam = result === 1 ? "dragon" : "tiger";
@@ -930,6 +940,7 @@ if (typeof document !== "undefined") {
       const aiChoiceName = choiceNames[choice2];
       if (result === 1) {
         // Player won RPS -> player goes first
+        SoundManager.play("victory");
         $rpsResult.textContent = "电脑出了" + aiChoiceName + "，你赢了！你先手";
         gameState.aiFirst = false;
         setTimeout(() => {
@@ -937,6 +948,7 @@ if (typeof document !== "undefined") {
         }, 1500);
       } else {
         // Computer won RPS -> computer goes first
+        SoundManager.play("lose");
         $rpsResult.textContent = "电脑出了" + aiChoiceName + "，电脑赢了！电脑先手";
         gameState.aiFirst = true;
         setTimeout(() => {
@@ -949,6 +961,7 @@ if (typeof document !== "undefined") {
   // PVP Rock-Paper-Scissors buttons
   document.querySelectorAll("#rps-pvp .btn-rps").forEach((btn) => {
     btn.addEventListener("click", () => {
+      SoundManager.play("click");
       const player = btn.dataset.player;
       const choice = btn.dataset.choice;
 
@@ -977,6 +990,7 @@ if (typeof document !== "undefined") {
   // PVE Rock-Paper-Scissors buttons
   document.querySelectorAll("#rps-pve .btn-rps").forEach((btn) => {
     btn.addEventListener("click", () => {
+      SoundManager.play("click");
       const playerChoice = btn.dataset.choice;
       const choices = ["rock", "scissors", "paper"];
       const aiChoice = choices[Math.floor(Math.random() * 3)];
@@ -1091,8 +1105,15 @@ if (typeof document !== "undefined") {
             (t) => t.x === x && t.y === y
           )
         ) {
+          // Save pieces before capture (captureCard modifies the board)
+          const attacker = gameState.board[sel.y][sel.x];
+          const defender = gameState.board[y][x];
+          const isMutual = attacker && defender && attacker.rank === defender.rank;
+
           const result = captureCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
           if (result) {
+            // Play sound based on capture type
+            SoundManager.play(isMutual ? "destroy" : "capture");
             gameState.selectedCell = null;
             clearHighlights();
             if (gameState.mode === "online" && networkProtocol) {
@@ -1111,6 +1132,7 @@ if (typeof document !== "undefined") {
       if (!card) {
         const moveResult = moveCard(gameState, { x: sel.x, y: sel.y }, { x: x, y: y });
         if (moveResult) {
+          SoundManager.play("move");
           gameState.selectedCell = null;
           clearHighlights();
           if (gameState.mode === "online" && networkProtocol) {
@@ -1140,6 +1162,7 @@ if (typeof document !== "undefined") {
     if (card && !card.faceUp) {
       const flipResult = flipCard(gameState, x, y);
       if (flipResult) {
+        SoundManager.play("flip");
         clearHighlights();
         // In online mode, assign teams on first flip
         if (gameState.mode === "online" && !gameState.teamAssigned) {
