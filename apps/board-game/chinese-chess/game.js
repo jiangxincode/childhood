@@ -919,9 +919,9 @@ if (typeof document !== "undefined") {
     if (state.gameOver) {
       updateMessage("游戏结束！", "info");
     } else if (state.aiThinking) {
-      updateMessage("AI正在思考...", "info");
+      updateMessage("电脑正在思考...", "info");
     } else if (state.mode === "pve" && state.currentPlayer === state.aiTeam) {
-      updateMessage("轮到AI行动", "info");
+      updateMessage("轮到电脑行动", "info");
     } else {
       updateMessage("轮到 " + label.text + " 行动", "info");
     }
@@ -1328,7 +1328,7 @@ if (typeof document !== "undefined") {
         resultEl.textContent =
           "你选择了" +
           getRPSName(choice) +
-          "，AI选择了" +
+          "，电脑选择了" +
           getRPSName(aiChoice) +
           "，你赢了！你先手(红方)。";
         setTimeout(() => {
@@ -1338,9 +1338,9 @@ if (typeof document !== "undefined") {
         resultEl.textContent =
           "你选择了" +
           getRPSName(choice) +
-          "，AI选择了" +
+          "，电脑选择了" +
           getRPSName(aiChoice) +
-          "，你输了！AI先手(红方)。";
+          "，你输了！电脑先手(红方)。";
         setTimeout(() => {
           startGame("pve", BLACK);
         }, 1500);
@@ -1348,7 +1348,7 @@ if (typeof document !== "undefined") {
         resultEl.textContent =
           "你选择了" +
           getRPSName(choice) +
-          "，AI选择了" +
+          "，电脑选择了" +
           getRPSName(aiChoice) +
           "，平局！重新选择。";
         rpsChoices.human = null;

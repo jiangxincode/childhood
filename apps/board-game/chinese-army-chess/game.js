@@ -1798,7 +1798,7 @@ if (typeof document !== "undefined") {
         resultEl.textContent =
           "你选择了" +
           getRPSName(choice) +
-          "，AI选择了" +
+          "，电脑选择了" +
           getRPSName(aiChoice) +
           "，你赢了！你先手。";
         setTimeout(() => {
@@ -1808,9 +1808,9 @@ if (typeof document !== "undefined") {
         resultEl.textContent =
           "你选择了" +
           getRPSName(choice) +
-          "，AI选择了" +
+          "，电脑选择了" +
           getRPSName(aiChoice) +
-          "，你输了！AI先手。";
+          "，你输了！电脑先手。";
         setTimeout(() => {
           startGame(pendingMode, BLUE);
         }, 1500);
@@ -1818,7 +1818,7 @@ if (typeof document !== "undefined") {
         resultEl.textContent =
           "你选择了" +
           getRPSName(choice) +
-          "，AI选择了" +
+          "，电脑选择了" +
           getRPSName(aiChoice) +
           "，平局！重新选择。";
         rpsChoices.human = null;

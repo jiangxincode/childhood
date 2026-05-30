@@ -547,7 +547,7 @@ if (typeof document !== "undefined") {
     document.getElementById("moves-b").textContent = getValidMoves(state.board, PLAYER_B).length;
 
     if (state.aiThinking) {
-      document.getElementById("message").textContent = "AI 思考中…";
+      document.getElementById("message").textContent = "电脑思考中…";
       document.getElementById("message").className = "info";
     } else {
       document.getElementById("message").textContent = "";
@@ -865,11 +865,11 @@ if (typeof document !== "undefined") {
     var resultDiv = document.getElementById("rps-result");
     if (result === 1) {
       resultDiv.innerHTML =
-        "<p>你出" + getRPSName(choice) + "，AI出" + getRPSName(aiChoice) + "，你先手！</p>";
+        "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，你先手！</p>";
       setTimeout(() => startGame("pve", PLAYER_A), 1200);
     } else if (result === -1) {
       resultDiv.innerHTML =
-        "<p>你出" + getRPSName(choice) + "，AI出" + getRPSName(aiChoice) + "，AI先手！</p>";
+        "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，电脑先手！</p>";
       setTimeout(() => startGame("pve", PLAYER_B), 1200);
     } else {
       resultDiv.innerHTML = "<p>平局！再来一次</p>";

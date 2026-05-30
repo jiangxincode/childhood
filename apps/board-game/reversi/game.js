@@ -295,7 +295,7 @@ function aiTurn(state) {
   if (state.gameOver || state.currentPlayer !== state.aiTeam) return;
 
   state.aiThinking = true;
-  updateMessage("AI正在思考...", "info");
+  updateMessage("电脑正在思考...", "info");
 
   // Simulate AI thinking time
   setTimeout(() => {
@@ -483,9 +483,9 @@ function renderGame(state) {
       "info"
     );
   } else if (state.aiThinking) {
-    updateMessage("AI正在思考...", "info");
+    updateMessage("电脑正在思考...", "info");
   } else if (state.mode === "pve" && state.currentPlayer === state.aiTeam) {
-    updateMessage("轮到AI行动", "info");
+    updateMessage("轮到电脑行动", "info");
   } else {
     updateMessage(`轮到${state.currentPlayer === PLAYER_BLACK ? "黑棋" : "白棋"}行动`, "info");
   }
@@ -875,13 +875,13 @@ function handleRPSChoice(player, choice, ev) {
     const humanWins = judgeRPS(choice, aiChoice);
 
     if (humanWins === 1) {
-      resultElement.textContent = `你选择了${getRPSName(choice)}，AI选择了${getRPSName(aiChoice)}，你赢了！你先手。`;
+      resultElement.textContent = `你选择了${getRPSName(choice)}，电脑选择了${getRPSName(aiChoice)}，你赢了！你先手。`;
       setTimeout(() => startGame("pve", PLAYER_BLACK), 1500);
     } else if (humanWins === -1) {
-      resultElement.textContent = `你选择了${getRPSName(choice)}，AI选择了${getRPSName(aiChoice)}，你输了！AI先手。`;
+      resultElement.textContent = `你选择了${getRPSName(choice)}，电脑选择了${getRPSName(aiChoice)}，你输了！电脑先手。`;
       setTimeout(() => startGame("pve", PLAYER_WHITE), 1500);
     } else {
-      resultElement.textContent = `你选择了${getRPSName(choice)}，AI选择了${getRPSName(aiChoice)}，Draw！重新选择。`;
+      resultElement.textContent = `你选择了${getRPSName(choice)}，电脑选择了${getRPSName(aiChoice)}，Draw！重新选择。`;
       rpsChoices.human = null;
       rpsChoices.player2 = null;
     }
