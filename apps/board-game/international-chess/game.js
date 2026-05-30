@@ -690,18 +690,18 @@ function getBestAIMove(board, aiColor, hasMoved) {
     let scoreA;
     if (a.promotion) {
       scoreA = 800;
-    } else if (board[a.toC][a.toR] !== EMPTY) {
-      scoreA = PIECE_VALUES[board[a.toC][a.toR]];
-    } else {
+    } else if (board[a.toC][a.toR] === EMPTY) {
       scoreA = 0;
+    } else {
+      scoreA = PIECE_VALUES[board[a.toC][a.toR]];
     }
     let scoreB;
     if (b.promotion) {
       scoreB = 800;
-    } else if (board[b.toC][b.toR] !== EMPTY) {
-      scoreB = PIECE_VALUES[board[b.toC][b.toR]];
-    } else {
+    } else if (board[b.toC][b.toR] === EMPTY) {
       scoreB = 0;
+    } else {
+      scoreB = PIECE_VALUES[board[b.toC][b.toR]];
     }
     return scoreB - scoreA;
   });

@@ -1217,16 +1217,16 @@ if (typeof document !== "undefined") {
       } else {
         showMessage("等待对方操作...", "info");
       }
-    } else if (!gameState.teamAssigned) {
-      // PVP - show 玩家1 / 玩家2 instead of dragon/tiger
-      showMessage("请翻开一张牌", "");
-    } else {
+    } else if (gameState.teamAssigned) {
       const sidesOrder = gameState.firstPlayer
         ? [gameState.firstPlayer, gameState.firstPlayer === "dragon" ? "tiger" : "dragon"]
         : ["dragon", "tiger"];
       const idx = sidesOrder.indexOf(gameState.currentTeam);
       const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
       showMessage(playerName + "的回合", "");
+    } else {
+      // PVP - show 玩家1 / 玩家2 instead of dragon/tiger
+      showMessage("请翻开一张牌", "");
     }
   }
 

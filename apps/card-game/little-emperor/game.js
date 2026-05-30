@@ -934,21 +934,21 @@ if (typeof document !== "undefined") {
       if (gameState.teamAssigned && gameState.currentTeam === gameState.aiTeam) {
         // AI turn
         triggerAI();
-      } else if (!gameState.teamAssigned) {
-        showMessage("请翻开一张牌", "");
-      } else {
+      } else if (gameState.teamAssigned) {
         showMessage("你的回合", "");
+      } else {
+        showMessage("请翻开一张牌", "");
       }
-    } else if (!gameState.teamAssigned) {
-      // PVP - show 玩家1 / 玩家2 instead of color
-      showMessage("请翻开一张牌", "");
-    } else {
+    } else if (gameState.teamAssigned) {
       const sidesOrder = gameState.firstPlayer
         ? [gameState.firstPlayer, gameState.firstPlayer === "red" ? "blue" : "red"]
         : ["red", "blue"];
       const idx = sidesOrder.indexOf(gameState.currentTeam);
       const playerName = idx >= 0 ? "玩家" + (idx + 1) : "玩家";
       showMessage(playerName + "的回合", "");
+    } else {
+      // PVP - show 玩家1 / 玩家2 instead of color
+      showMessage("请翻开一张牌", "");
     }
   }
 
