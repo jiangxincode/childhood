@@ -1118,24 +1118,48 @@ if (typeof document !== "undefined") {
     // Horizontal highways
     const hHighwayRows = [0, 2, 3, 4, 7, 8, 9, 11];
     for (const y of hHighwayRows) {
-      addSVGLine(gHighway, ns, svgX(0), svgY(y), svgX(4), svgY(y), "gray", 1);
+      addSVGLine(gHighway, ns, { x1: svgX(0), y1: svgY(y), x2: svgX(4), y2: svgY(y) }, "gray", 1);
     }
     // Vertical highways
     for (let x = 0; x < COLS; x++) {
-      addSVGLine(gHighway, ns, svgX(x), svgY(0), svgX(x), svgY(5), "gray", 1);
-      addSVGLine(gHighway, ns, svgX(x), svgY(6), svgX(x), svgY(11), "gray", 1);
+      addSVGLine(gHighway, ns, { x1: svgX(x), y1: svgY(0), x2: svgX(x), y2: svgY(5) }, "gray", 1);
+      addSVGLine(gHighway, ns, { x1: svgX(x), y1: svgY(6), x2: svgX(x), y2: svgY(11) }, "gray", 1);
     }
 
     // ---- Railways (gold/black striped thick lines) ----
     // Horizontal railways
     const hRailRows = [1, 5, 6, 10];
     for (const y of hRailRows) {
-      addSVGLine(gRailway, ns, svgX(0), svgY(y), svgX(4), svgY(y), "url(#rail-stripe)", 4);
+      addSVGLine(
+        gRailway,
+        ns,
+        { x1: svgX(0), y1: svgY(y), x2: svgX(4), y2: svgY(y) },
+        "url(#rail-stripe)",
+        4
+      );
     }
     // Vertical railways
-    addSVGLine(gRailway, ns, svgX(0), svgY(1), svgX(0), svgY(10), "url(#rail-stripe)", 4);
-    addSVGLine(gRailway, ns, svgX(4), svgY(1), svgX(4), svgY(10), "url(#rail-stripe)", 4);
-    addSVGLine(gRailway, ns, svgX(2), svgY(5), svgX(2), svgY(6), "url(#rail-stripe)", 4);
+    addSVGLine(
+      gRailway,
+      ns,
+      { x1: svgX(0), y1: svgY(1), x2: svgX(0), y2: svgY(10) },
+      "url(#rail-stripe)",
+      4
+    );
+    addSVGLine(
+      gRailway,
+      ns,
+      { x1: svgX(4), y1: svgY(1), x2: svgX(4), y2: svgY(10) },
+      "url(#rail-stripe)",
+      4
+    );
+    addSVGLine(
+      gRailway,
+      ns,
+      { x1: svgX(2), y1: svgY(5), x2: svgX(2), y2: svgY(6) },
+      "url(#rail-stripe)",
+      4
+    );
 
     // ---- Diagonals (gray dashed lines) ----
     const drawn = {};
@@ -1245,12 +1269,12 @@ if (typeof document !== "undefined") {
     updateScale();
   }
 
-  function addSVGLine(parent, ns, x1, y1, x2, y2, stroke, strokeWidth) {
+  function addSVGLine(parent, ns, coords, stroke, strokeWidth) {
     const line = document.createElementNS(ns, "line");
-    line.setAttribute("x1", x1);
-    line.setAttribute("y1", y1);
-    line.setAttribute("x2", x2);
-    line.setAttribute("y2", y2);
+    line.setAttribute("x1", coords.x1);
+    line.setAttribute("y1", coords.y1);
+    line.setAttribute("x2", coords.x2);
+    line.setAttribute("y2", coords.y2);
     line.setAttribute("stroke", stroke);
     line.setAttribute("stroke-width", strokeWidth);
     parent.appendChild(line);
