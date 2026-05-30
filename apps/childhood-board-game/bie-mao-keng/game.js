@@ -780,14 +780,14 @@ if (typeof document !== "undefined") {
       if (result === 1) {
         // Player wins RPS, player goes first (player is B in PvE)
         resultDiv.innerHTML =
-          "<p>你出" + getRPSName(choice) + "，AI出" + getRPSName(aiChoice) + "，你先手！</p>";
+          "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，你先手！</p>";
         setTimeout(() => {
           startGame("pve", PLAYER_B);
         }, 1500);
       } else if (result === -1) {
         // AI wins RPS, AI goes first (AI is A in PvE)
         resultDiv.innerHTML =
-          "<p>你出" + getRPSName(choice) + "，AI出" + getRPSName(aiChoice) + "，AI先手！</p>";
+          "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，电脑先手！</p>";
         setTimeout(() => {
           startGame("pve", PLAYER_A);
         }, 1500);

@@ -627,13 +627,13 @@ if (typeof document !== "undefined") {
       var resultDiv = document.getElementById("rps-result");
       if (result === 1) {
         resultDiv.innerHTML =
-          "<p>你出" + getRPSName(choice) + "，AI出" + getRPSName(aiChoice) + "，你先手！</p>";
+          "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，你先手！</p>";
         setTimeout(() => {
           startGame("pve", PLAYER_A);
         }, 1500);
       } else if (result === -1) {
         resultDiv.innerHTML =
-          "<p>你出" + getRPSName(choice) + "，AI出" + getRPSName(aiChoice) + "，AI先手！</p>";
+          "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，电脑先手！</p>";
         setTimeout(() => {
           startGame("pve", PLAYER_B);
         }, 1500);
