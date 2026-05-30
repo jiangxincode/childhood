@@ -61,8 +61,8 @@ describe("constants", () => {
     expect(RED).toBe("red");
     expect(BLACK).toBe("black");
   });
-  it("AI_DEPTH is 3", () => {
-    expect(AI_DEPTH).toBe(3);
+  it("AI_DEPTH is 4", () => {
+    expect(AI_DEPTH).toBe(4);
   });
 });
 
@@ -538,7 +538,7 @@ describe("getBestAIMove", () => {
     expect(move.fromR).toBeDefined();
     expect(move.toC).toBeDefined();
     expect(move.toR).toBeDefined();
-  });
+  }, 10000);
   it("takes winning capture when available", () => {
     var board = [];
     for (var c = 0; c < COLS; c++) board.push(new Array(ROWS).fill(EMPTY));

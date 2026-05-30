@@ -30,7 +30,7 @@ const B_GENERAL = 8,
 const RED = "red";
 const BLACK = "black";
 
-const AI_DEPTH = 3;
+const AI_DEPTH = 4;
 
 const PIECE_NAMES = {};
 PIECE_NAMES[R_GENERAL] = "帥";
@@ -103,6 +103,98 @@ const SOLDIER_POS_BLACK = [
   [0, 0, 0, 0, 0, 70, 110, 110, 110, 0],
   [0, 0, 0, 0, 0, 70, 90, 90, 90, 0],
   [0, 0, 0, 0, 0, 70, 70, 90, 90, 0],
+];
+
+// Chariot position bonus: strong on center files and open files
+// Indexed as [col][row], so 9 columns x 10 rows
+const CHARIOT_POS = [
+  [14, 16, 14, 14, 12, 12, 14, 14, 16, 14], // col 0
+  [18, 22, 22, 24, 22, 22, 24, 22, 22, 18], // col 1
+  [20, 26, 28, 30, 28, 28, 30, 28, 26, 20], // col 2
+  [22, 28, 30, 34, 32, 32, 34, 30, 28, 22], // col 3
+  [24, 30, 32, 36, 36, 36, 36, 32, 30, 24], // col 4 (center)
+  [22, 28, 30, 34, 32, 32, 34, 30, 28, 22], // col 5
+  [20, 26, 28, 30, 28, 28, 30, 28, 26, 20], // col 6
+  [18, 22, 22, 24, 22, 22, 24, 22, 22, 18], // col 7
+  [14, 16, 14, 14, 12, 12, 14, 14, 16, 14], // col 8
+];
+
+// Horse position bonus: strong in center, weak on edges
+const HORSE_POS = [
+  [0, 4, 8, 10, 10, 10, 10, 8, 4, 0], // col 0 (edge)
+  [4, 10, 14, 16, 16, 16, 16, 14, 10, 4], // col 1
+  [8, 16, 20, 22, 22, 22, 22, 20, 16, 8], // col 2
+  [12, 20, 24, 26, 26, 26, 26, 24, 20, 12], // col 3
+  [14, 22, 26, 28, 28, 28, 28, 26, 22, 14], // col 4 (center)
+  [12, 20, 24, 26, 26, 26, 26, 24, 20, 12], // col 5
+  [8, 16, 20, 22, 22, 22, 22, 20, 16, 8], // col 6
+  [4, 10, 14, 16, 16, 16, 16, 14, 10, 4], // col 7
+  [0, 4, 8, 10, 10, 10, 10, 8, 4, 0], // col 8 (edge)
+];
+
+// Cannon position bonus: strong in center, needs platforms
+const CANNON_POS = [
+  [8, 10, 10, 10, 8, 8, 10, 10, 10, 8], // col 0
+  [10, 14, 14, 14, 12, 12, 14, 14, 14, 10], // col 1
+  [12, 16, 18, 18, 16, 16, 18, 18, 16, 12], // col 2
+  [14, 18, 20, 20, 18, 18, 20, 20, 18, 14], // col 3
+  [16, 20, 22, 22, 20, 20, 22, 22, 20, 16], // col 4 (center)
+  [14, 18, 20, 20, 18, 18, 20, 20, 18, 14], // col 5
+  [12, 16, 18, 18, 16, 16, 18, 18, 16, 12], // col 6
+  [10, 14, 14, 14, 12, 12, 14, 14, 14, 10], // col 7
+  [8, 10, 10, 10, 8, 8, 10, 10, 10, 8], // col 8
+];
+
+// Advisor position bonus: stay in palace (cols 3-5, rows 7-9 for red, 0-2 for black)
+// Indexed as [col][row], so 9 columns x 10 rows
+const ADVISOR_POS_RED = [
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 0
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 1
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 2
+  [0, 0, 0, 0, 0, 0, 0, 10, 14, 10], // col 3
+  [0, 0, 0, 0, 0, 0, 0, 14, 18, 14], // col 4 (center)
+  [0, 0, 0, 0, 0, 0, 0, 10, 14, 10], // col 5
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 6
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 7
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 8
+];
+
+const ADVISOR_POS_BLACK = [
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 0
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 1
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 2
+  [10, 14, 10, 0, 0, 0, 0, 0, 0, 0], // col 3
+  [14, 18, 14, 0, 0, 0, 0, 0, 0, 0], // col 4 (center)
+  [10, 14, 10, 0, 0, 0, 0, 0, 0, 0], // col 5
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 6
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 7
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 8
+];
+
+// Elephant position bonus: stay in own half (cannot cross river)
+// Indexed as [col][row], so 9 columns x 10 rows
+const ELEPHANT_POS_RED = [
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 0
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 1
+  [0, 0, 0, 0, 0, 10, 0, 10, 0, 10], // col 2
+  [0, 0, 0, 0, 0, 0, 14, 0, 14, 0], // col 3
+  [0, 0, 0, 0, 0, 0, 0, 18, 0, 0], // col 4 (center)
+  [0, 0, 0, 0, 0, 0, 14, 0, 14, 0], // col 5
+  [0, 0, 0, 0, 0, 10, 0, 10, 0, 10], // col 6
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 7
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 8
+];
+
+const ELEPHANT_POS_BLACK = [
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 0
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 1
+  [10, 0, 10, 0, 0, 0, 0, 0, 0, 0], // col 2
+  [0, 14, 0, 0, 0, 0, 0, 0, 0, 0], // col 3
+  [0, 0, 18, 0, 0, 0, 0, 0, 0, 0], // col 4 (center)
+  [0, 14, 0, 0, 0, 0, 0, 0, 0, 0], // col 5
+  [10, 0, 10, 0, 0, 0, 0, 0, 0, 0], // col 6
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 7
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // col 8
 ];
 
 // ============================================================
@@ -508,21 +600,6 @@ function checkGameOver(board, nextPlayer) {
 function evaluateBoard(board, aiColor) {
   let aiScore = 0,
     oppScore = 0;
-  const aiAttackPos = create2DArray(COLS, ROWS, 0);
-  const oppAttackPos = create2DArray(COLS, ROWS, 0);
-
-  for (let c = 0; c < COLS; c++) {
-    for (let r = 0; r < ROWS; r++) {
-      const piece = board[c][r];
-      if (piece === EMPTY) continue;
-      const moves = getValidMoves(board, c, r);
-      const owner = getOwner(piece);
-      const attackMap = owner === aiColor ? aiAttackPos : oppAttackPos;
-      for (const m of moves) {
-        attackMap[m.toC][m.toR]++;
-      }
-    }
-  }
 
   for (let c = 0; c < COLS; c++) {
     for (let r = 0; r < ROWS; r++) {
@@ -530,17 +607,20 @@ function evaluateBoard(board, aiColor) {
       if (piece === EMPTY) continue;
       let val = PIECE_VALUES[piece];
 
+      // Add positional bonus based on piece type
       if (piece === R_PAWN) val += SOLDIER_POS_RED[c][r];
       else if (piece === B_PAWN) val += SOLDIER_POS_BLACK[c][r];
+      else if (piece === R_CHARIOT || piece === B_CHARIOT) val += CHARIOT_POS[c][r];
+      else if (piece === R_HORSE || piece === B_HORSE) val += HORSE_POS[c][r];
+      else if (piece === R_CANNON || piece === B_CANNON) val += CANNON_POS[c][r];
+      else if (piece === R_ADVISOR) val += ADVISOR_POS_RED[c][r];
+      else if (piece === B_ADVISOR) val += ADVISOR_POS_BLACK[c][r];
+      else if (piece === R_ELEPHANT) val += ELEPHANT_POS_RED[c][r];
+      else if (piece === B_ELEPHANT) val += ELEPHANT_POS_BLACK[c][r];
 
       const owner = getOwner(piece);
-      if (owner === aiColor) {
-        if (oppAttackPos[c][r] > 0 && aiAttackPos[c][r] === 0) val = Math.floor(val * 0.7);
-        aiScore += val;
-      } else {
-        if (aiAttackPos[c][r] > 0 && oppAttackPos[c][r] === 0) val = Math.floor(val * 0.7);
-        oppScore += val;
-      }
+      if (owner === aiColor) aiScore += val;
+      else oppScore += val;
     }
   }
   return aiScore - oppScore;
@@ -556,6 +636,99 @@ function create2DArray(cols, rows, defaultVal) {
   return arr;
 }
 
+// ============================================================
+// Move ordering: captures first, then by MVV-LVA
+// ============================================================
+
+function orderMoves(board, moves) {
+  // Score each move: captures get high score based on victim value
+  const scored = [];
+  for (const move of moves) {
+    let score = 0;
+    const victim = board[move.toC][move.toR];
+    if (victim !== EMPTY) {
+      // MVV-LVA: Most Valuable Victim - Least Valuable Attacker
+      score = PIECE_VALUES[victim] * 10 - PIECE_VALUES[board[move.fromC][move.fromR]];
+    }
+    scored.push({ move: move, score: score });
+  }
+  // Sort by score descending
+  scored.sort((a, b) => b.score - a.score);
+  return scored.map((s) => s.move);
+}
+
+// ============================================================
+// Transposition Table (Zobrist hashing)
+// ============================================================
+
+// Zobrist keys for hashing positions
+const zobristKeys = {};
+let zobristInitDone = false;
+
+function initZobrist() {
+  if (zobristInitDone) return;
+  // Use a simple pseudo-random generator (seeded for reproducibility)
+  let seed = 12345;
+  function pseudoRandom() {
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+    return seed;
+  }
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      zobristKeys[c + "," + r] = {};
+      for (let p = 1; p <= 14; p++) {
+        zobristKeys[c + "," + r][p] = pseudoRandom();
+      }
+    }
+  }
+  zobristInitDone = true;
+}
+
+function computeHash(board) {
+  let hash = 0;
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      const piece = board[c][r];
+      if (piece !== EMPTY) {
+        hash ^= zobristKeys[c + "," + r][piece];
+      }
+    }
+  }
+  return hash;
+}
+
+// Transposition table: hash -> { score, depth, flag }
+// flag: EXACT, LOWER_BOUND, UPPER_BOUND
+const TT_EXACT = 0;
+const TT_LOWER = 1;
+const TT_UPPER = 2;
+const transpositionTable = new Map();
+const TT_MAX_SIZE = 100000;
+
+function ttLookup(hash, depth, alpha, beta) {
+  const entry = transpositionTable.get(hash);
+  if (!entry || entry.depth < depth) return null;
+  if (entry.flag === TT_EXACT) return entry.score;
+  if (entry.flag === TT_LOWER && entry.score >= beta) return entry.score;
+  if (entry.flag === TT_UPPER && entry.score <= alpha) return entry.score;
+  return null;
+}
+
+function ttStore(hash, depth, score, flag) {
+  // Replace if deeper or table not full
+  const existing = transpositionTable.get(hash);
+  if (!existing || existing.depth <= depth) {
+    if (transpositionTable.size >= TT_MAX_SIZE) {
+      // Clear half the table when full (simple eviction)
+      const keys = Array.from(transpositionTable.keys());
+      for (let i = 0; i < keys.length / 2; i++) {
+        transpositionTable.delete(keys[i]);
+      }
+    }
+    transpositionTable.set(hash, { score: score, depth: depth, flag: flag });
+  }
+}
+
 function alphaBeta(board, depth, alpha, beta, aiColor, isAITurn) {
   const currentPlayer = isAITurn ? aiColor : getOpponent(aiColor);
   const gameOver = checkGameOver(board, currentPlayer);
@@ -565,27 +738,48 @@ function alphaBeta(board, depth, alpha, beta, aiColor, isAITurn) {
   }
   if (depth === 0) return evaluateBoard(board, aiColor);
 
-  const moves = getAllMoves(board, currentPlayer);
-  let bestScore = -Infinity;
+  // Transposition table lookup
+  const hash = computeHash(board);
+  const ttScore = ttLookup(hash, depth, alpha, beta);
+  if (ttScore !== null) return ttScore;
 
-  for (const move of moves) {
+  const moves = getAllMoves(board, currentPlayer);
+  const orderedMoves = orderMoves(board, moves);
+  let bestScore = -Infinity;
+  let flag = TT_UPPER;
+
+  for (const move of orderedMoves) {
     const newBoard = applyMove(board, move);
     const score = -alphaBeta(newBoard, depth - 1, -beta, -alpha, aiColor, !isAITurn);
     if (score > bestScore) bestScore = score;
-    if (bestScore > alpha) alpha = bestScore;
-    if (alpha >= beta) break;
+    if (bestScore > alpha) {
+      alpha = bestScore;
+      flag = TT_EXACT;
+    }
+    if (alpha >= beta) {
+      flag = TT_LOWER;
+      break;
+    }
   }
+
+  ttStore(hash, depth, bestScore, flag);
   return bestScore;
 }
 
 function getBestAIMove(board, aiColor) {
+  // Initialize Zobrist keys on first call
+  initZobrist();
+  // Clear transposition table for each new move computation
+  transpositionTable.clear();
+
   const moves = getAllMoves(board, aiColor);
   if (moves.length === 0) return null;
 
+  const orderedMoves = orderMoves(board, moves);
   let bestMove = null;
   let bestScore = -Infinity;
 
-  for (const move of moves) {
+  for (const move of orderedMoves) {
     const newBoard = applyMove(board, move);
     const score = -alphaBeta(newBoard, AI_DEPTH - 1, -Infinity, Infinity, aiColor, false);
     if (score > bestScore) {
@@ -667,6 +861,8 @@ if (typeof module !== "undefined" && module.exports) {
     alphaBeta: alphaBeta,
     getBestAIMove: getBestAIMove,
     createGameState: createGameState,
+    orderMoves: orderMoves,
+    computeHash: computeHash,
   };
 }
 
@@ -1039,7 +1235,7 @@ if (typeof document !== "undefined") {
 
   function doMove(move) {
     // Play sound based on move type
-    const targetPiece = gameState.board[move.toR][move.toC];
+    const targetPiece = gameState.board[move.toC][move.toR];
     if (targetPiece !== EMPTY) {
       SoundManager.play("take");
     } else {
@@ -1083,7 +1279,7 @@ if (typeof document !== "undefined") {
       gameState.aiThinking = false;
       if (move) {
         // Play sound based on move type
-        const targetPiece = gameState.board[move.toR][move.toC];
+        const targetPiece = gameState.board[move.toC][move.toR];
         if (targetPiece !== EMPTY) {
           SoundManager.play("take");
         } else {
