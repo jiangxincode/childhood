@@ -29,8 +29,7 @@ body {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
-  font-weight: bold;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
 .btn:hover {
   transform: translateY(-2px);
@@ -91,20 +90,23 @@ body {
   padding: 40px 48px;
   text-align: center;
   max-width: 500px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 .game-title {
-  font-size: 2.5em;
-  margin-bottom: 8px;
+  font-size: 42px;
+  margin-bottom: 4px;
 }
 .subtitle {
-  color: #757575;
-  margin-bottom: 24px;
+  font-size: 16px;
+  color: #888;
+  margin-bottom: 32px;
 }
 .mode-buttons {
   display: flex;
-  flex-direction: column;
   gap: 12px;
-  align-items: center;
+  flex-wrap: nowrap;
+  justify-content: center;
 }
 
 #game-area {
@@ -321,11 +323,14 @@ body {
 
 @media (max-width: 700px) {
   .overlay-content {
-    padding: 24px;
-    margin: 16px;
+    padding: 28px 20px;
   }
   .game-title {
-    font-size: 1.8em;
+    font-size: 32px;
+  }
+  .mode-buttons {
+    flex-direction: column;
+    gap: 12px;
   }
   #rules-panel {
     max-width: 100%;
