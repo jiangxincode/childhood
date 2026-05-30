@@ -88,6 +88,7 @@ function createInitialState(mode) {
     winner: null,
     turnCount: 0,
     aiThinking: false,
+    isFirstTurn: true,
   };
 }
 
@@ -149,6 +150,14 @@ function movePiece(board, from, to) {
 
 function getOpponent(player) {
   return player === PLAYER_A ? PLAYER_B : PLAYER_A;
+}
+
+// Check if a move on the first turn would leave the opponent with no moves.
+// This prevents the first player from winning immediately on the first move.
+function isMoveLegalOnFirstTurn(board, from, to, currentPlayer) {
+  var newBoard = movePiece(board, from, to);
+  var opponent = getOpponent(currentPlayer);
+  return canMove(newBoard, opponent);
 }
 
 function countPieces(board, player) {
@@ -229,6 +238,11 @@ function getBestAIMove(state) {
   var aiPlayer = state.aiTeam;
   var moves = getAllValidMoves(board, aiPlayer);
 
+  // First-turn rule: filter out moves that would block opponent completely
+  if (state.isFirstTurn) {
+    moves = moves.filter((m) => isMoveLegalOnFirstTurn(board, m.from, m.to, aiPlayer));
+  }
+
   if (moves.length === 0) return null;
 
   var bestScore = -Infinity;
@@ -271,6 +285,7 @@ if (typeof module !== "undefined" && module.exports) {
     checkWin: checkWin,
     movePiece: movePiece,
     getOpponent: getOpponent,
+    isMoveLegalOnFirstTurn: isMoveLegalOnFirstTurn,
     countPieces: countPieces,
     evaluateBoard: evaluateBoard,
     minimax: minimax,
@@ -435,6 +450,8 @@ if (typeof document !== "undefined") {
     document.getElementById("label-b").textContent = getPlayerName(PLAYER_B) + " 可走：";
     document.getElementById("moves-b").textContent = movesB;
 
+    document.getElementById("message").textContent = "";
+
     if (state.gameOver) {
       var winnerText = getPlayerName(state.winner) + " 获胜！";
       document.getElementById("winner-text").textContent = winnerText;
@@ -459,6 +476,17 @@ if (typeof document !== "undefined") {
       var targets = getValidMovesForPiece(state.board, selectedPiece);
       for (var i = 0; i < targets.length; i++) {
         if (targets[i] === pos) {
+          // First-turn rule: cannot block opponent completely on first move
+          if (
+            state.isFirstTurn &&
+            !isMoveLegalOnFirstTurn(state.board, selectedPiece, pos, player)
+          ) {
+            selectedPiece = null;
+            renderGame();
+            document.getElementById("message").textContent =
+              "首回合不能一步将对方憋死，请选择其他走法！";
+            return;
+          }
           var fromPos = selectedPiece;
           state.board = movePiece(state.board, selectedPiece, pos);
           selectedPiece = null;
@@ -471,6 +499,7 @@ if (typeof document !== "undefined") {
 
           state.currentPlayer = getOpponent(state.currentPlayer);
           state.turnCount++;
+          state.isFirstTurn = false;
           renderGame();
 
           if (state.mode === "online" && networkProtocol) {
@@ -512,6 +541,7 @@ if (typeof document !== "undefined") {
 
       state.currentPlayer = getOpponent(state.currentPlayer);
       state.turnCount++;
+      state.isFirstTurn = false;
       state.aiThinking = false;
       renderGame();
     }, 400);
@@ -705,6 +735,7 @@ if (typeof document !== "undefined") {
 
     state.currentPlayer = getOpponent(state.currentPlayer);
     state.turnCount++;
+    state.isFirstTurn = false;
     renderGame();
   }
 

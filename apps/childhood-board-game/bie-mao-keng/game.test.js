@@ -18,6 +18,7 @@ import {
   movePiece,
   getOpponent,
   countPieces,
+  isMoveLegalOnFirstTurn,
   evaluateBoard,
   minimax,
   getBestAIMove,
@@ -274,6 +275,30 @@ describe("getOpponent", () => {
   });
 });
 
+describe("isMoveLegalOnFirstTurn", () => {
+  it("returns false when move blocks opponent completely", () => {
+    // Board: A,A,B,B,empty
+    // A moves from 1 to 4 (center) -> B at 2,3 has no moves
+    const board = [PLAYER_A, PLAYER_A, PLAYER_B, PLAYER_B, EMPTY];
+    expect(isMoveLegalOnFirstTurn(board, 1, 4, PLAYER_A)).toBe(false);
+  });
+
+  it("returns true when opponent still has moves after the move", () => {
+    // Board: A,A,B,B,empty
+    // A moves from 0 to 4 (center) -> B at 2,3: 2 can go to 3, 3 can go to 2
+    const board = [PLAYER_A, PLAYER_A, PLAYER_B, PLAYER_B, EMPTY];
+    expect(isMoveLegalOnFirstTurn(board, 0, 4, PLAYER_A)).toBe(true);
+  });
+
+  it("returns true when move does not block opponent", () => {
+    // Board: A,A,B,B,empty
+    // A moves from 0 to 2 -> but 2 is occupied by B, so this wouldn't be a valid move
+    // Use a valid move: A at 0 moves to 4
+    const board = [PLAYER_A, PLAYER_A, PLAYER_B, PLAYER_B, EMPTY];
+    expect(isMoveLegalOnFirstTurn(board, 0, 4, PLAYER_A)).toBe(true);
+  });
+});
+
 describe("countPieces", () => {
   it("counts pieces correctly", () => {
     const board = [PLAYER_A, PLAYER_A, PLAYER_B, PLAYER_B, EMPTY];
@@ -355,6 +380,22 @@ describe("getBestAIMove", () => {
     state.board = [PLAYER_A, PLAYER_A, PLAYER_B, PLAYER_B, EMPTY];
     const move = getBestAIMove(state);
     expect(move).not.toBeNull();
+    expect(move.to).toBe(4);
+  });
+
+  it("does not choose blocking move on first turn as AI (A)", () => {
+    const state = createInitialState("pve");
+    state.aiTeam = PLAYER_A;
+    state.currentPlayer = PLAYER_A;
+    state.isFirstTurn = true;
+    // A at 0,1; B at 2,3; empty at 4
+    // Moving 1->4 would block B completely, should be filtered out
+    // Only legal first-turn move for A is 0->4
+    state.board = [PLAYER_A, PLAYER_A, PLAYER_B, PLAYER_B, EMPTY];
+    const move = getBestAIMove(state);
+    expect(move).not.toBeNull();
+    // Should NOT be the blocking move (from 1 to 4)
+    expect(move.from).toBe(0);
     expect(move.to).toBe(4);
   });
 });
