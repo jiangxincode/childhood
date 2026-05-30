@@ -345,19 +345,9 @@ function isGeneralFacing(board, myColor) {
     myGR = -1,
     opGC = -1,
     opGR = -1;
+  // Scan entire board for generals (they can move within the palace, rows 0-9)
   for (let c = 3; c <= 5; c++) {
-    for (let r = 0; r <= 2; r++) {
-      if (board[c][r] !== EMPTY && isGeneral(board[c][r])) {
-        if (getOwner(board[c][r]) === myColor) {
-          myGC = c;
-          myGR = r;
-        } else {
-          opGC = c;
-          opGR = r;
-        }
-      }
-    }
-    for (let r = 7; r <= 9; r++) {
+    for (let r = 0; r <= 9; r++) {
       if (board[c][r] !== EMPTY && isGeneral(board[c][r])) {
         if (getOwner(board[c][r]) === myColor) {
           myGC = c;
