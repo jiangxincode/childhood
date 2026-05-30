@@ -1101,20 +1101,16 @@ if (typeof document !== "undefined") {
     }, 300);
   }
 
-  function startGame(mode, firstPlayer) {
+  function startGame(mode, playerTeam) {
     gameState = createGameState(mode);
-    gameState.currentPlayer = firstPlayer || RED;
-    gameState.firstPlayer = firstPlayer || RED;
+    // In Chinese Chess, RED always moves first
+    gameState.currentPlayer = RED;
+    gameState.firstPlayer = RED;
     gameState.boardFlipped = false;
 
     if (mode === "pve") {
-      if (firstPlayer === RED) {
-        gameState.playerTeam = RED;
-        gameState.aiTeam = BLACK;
-      } else {
-        gameState.playerTeam = BLACK;
-        gameState.aiTeam = RED;
-      }
+      gameState.playerTeam = playerTeam || RED;
+      gameState.aiTeam = playerTeam === RED ? BLACK : RED;
       gameState.boardFlipped = gameState.playerTeam === BLACK;
     }
 
