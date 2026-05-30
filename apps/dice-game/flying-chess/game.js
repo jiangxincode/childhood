@@ -393,14 +393,14 @@ if (typeof $j !== "undefined") {
   const WINMUSICURL = "audio/win_cheer.ogg";
   const FAILMUSICURL = "";
 
-  const PlaneAudio = function () {
-    function playMusic(musicSrc) {
-      if (planeOption.gameMusic) {
-        $j("#yinxiao").attr("src", musicSrc);
-        $j("#yinxiao")[0].play();
-      }
+  function playMusic(musicSrc) {
+    if (planeOption.gameMusic) {
+      $j("#yinxiao").attr("src", musicSrc);
+      $j("#yinxiao")[0].play();
     }
+  }
 
+  const PlaneAudio = function () {
     this.playDiceMusic = function () {
       playMusic(DICEMUSICURL);
     };
@@ -448,11 +448,12 @@ if (typeof $j !== "undefined") {
   const planeAudio = new PlaneAudio();
 
   // ---- Option ----
+  function PLANEUSER(color, state) {
+    this.color = color;
+    this.state = state;
+  }
+
   const PlaneOption = function () {
-    const PLANEUSER = function (color, state) {
-      this.color = color;
-      this.state = state;
-    };
     this.userList = [
       new PLANEUSER("red", "normal"),
       new PLANEUSER("blue", "computer"),
@@ -492,6 +493,14 @@ if (typeof $j !== "undefined") {
   const planeOption = new PlaneOption();
 
   // ---- Rule ----
+  function backCurrentUserAllPlane() {
+    $j(".plane").each(function () {
+      if (planeOption.currentUser == $j(this).attr("type")) {
+        rule.planeBack("attack", planeOption.currentUser, $j(this));
+      }
+    });
+  }
+
   const Rule = function () {
     this.victory = function () {
       let winNum = 0,
@@ -554,14 +563,6 @@ if (typeof $j !== "undefined") {
       }
     };
 
-    function backCurrentUserAllPlane() {
-      $j(".plane").each(function () {
-        if (planeOption.currentUser == $j(this).attr("type")) {
-          rule.planeBack("attack", planeOption.currentUser, $j(this));
-        }
-      });
-    }
-
     this.countSixTime = function () {
       if (diceNum == 6) {
         sixTime++;
@@ -622,6 +623,43 @@ if (typeof $j !== "undefined") {
   const rule = new Rule();
 
   // ---- Computer ----
+  function diceClick() {
+    const nextSt = setTimeout(() => {
+      if (nextStep) {
+        $j("#dice").trigger("click");
+        clearTimeout(nextSt);
+      } else {
+        diceClick();
+      }
+    }, 500);
+  }
+
+  function getComputerRandomIndex(leng) {
+    const num = Math.floor(Math.random() * 10);
+    switch (leng) {
+      case 1:
+        return 0;
+      case 2:
+        if (num == 0 || num == 1) {
+          return num;
+        } else {
+          return getComputerRandomIndex(leng);
+        }
+      case 3:
+        if (num == 0 || num == 1 || num == 2) {
+          return num;
+        } else {
+          return getComputerRandomIndex(leng);
+        }
+      case 4:
+        if (num == 0 || num == 1 || num == 2 || num == 3) {
+          return num;
+        } else {
+          return getComputerRandomIndex(leng);
+        }
+    }
+  }
+
   const Computer = function () {
     this.performing = function () {
       setTimeout(() => {
@@ -632,7 +670,7 @@ if (typeof $j !== "undefined") {
           }
         });
         if (planeList && planeList.length > 0) {
-          const randomNum = obtainRandomNum(planeList.length);
+          const randomNum = getComputerRandomIndex(planeList.length);
           $j(planeList[randomNum]).trigger("click");
           if (diceNum == 6) {
             diceClick();
@@ -640,43 +678,6 @@ if (typeof $j !== "undefined") {
         }
       }, 1500);
     };
-
-    function diceClick() {
-      const nextSt = setTimeout(() => {
-        if (nextStep) {
-          $j("#dice").trigger("click");
-          clearTimeout(nextSt);
-        } else {
-          diceClick();
-        }
-      }, 500);
-    }
-
-    function obtainRandomNum(leng) {
-      const num = Math.floor(Math.random() * 10);
-      switch (leng) {
-        case 1:
-          return 0;
-        case 2:
-          if (num == 0 || num == 1) {
-            return num;
-          } else {
-            return obtainRandomNum(leng);
-          }
-        case 3:
-          if (num == 0 || num == 1 || num == 2) {
-            return num;
-          } else {
-            return obtainRandomNum(leng);
-          }
-        case 4:
-          if (num == 0 || num == 1 || num == 2 || num == 3) {
-            return num;
-          } else {
-            return obtainRandomNum(leng);
-          }
-      }
-    }
   };
   const computer = new Computer();
 
