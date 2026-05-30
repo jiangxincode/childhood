@@ -381,71 +381,8 @@ if (typeof $j !== "undefined") {
   let remoteColor = null; // color assigned to remote player
 
   // ---- Audio ----
-  const DICEMUSICURL = "audio/dice.ogg";
-  const ROLLEDSIXMUSICRUL = "audio/rolled_6.ogg";
-  const ROLLEDTHREETIMESIXMUSICURL = "audio/rolled_3_6s.ogg";
-  const OUTMUSICURL = "audio/plane_up.ogg";
-  const STEPMUSICURL = "audio/move_short3.ogg";
-  const JUMPMUSICURL = "audio/jump4.ogg";
-  const FLYACROSSMUSICURL = "audio/fly_across.ogg";
-  const ATTACTMUSICURL = "audio/plane_fall.ogg";
-  const LITWINMUSICURL = "audio/win_fly_back_home.ogg";
-  const WINMUSICURL = "audio/win_cheer.ogg";
-  const FAILMUSICURL = "";
-
-  function playMusic(musicSrc) {
-    if (planeOption.gameMusic) {
-      $j("#yinxiao").attr("src", musicSrc);
-      $j("#yinxiao")[0].play();
-    }
-  }
-
-  const PlaneAudio = function () {
-    this.playDiceMusic = function () {
-      playMusic(DICEMUSICURL);
-    };
-
-    this.playRolledSixMusic = function () {
-      playMusic(ROLLEDSIXMUSICRUL);
-    };
-
-    this.playRolledThreeTimeSixMusic = function () {
-      playMusic(ROLLEDTHREETIMESIXMUSICURL);
-    };
-
-    this.playOutMusic = function () {
-      playMusic(OUTMUSICURL);
-    };
-
-    this.playStepMusic = function () {
-      playMusic(STEPMUSICURL);
-    };
-
-    this.playJumpMusic = function () {
-      playMusic(JUMPMUSICURL);
-    };
-
-    this.playFlyAcrossMusic = function () {
-      playMusic(FLYACROSSMUSICURL);
-    };
-
-    this.playAttackMusic = function () {
-      playMusic(ATTACTMUSICURL);
-    };
-
-    this.playLitWinMusic = function () {
-      playMusic(LITWINMUSICURL);
-    };
-
-    this.playWinMusic = function () {
-      playMusic(WINMUSICURL);
-    };
-
-    this.playFailMusic = function () {
-      playMusic(FAILMUSICURL);
-    };
-  };
-  const planeAudio = new PlaneAudio();
+  // Use shared SoundManager for audio playback
+  SoundManager.init("../../../audio");
 
   // ---- Option ----
   function PLANEUSER(color, state) {
@@ -462,8 +399,6 @@ if (typeof $j !== "undefined") {
     ];
     this.difficulty = "normal";
     this.currentUser = "red";
-    this.backgroundMusic = true;
-    this.gameMusic = true;
 
     this.setDifficulty = function () {
       this.difficulty = $j("#nandu").val();
@@ -568,7 +503,7 @@ if (typeof $j !== "undefined") {
         sixTime++;
       }
       if (sixTime == 3) {
-        planeAudio.playRolledThreeTimeSixMusic();
+        SoundManager.play("tripleSix");
         backCurrentUserAllPlane();
         return true;
       } else {
@@ -585,7 +520,7 @@ if (typeof $j !== "undefined") {
           $j(this).attr("state") == "running"
         ) {
           rule.planeBack("attack", $j(this).attr("type"), $j(this));
-          planeAudio.playAttackMusic();
+          SoundManager.play("fall");
           stopFlag = true;
         }
         if (superFlag) {
@@ -784,7 +719,7 @@ if (typeof $j !== "undefined") {
         $j(this).attr("type") == planeOption.currentUser ? $j(this) : undefined;
       if (currentUserPlane) {
         if (diceNum == 6) {
-          planeAudio.playRolledSixMusic();
+          SoundManager.play("six");
           if ($j(this).attr("state") != "win") {
             currentUserPlane
               .on("click", function () {
@@ -850,7 +785,7 @@ if (typeof $j !== "undefined") {
           coordId = 39;
           break;
       }
-      planeAudio.playOutMusic();
+      SoundManager.play("up");
       $j(obj).animate({ top: unTop, left: unLeft }, 1500, () => {
         $j(obj)
           .attr({ state: "ready", coordId: coordId, step: step })
@@ -884,13 +819,13 @@ if (typeof $j !== "undefined") {
           if (coordValue.state != null && coordValue.state == "win") {
             rule.planeBack("win", $j(this).attr("type"), $j(this));
             if (rule.victory()) {
-              planeAudio.playWinMusic();
+              SoundManager.play("win");
               const winnerEl = document.getElementById("current-player");
               const winnerLabel = winnerEl ? winnerEl.textContent : planeOption.currentUser;
               alert(winnerLabel + "胜利!");
               return;
             }
-            planeAudio.playLitWinMusic();
+            SoundManager.play("home");
           }
           stopFlag = rule.attactPlane(coordValue, obj, superFlag);
           if (
@@ -903,7 +838,7 @@ if (typeof $j !== "undefined") {
             coordId = Number.parseInt(coordValue.id);
             step += 12;
             superFlag = true;
-            planeAudio.playFlyAcrossMusic();
+            SoundManager.play("fly");
             $j(obj).animate({ top: coordValue.top, left: coordValue.left }, 600);
             if (superTime == 1) {
               moveCoord();
@@ -925,7 +860,7 @@ if (typeof $j !== "undefined") {
             coordValue = selectCoordValue(coordId);
             coordId = Number.parseInt(coordValue.id);
             step += 4;
-            planeAudio.playJumpMusic();
+            SoundManager.play("jump");
             $j(obj).animate({ top: coordValue.top, left: coordValue.left }, 600);
             if (coordValue.superCoord != null) {
               moveCoord();
@@ -949,7 +884,7 @@ if (typeof $j !== "undefined") {
           }
           return;
         }
-        planeAudio.playStepMusic();
+        SoundManager.play("diceMove");
         if (backStepFlag) {
           coordId--;
         } else {
@@ -1118,7 +1053,7 @@ if (typeof $j !== "undefined") {
         DICE.shuffle(3).then(() => {
           onComplete(null, { index: DICE.active });
         });
-        planeAudio.playDiceMusic();
+        SoundManager.play("roll");
         if (planeOption.gameOnline && networkProtocol) {
           networkProtocol.sendAction({ a: "roll" });
         }
@@ -1290,7 +1225,7 @@ if (typeof $j !== "undefined") {
       DICE.shuffle(3).then(() => {
         onComplete(null, { index: DICE.active });
       });
-      planeAudio.playDiceMusic();
+      SoundManager.play("roll");
     } else if (actionData.a === "select") {
       // Remote player selects a plane
       if (planeOption.currentUser !== remoteColor) return;
