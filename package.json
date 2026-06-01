@@ -23,7 +23,7 @@
     "gitnexus": "^1.6.4",
     "lebab": "^3.2.9",
     "prettier": "^3.8.3",
-    "vitest": "^4.1.7",
+    "vitest": "^4.1.8",
     "vitest-sonar-reporter": "^3.0.0"
   }
 }
