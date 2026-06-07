@@ -82,12 +82,12 @@
     </image:image>
   </url>
   <url>
-    <loc>https://jiangxincode.github.io/childhood/apps/board-game/tic-tac-toe/index.html</loc>
+    <loc>https://jiangxincode.github.io/childhood/apps/childhood-board-game/tic-tac-toe/index.html</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jiangxincode.github.io/childhood/images/board-game/%E4%BA%95%E5%AD%97%E6%A3%8B.jpg</image:loc>
+      <image:loc>https://jiangxincode.github.io/childhood/images/childhood-board-game/%E4%BA%95%E5%AD%97%E6%A3%8B.jpg</image:loc>
       <image:title>井字棋 - 三连棋经典策略游戏</image:title>
     </image:image>
   </url>

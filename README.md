@@ -41,9 +41,9 @@
 |:-----:|:-----:|:-------:|
 | ![五子棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/五子棋.jpg) | ![黑白棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/黑白棋.jpg) | ![国际跳棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/国际跳棋.jpg) |
 
-| 井字棋 | 中国跳棋 | 围棋 |
-|:-----:|:-------:|:---:|
-| ![井字棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/井字棋.jpg) | ![中国跳棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/中国跳棋.jpg) | ![围棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/围棋.jpg) |
+| 中国跳棋 | 围棋 |
+|:-------:|:---:|
+| ![中国跳棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/中国跳棋.jpg) | ![围棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/board-game/围棋.jpg) |
 
 ## 欢乐骰子游戏
 
@@ -57,13 +57,13 @@
 
 ![童年棋盘游戏](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/童年怀旧棋盘.jpg)
 
-| 狼吃羊 | 憋茅坑 | 小猫钓鱼 | 钻牛角尖 |
+| 井字棋 | 狼吃羊 | 憋茅坑 | 小猫钓鱼 |
 |:-----:|:-----:|:-------:|:-------:|
-| ![狼吃羊](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/狼吃羊.jpg) | ![憋茅坑](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/憋茅坑.jpg) | ![小猫钓鱼](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/小猫钓鱼.jpg) | ![钻牛角尖](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/钻牛角尖.jpg) |
+| ![井字棋](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/井字棋.jpg) | ![狼吃羊](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/狼吃羊.jpg) | ![憋茅坑](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/憋茅坑.jpg) | ![小猫钓鱼](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/小猫钓鱼.jpg) |
 
-| 摆四龙 | 蚂蚁搬家 | 四步钉 |
-|:-----:|:------:|:-----:|
-| ![摆四龙](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/摆四龙.jpg) | ![蚂蚁搬家](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/蚂蚁搬家.jpg) | ![四步钉](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/四步钉.jpg) |
+| 钻牛角尖 | 摆四龙 | 蚂蚁搬家 | 四步钉 |
+|:-------:|:-----:|:------:|:-----:|
+| ![钻牛角尖](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/钻牛角尖.jpg) | ![摆四龙](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/摆四龙.jpg) | ![蚂蚁搬家](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/蚂蚁搬家.jpg) | ![四步钉](https://raw.githubusercontent.com/wiki/jiangxincode/childhood/snapshots/childhood-board-game/四步钉.jpg) |
 
 ## 项目结构
 
@@ -84,12 +84,12 @@ childhood/
 │   │   ├── gomoku/                   # 五子棋
 │   │   ├── reversi/                  # 黑白棋
 │   │   ├── checkers/                 # 国际跳棋
-│   │   ├── tic-tac-toe/              # 井字棋
 │   │   ├── chinese-checkers/         # 中国跳棋
 │   │   └── go/                       # 围棋
 │   ├── dice-game/                    # 欢乐骰子游戏
 │   │   └── flying-chess/             # 飞行棋
 │   ├── childhood-board-game/         # 童年棋盘游戏
+│   │   ├── tic-tac-toe/              # 井字棋
 │   │   ├── lang-chi-yang/            # 狼吃羊
 │   │   ├── bie-mao-keng/             # 憋茅坑
 │   │   ├── xiao-mao-diao-yu/         # 小猫钓鱼
