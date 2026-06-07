@@ -492,13 +492,13 @@ if (typeof document !== "undefined") {
     }, 600);
   }
 
-  function startGame(mode, firstPlayer) {
+  function startGame(mode, firstPlayer, playerTeam) {
     gameState = createGameState(mode);
     gameState.currentPlayer = firstPlayer || PLAYER_X;
     gameState.firstPlayer = firstPlayer || PLAYER_X;
 
     if (mode === "pve") {
-      if (firstPlayer === PLAYER_X) {
+      if (playerTeam === PLAYER_X) {
         gameState.playerTeam = PLAYER_X;
         gameState.aiTeam = PLAYER_O;
       } else {
@@ -739,7 +739,7 @@ if (typeof document !== "undefined") {
           getRPSName(aiChoice) +
           "，你赢了！你先手(X)。";
         setTimeout(() => {
-          startGame("pve", PLAYER_X);
+          startGame("pve", PLAYER_X, PLAYER_X);
         }, 1500);
       } else if (humanWins === -1) {
         SoundManager.play("lose");
@@ -750,7 +750,7 @@ if (typeof document !== "undefined") {
           getRPSName(aiChoice) +
           "，你输了！电脑先手(X)。";
         setTimeout(() => {
-          startGame("pve", PLAYER_O);
+          startGame("pve", PLAYER_X, PLAYER_O);
         }, 1500);
       } else {
         SoundManager.play("draw");
@@ -786,7 +786,7 @@ if (typeof document !== "undefined") {
             getRPSName(rpsChoices.player2) +
             "，玩家1赢了！玩家1先手(X)。";
           setTimeout(() => {
-            startGame("pvp", PLAYER_X);
+            startGame("pvp", PLAYER_X, PLAYER_X);
           }, 1500);
         } else if (winner === -1) {
           SoundManager.play("victory");
@@ -797,7 +797,7 @@ if (typeof document !== "undefined") {
             getRPSName(rpsChoices.player2) +
             "，玩家2赢了！玩家2先手(X)。";
           setTimeout(() => {
-            startGame("pvp", PLAYER_O);
+            startGame("pvp", PLAYER_O, PLAYER_O);
           }, 1500);
         } else {
           SoundManager.play("draw");
