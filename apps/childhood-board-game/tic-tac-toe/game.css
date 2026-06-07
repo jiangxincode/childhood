@@ -7,11 +7,9 @@
   --x-light: #42a5f5;
   --o-color: #e53935;
   --o-light: #ef5350;
-  --board-bg: #5d4037;
-  --cell-bg: #efebe9;
-  --cell-border: #8d6e63;
-  --cell-size: 120px;
-  --cell-gap: 4px;
+  --board-bg: #f9f3e3;
+  --board-line: #2c2c2c;
+  --node-empty: #ffffff;
   --overlay-bg: rgba(0, 0, 0, 0.7);
 }
 
@@ -222,58 +220,114 @@ body {
   color: var(--o-color);
 }
 
-/* ---- Board 3x3 ---- */
+/* ---- Board SVG ---- */
 #board {
-  display: grid;
-  grid-template-columns: repeat(3, var(--cell-size));
-  grid-template-rows: repeat(3, var(--cell-size));
-  gap: var(--cell-gap);
-  padding: var(--cell-gap);
   background: var(--board-bg);
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  border: 4px solid var(--cell-border);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  width: min(420px, 90vw);
 }
 
-/* ---- Cell ---- */
-.cell {
-  width: var(--cell-size);
-  height: var(--cell-size);
-  background: var(--cell-bg);
-  border-radius: 6px;
+.board-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.board-line {
+  stroke: var(--board-line);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+/* ---- Node (intersection) ---- */
+.node {
   cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 56px;
+}
+
+.node-hit {
+  fill: transparent;
+}
+
+.node-dot {
+  fill: var(--board-line);
+  pointer-events: none;
+}
+
+.node-circle {
+  fill: var(--node-empty);
+  stroke: var(--board-line);
+  stroke-width: 2;
+  transition:
+    fill 0.15s,
+    stroke 0.15s,
+    opacity 0.15s;
+}
+
+.node-text {
+  font-size: 22px;
   font-weight: bold;
-  transition: transform 0.15s, box-shadow 0.15s;
+  fill: #fff;
+  pointer-events: none;
   user-select: none;
 }
 
-.cell:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+/* Empty node: hide circle and dot */
+.node:not(.node-x):not(.node-o) .node-circle {
+  fill: transparent;
+  stroke: transparent;
+  opacity: 0;
 }
 
-.cell-x {
-  color: var(--x-color);
-  text-shadow: 0 2px 8px rgba(21, 101, 192, 0.3);
+.node:not(.node-x):not(.node-o) .node-dot {
+  display: block;
 }
 
-.cell-o {
-  color: var(--o-color);
-  text-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
+/* X piece */
+.node-x .node-circle {
+  fill: var(--x-color);
+  stroke: #0d3c6e;
+  opacity: 1;
 }
 
-.cell-win {
-  background: #fff9c4;
+.node-x .node-dot {
+  display: none;
+}
+
+.node-x .node-text {
+  fill: #fff;
+}
+
+/* O piece */
+.node-o .node-circle {
+  fill: var(--o-color);
+  stroke: #8b1a17;
+  opacity: 1;
+}
+
+.node-o .node-dot {
+  display: none;
+}
+
+.node-o .node-text {
+  fill: #fff;
+}
+
+/* Win highlight */
+.node-win .node-circle {
+  stroke: #ffd600;
+  stroke-width: 4;
   animation: winPulse 0.8s ease-in-out infinite alternate;
 }
 
 @keyframes winPulse {
-  from { box-shadow: 0 0 8px #ffd600; }
-  to { box-shadow: 0 0 20px #ffd600; transform: scale(1.05); }
+  from {
+    filter: drop-shadow(0 0 4px rgba(255, 214, 0, 0.6));
+  }
+  to {
+    filter: drop-shadow(0 0 14px rgba(255, 214, 0, 1));
+  }
 }
 
 /* ---- Rules Panel ---- */
@@ -354,11 +408,6 @@ body {
 
 /* ---- Responsive ---- */
 @media (max-width: 700px) {
-  :root {
-    --cell-size: calc((100vw - 60px) / 3);
-    --cell-gap: 3px;
-  }
-
   .overlay-content {
     padding: 24px 16px;
   }
@@ -399,9 +448,5 @@ body {
 
   .status-item {
     font-size: 13px;
-  }
-
-  .cell {
-    font-size: 40px;
   }
 }
