@@ -13,10 +13,10 @@ const PLAYER_X = "X";
 const PLAYER_O = "O";
 
 // SVG board rendering constants
-const BOARD_PADDING = 40;
+const BOARD_PADDING = 50;
 const CELL_SIZE = 100;
-const BOARD_VIEW_W = BOARD_PADDING * 2 + 3 * CELL_SIZE;
-const BOARD_VIEW_H = BOARD_PADDING * 2 + 3 * CELL_SIZE;
+const BOARD_VIEW_W = BOARD_PADDING * 2 + 2 * CELL_SIZE;
+const BOARD_VIEW_H = BOARD_PADDING * 2 + 2 * CELL_SIZE;
 const svgNS = "http://www.w3.org/2000/svg";
 
 const WIN_LINES = [
@@ -250,10 +250,10 @@ if (typeof document !== "undefined") {
     svg.setAttribute("viewBox", "0 0 " + BOARD_VIEW_W + " " + BOARD_VIEW_H);
     svg.setAttribute("class", "board-svg");
 
-    // Draw horizontal lines (4 lines for 3x3 grid)
-    for (let r = 0; r <= 3; r++) {
+    // Draw horizontal lines (3 lines)
+    for (let r = 0; r < 3; r++) {
       const p0 = nodeToPx(0, r);
-      const p1 = nodeToPx(3, r);
+      const p1 = nodeToPx(2, r);
       const hLine = document.createElementNS(svgNS, "line");
       hLine.setAttribute("x1", p0.cx);
       hLine.setAttribute("y1", p0.cy);
@@ -263,10 +263,10 @@ if (typeof document !== "undefined") {
       svg.appendChild(hLine);
     }
 
-    // Draw vertical lines (4 lines for 3x3 grid)
-    for (let c = 0; c <= 3; c++) {
+    // Draw vertical lines (3 lines)
+    for (let c = 0; c < 3; c++) {
       const q0 = nodeToPx(c, 0);
-      const q1 = nodeToPx(c, 3);
+      const q1 = nodeToPx(c, 2);
       const vLine = document.createElementNS(svgNS, "line");
       vLine.setAttribute("x1", q0.cx);
       vLine.setAttribute("y1", q0.cy);
@@ -276,10 +276,10 @@ if (typeof document !== "undefined") {
       svg.appendChild(vLine);
     }
 
-    // Interactive intersection nodes (only inner 3x3 = 9 positions)
+    // Interactive intersection nodes (3x3 = 9 positions)
     for (let y = 0; y < 3; y++) {
       for (let x = 0; x < 3; x++) {
-        const pt = nodeToPx(x + 1, y + 1);
+        const pt = nodeToPx(x, y);
         const g = document.createElementNS(svgNS, "g");
         g.setAttribute("class", "node");
         g.dataset.x = x;
@@ -300,7 +300,7 @@ if (typeof document !== "undefined") {
 
         // Piece circle (hidden when empty)
         const circle = document.createElementNS(svgNS, "circle");
-        circle.setAttribute("r", 22);
+        circle.setAttribute("r", 24);
         circle.setAttribute("class", "node-circle");
         g.appendChild(circle);
 
