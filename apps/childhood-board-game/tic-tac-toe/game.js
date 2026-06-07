@@ -12,6 +12,13 @@ if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
 const PLAYER_X = "X";
 const PLAYER_O = "O";
 
+// SVG board rendering constants
+const BOARD_PADDING = 40;
+const CELL_SIZE = 100;
+const BOARD_VIEW_W = BOARD_PADDING * 2 + 3 * CELL_SIZE;
+const BOARD_VIEW_H = BOARD_PADDING * 2 + 3 * CELL_SIZE;
+const svgNS = "http://www.w3.org/2000/svg";
+
 const WIN_LINES = [
   [
     { x: 0, y: 0 },
@@ -228,16 +235,83 @@ if (typeof document !== "undefined") {
   let localTeam = null; // 'X' or 'O'
   let remoteTeam = null;
 
+  function nodeToPx(x, y) {
+    return {
+      cx: BOARD_PADDING + x * CELL_SIZE,
+      cy: BOARD_PADDING + y * CELL_SIZE,
+    };
+  }
+
   function initBoard() {
     const boardEl = document.getElementById("board");
     boardEl.innerHTML = "";
+
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", "0 0 " + BOARD_VIEW_W + " " + BOARD_VIEW_H);
+    svg.setAttribute("class", "board-svg");
+
+    // Draw horizontal lines (4 lines for 3x3 grid)
+    for (let r = 0; r <= 3; r++) {
+      const p0 = nodeToPx(0, r);
+      const p1 = nodeToPx(3, r);
+      const hLine = document.createElementNS(svgNS, "line");
+      hLine.setAttribute("x1", p0.cx);
+      hLine.setAttribute("y1", p0.cy);
+      hLine.setAttribute("x2", p1.cx);
+      hLine.setAttribute("y2", p1.cy);
+      hLine.setAttribute("class", "board-line");
+      svg.appendChild(hLine);
+    }
+
+    // Draw vertical lines (4 lines for 3x3 grid)
+    for (let c = 0; c <= 3; c++) {
+      const q0 = nodeToPx(c, 0);
+      const q1 = nodeToPx(c, 3);
+      const vLine = document.createElementNS(svgNS, "line");
+      vLine.setAttribute("x1", q0.cx);
+      vLine.setAttribute("y1", q0.cy);
+      vLine.setAttribute("x2", q1.cx);
+      vLine.setAttribute("y2", q1.cy);
+      vLine.setAttribute("class", "board-line");
+      svg.appendChild(vLine);
+    }
+
+    // Interactive intersection nodes (only inner 3x3 = 9 positions)
     for (let y = 0; y < 3; y++) {
       for (let x = 0; x < 3; x++) {
-        const cell = document.createElement("div");
-        cell.className = "cell";
-        cell.dataset.x = x;
-        cell.dataset.y = y;
-        cell.addEventListener(
+        const pt = nodeToPx(x + 1, y + 1);
+        const g = document.createElementNS(svgNS, "g");
+        g.setAttribute("class", "node");
+        g.dataset.x = x;
+        g.dataset.y = y;
+        g.setAttribute("transform", "translate(" + pt.cx + "," + pt.cy + ")");
+
+        // Wide invisible hit area for easier tapping
+        const hit = document.createElementNS(svgNS, "circle");
+        hit.setAttribute("r", CELL_SIZE / 2 - 2);
+        hit.setAttribute("class", "node-hit");
+        g.appendChild(hit);
+
+        // Small dot showing the intersection when no piece is placed
+        const dot = document.createElementNS(svgNS, "circle");
+        dot.setAttribute("r", 4);
+        dot.setAttribute("class", "node-dot");
+        g.appendChild(dot);
+
+        // Piece circle (hidden when empty)
+        const circle = document.createElementNS(svgNS, "circle");
+        circle.setAttribute("r", 22);
+        circle.setAttribute("class", "node-circle");
+        g.appendChild(circle);
+
+        // Text label for the piece (X or O)
+        const text = document.createElementNS(svgNS, "text");
+        text.setAttribute("class", "node-text");
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("dominant-baseline", "central");
+        g.appendChild(text);
+
+        g.addEventListener(
           "click",
           (function (cx, cy) {
             return function () {
@@ -245,9 +319,11 @@ if (typeof document !== "undefined") {
             };
           })(x, y)
         );
-        boardEl.appendChild(cell);
+        svg.appendChild(g);
       }
     }
+
+    boardEl.appendChild(svg);
   }
 
   function renderGame(state) {
@@ -273,28 +349,33 @@ if (typeof document !== "undefined") {
     document.getElementById("score-x").textContent = state.scoreX;
     document.getElementById("score-o").textContent = state.scoreO;
 
-    const cells = document.querySelectorAll("#board .cell");
-    cells.forEach((cell) => {
-      const cx = Number.parseInt(cell.dataset.x);
-      const cy = Number.parseInt(cell.dataset.y);
-      const val = state.board[cy][cx];
-      cell.className = "cell";
-      cell.textContent = "";
+    const nodes = document.querySelectorAll("#board .node");
+    nodes.forEach((g) => {
+      const nx = Number.parseInt(g.dataset.x);
+      const ny = Number.parseInt(g.dataset.y);
+      const val = state.board[ny][nx];
+      const textEl = g.querySelector(".node-text");
+
+      // Reset classes
+      g.classList.remove("node-x", "node-o", "node-win");
+
       if (val === PLAYER_X) {
-        cell.textContent = "X";
-        cell.classList.add("cell-x");
+        g.classList.add("node-x");
+        textEl.textContent = "X";
       } else if (val === PLAYER_O) {
-        cell.textContent = "O";
-        cell.classList.add("cell-o");
+        g.classList.add("node-o");
+        textEl.textContent = "O";
+      } else {
+        textEl.textContent = "";
       }
     });
 
     // Highlight winning line
     if (state.winLine) {
       for (const pos of state.winLine) {
-        const sel = '.cell[data-x="' + pos.x + '"][data-y="' + pos.y + '"]';
-        const winCell = document.querySelector(sel);
-        if (winCell) winCell.classList.add("cell-win");
+        const sel = '.node[data-x="' + pos.x + '"][data-y="' + pos.y + '"]';
+        const winNode = document.querySelector(sel);
+        if (winNode) winNode.classList.add("node-win");
       }
     }
 
