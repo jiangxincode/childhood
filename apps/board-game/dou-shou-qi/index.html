@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>斗兽棋 - 童年游戏合集</title>
+  <meta name="description" content="在线免费玩斗兽棋，经典动物棋盘对战游戏，象狮虎豹狼狗猫鼠，河流陷阱兽穴，支持双人对战和人机对战，无需下载，即开即玩。">
+  <meta name="keywords" content="斗兽棋,动物棋,棋盘游戏,在线游戏,免费游戏">
+  <link rel="canonical" href="https://jiangxincode.github.io/childhood/apps/board-game/dou-shou-qi/index.html">
+  <!-- Open Graph / 社交分享 -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="斗兽棋 - 童年游戏合集">
+  <meta property="og:description" content="在线免费玩斗兽棋，经典动物棋盘对战游戏，象狮虎豹狼狗猫鼠，河流陷阱兽穴，支持双人对战和人机对战，无需下载，即开即玩。">
+  <meta property="og:url" content="https://jiangxincode.github.io/childhood/apps/board-game/dou-shou-qi/index.html">
+  <meta property="og:site_name" content="童年游戏合集">
+  <meta property="og:image" content="https://jiangxincode.github.io/childhood/images/board-game/%E6%96%97%E5%85%BD%E6%A3%8B.jpg">
+  <meta property="og:image:alt" content="斗兽棋 - 经典动物棋盘游戏在线玩">
+  <meta property="og:locale" content="zh_CN">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="斗兽棋 - 童年游戏合集">
+  <meta name="twitter:description" content="在线免费玩斗兽棋，经典动物棋盘对战游戏，象狮虎豹狼狗猫鼠，河流陷阱兽穴，支持双人对战和人机对战，无需下载，即开即玩。">
+  <meta name="twitter:image" content="https://jiangxincode.github.io/childhood/images/board-game/%E6%96%97%E5%85%BD%E6%A3%8B.jpg">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "VideoGame",
+      "name": "斗兽棋",
+      "url": "https://jiangxincode.github.io/childhood/apps/board-game/dou-shou-qi/index.html",
+      "image": "https://jiangxincode.github.io/childhood/images/board-game/%E6%96%97%E5%85%BD%E6%A3%8B.jpg",
+      "description": "在线免费玩斗兽棋，经典动物棋盘对战游戏，象狮虎豹狼狗猫鼠，河流陷阱兽穴，支持双人对战和人机对战，无需下载，即开即玩。",
+      "inLanguage": "zh-CN",
+      "genre": "经典棋盘游戏",
+      "applicationCategory": "Game",
+      "gamePlatform": [
+        "Web",
+        "Browser"
+      ],
+      "operatingSystem": "Any",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "CNY"
+      },
+      "publisher": {
+        "@type": "Person",
+        "name": "JiangXin"
+      },
+      "alternateName": "动物棋"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "童年游戏合集",
+          "item": "https://jiangxincode.github.io/childhood/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "经典棋盘游戏",
+          "item": "https://jiangxincode.github.io/childhood/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "斗兽棋"
+        }
+      ]
+    }
+  ]
+}
+  </script>
+  <script src="../../../js/base-fix.js"></script>
+  <link rel="stylesheet" href="game.css">
+  <script src="../../../js/baidu-analytics.js"></script>
+  <script src="../../../js/common.js"></script>
+  <script src="../../common/game-utils.js"></script>
+  <script src="../../common/sound-manager.js"></script>
+  <script src="../../common/webrtc-connection.js"></script>
+  <script src="../../common/network-game-protocol.js"></script>
+  <script src="../../common/room-ui.js"></script>
+  <link rel="stylesheet" href="../../common/room-ui.css">
+</head>
+<body>
+
+  <!-- 模式选择界面 -->
+  <div id="mode-selection" class="overlay">
+    <div class="overlay-content">
+      <h1 class="game-title">斗兽棋</h1>
+      <p class="subtitle">经典动物棋盘对战</p>
+      <div class="mode-buttons">
+        <button id="btn-pvp" class="btn btn-pvp">双人对战</button>
+        <button id="btn-pve" class="btn btn-pve">人机对战</button>
+        <button id="btn-online" class="btn btn-online">联网对战</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 石头剪刀布选择界面 -->
+  <div id="rps-section" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2>石头剪刀布 - 决定先手</h2>
+      <div id="rps-pvp" style="display:none;">
+        <div class="rps-player">
+          <h3>玩家1 选择</h3>
+          <div class="rps-buttons" id="rps-p1-buttons">
+            <button class="btn btn-rps" data-player="1" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-player="1" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-player="1" data-choice="paper">🖐️ 布</button>
+          </div>
+          <p id="rps-p1-status" class="rps-status">请选择</p>
+        </div>
+        <div class="rps-player">
+          <h3>玩家2 选择</h3>
+          <div class="rps-buttons" id="rps-p2-buttons">
+            <button class="btn btn-rps" data-player="2" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-player="2" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-player="2" data-choice="paper">🖐️ 布</button>
+          </div>
+          <p id="rps-p2-status" class="rps-status">请选择</p>
+        </div>
+      </div>
+      <div id="rps-pve" style="display:none;">
+        <div class="rps-player">
+          <h3>你的选择</h3>
+          <div class="rps-buttons" id="rps-player-buttons">
+            <button class="btn btn-rps" data-player="human" data-choice="rock">✊ 石头</button>
+            <button class="btn btn-rps" data-player="human" data-choice="scissors">✌️ 剪刀</button>
+            <button class="btn btn-rps" data-player="human" data-choice="paper">🖐️ 布</button>
+          </div>
+        </div>
+      </div>
+      <div id="rps-result" class="rps-result"></div>
+    </div>
+  </div>
+
+  <!-- 联网猜拳选择界面 -->
+  <div id="rps-online" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2>石头剪刀布 - 决定先手</h2>
+      <div class="rps-player">
+        <h3>你的选择</h3>
+        <div class="rps-buttons" id="rps-online-buttons">
+          <button class="btn btn-rps" data-player="online" data-choice="rock">✊ 石头</button>
+          <button class="btn btn-rps" data-player="online" data-choice="scissors">✌️ 剪刀</button>
+          <button class="btn btn-rps" data-player="online" data-choice="paper">🖐️ 布</button>
+        </div>
+        <p id="rps-online-status" class="rps-status">请选择</p>
+      </div>
+      <div id="rps-online-result" class="rps-result"></div>
+    </div>
+  </div>
+
+  <!-- 游戏区域 -->
+  <div id="game-area" style="display:none;">
+    <!-- 状态栏 -->
+    <div id="status-bar">
+      <div class="status-item">
+        <span class="label">当前行动方：</span>
+        <span id="current-player" class="team-indicator">—</span>
+      </div>
+      <div class="status-item">
+        <span class="label">回合：</span>
+        <span id="turn-count">0</span>
+      </div>
+      <div class="status-item">
+        <span id="label-red" class="label" style="color:#c0392b">红方：</span>
+        <span id="score-red" class="text-red">8</span>
+      </div>
+      <div class="status-item">
+        <span id="label-black" class="label" style="color:#2c3e50">黑方：</span>
+        <span id="score-black" class="text-black-side">8</span>
+      </div>
+    </div>
+
+    <!-- 主游戏区域：棋盘 + 规则面板 -->
+    <div id="game-main">
+      <!-- 棋盘 -->
+      <canvas id="board-canvas"></canvas>
+
+      <!-- 游戏规则面板 -->
+      <div id="rules-panel">
+        <h3>📜 游戏规则</h3>
+        <div class="rule-section">
+          <h4>🏆 等级排列</h4>
+          <ul>
+            <li>象 > 狮 > 虎 > 豹 > 狼 > 狗 > 猫 > 鼠</li>
+            <li>鼠可吃象（逆袭）</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🌊 特殊地形</h4>
+          <ul>
+            <li>河流：仅老鼠可入</li>
+            <li>狮虎可跳过河流</li>
+            <li>陷阱：敌方进入后等级失效</li>
+            <li>兽穴：进入对方兽穴获胜</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>⚔️ 吃子规则</h4>
+          <ul>
+            <li>高等级吃低等级</li>
+            <li>同级可互吃（同归于尽）</li>
+            <li>陷阱中的棋子任意吃</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🏆 胜利条件</h4>
+          <ul>
+            <li>己方棋子进入对方兽穴</li>
+            <li>吃光对方所有棋子</li>
+          </ul>
+        </div>
+        <div id="rule-pve" class="rule-section">
+          <h4>🤖 人机模式</h4>
+          <ul>
+            <li>AI使用Alpha-Beta剪枝</li>
+            <li>搜索深度3层</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作提示信息区域 -->
+    <div id="message"></div>
+  </div>
+
+  <!-- 游戏结束界面 -->
+  <div id="game-over" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2 id="winner-text">游戏结束</h2>
+      <button id="btn-restart" class="btn btn-restart">重新开始</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
