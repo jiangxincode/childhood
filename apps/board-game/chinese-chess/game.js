@@ -30,7 +30,17 @@ const B_GENERAL = 8,
 const RED = "red";
 const BLACK = "black";
 
+// Base (minimum) search depth. Kept for backward compatibility / API.
 const AI_DEPTH = 4;
+// Iterative deepening upper bound. The engine searches deeper than AI_DEPTH
+// whenever the time budget allows, giving stronger play on capable devices.
+const AI_MAX_DEPTH = 6;
+// Soft time budget per move (ms). Iterative deepening stops once exceeded and
+// returns the best move from the last fully completed depth.
+const AI_TIME_BUDGET_MS = 1500;
+// Maximum extra plies explored by the quiescence search (capture-only) to
+// avoid the horizon effect during piece exchanges.
+const QUIESCENCE_MAX_PLY = 6;
 
 const PIECE_NAMES = {};
 PIECE_NAMES[R_GENERAL] = "帥";
@@ -640,15 +650,27 @@ function create2DArray(cols, rows, defaultVal) {
 // Move ordering: captures first, then by MVV-LVA
 // ============================================================
 
-function orderMoves(board, moves) {
-  // Score each move: captures get high score based on victim value
+function orderMoves(board, moves, preferred) {
+  // Score each move: captures get high score based on victim value.
+  // The "preferred" move (from a previous search iteration / transposition
+  // table) is searched first to maximize alpha-beta cutoffs.
   const scored = [];
   for (const move of moves) {
     let score = 0;
-    const victim = board[move.toC][move.toR];
-    if (victim !== EMPTY) {
-      // MVV-LVA: Most Valuable Victim - Least Valuable Attacker
-      score = PIECE_VALUES[victim] * 10 - PIECE_VALUES[board[move.fromC][move.fromR]];
+    if (
+      preferred &&
+      move.fromC === preferred.fromC &&
+      move.fromR === preferred.fromR &&
+      move.toC === preferred.toC &&
+      move.toR === preferred.toR
+    ) {
+      score = 1000000;
+    } else {
+      const victim = board[move.toC][move.toR];
+      if (victim !== EMPTY) {
+        // MVV-LVA: Most Valuable Victim - Least Valuable Attacker
+        score = PIECE_VALUES[victim] * 10 - PIECE_VALUES[board[move.fromC][move.fromR]];
+      }
     }
     scored.push({ move: move, score: score });
   }
@@ -663,6 +685,7 @@ function orderMoves(board, moves) {
 
 // Zobrist keys for hashing positions
 const zobristKeys = {};
+let zobristSideKey = 0;
 let zobristInitDone = false;
 
 function initZobrist() {
@@ -681,10 +704,13 @@ function initZobrist() {
       }
     }
   }
+  // Distinct key mixed in when it is Black's turn, so positions that share the
+  // same piece layout but differ in side-to-move never collide.
+  zobristSideKey = pseudoRandom();
   zobristInitDone = true;
 }
 
-function computeHash(board) {
+function computeHash(board, sideToMove) {
   let hash = 0;
   for (let c = 0; c < COLS; c++) {
     for (let r = 0; r < ROWS; r++) {
@@ -694,6 +720,7 @@ function computeHash(board) {
       }
     }
   }
+  if (sideToMove === BLACK) hash ^= zobristSideKey;
   return hash;
 }
 
@@ -714,7 +741,7 @@ function ttLookup(hash, depth, alpha, beta) {
   return null;
 }
 
-function ttStore(hash, depth, score, flag) {
+function ttStore(hash, depth, score, flag, bestMove) {
   // Replace if deeper or table not full
   const existing = transpositionTable.get(hash);
   if (!existing || existing.depth <= depth) {
@@ -725,44 +752,111 @@ function ttStore(hash, depth, score, flag) {
         transpositionTable.delete(keys[i]);
       }
     }
-    transpositionTable.set(hash, { score: score, depth: depth, flag: flag });
+    transpositionTable.set(hash, {
+      score: score,
+      depth: depth,
+      flag: flag,
+      bestMove: bestMove || null,
+    });
   }
 }
 
-function alphaBeta(board, depth, alpha, beta, aiColor, isAITurn) {
-  const currentPlayer = isAITurn ? aiColor : getOpponent(aiColor);
-  const gameOver = checkGameOver(board, currentPlayer);
-  if (gameOver) {
-    if (gameOver.winner === aiColor) return 99999 + depth;
-    return -99999 - depth;
-  }
-  if (depth === 0) return evaluateBoard(board, aiColor);
+// Time-management state for iterative deepening. When searchDeadline is set
+// (non-zero) and exceeded, the search aborts by throwing TIME_ABORT, which is
+// caught at the root so the move from the last completed depth is used.
+let searchDeadline = 0;
+const TIME_ABORT = { abort: true };
 
-  // Transposition table lookup
-  const hash = computeHash(board);
+// Cheap terminal check: only verifies whether each general is still on the
+// board (scanning the two palaces). Much faster than checkGameOver, which also
+// generates all moves. Used on the hot search path.
+function generalsPresent(board) {
+  let red = false,
+    black = false;
+  for (let c = 3; c <= 5; c++) {
+    for (let r = 0; r <= 2; r++) {
+      if (board[c][r] === B_GENERAL) black = true;
+    }
+    for (let r = 7; r <= 9; r++) {
+      if (board[c][r] === R_GENERAL) red = true;
+    }
+  }
+  return { red: red, black: black };
+}
+
+// Quiescence search: at the depth horizon, keep exploring only capture moves so
+// the evaluation is taken from a "quiet" position rather than in the middle of
+// an exchange. Scores are relative to sideToMove (negamax convention).
+function quiescence(board, alpha, beta, sideToMove, ply) {
+  if (searchDeadline && Date.now() > searchDeadline) throw TIME_ABORT;
+
+  const standPat = evaluateBoard(board, sideToMove);
+  if (standPat >= beta) return beta;
+  if (standPat > alpha) alpha = standPat;
+  if (ply >= QUIESCENCE_MAX_PLY) return alpha;
+
+  const moves = getAllMoves(board, sideToMove);
+  const captures = [];
+  for (const m of moves) {
+    if (board[m.toC][m.toR] !== EMPTY) captures.push(m);
+  }
+  if (captures.length === 0) return alpha;
+
+  const ordered = orderMoves(board, captures, null);
+  for (const move of ordered) {
+    const newBoard = applyMove(board, move);
+    const score = -quiescence(newBoard, -beta, -alpha, getOpponent(sideToMove), ply + 1);
+    if (score >= beta) return beta;
+    if (score > alpha) alpha = score;
+  }
+  return alpha;
+}
+
+// Negamax with alpha-beta pruning. All returned scores are relative to the
+// side to move, which is what the -alphaBeta(...) recursion and the
+// transposition table require to stay consistent.
+function alphaBeta(board, depth, alpha, beta, aiColor, isAITurn) {
+  if (searchDeadline && Date.now() > searchDeadline) throw TIME_ABORT;
+
+  const sideToMove = isAITurn ? aiColor : getOpponent(aiColor);
+
+  // Terminal by capture of a general.
+  const g = generalsPresent(board);
+  if (!g.red) return sideToMove === RED ? -99999 - depth : 99999 + depth;
+  if (!g.black) return sideToMove === BLACK ? -99999 - depth : 99999 + depth;
+
+  if (depth === 0) return quiescence(board, alpha, beta, sideToMove, 0);
+
+  const hash = computeHash(board, sideToMove);
   const ttScore = ttLookup(hash, depth, alpha, beta);
   if (ttScore !== null) return ttScore;
+  const ttEntry = transpositionTable.get(hash);
 
-  const moves = getAllMoves(board, currentPlayer);
-  const orderedMoves = orderMoves(board, moves);
+  const moves = getAllMoves(board, sideToMove);
+  // No legal moves => side to move is checkmated/stalemated (a loss in Xiangqi).
+  if (moves.length === 0) return -99999 - depth;
+
+  const orderedMoves = orderMoves(board, moves, ttEntry ? ttEntry.bestMove : null);
   let bestScore = -Infinity;
-  let flag = TT_UPPER;
+  let bestMove = null;
+  const origAlpha = alpha;
 
   for (const move of orderedMoves) {
     const newBoard = applyMove(board, move);
     const score = -alphaBeta(newBoard, depth - 1, -beta, -alpha, aiColor, !isAITurn);
-    if (score > bestScore) bestScore = score;
-    if (bestScore > alpha) {
-      alpha = bestScore;
-      flag = TT_EXACT;
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = move;
     }
-    if (alpha >= beta) {
-      flag = TT_LOWER;
-      break;
-    }
+    if (bestScore > alpha) alpha = bestScore;
+    if (alpha >= beta) break;
   }
 
-  ttStore(hash, depth, bestScore, flag);
+  let flag;
+  if (bestScore <= origAlpha) flag = TT_UPPER;
+  else if (bestScore >= beta) flag = TT_LOWER;
+  else flag = TT_EXACT;
+  ttStore(hash, depth, bestScore, flag, bestMove);
   return bestScore;
 }
 
@@ -772,21 +866,60 @@ function getBestAIMove(board, aiColor) {
   // Clear transposition table for each new move computation
   transpositionTable.clear();
 
-  const moves = getAllMoves(board, aiColor);
-  if (moves.length === 0) return null;
+  const rootMoves = getAllMoves(board, aiColor);
+  if (rootMoves.length === 0) return null;
+  if (rootMoves.length === 1) return rootMoves[0];
 
-  const orderedMoves = orderMoves(board, moves);
-  let bestMove = null;
-  let bestScore = -Infinity;
+  searchDeadline = Date.now() + AI_TIME_BUDGET_MS;
+  let bestMove = rootMoves[0];
+  let prevBest = null;
 
-  for (const move of orderedMoves) {
-    const newBoard = applyMove(board, move);
-    const score = -alphaBeta(newBoard, AI_DEPTH - 1, -Infinity, Infinity, aiColor, false);
-    if (score > bestScore) {
-      bestScore = score;
-      bestMove = move;
+  try {
+    // Iterative deepening: search depth 1..AI_MAX_DEPTH, reusing the previous
+    // iteration's best move for ordering. Stops when the time budget is hit and
+    // falls back to the best move from the last fully completed depth.
+    for (let depth = Math.max(1, AI_DEPTH - 2); depth <= AI_MAX_DEPTH; depth++) {
+      let iterBest = null;
+      let iterBestScore = -Infinity;
+      let alpha = -Infinity;
+      let completed = true;
+
+      const ordered = orderMoves(board, rootMoves, prevBest);
+      for (const move of ordered) {
+        let score;
+        try {
+          const newBoard = applyMove(board, move);
+          score = -alphaBeta(newBoard, depth - 1, -Infinity, -alpha, aiColor, false);
+        } catch (e) {
+          if (e === TIME_ABORT) {
+            completed = false;
+            break;
+          }
+          throw e;
+        }
+        if (score > iterBestScore) {
+          iterBestScore = score;
+          iterBest = move;
+        }
+        if (score > alpha) alpha = score;
+      }
+
+      if (completed && iterBest) {
+        bestMove = iterBest;
+        prevBest = iterBest;
+        // A forced mate has been found; deeper search cannot improve on it.
+        if (iterBestScore > 90000) break;
+      } else {
+        // Ran out of time mid-iteration: keep the last completed depth's result.
+        break;
+      }
+
+      if (Date.now() > searchDeadline) break;
     }
+  } finally {
+    searchDeadline = 0;
   }
+
   return bestMove;
 }
 
@@ -837,6 +970,8 @@ if (typeof module !== "undefined" && module.exports) {
     RED: RED,
     BLACK: BLACK,
     AI_DEPTH: AI_DEPTH,
+    AI_MAX_DEPTH: AI_MAX_DEPTH,
+    AI_TIME_BUDGET_MS: AI_TIME_BUDGET_MS,
     isRed: isRed,
     isBlack: isBlack,
     getOwner: getOwner,
