@@ -1,0 +1,1776 @@
+/* eslint-disable no-var, no-undef */
+// ============================================================
+// Dou Shou Qi (Animal Chess) - Game Core Logic
+// ============================================================
+
+if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
+  const _gameUtils = require("../../common/game-utils.js");
+  var judgeRPS = _gameUtils.judgeRPS;
+  var getRPSName = _gameUtils.getRPSName;
+}
+
+// Board dimensions
+const COLS = 7;
+const ROWS = 9;
+
+// Piece types (rank value: lower = stronger)
+const EMPTY = 0;
+const RAT = 0;
+const CAT = 1;
+const DOG = 2;
+const WOLF = 3;
+const LEOPARD = 4;
+const TIGER = 5;
+const LION = 6;
+const ELEPHANT = 7;
+
+// Teams
+const RED = "red";
+const BLACK = "black";
+
+// Piece names for display
+const PIECE_NAMES = {};
+PIECE_NAMES[RAT] = "鼠";
+PIECE_NAMES[CAT] = "猫";
+PIECE_NAMES[DOG] = "狗";
+PIECE_NAMES[WOLF] = "狼";
+PIECE_NAMES[LEOPARD] = "豹";
+PIECE_NAMES[TIGER] = "虎";
+PIECE_NAMES[LION] = "狮";
+PIECE_NAMES[ELEPHANT] = "象";
+
+// Piece values for AI evaluation
+const PIECE_VALUES = {};
+PIECE_VALUES[RAT] = 100;
+PIECE_VALUES[CAT] = 200;
+PIECE_VALUES[DOG] = 300;
+PIECE_VALUES[WOLF] = 400;
+PIECE_VALUES[LEOPARD] = 500;
+PIECE_VALUES[TIGER] = 600;
+PIECE_VALUES[LION] = 700;
+PIECE_VALUES[ELEPHANT] = 800;
+
+// Terrain types
+const TERRAIN_LAND = 0;
+const TERRAIN_RIVER = 1;
+const TERRAIN_TRAP_RED = 2;
+const TERRAIN_TRAP_BLACK = 3;
+const TERRAIN_DEN_RED = 4;
+const TERRAIN_DEN_BLACK = 5;
+
+// AI search depth
+const AI_DEPTH = 4;
+const AI_MAX_DEPTH = 8;
+const AI_TIME_BUDGET_MS = 2000;
+// Max additional plies explored by quiescence search (capture-only)
+const QUIESCENCE_MAX_DEPTH = 6;
+
+// ============================================================
+// Terrain definition
+// ============================================================
+
+function createTerrain() {
+  const terrain = [];
+  for (let c = 0; c < COLS; c++) {
+    const col = [];
+    for (let r = 0; r < ROWS; r++) col.push(TERRAIN_LAND);
+    terrain.push(col);
+  }
+
+  // River: left river (x=1,2 y=3,4,5) + right river (x=4,5 y=3,4,5)
+  for (let x = 1; x <= 2; x++) {
+    for (let y = 3; y <= 5; y++) {
+      terrain[x][y] = TERRAIN_RIVER;
+    }
+  }
+  for (let x = 4; x <= 5; x++) {
+    for (let y = 3; y <= 5; y++) {
+      terrain[x][y] = TERRAIN_RIVER;
+    }
+  }
+
+  // Black den: (3,0)
+  terrain[3][0] = TERRAIN_DEN_BLACK;
+
+  // Red den: (3,8)
+  terrain[3][8] = TERRAIN_DEN_RED;
+
+  // Black traps: (2,0), (3,1), (4,0)
+  terrain[2][0] = TERRAIN_TRAP_BLACK;
+  terrain[3][1] = TERRAIN_TRAP_BLACK;
+  terrain[4][0] = TERRAIN_TRAP_BLACK;
+
+  // Red traps: (2,8), (3,7), (4,8)
+  terrain[2][8] = TERRAIN_TRAP_RED;
+  terrain[3][7] = TERRAIN_TRAP_RED;
+  terrain[4][8] = TERRAIN_TRAP_RED;
+
+  return terrain;
+}
+
+function isRiver(x, y) {
+  return (
+    ((x === 1 || x === 2) && (y === 3 || y === 4 || y === 5)) ||
+    ((x === 4 || x === 5) && (y === 3 || y === 4 || y === 5))
+  );
+}
+
+function isTrap(x, y, team) {
+  if (team === BLACK) {
+    return (x === 2 && y === 0) || (x === 3 && y === 1) || (x === 4 && y === 0);
+  }
+  return (x === 2 && y === 8) || (x === 3 && y === 7) || (x === 4 && y === 8);
+}
+
+function isDen(x, y, team) {
+  if (team === BLACK) {
+    return x === 3 && y === 0;
+  }
+  return x === 3 && y === 8;
+}
+
+function isOpponentDen(x, y, team) {
+  if (team === RED) {
+    return x === 3 && y === 0; // Black den
+  }
+  return x === 3 && y === 8; // Red den
+}
+
+// ============================================================
+// Piece creation
+// ============================================================
+
+function createPiece(type, team) {
+  return { type, team, rank: type };
+}
+
+// ============================================================
+// Initial board setup
+// ============================================================
+
+function createBoard() {
+  const board = [];
+  for (let c = 0; c < COLS; c++) {
+    const col = [];
+    for (let r = 0; r < ROWS; r++) col.push(null);
+    board.push(col);
+  }
+
+  // Black pieces (top, y=0-2)
+  board[0][0] = createPiece(LION, BLACK); // (0,0)
+  board[6][0] = createPiece(TIGER, BLACK); // (6,0)
+  board[1][1] = createPiece(DOG, BLACK); // (1,1)
+  board[5][1] = createPiece(CAT, BLACK); // (5,1)
+  board[0][2] = createPiece(RAT, BLACK); // (0,2)
+  board[2][2] = createPiece(LEOPARD, BLACK); // (2,2)
+  board[4][2] = createPiece(WOLF, BLACK); // (4,2)
+  board[6][2] = createPiece(ELEPHANT, BLACK); // (6,2)
+
+  // Red pieces (bottom, y=6-8)
+  board[0][6] = createPiece(ELEPHANT, RED); // (0,6)
+  board[2][6] = createPiece(WOLF, RED); // (2,6)
+  board[4][6] = createPiece(LEOPARD, RED); // (4,6)
+  board[6][6] = createPiece(RAT, RED); // (6,6)
+  board[1][7] = createPiece(CAT, RED); // (1,7)
+  board[5][7] = createPiece(DOG, RED); // (5,7)
+  board[0][8] = createPiece(TIGER, RED); // (0,8)
+  board[6][8] = createPiece(LION, RED); // (6,8)
+
+  return board;
+}
+
+// ============================================================
+// Board operations
+// ============================================================
+
+function copyBoard(board) {
+  const newBoard = [];
+  for (let c = 0; c < COLS; c++) {
+    const col = [];
+    for (let r = 0; r < ROWS; r++) {
+      const piece = board[c][r];
+      col.push(piece ? { ...piece } : null);
+    }
+    newBoard.push(col);
+  }
+  return newBoard;
+}
+
+function applyMove(board, move) {
+  const newBoard = copyBoard(board);
+  newBoard[move.toC][move.toR] = newBoard[move.fromC][move.fromR];
+  newBoard[move.fromC][move.fromR] = null;
+  return newBoard;
+}
+
+// Apply move with mutual destruction handling (for AI search)
+function applyMoveForAI(board, move) {
+  const newBoard = copyBoard(board);
+  const attacker = newBoard[move.fromC][move.fromR];
+  const defender = newBoard[move.toC][move.toR];
+
+  if (defender && attacker.rank === defender.rank) {
+    // Mutual destruction: both pieces removed
+    newBoard[move.fromC][move.fromR] = null;
+    newBoard[move.toC][move.toR] = null;
+  } else {
+    newBoard[move.toC][move.toR] = attacker;
+    newBoard[move.fromC][move.fromR] = null;
+  }
+  return newBoard;
+}
+
+// ============================================================
+// Piece identification
+// ============================================================
+
+function getOwner(piece) {
+  return piece ? piece.team : null;
+}
+
+function getOpponent(color) {
+  return color === RED ? BLACK : RED;
+}
+
+function getPlayerName(color) {
+  return color === RED ? "红方" : "黑方";
+}
+
+function inBounds(c, r) {
+  return c >= 0 && c < COLS && r >= 0 && r < ROWS;
+}
+
+// ============================================================
+// Move validation
+// ============================================================
+
+function canCapture(attacker, defender, attackerX, attackerY, defenderX, defenderY) {
+  // Cannot capture own pieces
+  if (attacker.team === defender.team) return false;
+
+  // Check if defender is in trap (any piece can capture)
+  if (isTrap(defenderX, defenderY, defender.team)) return true;
+
+  const attRank = attacker.rank;
+  const defRank = defender.rank;
+
+  // Rat captures elephant (reversal)
+  if (attRank === RAT && defRank === ELEPHANT) return true;
+
+  // Elephant cannot capture rat
+  if (attRank === ELEPHANT && defRank === RAT) return false;
+
+  // Higher rank (higher value) captures lower rank (lower value)
+  // ELEPHANT(7) > LION(6) > TIGER(5) > LEOPARD(4) > WOLF(3) > DOG(2) > CAT(1) > RAT(0)
+  if (attRank >= defRank) return true;
+
+  return false;
+}
+
+// Check if capture results in mutual destruction (same rank)
+function isMutualDestruction(attacker, defender) {
+  return attacker.rank === defender.rank;
+}
+
+function canMoveTo(board, piece, fromC, fromR, toC, toR) {
+  if (!inBounds(toC, toR)) return false;
+
+  const target = board[toC][toR];
+
+  // Cannot move to own den
+  if (isDen(toC, toR, piece.team)) return false;
+
+  // Check terrain restrictions
+  if (isRiver(toC, toR)) {
+    // Only rat can enter river
+    if (piece.type !== RAT) return false;
+  }
+
+  // If target has a piece, check capture
+  if (target) {
+    return canCapture(piece, target, fromC, fromR, toC, toR);
+  }
+
+  return true;
+}
+
+// ============================================================
+// Jump logic for Lion and Tiger
+// ============================================================
+
+function canJumpRiver(board, piece, fromC, fromR, toC, toR) {
+  // Only lion and tiger can jump
+  if (piece.type !== LION && piece.type !== TIGER) return false;
+
+  // Horizontal jump: same row, jumping 3 columns
+  if (fromR === toR && Math.abs(fromC - toC) === 3) {
+    // Check if all cells between are river
+    const minC = Math.min(fromC, toC);
+    for (let c = minC + 1; c < minC + 3; c++) {
+      if (!isRiver(c, fromR)) return false;
+      // Check if rat is blocking
+      if (board[c][fromR] && board[c][fromR].type === RAT) return false;
+    }
+    return true;
+  }
+
+  // Vertical jump: same column, jumping 4 rows
+  if (fromC === toC && Math.abs(fromR - toR) === 4) {
+    // Check if all cells between are river
+    const minR = Math.min(fromR, toR);
+    for (let r = minR + 1; r < minR + 4; r++) {
+      if (!isRiver(fromC, r)) return false;
+      // Check if rat is blocking
+      if (board[fromC][r] && board[fromC][r].type === RAT) return false;
+    }
+    return true;
+  }
+
+  return false;
+}
+
+// ============================================================
+// Get valid moves for a piece
+// ============================================================
+
+function getValidMoves(board, c, r) {
+  const piece = board[c][r];
+  if (!piece) return [];
+
+  const moves = [];
+  const dirs = [
+    [0, -1],
+    [0, 1],
+    [-1, 0],
+    [1, 0],
+  ];
+
+  // Normal moves (one step)
+  for (const [dc, dr] of dirs) {
+    const nc = c + dc;
+    const nr = r + dr;
+    if (canMoveTo(board, piece, c, r, nc, nr)) {
+      moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
+    }
+  }
+
+  // Lion and tiger can jump over river
+  if (piece.type === LION || piece.type === TIGER) {
+    // Check all possible jump destinations
+    const jumpDirs = [
+      [3, 0],
+      [-3, 0],
+      [0, 4],
+      [0, -4],
+    ];
+    for (const [dc, dr] of jumpDirs) {
+      const nc = c + dc;
+      const nr = r + dr;
+      if (inBounds(nc, nr) && canJumpRiver(board, piece, c, r, nc, nr)) {
+        const target = board[nc][nr];
+        if (!target || canCapture(piece, target, c, r, nc, nr)) {
+          // Cannot jump to own den
+          if (!isDen(nc, nr, piece.team)) {
+            moves.push({ fromC: c, fromR: r, toC: nc, toR: nr });
+          }
+        }
+      }
+    }
+  }
+
+  return moves;
+}
+
+// ============================================================
+// Get all moves for a team
+// ============================================================
+
+function getAllMoves(board, color) {
+  const moves = [];
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      const piece = board[c][r];
+      if (piece && piece.team === color) {
+        const pieceMoves = getValidMoves(board, c, r);
+        for (const move of pieceMoves) {
+          moves.push(move);
+        }
+      }
+    }
+  }
+  return moves;
+}
+
+// ============================================================
+// Win/loss detection
+// ============================================================
+
+function checkGameOver(board, nextPlayer) {
+  // Check if any piece entered opponent's den
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      const piece = board[c][r];
+      if (piece && isOpponentDen(c, r, piece.team)) {
+        return { winner: piece.team, reason: "den" };
+      }
+    }
+  }
+
+  // Count pieces
+  let redCount = 0;
+  let blackCount = 0;
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      const piece = board[c][r];
+      if (piece) {
+        if (piece.team === RED) redCount++;
+        else blackCount++;
+      }
+    }
+  }
+
+  // Check if one side has no pieces
+  if (redCount === 0) return { winner: BLACK, reason: "capture" };
+  if (blackCount === 0) return { winner: RED, reason: "capture" };
+
+  // Check if next player has any legal moves
+  const moves = getAllMoves(board, nextPlayer);
+  if (moves.length === 0) {
+    return { winner: getOpponent(nextPlayer), reason: "no_moves" };
+  }
+
+  return null;
+}
+
+// ============================================================
+// AI: Alpha-Beta Pruning
+// ============================================================
+
+function evaluateBoard(board, aiColor) {
+  let aiScore = 0;
+  let oppScore = 0;
+
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      const piece = board[c][r];
+      if (!piece) continue;
+
+      let val = PIECE_VALUES[piece.type];
+
+      // Positional bonus: center control
+      const centerDist = Math.abs(c - 3) + Math.abs(r - 4);
+      val += Math.max(0, 10 - centerDist * 2);
+
+      // Distance to opponent's den is the winning objective:
+      // reward pieces for advancing toward the enemy den (graduated).
+      const denR = piece.team === RED ? 0 : 8;
+      const denDist = Math.abs(c - 3) + Math.abs(r - denR);
+      val += Math.max(0, 16 - denDist) * 4;
+      // Strong reward when a piece is right next to the enemy den
+      if (denDist <= 2) val += 60;
+
+      // Bonus for rat near opponent elephant (threatening reversal capture)
+      if (piece.type === RAT) {
+        for (let dc = -2; dc <= 2; dc++) {
+          for (let dr = -2; dr <= 2; dr++) {
+            const nc = c + dc;
+            const nr = r + dr;
+            if (inBounds(nc, nr)) {
+              const nearby = board[nc][nr];
+              if (nearby && nearby.type === ELEPHANT && nearby.team !== piece.team) {
+                val += 30;
+              }
+            }
+          }
+        }
+      }
+
+      const owner = piece.team;
+      if (owner === aiColor) aiScore += val;
+      else oppScore += val;
+    }
+  }
+
+  return aiScore - oppScore;
+}
+
+// Time management
+let searchDeadline = 0;
+const TIME_ABORT = { abort: true };
+
+// Move-ordering heuristics: killer moves (per remaining depth) and history table.
+// These dramatically improve alpha-beta pruning efficiency.
+let killerMoves = [];
+let historyTable = {};
+
+function sameMove(a, b) {
+  return a.fromC === b.fromC && a.fromR === b.fromR && a.toC === b.toC && a.toR === b.toR;
+}
+
+function historyKey(move) {
+  return move.fromC + "," + move.fromR + "," + move.toC + "," + move.toR;
+}
+
+function recordKiller(depth, move) {
+  let slot = killerMoves[depth];
+  if (!slot) {
+    slot = [];
+    killerMoves[depth] = slot;
+  }
+  if (slot[0] && sameMove(slot[0], move)) return;
+  slot[1] = slot[0];
+  slot[0] = move;
+}
+
+function recordHistory(move, depth) {
+  const key = historyKey(move);
+  historyTable[key] = (historyTable[key] || 0) + depth * depth;
+}
+
+// Transposition table
+const transpositionTable = new Map();
+const TT_MAX_SIZE = 50000;
+
+const TT_EXACT = 0;
+const TT_LOWER = 1;
+const TT_UPPER = 2;
+
+function ttLookup(hash, depth, alpha, beta) {
+  const entry = transpositionTable.get(hash);
+  if (!entry || entry.depth < depth) return null;
+  if (entry.flag === TT_EXACT) return entry.score;
+  if (entry.flag === TT_LOWER && entry.score >= beta) return entry.score;
+  if (entry.flag === TT_UPPER && entry.score <= alpha) return entry.score;
+  return null;
+}
+
+function ttStore(hash, depth, score, flag, bestMove) {
+  const existing = transpositionTable.get(hash);
+  if (!existing || existing.depth <= depth) {
+    if (transpositionTable.size >= TT_MAX_SIZE) {
+      const keys = Array.from(transpositionTable.keys());
+      for (let i = 0; i < keys.length / 2; i++) {
+        transpositionTable.delete(keys[i]);
+      }
+    }
+    transpositionTable.set(hash, {
+      score,
+      depth,
+      flag,
+      bestMove: bestMove || null,
+    });
+  }
+}
+
+// Simple hash for board position
+function computeHash(board, sideToMove) {
+  let hash = 0;
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      const piece = board[c][r];
+      if (piece) {
+        hash = (hash * 31 + c * 100 + r * 10 + piece.type + (piece.team === RED ? 1000 : 2000)) | 0;
+      }
+    }
+  }
+  if (sideToMove === BLACK) hash = (hash * 31 + 999) | 0;
+  return hash;
+}
+
+// Move ordering
+function orderMoves(board, moves, preferred, killers) {
+  const scored = [];
+  for (const move of moves) {
+    let score = 0;
+    if (
+      preferred &&
+      move.fromC === preferred.fromC &&
+      move.fromR === preferred.fromR &&
+      move.toC === preferred.toC &&
+      move.toR === preferred.toR
+    ) {
+      score = 1000000;
+    } else {
+      const victim = board[move.toC][move.toR];
+      if (victim) {
+        const attacker = board[move.fromC][move.fromR];
+        // Check if mutual destruction
+        if (attacker.rank === victim.rank) {
+          // Mutual destruction: count remaining enemy pieces after removal
+          let enemyCount = 0;
+          for (let c = 0; c < COLS; c++) {
+            for (let r = 0; r < ROWS; r++) {
+              const p = board[c][r];
+              if (p && p.team === victim.team && !(c === move.toC && r === move.toR)) {
+                enemyCount++;
+              }
+            }
+          }
+          // If mutual destruction wins the game (no enemy pieces left), high priority
+          if (enemyCount === 0) {
+            score = 500000;
+          } else {
+            // Equal trade: moderate priority
+            score = PIECE_VALUES[victim.type] * 5;
+          }
+        } else {
+          score = PIECE_VALUES[victim.type] * 10 - PIECE_VALUES[attacker.type];
+        }
+      } else {
+        // Quiet move: use killer-move and history heuristics
+        if (killers) {
+          if (killers[0] && sameMove(killers[0], move)) score += 9000;
+          else if (killers[1] && sameMove(killers[1], move)) score += 8000;
+        }
+        const h = historyTable[historyKey(move)];
+        if (h) score += Math.min(h, 7000);
+      }
+      // Bonus for moving toward opponent's den
+      const piece = board[move.fromC][move.fromR];
+      if (piece.team === RED && move.toR < move.fromR) score += 5;
+      if (piece.team === BLACK && move.toR > move.fromR) score += 5;
+    }
+    scored.push({ move, score });
+  }
+  scored.sort((a, b) => b.score - a.score);
+  return scored.map((s) => s.move);
+}
+
+// Lightweight terminal check for quiescence (den entry or wipe-out only).
+// Skips the expensive "no legal moves" detection used by checkGameOver.
+function quickTerminalWinner(board) {
+  let redCount = 0;
+  let blackCount = 0;
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      const piece = board[c][r];
+      if (!piece) continue;
+      if (isOpponentDen(c, r, piece.team)) return piece.team;
+      if (piece.team === RED) redCount++;
+      else blackCount++;
+    }
+  }
+  if (redCount === 0) return BLACK;
+  if (blackCount === 0) return RED;
+  return null;
+}
+
+// Quiescence search: only explores capture moves to reach a "quiet" position
+// before evaluating, eliminating the horizon effect on tactical exchanges.
+function quiescence(board, alpha, beta, sideToMove, qdepth) {
+  if (searchDeadline && Date.now() > searchDeadline) throw TIME_ABORT;
+
+  const winner = quickTerminalWinner(board);
+  if (winner) return winner === sideToMove ? 99999 : -99999;
+
+  // Stand-pat: the side to move may choose not to capture.
+  const standPat = evaluateBoard(board, sideToMove);
+  if (standPat >= beta) return beta;
+  if (standPat > alpha) alpha = standPat;
+  if (qdepth <= 0) return alpha;
+
+  const allMoves = getAllMoves(board, sideToMove);
+  const captures = [];
+  for (const m of allMoves) {
+    if (board[m.toC][m.toR]) captures.push(m);
+  }
+  if (captures.length === 0) return alpha;
+
+  const ordered = orderMoves(board, captures, null, null);
+  const opponent = getOpponent(sideToMove);
+  for (const move of ordered) {
+    const newBoard = applyMoveForAI(board, move);
+    const score = -quiescence(newBoard, -beta, -alpha, opponent, qdepth - 1);
+    if (score >= beta) return beta;
+    if (score > alpha) alpha = score;
+  }
+  return alpha;
+}
+
+// Alpha-Beta search
+function alphaBeta(board, depth, alpha, beta, aiColor, isAITurn) {
+  if (searchDeadline && Date.now() > searchDeadline) throw TIME_ABORT;
+
+  const sideToMove = isAITurn ? aiColor : getOpponent(aiColor);
+
+  // Check terminal state (score is relative to the side to move, for negamax)
+  const gameOver = checkGameOver(board, sideToMove);
+  if (gameOver) {
+    if (gameOver.winner === sideToMove) return 99999 + depth;
+    return -99999 - depth;
+  }
+
+  // At the search horizon, run a capture-only quiescence search to avoid
+  // the horizon effect (e.g. moving a piece next to a stronger enemy).
+  if (depth === 0) {
+    return quiescence(board, alpha, beta, sideToMove, QUIESCENCE_MAX_DEPTH);
+  }
+
+  const hash = computeHash(board, sideToMove);
+  const ttScore = ttLookup(hash, depth, alpha, beta);
+  if (ttScore !== null) return ttScore;
+  const ttEntry = transpositionTable.get(hash);
+
+  const moves = getAllMoves(board, sideToMove);
+  if (moves.length === 0) return -99999 - depth;
+
+  const orderedMoves = orderMoves(
+    board,
+    moves,
+    ttEntry ? ttEntry.bestMove : null,
+    killerMoves[depth]
+  );
+  let bestScore = -Infinity;
+  let bestMove = null;
+  const origAlpha = alpha;
+
+  for (const move of orderedMoves) {
+    const newBoard = applyMoveForAI(board, move);
+    const score = -alphaBeta(newBoard, depth - 1, -beta, -alpha, aiColor, !isAITurn);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = move;
+    }
+    if (bestScore > alpha) alpha = bestScore;
+    if (alpha >= beta) {
+      // Beta cutoff: remember quiet moves that cause cutoffs (killer/history)
+      if (!board[move.toC][move.toR]) {
+        recordKiller(depth, move);
+        recordHistory(move, depth);
+      }
+      break;
+    }
+  }
+
+  let flag;
+  if (bestScore <= origAlpha) flag = TT_UPPER;
+  else if (bestScore >= beta) flag = TT_LOWER;
+  else flag = TT_EXACT;
+  ttStore(hash, depth, bestScore, flag, bestMove);
+  return bestScore;
+}
+
+function getBestAIMove(board, aiColor) {
+  transpositionTable.clear();
+  killerMoves = [];
+  historyTable = {};
+
+  const rootMoves = getAllMoves(board, aiColor);
+  if (rootMoves.length === 0) return null;
+  if (rootMoves.length === 1) return rootMoves[0];
+
+  searchDeadline = Date.now() + AI_TIME_BUDGET_MS;
+  let bestMove = rootMoves[0];
+  let prevBest = null;
+
+  try {
+    // Iterative deepening
+    for (let depth = 1; depth <= AI_MAX_DEPTH; depth++) {
+      let iterBest = null;
+      let iterBestScore = -Infinity;
+      let alpha = -Infinity;
+      let completed = true;
+
+      const ordered = orderMoves(board, rootMoves, prevBest);
+      for (const move of ordered) {
+        let score;
+        try {
+          const newBoard = applyMoveForAI(board, move);
+          score = -alphaBeta(newBoard, depth - 1, -Infinity, -alpha, aiColor, false);
+        } catch (e) {
+          if (e === TIME_ABORT) {
+            completed = false;
+            break;
+          }
+          throw e;
+        }
+        if (score > iterBestScore) {
+          iterBestScore = score;
+          iterBest = move;
+        }
+        if (score > alpha) alpha = score;
+      }
+
+      if (completed && iterBest) {
+        bestMove = iterBest;
+        prevBest = iterBest;
+        if (iterBestScore > 90000) break;
+      } else {
+        break;
+      }
+
+      if (Date.now() > searchDeadline) break;
+    }
+  } finally {
+    searchDeadline = 0;
+  }
+
+  return bestMove;
+}
+
+// ============================================================
+// Game state
+// ============================================================
+
+function createGameState(mode) {
+  return {
+    mode,
+    board: createBoard(),
+    terrain: createTerrain(),
+    currentPlayer: RED,
+    playerTeam: null,
+    aiTeam: null,
+    gameOver: false,
+    winner: null,
+    turnCount: 0,
+    aiThinking: false,
+    selectedPiece: null,
+    validMoves: [],
+    lastMove: null,
+    boardFlipped: false,
+    firstPlayer: null,
+  };
+}
+
+// ============================================================
+// Module exports (Node.js environment)
+// ============================================================
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = {
+    COLS,
+    ROWS,
+    EMPTY,
+    RAT,
+    CAT,
+    DOG,
+    WOLF,
+    LEOPARD,
+    TIGER,
+    LION,
+    ELEPHANT,
+    RED,
+    BLACK,
+    AI_DEPTH,
+    AI_MAX_DEPTH,
+    AI_TIME_BUDGET_MS,
+    TERRAIN_LAND,
+    TERRAIN_RIVER,
+    TERRAIN_TRAP_RED,
+    TERRAIN_TRAP_BLACK,
+    TERRAIN_DEN_RED,
+    TERRAIN_DEN_BLACK,
+    PIECE_NAMES,
+    PIECE_VALUES,
+    createTerrain,
+    isRiver,
+    isTrap,
+    isDen,
+    isOpponentDen,
+    createPiece,
+    createBoard,
+    copyBoard,
+    applyMove,
+    getOwner,
+    getOpponent,
+    getPlayerName,
+    inBounds,
+    canCapture,
+    canMoveTo,
+    canJumpRiver,
+    getValidMoves,
+    getAllMoves,
+    checkGameOver,
+    evaluateBoard,
+    alphaBeta,
+    getBestAIMove,
+    createGameState,
+    orderMoves,
+    computeHash,
+  };
+}
+
+// ============================================================
+// Browser UI
+// ============================================================
+
+if (typeof document !== "undefined") {
+  // Initialize sound manager
+  SoundManager.init("../../audio");
+
+  let gameState = null;
+  let rpsChoices = { player1: null, player2: null, human: null };
+  let canvas, context;
+
+  // Online mode state
+  let networkProtocol = null;
+  let networkConnection = null;
+  let roomUI = null;
+  let localPlayerRole = null;
+  let localTeam = null;
+  let remoteTeam = null;
+
+  // Board image
+  let boardImage = null;
+
+  // Board dimensions (matching reference image proportions)
+  const CELL_SIZE = 65;
+  const PADDING = 30;
+  const BOARD_W = CELL_SIZE * (COLS - 1) + PADDING * 2;
+  const BOARD_H = CELL_SIZE * (ROWS - 1) + PADDING * 2;
+  const PIECE_RADIUS = 25;
+
+  function loadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        boardImage = img;
+        resolve(img);
+      };
+      img.onerror = () => {
+        resolve(null);
+      };
+      img.src = src;
+    });
+  }
+
+  async function preloadImages() {
+    // Load board image only
+    await loadImage("images/dou_shou_qi_board.png");
+  }
+
+  function initBoard() {
+    canvas = document.getElementById("board-canvas");
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = BOARD_W * ratio;
+    canvas.height = BOARD_H * ratio;
+    canvas.style.width = BOARD_W + "px";
+    canvas.style.height = BOARD_H + "px";
+    context = canvas.getContext("2d");
+    context.scale(ratio, ratio);
+    drawBoard();
+  }
+
+  function toCanvasX(c) {
+    const col = gameState && gameState.boardFlipped ? COLS - 1 - c : c;
+    return PADDING + col * CELL_SIZE;
+  }
+
+  function toCanvasY(r) {
+    const row = gameState && gameState.boardFlipped ? ROWS - 1 - r : r;
+    return PADDING + row * CELL_SIZE;
+  }
+
+  function drawBoard() {
+    // Draw board background image if loaded
+    if (boardImage) {
+      context.drawImage(boardImage, 0, 0, BOARD_W, BOARD_H);
+    } else {
+      // Fallback: draw white background with red grid
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, BOARD_W, BOARD_H);
+
+      // Red grid lines
+      context.strokeStyle = "#d32f2f";
+      context.lineWidth = 2;
+
+      // Horizontal lines
+      for (let r = 0; r < ROWS; r++) {
+        context.beginPath();
+        context.moveTo(toCanvasX(0), toCanvasY(r));
+        context.lineTo(toCanvasX(COLS - 1), toCanvasY(r));
+        context.stroke();
+      }
+
+      // Vertical lines
+      for (let c = 0; c < COLS; c++) {
+        context.beginPath();
+        context.moveTo(toCanvasX(c), toCanvasY(0));
+        context.lineTo(toCanvasX(c), toCanvasY(ROWS - 1));
+        context.stroke();
+      }
+
+      // Draw river (red wave pattern)
+      for (let c = 1; c <= 5; c++) {
+        if (c === 3) continue; // Skip center column
+        for (let r = 3; r <= 5; r++) {
+          const cx = toCanvasX(c);
+          const cy = toCanvasY(r);
+          const halfCell = CELL_SIZE / 2;
+
+          // Red wave pattern
+          context.strokeStyle = "#d32f2f";
+          context.lineWidth = 1.5;
+          for (let i = 0; i < 4; i++) {
+            context.beginPath();
+            const y = cy - halfCell + 10 + i * 12;
+            context.moveTo(cx - halfCell + 3, y);
+            context.quadraticCurveTo(cx, y - 5, cx + halfCell - 3, y);
+            context.stroke();
+          }
+        }
+      }
+
+      // Draw den circles
+      context.strokeStyle = "#d32f2f";
+      context.lineWidth = 2;
+      // Black den (top)
+      context.beginPath();
+      context.arc(toCanvasX(3), toCanvasY(0), 18, 0, Math.PI * 2);
+      context.stroke();
+      // Red den (bottom)
+      context.beginPath();
+      context.arc(toCanvasX(3), toCanvasY(8), 18, 0, Math.PI * 2);
+      context.stroke();
+
+      // Draw trap marks
+      context.lineWidth = 1.5;
+      // Black traps
+      drawTrapMark(toCanvasX(2), toCanvasY(0));
+      drawTrapMark(toCanvasX(4), toCanvasY(0));
+      drawTrapMark(toCanvasX(3), toCanvasY(1));
+      // Red traps
+      drawTrapMark(toCanvasX(2), toCanvasY(8));
+      drawTrapMark(toCanvasX(4), toCanvasY(8));
+      drawTrapMark(toCanvasX(3), toCanvasY(7));
+    }
+
+    // Draw selection and valid moves
+    if (gameState && gameState.selectedPiece) {
+      drawSelection(gameState.selectedPiece.c, gameState.selectedPiece.r);
+      drawValidMoves(gameState.validMoves);
+    }
+
+    // Draw last move
+    if (gameState && gameState.lastMove) {
+      drawLastMove(gameState.lastMove);
+    }
+
+    // Draw all pieces
+    for (let c = 0; c < COLS; c++) {
+      for (let r = 0; r < ROWS; r++) {
+        if (gameState && gameState.board[c][r]) {
+          drawPiece(c, r, gameState.board[c][r]);
+        }
+      }
+    }
+  }
+
+  function drawTrapMark(cx, cy) {
+    const size = 12;
+    context.strokeStyle = "#d32f2f";
+    context.lineWidth = 1.5;
+    // Draw X mark
+    context.beginPath();
+    context.moveTo(cx - size, cy - size);
+    context.lineTo(cx + size, cy + size);
+    context.moveTo(cx + size, cy - size);
+    context.lineTo(cx - size, cy + size);
+    context.stroke();
+  }
+
+  function drawPiece(c, r, piece) {
+    const cx = toCanvasX(c);
+    const cy = toCanvasY(r);
+    const color = piece.team;
+
+    // Shadow
+    context.fillStyle = "rgba(0, 0, 0, 0.3)";
+    context.beginPath();
+    context.arc(cx + 2, cy + 3, PIECE_RADIUS, 0, Math.PI * 2);
+    context.fill();
+
+    // Piece background
+    const gradient = context.createRadialGradient(cx - 3, cy - 3, 2, cx, cy, PIECE_RADIUS);
+    gradient.addColorStop(0, "#f5e6c8");
+    gradient.addColorStop(0.7, "#e8d5a8");
+    gradient.addColorStop(1, "#d4c090");
+    context.fillStyle = gradient;
+    context.beginPath();
+    context.arc(cx, cy, PIECE_RADIUS, 0, Math.PI * 2);
+    context.fill();
+
+    // Outer ring
+    context.strokeStyle = color === RED ? "#c0392b" : "#1a1a1a";
+    context.lineWidth = 3;
+    context.beginPath();
+    context.arc(cx, cy, PIECE_RADIUS, 0, Math.PI * 2);
+    context.stroke();
+
+    // Inner ring
+    context.strokeStyle = color === RED ? "#e74c3c" : "#333";
+    context.lineWidth = 1.5;
+    context.beginPath();
+    context.arc(cx, cy, PIECE_RADIUS - 4, 0, Math.PI * 2);
+    context.stroke();
+
+    // Text
+    context.fillStyle = color === RED ? "#c0392b" : "#1a1a1a";
+    context.font = 'bold 22px "KaiTi", "楷体", "STKaiti", serif';
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(PIECE_NAMES[piece.type], cx, cy + 1);
+  }
+
+  function drawSelection(c, r) {
+    context.strokeStyle = "#ffd600";
+    context.lineWidth = 3;
+    const x = toCanvasX(c) - PIECE_RADIUS - 2;
+    const y = toCanvasY(r) - PIECE_RADIUS - 2;
+    const size = (PIECE_RADIUS + 2) * 2;
+    context.strokeRect(x, y, size, size);
+  }
+
+  function drawValidMoves(moves) {
+    for (const m of moves) {
+      const cx = toCanvasX(m.toC);
+      const cy = toCanvasY(m.toR);
+      if (gameState.board[m.toC][m.toR]) {
+        context.strokeStyle = "rgba(229, 57, 53, 0.7)";
+        context.lineWidth = 3;
+        context.beginPath();
+        context.arc(cx, cy, PIECE_RADIUS + 2, 0, Math.PI * 2);
+        context.stroke();
+      } else {
+        context.fillStyle = "rgba(76, 175, 80, 0.6)";
+        context.beginPath();
+        context.arc(cx, cy, 8, 0, Math.PI * 2);
+        context.fill();
+      }
+    }
+  }
+
+  function drawLastMove(move) {
+    if (!move) return;
+    context.strokeStyle = "rgba(255, 152, 0, 0.7)";
+    context.lineWidth = 3;
+    const size = PIECE_RADIUS + 4;
+    context.strokeRect(
+      toCanvasX(move.fromC) - size,
+      toCanvasY(move.fromR) - size,
+      size * 2,
+      size * 2
+    );
+    context.strokeRect(toCanvasX(move.toC) - size, toCanvasY(move.toR) - size, size * 2, size * 2);
+  }
+
+  function renderGame(state) {
+    const ratio = window.devicePixelRatio || 1;
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.scale(ratio, ratio);
+    drawBoard();
+
+    // Update status
+    const label = getCurrentPlayerLabel({
+      mode: state.mode,
+      currentSide: state.currentPlayer,
+      playerSide: state.mode === "online" ? state.localTeam : state.playerTeam,
+      sidesOrder: state.firstPlayer
+        ? [state.firstPlayer, state.firstPlayer === RED ? BLACK : RED]
+        : [RED, BLACK],
+    });
+    document.getElementById("current-player").textContent = label.text;
+    document.getElementById("current-player").className =
+      "team-indicator " + (state.currentPlayer === RED ? "text-red" : "text-black-side");
+    document.getElementById("turn-count").textContent = state.turnCount;
+
+    const redCount = countPieces(state.board, RED);
+    const blackCount = countPieces(state.board, BLACK);
+    document.getElementById("score-red").textContent = redCount;
+    document.getElementById("score-black").textContent = blackCount;
+
+    if (state.mode === "pve") {
+      const redLabel = state.playerTeam === RED ? "玩家（红方）：" : "电脑（红方）：";
+      const blackLabel = state.playerTeam === BLACK ? "玩家（黑方）：" : "电脑（黑方）：";
+      document.getElementById("label-red").textContent = redLabel;
+      document.getElementById("label-black").textContent = blackLabel;
+    } else if (state.mode === "online") {
+      const redLabel = state.localTeam === RED ? "你（红方）：" : "对方（红方）：";
+      const blackLabel = state.localTeam === BLACK ? "你（黑方）：" : "对方（黑方）：";
+      document.getElementById("label-red").textContent = redLabel;
+      document.getElementById("label-black").textContent = blackLabel;
+    } else {
+      document.getElementById("label-red").textContent = "红方：";
+      document.getElementById("label-black").textContent = "黑方：";
+    }
+
+    if (state.gameOver) {
+      updateMessage("游戏结束！", "info");
+    } else if (state.aiThinking) {
+      updateMessage("电脑正在思考...", "info");
+    } else if (state.mode === "pve" && state.currentPlayer === state.aiTeam) {
+      updateMessage("轮到电脑行动", "info");
+    } else {
+      updateMessage("轮到 " + label.text + " 行动", "info");
+    }
+  }
+
+  function countPieces(board, color) {
+    let count = 0;
+    for (let c = 0; c < COLS; c++) {
+      for (let r = 0; r < ROWS; r++) {
+        if (board[c][r] && board[c][r].team === color) count++;
+      }
+    }
+    return count;
+  }
+
+  function updateMessage(text, type) {
+    const el = document.getElementById("message");
+    el.textContent = text;
+    if (type === "error") {
+      el.className = "error";
+    } else if (type === "info") {
+      el.className = "info";
+    } else {
+      el.className = "";
+    }
+  }
+
+  function showGameOver(state) {
+    const winnerText = document.getElementById("winner-text");
+    if (state.winner) {
+      const isPlayerWin = state.mode === "pve" ? state.winner === state.playerTeam : true;
+      SoundManager.play(isPlayerWin ? "victory" : "lose");
+
+      const label = getCurrentPlayerLabel({
+        mode: state.mode,
+        currentSide: state.winner,
+        playerSide: state.mode === "online" ? state.localTeam : state.playerTeam,
+        sidesOrder: state.firstPlayer
+          ? [state.firstPlayer, state.firstPlayer === RED ? BLACK : RED]
+          : [RED, BLACK],
+      });
+      winnerText.textContent = label.text + " 获胜！";
+      winnerText.className = state.winner === RED ? "text-red" : "text-black-side";
+    } else {
+      SoundManager.play("draw");
+      winnerText.textContent = "平局！";
+      winnerText.className = "";
+    }
+    document.getElementById("game-over").style.display = "flex";
+  }
+
+  function handleCanvasClick(e) {
+    if (!gameState || gameState.gameOver || gameState.aiThinking) return;
+    if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) return;
+    if (gameState.mode === "online" && gameState.currentPlayer !== localTeam) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = BOARD_W / rect.width;
+    const scaleY = BOARD_H / rect.height;
+    const px = (e.clientX - rect.left) * scaleX;
+    const py = (e.clientY - rect.top) * scaleY;
+    let col = Math.round((px - PADDING) / CELL_SIZE);
+    let row = Math.round((py - PADDING) / CELL_SIZE);
+    if (gameState.boardFlipped) {
+      col = COLS - 1 - col;
+      row = ROWS - 1 - row;
+    }
+
+    if (!inBounds(col, row)) return;
+
+    const piece = gameState.board[col][row];
+
+    if (gameState.selectedPiece) {
+      const move = findMove(gameState.validMoves, col, row);
+      if (move) {
+        doMove(move);
+        if (gameState.mode === "online" && networkProtocol) {
+          networkProtocol.sendAction({
+            a: "move",
+            fc: move.fromC,
+            fr: move.fromR,
+            tc: move.toC,
+            tr: move.toR,
+          });
+        }
+        return;
+      }
+    }
+
+    if (piece && piece.team === gameState.currentPlayer) {
+      const moves = getValidMoves(gameState.board, col, row);
+      if (moves.length > 0) {
+        gameState.selectedPiece = { c: col, r: row };
+        gameState.validMoves = moves;
+        renderGame(gameState);
+      } else {
+        updateMessage("该棋子没有合法移动", "error");
+      }
+      return;
+    }
+
+    gameState.selectedPiece = null;
+    gameState.validMoves = [];
+    renderGame(gameState);
+  }
+
+  function findMove(moves, toC, toR) {
+    for (const move of moves) {
+      if (move.toC === toC && move.toR === toR) return move;
+    }
+    return null;
+  }
+
+  function doMove(move) {
+    const targetPiece = gameState.board[move.toC][move.toR];
+    const attackerPiece = gameState.board[move.fromC][move.fromR];
+
+    if (targetPiece) {
+      SoundManager.play("take");
+      // Check if mutual destruction (same rank)
+      if (isMutualDestruction(attackerPiece, targetPiece)) {
+        // Both pieces are removed
+        gameState.board[move.fromC][move.fromR] = null;
+        gameState.board[move.toC][move.toR] = null;
+      } else {
+        // Normal capture
+        gameState.board = applyMove(gameState.board, move);
+      }
+    } else {
+      SoundManager.play("slide");
+      gameState.board = applyMove(gameState.board, move);
+    }
+
+    gameState.lastMove = move;
+    gameState.selectedPiece = null;
+    gameState.validMoves = [];
+    gameState.turnCount++;
+    endTurn();
+  }
+
+  function endTurn() {
+    const nextPlayer = getOpponent(gameState.currentPlayer);
+    const gameOverResult = checkGameOver(gameState.board, nextPlayer);
+    if (gameOverResult) {
+      gameState.gameOver = true;
+      gameState.winner = gameOverResult.winner;
+      renderGame(gameState);
+      setTimeout(() => {
+        showGameOver(gameState);
+      }, 500);
+      return;
+    }
+
+    gameState.currentPlayer = nextPlayer;
+    renderGame(gameState);
+
+    if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) {
+      triggerAI();
+    }
+  }
+
+  function triggerAI() {
+    gameState.aiThinking = true;
+    renderGame(gameState);
+    setTimeout(() => {
+      const move = getBestAIMove(gameState.board, gameState.aiTeam);
+      gameState.aiThinking = false;
+      if (move) {
+        const targetPiece = gameState.board[move.toC][move.toR];
+        const attackerPiece = gameState.board[move.fromC][move.fromR];
+        if (targetPiece) {
+          SoundManager.play("take");
+          if (isMutualDestruction(attackerPiece, targetPiece)) {
+            gameState.board[move.fromC][move.fromR] = null;
+            gameState.board[move.toC][move.toR] = null;
+          } else {
+            gameState.board = applyMove(gameState.board, move);
+          }
+        } else {
+          SoundManager.play("slide");
+          gameState.board = applyMove(gameState.board, move);
+        }
+        gameState.lastMove = move;
+        gameState.turnCount++;
+      }
+      endTurn();
+    }, 300);
+  }
+
+  async function startGame(mode, playerTeam) {
+    gameState = createGameState(mode);
+    gameState.currentPlayer = RED;
+    gameState.firstPlayer = RED;
+    gameState.boardFlipped = false;
+
+    if (mode === "pve") {
+      gameState.playerTeam = playerTeam || RED;
+      gameState.aiTeam = playerTeam === RED ? BLACK : RED;
+      gameState.boardFlipped = gameState.playerTeam === BLACK;
+    }
+
+    document.getElementById("mode-selection").style.display = "none";
+    document.getElementById("rps-section").style.display = "none";
+    document.getElementById("game-area").style.display = "flex";
+    document.getElementById("rule-pve").style.display = mode === "pve" ? "block" : "none";
+    document.getElementById("game-over").style.display = "none";
+
+    await preloadImages();
+    initBoard();
+    renderGame(gameState);
+    canvas.onclick = handleCanvasClick;
+
+    if (mode === "pve" && gameState.currentPlayer === gameState.aiTeam) {
+      triggerAI();
+    }
+  }
+
+  function restartGame() {
+    if (gameState && gameState.mode === "online" && networkProtocol) {
+      networkProtocol.sendRestart();
+    }
+    cleanupNetwork();
+    document.getElementById("game-over").style.display = "none";
+    document.getElementById("game-area").style.display = "none";
+    document.getElementById("rps-online").style.display = "none";
+    document.getElementById("mode-selection").style.display = "flex";
+    gameState = null;
+  }
+
+  // --- Online mode functions ---
+
+  function cleanupNetwork() {
+    if (networkProtocol) {
+      networkProtocol.destroy();
+      networkProtocol = null;
+    }
+    if (networkConnection) {
+      networkConnection.close();
+      networkConnection = null;
+    }
+    localPlayerRole = null;
+    localTeam = null;
+    remoteTeam = null;
+  }
+
+  function setupNetworkHandlers() {
+    networkProtocol.setCallbacks({
+      onAction: (actionData) => {
+        applyRemoteAction(actionData);
+      },
+      onRPSChoice: (choice) => {
+        handleOnlineRPSReceived(choice);
+      },
+      onRPSResult: (result) => {
+        handleOnlineRPSResult(result);
+      },
+      onRestart: () => {
+        cleanupNetwork();
+        document.getElementById("game-over").style.display = "none";
+        document.getElementById("game-area").style.display = "none";
+        document.getElementById("rps-online").style.display = "none";
+        document.getElementById("mode-selection").style.display = "flex";
+        gameState = null;
+      },
+      onDisconnect: () => {
+        handleDisconnect();
+      },
+      onError: (err) => {
+        console.error("Network error:", err);
+      },
+    });
+  }
+
+  function startOnlineRPS() {
+    document.getElementById("mode-selection").style.display = "none";
+    document.getElementById("rps-online").style.display = "flex";
+    rpsChoices = {
+      player1: null,
+      player2: null,
+      human: null,
+      online: null,
+      remote: null,
+    };
+    document.getElementById("rps-online-status").textContent = "请选择";
+    document.getElementById("rps-online-result").textContent = "";
+    document
+      .querySelectorAll("#rps-online-buttons .btn-rps")
+      .forEach((btn) => btn.classList.remove("selected"));
+  }
+
+  function handleOnlineRPSChoice(choice, ev) {
+    rpsChoices.online = choice;
+    document
+      .querySelectorAll("#rps-online-buttons .btn-rps")
+      .forEach((btn) => btn.classList.remove("selected"));
+    ev.target.classList.add("selected");
+    document.getElementById("rps-online-status").textContent =
+      "已选择：" + getRPSName(choice) + "，等待对方...";
+    networkProtocol.sendRPSChoice(choice);
+  }
+
+  function handleOnlineRPSReceived(remoteChoice) {
+    rpsChoices.remote = remoteChoice;
+    checkOnlineRPSComplete();
+  }
+
+  function checkOnlineRPSComplete() {
+    if (!rpsChoices.online || !rpsChoices.remote) return;
+
+    if (localPlayerRole === "host") {
+      const winner = judgeRPS(rpsChoices.online, rpsChoices.remote);
+      let firstPlayer;
+      if (winner === 1) {
+        firstPlayer = "host";
+      } else if (winner === -1) {
+        firstPlayer = "guest";
+      } else {
+        networkProtocol.sendRPSResult(null, null);
+        rpsChoices.online = null;
+        rpsChoices.remote = null;
+        document.getElementById("rps-online-status").textContent = "平局！请重新选择";
+        document
+          .querySelectorAll("#rps-online-buttons .btn-rps")
+          .forEach((btn) => btn.classList.remove("selected"));
+        return;
+      }
+      networkProtocol.sendRPSResult(
+        {
+          host: localPlayerRole === "host" ? rpsChoices.online : rpsChoices.remote,
+          guest: localPlayerRole === "host" ? rpsChoices.remote : rpsChoices.online,
+        },
+        firstPlayer
+      );
+    }
+  }
+
+  function handleOnlineRPSResult(result) {
+    const resultEl = document.getElementById("rps-online-result");
+    if (result.firstPlayer === null) {
+      rpsChoices.online = null;
+      rpsChoices.remote = null;
+      document.getElementById("rps-online-status").textContent = "平局！请重新选择";
+      document
+        .querySelectorAll("#rps-online-buttons .btn-rps")
+        .forEach((btn) => btn.classList.remove("selected"));
+      return;
+    }
+
+    const myChoice = rpsChoices.online;
+    const theirChoice = rpsChoices.remote;
+    const iWin = result.firstPlayer === localPlayerRole;
+
+    resultEl.textContent =
+      "你选择了" +
+      getRPSName(myChoice) +
+      "，对方选择了" +
+      getRPSName(theirChoice) +
+      (iWin ? "，你赢了！你先手(红方)。" : "，你输了！对方先手(红方)。");
+
+    setTimeout(() => {
+      startOnlineGame(result.firstPlayer);
+    }, 1500);
+  }
+
+  function startOnlineGame(firstPlayerRole) {
+    gameState = createGameState("online");
+
+    const hostPiece = RED;
+    const guestPiece = BLACK;
+
+    if (localPlayerRole === "host") {
+      localTeam = firstPlayerRole === "host" ? hostPiece : guestPiece;
+      remoteTeam = firstPlayerRole === "host" ? guestPiece : hostPiece;
+    } else {
+      localTeam = firstPlayerRole === "guest" ? hostPiece : guestPiece;
+      remoteTeam = firstPlayerRole === "guest" ? guestPiece : hostPiece;
+    }
+
+    gameState.currentPlayer = firstPlayerRole === "host" ? hostPiece : guestPiece;
+    gameState.firstPlayer = gameState.currentPlayer;
+    gameState.localTeam = localTeam;
+    gameState.remoteTeam = remoteTeam;
+
+    document.getElementById("rps-online").style.display = "none";
+    document.getElementById("game-area").style.display = "flex";
+    document.getElementById("rule-pve").style.display = "none";
+    document.getElementById("game-over").style.display = "none";
+
+    initBoard();
+    renderGame(gameState);
+    canvas.onclick = handleCanvasClick;
+  }
+
+  function applyRemoteAction(actionData) {
+    if (!gameState || gameState.gameOver) return;
+    if (gameState.currentPlayer !== remoteTeam) return;
+    const move = {
+      fromC: actionData.fc,
+      fromR: actionData.fr,
+      toC: actionData.tc,
+      toR: actionData.tr,
+    };
+    doMove(move);
+  }
+
+  function handleDisconnect() {
+    if (gameState && !gameState.gameOver) {
+      gameState.gameOver = true;
+      updateMessage("对方已断开连接", "error");
+      const winnerText = document.getElementById("winner-text");
+      winnerText.textContent = "对方已断开连接，你获胜！";
+      document.getElementById("game-over").style.display = "flex";
+    }
+    cleanupNetwork();
+  }
+
+  function handleRPSChoice(player, choice, ev) {
+    SoundManager.play("click");
+    if (player === "human") {
+      rpsChoices.human = choice;
+      document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
+        btn.classList.remove("selected");
+      });
+      ev.target.classList.add("selected");
+
+      const choices = ["rock", "scissors", "paper"];
+      const aiChoice = choices[Math.floor(Math.random() * 3)];
+      rpsChoices.player2 = aiChoice;
+
+      const resultEl = document.getElementById("rps-result");
+      const humanWins = judgeRPS(choice, aiChoice);
+
+      if (humanWins === 1) {
+        SoundManager.play("victory");
+        resultEl.textContent =
+          "你选择了" +
+          getRPSName(choice) +
+          "，电脑选择了" +
+          getRPSName(aiChoice) +
+          "，你赢了！你先手(红方)。";
+        setTimeout(() => {
+          startGame("pve", RED);
+        }, 1500);
+      } else if (humanWins === -1) {
+        SoundManager.play("lose");
+        resultEl.textContent =
+          "你选择了" +
+          getRPSName(choice) +
+          "，电脑选择了" +
+          getRPSName(aiChoice) +
+          "，你输了！电脑先手(红方)。";
+        setTimeout(() => {
+          startGame("pve", BLACK);
+        }, 1500);
+      } else {
+        SoundManager.play("draw");
+        resultEl.textContent =
+          "你选择了" +
+          getRPSName(choice) +
+          "，电脑选择了" +
+          getRPSName(aiChoice) +
+          "，平局！重新选择。";
+        rpsChoices.human = null;
+        rpsChoices.player2 = null;
+      }
+    } else {
+      rpsChoices["player" + player] = choice;
+      document.querySelectorAll("#rps-p" + player + "-buttons .btn-rps").forEach((btn) => {
+        btn.classList.remove("selected");
+      });
+      event.target.classList.add("selected");
+
+      const statusEl = document.getElementById("rps-p" + player + "-status");
+      statusEl.textContent = "已选择：" + getRPSName(choice);
+
+      if (rpsChoices.player1 && rpsChoices.player2) {
+        const resultEl = document.getElementById("rps-result");
+        const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
+
+        if (winner === 1) {
+          SoundManager.play("victory");
+          resultEl.textContent = "玩家1赢了！玩家1先手(红方)。";
+          setTimeout(() => {
+            startGame("pvp", RED);
+          }, 1500);
+        } else if (winner === -1) {
+          SoundManager.play("victory");
+          resultEl.textContent = "玩家2赢了！玩家2先手(红方)。";
+          setTimeout(() => {
+            startGame("pvp", BLACK);
+          }, 1500);
+        } else {
+          SoundManager.play("draw");
+          resultEl.textContent = "平局！重新选择。";
+          rpsChoices.player1 = null;
+          rpsChoices.player2 = null;
+          document.getElementById("rps-p1-status").textContent = "请选择";
+          document.getElementById("rps-p2-status").textContent = "请选择";
+          document.querySelectorAll(".btn-rps").forEach((btn) => {
+            btn.classList.remove("selected");
+          });
+        }
+      }
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("btn-pvp").addEventListener("click", () => {
+      document.getElementById("mode-selection").style.display = "none";
+      document.getElementById("rps-section").style.display = "flex";
+      document.getElementById("rps-pvp").style.display = "block";
+      document.getElementById("rps-pve").style.display = "none";
+      rpsChoices = { player1: null, player2: null, human: null };
+    });
+
+    document.getElementById("btn-pve").addEventListener("click", () => {
+      document.getElementById("mode-selection").style.display = "none";
+      document.getElementById("rps-section").style.display = "flex";
+      document.getElementById("rps-pvp").style.display = "none";
+      document.getElementById("rps-pve").style.display = "block";
+      rpsChoices = { player1: null, player2: null, human: null };
+    });
+
+    // Online mode button
+    const btnOnline = document.getElementById("btn-online");
+    if (btnOnline) {
+      if (!RoomUI.isSupported()) {
+        btnOnline.style.display = "none";
+      } else {
+        btnOnline.addEventListener("click", () => {
+          roomUI = new RoomUI({
+            onConnectionEstablished: (connection, protocol, role) => {
+              networkConnection = connection;
+              networkProtocol = protocol;
+              localPlayerRole = role;
+              setupNetworkHandlers();
+              startOnlineRPS();
+            },
+            onError: (msg) => {
+              updateMessage(msg, "error");
+            },
+            onCancel: () => {
+              cleanupNetwork();
+            },
+          });
+          roomUI.show();
+        });
+      }
+    }
+
+    // Online RPS buttons
+    document.querySelectorAll("#rps-online-buttons .btn-rps").forEach((button) => {
+      button.addEventListener("click", (ev) => {
+        const choice = ev.target.dataset.choice;
+        handleOnlineRPSChoice(choice, ev);
+      });
+    });
+
+    document.querySelectorAll(".btn-rps").forEach((button) => {
+      button.addEventListener("click", (ev) => {
+        const player = ev.target.dataset.player;
+        const choice = ev.target.dataset.choice;
+        handleRPSChoice(player, choice, ev);
+      });
+    });
+
+    document.getElementById("btn-restart").addEventListener("click", restartGame);
+
+    document.getElementById("mode-selection").style.display = "flex";
+    document.getElementById("rps-section").style.display = "none";
+    document.getElementById("game-area").style.display = "none";
+    document.getElementById("game-over").style.display = "none";
+  });
+}

@@ -13,7 +13,7 @@
   <a href="https://sonarcloud.io/dashboard?id=jiangxincode_childhood"><img src="https://sonarcloud.io/api/project_badges/measure?project=jiangxincode_childhood&metric=alert_status" alt="Quality Gate Status"></a>
 </p>
 
-一个纯前端经典游戏合集，收录了 **23 款**童年桌游与卡牌游戏，开箱即玩。支持双人对战、人机对战和联网对战。
+一个纯前端经典游戏合集，收录了 **24 款**童年桌游与卡牌游戏，开箱即玩。支持双人对战、人机对战和联网对战。
 
 **在线体验**：[GitHub Pages（主站）](https://jiangxincode.github.io/childhood/) · [Cloudflare Pages（镜像）](https://childhood-cck.pages.dev/)
 
@@ -41,9 +41,9 @@
 |:-----:|:-----:|:-------:|
 | ![五子棋](images/board-game/五子棋.jpg) | ![黑白棋](images/board-game/黑白棋.jpg) | ![国际跳棋](images/board-game/国际跳棋.jpg) |
 
-| 中国跳棋 | 围棋 |
-|:-------:|:---:|
-| ![中国跳棋](images/board-game/中国跳棋.jpg) | ![围棋](images/board-game/围棋.jpg) |
+| 中国跳棋 | 围棋 | 斗兽棋 |
+|:-------:|:---:|:-----:|
+| ![中国跳棋](images/board-game/中国跳棋.jpg) | ![围棋](images/board-game/围棋.jpg) | ![斗兽棋](images/board-game/斗兽棋.jpg) |
 
 ## 欢乐骰子游戏
 
@@ -85,7 +85,8 @@ childhood/
 │   │   ├── reversi/                  # 黑白棋
 │   │   ├── checkers/                 # 国际跳棋
 │   │   ├── chinese-checkers/         # 中国跳棋
-│   │   └── go/                       # 围棋
+│   │   ├── go/                       # 围棋
+│   │   └── dou-shou-qi/              # 斗兽棋
 │   ├── dice-game/                    # 欢乐骰子游戏
 │   │   └── flying-chess/             # 飞行棋
 │   ├── childhood-board-game/         # 童年棋盘游戏

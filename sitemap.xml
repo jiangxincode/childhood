@@ -162,6 +162,16 @@
     </image:image>
   </url>
   <url>
+    <loc>https://jiangxincode.github.io/childhood/apps/board-game/dou-shou-qi/index.html</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://jiangxincode.github.io/childhood/images/board-game/%E6%96%97%E5%85%BD%E6%A3%8B.jpg</image:loc>
+      <image:title>斗兽棋 - 经典动物棋盘对战游戏</image:title>
+    </image:image>
+  </url>
+  <url>
     <loc>https://jiangxincode.github.io/childhood/apps/dice-game/flying-chess/index.html</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
