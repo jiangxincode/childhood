@@ -5,40 +5,42 @@
 // =============================================
 
 // Board data - 30 squares in logical order
-// Each entry: { name, value, type, domIndex }
+// Each entry: { name, value, type, domIndex, icon, bg }
 // type: "property" | "goodEvent" | "badEvent" | "surprise" | "jail" | "casino" | "airport" | "trip"
 // domIndex: the DOM element index for clockwise visual layout in 12x5 grid
+// icon: emoji shown as background visual
+// bg: background color for the cell
 const BOARD_DATA = [
-  { name: "起点", value: 2000, type: "goodEvent", domIndex: 18 },
-  { name: "中国", value: 5000, type: "property", domIndex: 19 },
-  { name: "越南", value: 1000, type: "property", domIndex: 20 },
-  { name: "韩国", value: 1300, type: "property", domIndex: 21 },
-  { name: "机会", value: 1000, type: "surprise", domIndex: 22 },
-  { name: "日本", value: 3000, type: "property", domIndex: 23 },
-  { name: "俄罗斯", value: 4000, type: "property", domIndex: 24 },
-  { name: "白云机场", value: 1000, type: "airport", domIndex: 25 },
-  { name: "交所得税", value: 1000, type: "badEvent", domIndex: 26 },
-  { name: "命运", value: 1000, type: "surprise", domIndex: 27 },
-  { name: "埃及", value: 1600, type: "property", domIndex: 28 },
-  { name: "监狱", value: 0, type: "jail", domIndex: 29 },
-  { name: "澳大利亚", value: 2400, type: "property", domIndex: 17 },
-  { name: "新西兰", value: 1800, type: "property", domIndex: 15 },
-  { name: "南极洲", value: 20000, type: "property", domIndex: 13 },
-  { name: "赌场", value: 1000, type: "casino", domIndex: 11 },
-  { name: "机会", value: 1000, type: "surprise", domIndex: 10 },
-  { name: "捡到钱", value: 1000, type: "goodEvent", domIndex: 9 },
-  { name: "巴西", value: 2000, type: "property", domIndex: 8 },
-  { name: "阿根廷", value: 2200, type: "property", domIndex: 7 },
-  { name: "墨西哥", value: 2400, type: "property", domIndex: 6 },
-  { name: "美国", value: 4500, type: "property", domIndex: 5 },
-  { name: "意大利", value: 3000, type: "property", domIndex: 4 },
-  { name: "伦敦机场", value: 1000, type: "airport", domIndex: 3 },
-  { name: "英国", value: 3600, type: "property", domIndex: 2 },
-  { name: "命运", value: 1000, type: "surprise", domIndex: 1 },
-  { name: "阿尔卑斯山", value: 1000, type: "trip", domIndex: 0 },
-  { name: "德国", value: 3400, type: "property", domIndex: 12 },
-  { name: "法国", value: 3200, type: "property", domIndex: 14 },
-  { name: "西班牙", value: 2800, type: "property", domIndex: 16 },
+  { name: "起点", value: 2000, type: "goodEvent", domIndex: 18, icon: "🏁", bg: "#fff9c4" },
+  { name: "中国", value: 5000, type: "property", domIndex: 19, icon: "🇨🇳", bg: "#ffcdd2" },
+  { name: "越南", value: 1000, type: "property", domIndex: 20, icon: "🇻🇳", bg: "#ffcdd2" },
+  { name: "韩国", value: 1300, type: "property", domIndex: 21, icon: "🇰🇷", bg: "#ffcdd2" },
+  { name: "机会", value: 1000, type: "surprise", domIndex: 22, icon: "❓", bg: "#e3f2fd" },
+  { name: "日本", value: 3000, type: "property", domIndex: 23, icon: "🇯🇵", bg: "#ffcdd2" },
+  { name: "俄罗斯", value: 4000, type: "property", domIndex: 24, icon: "🇷🇺", bg: "#ffcdd2" },
+  { name: "白云机场", value: 1000, type: "airport", domIndex: 25, icon: "✈️", bg: "#c8e6c9" },
+  { name: "交所得税", value: 1000, type: "badEvent", domIndex: 26, icon: "💸", bg: "#ffe0b2" },
+  { name: "命运", value: 1000, type: "surprise", domIndex: 27, icon: "🃏", bg: "#e3f2fd" },
+  { name: "埃及", value: 1600, type: "property", domIndex: 28, icon: "🇪🇬", bg: "#ffcdd2" },
+  { name: "监狱", value: 0, type: "jail", domIndex: 29, icon: "🔒", bg: "#e0e0e0" },
+  { name: "澳大利亚", value: 2400, type: "property", domIndex: 17, icon: "🇦🇺", bg: "#ffcdd2" },
+  { name: "新西兰", value: 1800, type: "property", domIndex: 15, icon: "🇳🇿", bg: "#ffcdd2" },
+  { name: "南极洲", value: 20000, type: "property", domIndex: 13, icon: "🏔️", bg: "#e0f7fa" },
+  { name: "赌场", value: 1000, type: "casino", domIndex: 11, icon: "🎰", bg: "#fff3e0" },
+  { name: "机会", value: 1000, type: "surprise", domIndex: 10, icon: "❓", bg: "#e3f2fd" },
+  { name: "捡到钱", value: 1000, type: "goodEvent", domIndex: 9, icon: "💰", bg: "#fff9c4" },
+  { name: "巴西", value: 2000, type: "property", domIndex: 8, icon: "🇧🇷", bg: "#ffcdd2" },
+  { name: "阿根廷", value: 2200, type: "property", domIndex: 7, icon: "🇦🇷", bg: "#ffcdd2" },
+  { name: "墨西哥", value: 2400, type: "property", domIndex: 6, icon: "🇲🇽", bg: "#ffcdd2" },
+  { name: "美国", value: 4500, type: "property", domIndex: 5, icon: "🇺🇸", bg: "#ffcdd2" },
+  { name: "意大利", value: 3000, type: "property", domIndex: 4, icon: "🇮🇹", bg: "#ffcdd2" },
+  { name: "伦敦机场", value: 1000, type: "airport", domIndex: 3, icon: "✈️", bg: "#c8e6c9" },
+  { name: "英国", value: 3600, type: "property", domIndex: 2, icon: "🇬🇧", bg: "#ffcdd2" },
+  { name: "命运", value: 1000, type: "surprise", domIndex: 1, icon: "🃏", bg: "#e3f2fd" },
+  { name: "阿尔卑斯山", value: 1000, type: "trip", domIndex: 0, icon: "🏖️", bg: "#e0f7fa" },
+  { name: "德国", value: 3400, type: "property", domIndex: 12, icon: "🇩🇪", bg: "#ffcdd2" },
+  { name: "法国", value: 3200, type: "property", domIndex: 14, icon: "🇫🇷", bg: "#ffcdd2" },
+  { name: "西班牙", value: 2800, type: "property", domIndex: 16, icon: "🇪🇸", bg: "#ffcdd2" },
 ];
 
 // 31 fate cards (chance/fate events)
@@ -393,10 +395,16 @@ if (typeof document !== "undefined") {
       mapEl.prepend(box);
     }
 
-    // Write square names into cells using domIndex mapping
+    // Write square names into cells using domIndex mapping, apply visual styling
     places = BOARD_DATA.map((d) => {
       const node = document.querySelectorAll(".map>div")[d.domIndex];
       node.firstElementChild.append(d.name);
+      // Background icon and color
+      node.style.background = d.bg;
+      const iconEl = document.createElement("div");
+      iconEl.className = "cell-icon";
+      iconEl.textContent = d.icon;
+      node.append(iconEl);
       return {
         name: d.name,
         value: d.value,
