@@ -6,7 +6,6 @@
   margin: 0;
   padding: 0;
   font-family: "Microsoft YaHei", "Comic Sans MS", "PingFang SC", sans-serif;
-  user-select: none;
   outline: transparent;
   box-sizing: border-box;
 }
@@ -238,6 +237,7 @@ body {
   text-align: center;
   border-radius: 6px;
   overflow: hidden;
+  user-select: none;
 }
 
 /* Background icon for each cell — centered below the h3 label */
@@ -364,6 +364,7 @@ body {
   background-size: cover;
   cursor: pointer;
   border-radius: 20px;
+  user-select: none;
 }
 
 /* Player info area */
