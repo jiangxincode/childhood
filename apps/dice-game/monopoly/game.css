@@ -376,27 +376,27 @@ body {
 }
 
 .slot1 {
-  background-image: url("images/1.png");
+  background-image: url("../../common/images/1.png");
   background-size: cover;
 }
 .slot2 {
-  background-image: url("images/2.png");
+  background-image: url("../../common/images/2.png");
   background-size: cover;
 }
 .slot3 {
-  background-image: url("images/3.png");
+  background-image: url("../../common/images/3.png");
   background-size: cover;
 }
 .slot4 {
-  background-image: url("images/4.png");
+  background-image: url("../../common/images/4.png");
   background-size: cover;
 }
 .slot5 {
-  background-image: url("images/5.png");
+  background-image: url("../../common/images/5.png");
   background-size: cover;
 }
 .slot6 {
-  background-image: url("images/6.png");
+  background-image: url("../../common/images/6.png");
   background-size: cover;
 }
 

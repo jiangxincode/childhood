@@ -312,27 +312,27 @@ body {
 }
 
 .slot1 {
-    background-image: url("images/1.png");
+    background-image: url("../../common/images/1.png");
 }
 
 .slot2 {
-    background-image: url("images/2.png");
+    background-image: url("../../common/images/2.png");
 }
 
 .slot3 {
-    background-image: url("images/3.png");
+    background-image: url("../../common/images/3.png");
 }
 
 .slot4 {
-    background-image: url("images/4.png");
+    background-image: url("../../common/images/4.png");
 }
 
 .slot5 {
-    background-image: url("images/5.png");
+    background-image: url("../../common/images/5.png");
 }
 
 .slot6 {
-    background-image: url("images/6.png");
+    background-image: url("../../common/images/6.png");
 }
 
 .showdicenum {
