@@ -49,9 +49,9 @@
 
 ![欢乐骰子游戏](images/snapshots/欢乐骰子游戏.jpg)
 
-| 飞行棋 |
-|:-----:|
-| ![飞行棋](images/dice-game/飞行棋.jpg) |
+| 飞行棋 | 大富翁 |
+|:-----:|:-----:|
+| ![飞行棋](images/dice-game/飞行棋.jpg) | ![大富翁](images/dice-game/大富翁.jpg) |
 
 ## 童年棋盘游戏
 
@@ -88,7 +88,8 @@ childhood/
 │   │   ├── go/                       # 围棋
 │   │   └── dou-shou-qi/              # 斗兽棋
 │   ├── dice-game/                    # 欢乐骰子游戏
-│   │   └── flying-chess/             # 飞行棋
+│   │   ├── flying-chess/             # 飞行棋
+│   │   └── monopoly/                 # 大富翁
 │   ├── childhood-board-game/         # 童年棋盘游戏
 │   │   ├── tic-tac-toe/              # 井字棋
 │   │   ├── lang-chi-yang/            # 狼吃羊

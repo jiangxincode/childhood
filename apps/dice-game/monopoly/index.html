@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>大富翁 - 童年游戏合集</title>
+    <meta
+      name="description"
+      content="在线免费玩大富翁，经典世界地理主题骰子棋盘游戏，支持2-4人对战和人机对战，无需下载，即开即玩。"
+    />
+    <meta name="keywords" content="大富翁,骰子游戏,棋盘游戏,童年游戏,在线游戏,免费游戏,Monopoly" />
+    <link
+      rel="canonical"
+      href="https://jiangxincode.github.io/childhood/apps/dice-game/monopoly/index.html"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="大富翁 - 童年游戏合集" />
+    <meta
+      property="og:description"
+      content="在线免费玩大富翁，经典世界地理主题骰子棋盘游戏，支持2-4人对战和人机对战，无需下载，即开即玩。"
+    />
+    <meta
+      property="og:url"
+      content="https://jiangxincode.github.io/childhood/apps/dice-game/monopoly/index.html"
+    />
+    <meta property="og:site_name" content="童年游戏合集" />
+    <meta
+      property="og:image"
+      content="https://jiangxincode.github.io/childhood/images/dice-game/%E5%A4%A7%E5%AF%8C%E7%BF%81.jpg"
+    />
+    <meta property="og:locale" content="zh_CN" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="大富翁 - 童年游戏合集" />
+    <meta
+      name="twitter:description"
+      content="在线免费玩大富翁，经典世界地理主题骰子棋盘游戏，支持2-4人对战和人机对战，无需下载，即开即玩。"
+    />
+    <meta
+      name="twitter:image"
+      content="https://jiangxincode.github.io/childhood/images/dice-game/%E5%A4%A7%E5%AF%8C%E7%BF%81.jpg"
+    />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "VideoGame",
+            "name": "大富翁",
+            "url": "https://jiangxincode.github.io/childhood/apps/dice-game/monopoly/index.html",
+            "image": "https://jiangxincode.github.io/childhood/images/dice-game/%E5%A4%A7%E5%AF%8C%E7%BF%81.jpg",
+            "description": "在线免费玩大富翁，经典世界地理主题骰子棋盘游戏。",
+            "inLanguage": "zh-CN",
+            "genre": "欢乐骰子游戏",
+            "applicationCategory": "Game",
+            "gamePlatform": ["Web", "Browser"],
+            "operatingSystem": "Any",
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CNY" },
+            "publisher": { "@type": "Person", "name": "JiangXin" },
+            "alternateName": "Monopoly"
+          },
+          {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "童年游戏合集",
+                "item": "https://jiangxincode.github.io/childhood/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "欢乐骰子游戏",
+                "item": "https://jiangxincode.github.io/childhood/"
+              },
+              { "@type": "ListItem", "position": 3, "name": "大富翁" }
+            ]
+          }
+        ]
+      }
+    </script>
+    <script src="../../../js/base-fix.js"></script>
+    <link rel="stylesheet" href="game.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.css"
+      integrity="sha384-nUTaU14OWvO/jw7oZcZKWi+CMigrJqCcXOckztW+DdeohdDB4Qm6CEAGGk1y1KL+"
+      crossorigin="anonymous"
+    />
+    <script src="../../../js/baidu-analytics.js"></script>
+    <script src="../../../js/common.js"></script>
+    <script src="../../common/sound-manager.js"></script>
+  </head>
+  <body>
+    <!-- Setup Panel -->
+    <div id="option-panel" class="option-panel">
+      <div class="option-content">
+        <h1 class="option-title">大富翁</h1>
+        <p class="option-subtitle">世界地理主题 · 经典骰子棋盘</p>
+        <form class="option-form" onsubmit="return false;">
+          <div class="form-grid">
+            <div class="form-group">
+              <span class="color-dot" style="background: #e53935"></span>
+              <label for="p-red">红方</label>
+              <select id="p-red">
+                <option value="human" selected>玩家</option>
+                <option value="npc">电脑</option>
+                <option value="off">无</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <span class="color-dot" style="background: #1565c0"></span>
+              <label for="p-blue">蓝方</label>
+              <select id="p-blue">
+                <option value="human">玩家</option>
+                <option value="npc" selected>电脑</option>
+                <option value="off">无</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <span class="color-dot" style="background: #f9a825"></span>
+              <label for="p-yellow">黄方</label>
+              <select id="p-yellow">
+                <option value="human">玩家</option>
+                <option value="npc">电脑</option>
+                <option value="off" selected>无</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <span class="color-dot" style="background: #2e7d32"></span>
+              <label for="p-green">绿方</label>
+              <select id="p-green">
+                <option value="human">玩家</option>
+                <option value="npc">电脑</option>
+                <option value="off" selected>无</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid form-grid-options">
+            <div class="form-group">
+              <label for="start-money">起始资金</label>
+              <select id="start-money">
+                <option value="10000">$10,000</option>
+                <option value="15000" selected>$15,000</option>
+                <option value="20000">$20,000</option>
+                <option value="25000">$25,000</option>
+              </select>
+            </div>
+          </div>
+          <button type="button" id="btn-start" class="btn-begin">开始游戏</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div id="status-bar">
+      <div class="status-item">
+        <span class="label">当前：</span>
+        <span id="current-player" class="team-indicator">—</span>
+      </div>
+      <div class="status-item">
+        <span class="label">天数：</span>
+        <span id="round-count">0</span>
+      </div>
+      <div id="player-status"></div>
+    </div>
+
+    <!-- Main Game Area: Board + Rules -->
+    <div id="game-main">
+      <!-- Board -->
+      <div class="map">
+        <div class="big-box">
+          <div class="control">
+            <div class="dice" id="dice">
+              <div class="slot slot1"></div>
+              <div class="slot slot2"></div>
+              <div class="slot slot3"></div>
+              <div class="slot slot4"></div>
+              <div class="slot slot5"></div>
+              <div class="slot slot6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rules Panel -->
+      <div id="rules-panel">
+        <h3>📜 游戏规则</h3>
+        <div class="rule-section">
+          <h4>🎮 基本规则</h4>
+          <ul>
+            <li>点击骰子进行游戏</li>
+            <li>电脑玩家会自动掷骰子</li>
+            <li>最后未破产的玩家获胜</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🏠 地产系统</h4>
+          <ul>
+            <li>落在无主地产可购买</li>
+            <li>落在自己地产可升级</li>
+            <li>空地→小房子→大别墅→大酒店</li>
+            <li>等级越高租金越贵</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>✈️ 特殊格子</h4>
+          <ul>
+            <li>🎁 起点/捡到钱：随机奖金</li>
+            <li>💸 交所得税：随机税款</li>
+            <li>❓ 机会/🃏 命运：命运卡</li>
+            <li>🔒 监狱：停止1-3天</li>
+            <li>🎰 赌场：骰子×$500</li>
+            <li>✈️ 机场：$800传送</li>
+            <li>🏖️ 度假：停止+花钱</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>💰 租金比率</h4>
+          <ul>
+            <li>空地：地价的 1/5</li>
+            <li>小房子：地价的 1/2</li>
+            <li>大别墅：地价原价</li>
+            <li>大酒店：地价双倍</li>
+          </ul>
+        </div>
+        <div class="rule-section">
+          <h4>🏦 破产规则</h4>
+          <ul>
+            <li>金钱低于0即破产</li>
+            <li>所有地产充公</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Purchase Dialog -->
+    <div class="dialog middle">
+      <p class="middle"></p>
+      <h2>购买地产</h2>
+      <div class="btn">确定</div>
+      <div class="btn">取消</div>
+    </div>
+
+    <!-- Message Box -->
+    <div class="msgbox middle"></div>
+
+    <!-- Property Info Card -->
+    <div class="infobox middle">
+      <h2>地产信息</h2>
+      <ul>
+        <li>地主：</li>
+        <li>价格：</li>
+        <li></li>
+      </ul>
+    </div>
+
+    <!-- Game Over -->
+    <div id="game-over">
+      <div class="overlay-content">
+        <h2 id="winner-text">游戏结束</h2>
+        <button id="btn-restart">再来一局</button>
+      </div>
+    </div>
+
+    <!-- jQuery (CDN) -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/jquery@4.0.0/dist/jquery.min.js"
+      integrity="sha384-fgGyf7Mo7DURSOMnOy7ed+dkq5Job205Gnzu6QIg0BOHKaqt4D76Dt8VlDCzcMHV"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      var $j = jQuery.noConflict();
+    </script>
+    <!-- SlotMachine plugin -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.min.js"
+      integrity="sha384-1G5Acg2KIubxO4nuc5u6ws1osW3s92QGxLdwGhqveLameeWIhDbEf0zGpYS6qz1v"
+      crossorigin="anonymous"
+    ></script>
+    <script src="game.js"></script>
+  </body>
+</html>
