@@ -251,4 +251,14 @@
       <image:title>四步钉 - 童年怀旧棋盘游戏</image:title>
     </image:image>
   </url>
+  <url>
+    <loc>https://jiangxincode.github.io/childhood/apps/dice-game/monopoly/index.html</loc>
+    <lastmod>2026-06-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://jiangxincode.github.io/childhood/images/dice-game/%E5%A4%A7%E5%AF%8C%E7%BF%81.jpg</image:loc>
+      <image:title>大富翁 - 世界地理主题骰子棋盘游戏</image:title>
+    </image:image>
+  </url>
 </urlset>

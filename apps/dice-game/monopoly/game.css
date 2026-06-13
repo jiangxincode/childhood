@@ -1,0 +1,791 @@
+/* =============================================
+   Monopoly Game — CSS (replica of reference)
+   ============================================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Microsoft YaHei", "Comic Sans MS", "PingFang SC", sans-serif;
+  user-select: none;
+  outline: transparent;
+}
+
+li {
+  list-style-type: none;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  color: #454545;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* =============================================
+   Setup Screen
+   ============================================= */
+.setting {
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 5;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.welcome {
+  position: absolute;
+  top: 13%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-size: 36px;
+  white-space: nowrap;
+}
+
+.choosebox {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 300px;
+  background: #f2f2f2;
+  border-radius: 13px;
+}
+
+.choosebox h2 {
+  text-align: center;
+  height: 26px;
+  padding: 26px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  color: #fff;
+  background: #454545;
+}
+
+.choosebox ul {
+  width: 100%;
+  height: calc(100% - 78px);
+}
+
+.choosebox li {
+  float: left;
+  width: 50%;
+  height: 50%;
+  text-align: center;
+  font-size: 26px;
+  line-height: 111px;
+  cursor: pointer;
+  box-shadow:
+    0.5px 0.5px 0.5px inset #454545,
+    -0.5px -0.5px 0.5px inset #454545;
+}
+
+.choosebox li:hover {
+  background: #ccc;
+}
+
+.choosebox li:nth-of-type(3) {
+  border-bottom-left-radius: 13px;
+}
+
+.choosebox li:nth-of-type(4) {
+  border-bottom-right-radius: 13px;
+}
+
+/* =============================================
+   Character Selection
+   ============================================= */
+.choosechr {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px;
+  height: 200px;
+  background: #f2f2f2;
+  border-radius: 13px;
+  display: none;
+}
+
+.choosechr h2 {
+  text-align: center;
+  line-height: 26px;
+  padding: 13px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  color: #fff;
+  background: #454545;
+}
+
+.choosechr ul {
+  width: 100%;
+  height: calc(100% - 52px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.choosechr li {
+  position: relative;
+  width: 100px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.choosechr img {
+  width: 80%;
+  transition: 0.5s;
+}
+
+.choosechr img:hover {
+  width: 95%;
+}
+
+.token-preview {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.token-preview:hover {
+  transform: scale(1.15);
+}
+
+.choosechr h3 {
+  font-size: 13px;
+  text-align: center;
+  background: #42afe1;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+/* =============================================
+   Map (Board)
+   ============================================= */
+.map {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  grid-gap: 3px;
+  overflow: hidden;
+}
+
+.box {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  box-shadow:
+    1px 1px 1px inset #454545,
+    1px -1px 1px inset #454545,
+    -1px 1px 1px inset #454545,
+    -1px -1px 1px inset #454545;
+  text-align: center;
+  border-radius: 13px;
+  background: #fff;
+}
+
+.box h3 {
+  background: #454545;
+  color: #fff;
+  font-weight: 100;
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 15px;
+  width: 100%;
+  height: 30px;
+  line-height: 30px;
+  border-top-right-radius: 13px;
+  border-top-left-radius: 13px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Player tokens */
+.box .chr {
+  width: 85%;
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: moving 0.8s;
+  z-index: 1;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Center area */
+.big-box {
+  position: relative;
+  background: #fff;
+  box-shadow: none;
+  grid-area: 2 / 2 / -2 / -2;
+  text-align: left;
+  border-radius: 0;
+  z-index: 2;
+}
+
+/* Current player title */
+.title {
+  display: inline-block;
+  padding: 5px 13px;
+  color: #fff;
+  border-radius: 10px;
+  visibility: hidden;
+  margin: 8px;
+}
+
+/* Buttons */
+.big-box button {
+  position: relative;
+  float: right;
+  border: none;
+  margin-left: 3px;
+  margin-top: 8px;
+  margin-right: 8px;
+  padding: 7px 13px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #fff;
+  background: #454545;
+}
+
+.big-box button:hover {
+  background: #666;
+}
+
+.big-box span {
+  position: relative;
+  float: right;
+  margin-right: 8px;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+/* Dice area */
+.control {
+  position: absolute;
+  width: 169px;
+  height: 169px;
+  border-radius: 50%;
+  box-shadow:
+    2px 2px 2px #888,
+    -2px 2px 2px #888,
+    2px -2px 2px #888,
+    -2px -2px 2px #888,
+    4px 4px 4px #999 inset,
+    -4px -4px 4px #999 inset,
+    4px -4px 4px #999 inset,
+    -4px 4px 4px #999 inset;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #f0f0f0;
+}
+
+.dice {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  background-image: url(images/1.jpg);
+  background-size: cover;
+  cursor: pointer;
+  border-radius: 25%;
+}
+
+/* Player info area */
+.info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 99px;
+  display: flex;
+}
+
+.info > div {
+  display: inline-block;
+  position: relative;
+  width: calc(25% - 5px);
+  height: 100%;
+}
+
+.info h2 {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 13px;
+  border-radius: 10px;
+  color: #fff;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.info h3 {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.info .chr {
+  position: absolute;
+  width: 65px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  bottom: 36px;
+}
+
+/* Instruction panel */
+.instruction {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #f2f2f2;
+  border-radius: 10px;
+  transition: 0.5s;
+  z-index: 2;
+  height: 0;
+  overflow: scroll;
+}
+
+.instruction h2 {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.instruction ul {
+  box-sizing: border-box;
+  padding: 13px;
+}
+
+.instruction li {
+  list-style-type: circle;
+  list-style-position: inside;
+  margin: 5px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* =============================================
+   Purchase/Upgrade Dialog
+   ============================================= */
+.dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 260px;
+  border-radius: 13px;
+  background: #fff;
+  border: 3px solid #454545;
+  display: none;
+  z-index: 10;
+}
+
+.dialog p {
+  width: 100%;
+  font-size: 22px;
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.dialog h2 {
+  background: #454545;
+  color: #fff;
+  font-weight: 100;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 52px;
+  line-height: 52px;
+  text-indent: 1em;
+  font-size: 20px;
+  letter-spacing: 13px;
+  width: 100%;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.btn {
+  background: #f2f2f2;
+  width: 50%;
+  height: 20%;
+  position: absolute;
+  bottom: 0%;
+  text-align: center;
+  line-height: 60px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.btn:first-of-type {
+  left: 0;
+  border-bottom-left-radius: 8px;
+  color: #000;
+  box-shadow: -1px 0 silver inset;
+}
+
+.btn:last-of-type {
+  right: 0;
+  border-bottom-right-radius: 8px;
+}
+
+.btn:hover {
+  box-shadow: 0 5em inset silver;
+}
+
+/* =============================================
+   Message Box
+   ============================================= */
+.msgbox {
+  position: fixed;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid #666;
+  border-radius: 13px;
+  font-weight: 100;
+  font-size: 22px;
+  padding: 2em 2em;
+  background: #f1f1f1;
+  white-space: nowrap;
+  display: none;
+  z-index: 8;
+}
+
+/* =============================================
+   Property Info Card
+   ============================================= */
+.infobox {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 300px;
+  border-radius: 13px;
+  background: #f2f2f2;
+  border: 3px solid #454545;
+  display: none;
+  z-index: 6;
+}
+
+.infobox h2 {
+  background: #454545;
+  color: #fff;
+  font-weight: 100;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 52px;
+  line-height: 52px;
+  text-indent: 1em;
+  font-size: 16px;
+  width: 100%;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.infobox ul {
+  width: 100%;
+  height: 80%;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  position: absolute;
+  top: 20%;
+  left: 0;
+}
+
+.infobox li {
+  display: block;
+  width: calc(100% - 20px);
+  padding: 10px;
+  font-size: 14px;
+}
+
+/* =============================================
+   Construction Animation
+   ============================================= */
+.construct img {
+  position: absolute;
+  z-index: 3;
+}
+
+.construct img:first-child {
+  width: 100%;
+  bottom: 0%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: c1 2s;
+}
+
+.construct img:nth-child(2) {
+  width: 100%;
+  bottom: 3%;
+  right: -30%;
+  animation: c2 2s;
+}
+
+.construct img:nth-child(3) {
+  width: 100%;
+  bottom: 3%;
+  left: -30%;
+  animation: c3 2s;
+}
+
+.construct img:nth-child(4) {
+  width: 50%;
+  bottom: 30%;
+  right: 0%;
+  transform: rotate(-45deg);
+  animation: c4 2s;
+}
+
+.construct img:nth-child(5) {
+  width: 180%;
+  bottom: -13%;
+  left: -30%;
+  animation: c5 2s;
+}
+
+/* Building sprites */
+.box img.house {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+}
+
+/* =============================================
+   Game Over Overlay
+   ============================================= */
+#game-over {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+#game-over .overlay-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+}
+
+#game-over h2 {
+  font-size: 1.8em;
+  margin-bottom: 16px;
+}
+
+#btn-restart {
+  display: inline-block;
+  padding: 12px 32px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  cursor: pointer;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  font-weight: 600;
+  margin-top: 16px;
+}
+
+#btn-restart:hover {
+  opacity: 0.9;
+}
+
+/* =============================================
+   Animations
+   ============================================= */
+@keyframes moving {
+  0% {
+    width: 85%;
+  }
+  50% {
+    width: 100%;
+  }
+  100% {
+    width: 85%;
+  }
+}
+
+@keyframes c1 {
+  0% {
+    opacity: 0;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes c2 {
+  0% {
+    opacity: 0;
+    right: -100%;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    right: -30%;
+  }
+}
+
+@keyframes c3 {
+  0% {
+    opacity: 0;
+    left: -100%;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    left: -30%;
+  }
+}
+
+@keyframes c4 {
+  0% {
+    opacity: 0;
+    transform: rotate(-45deg);
+  }
+  20% {
+    opacity: 1;
+    transform: rotate(-45deg);
+  }
+  40% {
+    transform: rotate(-90deg);
+  }
+  60% {
+    transform: rotate(-45deg);
+  }
+  80% {
+    opacity: 1;
+    transform: rotate(-90deg);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-45deg);
+  }
+}
+
+@keyframes c5 {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* =============================================
+   Responsive
+   ============================================= */
+@media (max-width: 700px) {
+  .welcome {
+    font-size: 24px;
+  }
+
+  .choosebox {
+    width: 300px;
+    height: 220px;
+  }
+
+  .choosebox li {
+    font-size: 20px;
+    line-height: 80px;
+  }
+
+  .choosechr {
+    width: 90%;
+  }
+
+  .box h3 {
+    font-size: 10px;
+    height: 20px;
+    line-height: 20px;
+  }
+
+  .control {
+    width: 100px;
+    height: 100px;
+  }
+
+  .dice {
+    width: 60px;
+    height: 60px;
+  }
+
+  .dialog {
+    width: 90%;
+  }
+
+  .msgbox {
+    font-size: 16px;
+    white-space: normal;
+    text-align: center;
+  }
+}
