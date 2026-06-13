@@ -368,15 +368,16 @@ if (typeof document !== "undefined") {
   let person; // current player reference
 
   // DOM references
-  let mapEl, diceEl, chooseboxEl, choosechrEl, titleEl, infoEl;
+  let mapEl, diceEl, titleEl, infoEl;
   let dialogEl, infoboxEl, msgboxEl;
+
+  const TOKEN_COLORS = ["#e53935", "#1565c0", "#f9a825", "#2e7d32"];
+  const TOKEN_NAMES = ["红", "蓝", "黄", "绿"];
 
   function init() {
     SoundManager.init("../../audio");
     mapEl = document.querySelector(".map");
     diceEl = document.querySelector(".dice");
-    chooseboxEl = document.querySelector(".choosebox");
-    choosechrEl = document.querySelector(".choosechr");
     titleEl = document.querySelector(".title");
     infoEl = document.querySelector(".info");
     dialogEl = document.querySelector(".dialog");
@@ -405,27 +406,8 @@ if (typeof document !== "undefined") {
       };
     });
 
-    // Bind money selection
-    Array.from(document.querySelectorAll(".choosebox li")).forEach((node, index) => {
-      node.addEventListener("click", () => chooseNumber(index));
-    });
-
-    // Bind character selection — use colored div tokens
-    const TOKEN_COLORS = ["#e53935", "#1565c0", "#f9a825", "#2e7d32"];
-    const TOKEN_NAMES = ["红", "蓝", "黄", "绿"];
-    Array.from(document.querySelectorAll(".choosechr li")).forEach((item, idx) => {
-      item.firstElementChild.addEventListener("click", () => {
-        const name = TOKEN_NAMES[idx] || item.children[1].innerHTML;
-        const node = document.createElement("div");
-        node.className = "chr";
-        node.style.background = TOKEN_COLORS[idx] || "#333";
-        node.textContent = name;
-        places[0].node.append(node);
-        binding(node, name);
-        item.style.pointerEvents = "none";
-        item.style.opacity = "0.5";
-      });
-    });
+    // Bind start button
+    document.getElementById("btn-start").addEventListener("click", startGameFromForm);
 
     // Bind dice click
     diceEl.addEventListener("click", () => {
@@ -482,72 +464,50 @@ if (typeof document !== "undefined") {
     });
   }
 
-  // Setup flow: money → player count → NPC count → character select
-  function chooseNumber(num) {
-    if (!startMoney) {
-      writeSetting("玩家人数", 1);
-      startMoney = num * 5000 + 10000;
-    } else if (!playerNumber) {
-      writeSetting("电脑人数", 0, num);
-      playerNumber = +num + 1;
-    } else {
-      npcNumber = +num;
-      finishChooseNumber();
-    }
-  }
-
-  function writeSetting(title, startNum, num) {
-    chooseboxEl.firstElementChild.innerHTML = title;
-    Array.from(chooseboxEl.lastElementChild.children).forEach((node, index) => {
-      node.innerHTML = startNum + index;
-      node.style.pointerEvents = "auto";
-      node.style.background = "";
-      switch (num) {
-        case 3:
-          if (index > 0) disableBox(node);
-          break;
-        case 2:
-          if (index > 1) disableBox(node);
-          break;
-        case 1:
-          if (index > 2) disableBox(node);
-          break;
-        case 0:
-          if (index < 1) disableBox(node);
-          break;
-      }
+  // Read settings from form and start game
+  function startGameFromForm() {
+    const selects = ["p-red", "p-blue", "p-yellow", "p-green"].map(
+      (id) => document.getElementById(id).value
+    );
+    const money = parseInt(document.getElementById("start-money").value, 10);
+    // Count players
+    let humanCount = 0;
+    let npcCount = 0;
+    selects.forEach((v) => {
+      if (v === "human") humanCount++;
+      else if (v === "npc") npcCount++;
     });
-  }
-
-  function disableBox(node) {
-    node.style.pointerEvents = "none";
-    node.style.background = "grey";
-  }
-
-  function finishChooseNumber() {
-    chooseboxEl.style.display = "none";
-    choosechrEl.style.display = "block";
-  }
-
-  function binding(node, name) {
-    const control = players.length < playerNumber ? 1 : 0;
-    players.push({
-      name,
-      index: players.length,
-      money: startMoney,
-      state: "active",
-      stop: 0,
-      control,
-      node,
-      position: 0,
-    });
-    if (players.length === playerNumber + npcNumber) {
-      gameStart();
+    if (humanCount + npcCount < 2) {
+      alert("至少需要2名玩家");
+      return;
     }
+    startMoney = money;
+    playerNumber = humanCount;
+    npcNumber = npcCount;
+    // Create players
+    selects.forEach((v, i) => {
+      if (v === "off") return;
+      const node = document.createElement("div");
+      node.className = "chr";
+      node.style.background = TOKEN_COLORS[i];
+      node.textContent = TOKEN_NAMES[i];
+      places[0].node.append(node);
+      players.push({
+        name: TOKEN_NAMES[i],
+        index: players.length,
+        money: startMoney,
+        state: "active",
+        stop: 0,
+        control: v === "human" ? 1 : 0,
+        node,
+        position: 0,
+      });
+    });
+    gameStart();
   }
 
   function gameStart() {
-    choosechrEl.parentElement.style.display = "none";
+    document.getElementById("option-panel").classList.add("hidden");
     document.getElementById("status-bar").style.display = "flex";
     document.getElementById("game-main").style.display = "flex";
     titleEl.style.visibility = "visible";

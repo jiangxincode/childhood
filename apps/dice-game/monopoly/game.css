@@ -29,143 +29,121 @@ body {
 }
 
 /* =============================================
-   Setup Screen
+   Setup Panel (Flying Chess style)
    ============================================= */
-.setting {
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 5;
+.option-panel {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
 }
 
-.welcome {
-  position: absolute;
-  top: 13%;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #fff;
-  font-size: 36px;
-  white-space: nowrap;
-}
-
-.choosebox {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 400px;
-  height: 300px;
-  background: #f2f2f2;
-  border-radius: 13px;
-}
-
-.choosebox h2 {
-  text-align: center;
-  height: 26px;
-  padding: 26px;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  color: #fff;
-  background: #454545;
-}
-
-.choosebox ul {
-  width: 100%;
-  height: calc(100% - 78px);
-}
-
-.choosebox li {
-  float: left;
-  width: 50%;
-  height: 50%;
-  text-align: center;
-  font-size: 26px;
-  line-height: 111px;
-  cursor: pointer;
-  box-shadow:
-    0.5px 0.5px 0.5px inset #454545,
-    -0.5px -0.5px 0.5px inset #454545;
-}
-
-.choosebox li:hover {
-  background: #ccc;
-}
-
-.choosebox li:nth-of-type(3) {
-  border-bottom-left-radius: 13px;
-}
-
-.choosebox li:nth-of-type(4) {
-  border-bottom-right-radius: 13px;
-}
-
-/* =============================================
-   Character Selection
-   ============================================= */
-.choosechr {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 500px;
-  height: 200px;
-  background: #f2f2f2;
-  border-radius: 13px;
+.option-panel.hidden {
   display: none;
 }
 
-.choosechr h2 {
+.option-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px 48px;
   text-align: center;
-  line-height: 26px;
-  padding: 13px;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  color: #fff;
-  background: #454545;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.choosechr ul {
-  width: 100%;
-  height: calc(100% - 52px);
+.option-title {
+  font-size: 42px;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.option-subtitle {
+  font-size: 15px;
+  color: #888;
+  margin-bottom: 24px;
+}
+
+.option-form {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
   gap: 20px;
 }
 
-.choosechr li {
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-grid-options {
+  gap: 16px;
+}
+
+.form-group {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
+  gap: 8px;
+  text-align: left;
 }
 
-.token-preview {
-  width: 60px;
-  height: 60px;
+.color-dot {
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  border: 3px solid #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  transition: 0.3s;
+  flex-shrink: 0;
+}
+
+.form-group label {
+  font-size: 14px;
+  color: #555;
+  flex-shrink: 0;
+  min-width: 48px;
+}
+
+.form-group select {
+  flex: 1;
+  padding: 8px 10px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  color: #333;
   cursor: pointer;
+  transition: border-color 0.2s;
 }
 
-.token-preview:hover {
-  transform: scale(1.15);
+.form-group select:focus {
+  outline: none;
+  border-color: #667eea;
 }
 
-.choosechr h3 {
-  font-size: 13px;
-  text-align: center;
-  background: #42afe1;
+.btn-begin {
+  padding: 14px 32px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+  background: #333;
   color: #fff;
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-top: 6px;
+  width: 100%;
+}
+
+.btn-begin:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-begin:active {
+  transform: translateY(0);
 }
 
 /* =============================================
@@ -795,6 +773,22 @@ body {
 }
 
 @media (max-width: 750px) {
+  .option-content {
+    padding: 28px 20px;
+  }
+
+  .option-title {
+    font-size: 32px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid-options {
+    grid-template-columns: 1fr;
+  }
+
   .map {
     width: 100%;
     height: auto;
