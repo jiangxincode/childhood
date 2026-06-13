@@ -198,7 +198,7 @@ function handleLanding(state, playerIndex) {
     const money = 500 * generateNum(0, 7);
     player.money += money;
     result.type = "goodEvent";
-    result.message = placeIndex === 0 ? `恭喜你捡到了$${money}` : `恭喜你捡到了$${money}`;
+    result.message = placeIndex === 0 ? `恭喜你经过起点获得了$${money}` : `恭喜你捡到了$${money}`;
     result.data.money = money;
   } else if (place.type === "badEvent") {
     const money = 300 * generateNum(0, 7);
