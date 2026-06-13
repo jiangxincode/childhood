@@ -360,11 +360,44 @@ body {
   transform: translate(-50%, -50%);
   width: 80px;
   height: 80px;
-  background-image: url(images/1.jpg);
-  background-size: cover;
   cursor: pointer;
   border-radius: 20px;
   user-select: none;
+  overflow: hidden;
+}
+
+.slot {
+  width: 80px;
+  height: 80px;
+}
+
+.slot1 {
+  background-image: url("images/1.png");
+  background-size: cover;
+}
+.slot2 {
+  background-image: url("images/2.png");
+  background-size: cover;
+}
+.slot3 {
+  background-image: url("images/3.png");
+  background-size: cover;
+}
+.slot4 {
+  background-image: url("images/4.png");
+  background-size: cover;
+}
+.slot5 {
+  background-image: url("images/5.png");
+  background-size: cover;
+}
+.slot6 {
+  background-image: url("images/6.png");
+  background-size: cover;
+}
+
+.dice.pointer {
+  cursor: pointer;
 }
 
 /* Player info area */

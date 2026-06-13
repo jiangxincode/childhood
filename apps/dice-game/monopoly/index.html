@@ -82,6 +82,12 @@
     </script>
     <script src="../../../js/base-fix.js"></script>
     <link rel="stylesheet" href="game.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.css"
+      integrity="sha384-nUTaU14OWvO/jw7oZcZKWi+CMigrJqCcXOckztW+DdeohdDB4Qm6CEAGGk1y1KL+"
+      crossorigin="anonymous"
+    />
     <script src="../../../js/baidu-analytics.js"></script>
     <script src="../../../js/common.js"></script>
     <script src="../../common/sound-manager.js"></script>
@@ -170,7 +176,14 @@
         <div class="big-box">
           <h1 class="title"></h1>
           <div class="control">
-            <div class="dice"></div>
+            <div class="dice" id="dice">
+              <div class="slot slot1"></div>
+              <div class="slot slot2"></div>
+              <div class="slot slot3"></div>
+              <div class="slot slot4"></div>
+              <div class="slot slot5"></div>
+              <div class="slot slot6"></div>
+            </div>
           </div>
           <div class="info"></div>
         </div>
@@ -256,6 +269,21 @@
       </div>
     </div>
 
+    <!-- jQuery (CDN) -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/jquery@4.0.0/dist/jquery.min.js"
+      integrity="sha384-fgGyf7Mo7DURSOMnOy7ed+dkq5Job205Gnzu6QIg0BOHKaqt4D76Dt8VlDCzcMHV"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      var $j = jQuery.noConflict();
+    </script>
+    <!-- SlotMachine plugin -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/jquery-slotmachine@6.0.0/dist/slotmachine.min.js"
+      integrity="sha384-1G5Acg2KIubxO4nuc5u6ws1osW3s92QGxLdwGhqveLameeWIhDbEf0zGpYS6qz1v"
+      crossorigin="anonymous"
+    ></script>
     <script src="game.js"></script>
   </body>
 </html>

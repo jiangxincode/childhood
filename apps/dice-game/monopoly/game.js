@@ -368,9 +368,11 @@ if (typeof document !== "undefined") {
   let startMoney = 0;
   let v = 800; // animation speed ms
   let person; // current player reference
+  let DICE; // SlotMachine instance
+  let nextDiceValue = 0;
 
   // DOM references
-  let mapEl, diceEl, titleEl, infoEl;
+  let mapEl, titleEl, infoEl;
   let dialogEl, infoboxEl, msgboxEl;
 
   const TOKEN_COLORS = ["#e53935", "#1565c0", "#f9a825", "#2e7d32"];
@@ -379,7 +381,6 @@ if (typeof document !== "undefined") {
   function init() {
     SoundManager.init("../../audio");
     mapEl = document.querySelector(".map");
-    diceEl = document.querySelector(".dice");
     titleEl = document.querySelector(".title");
     infoEl = document.querySelector(".info");
     dialogEl = document.querySelector(".dialog");
@@ -417,10 +418,13 @@ if (typeof document !== "undefined") {
     // Bind start button
     document.getElementById("btn-start").addEventListener("click", startGameFromForm);
 
-    // Bind dice click
-    diceEl.addEventListener("click", () => {
-      if (!person || !person.control) return;
-      game();
+    // Initialize SlotMachine dice (same as Flying Chess)
+    DICE = new SlotMachine(document.getElementById("dice"), {
+      active: 0,
+      delay: 500,
+      randomize() {
+        return nextDiceValue;
+      },
     });
 
     // Bind speed button
@@ -527,7 +531,7 @@ if (typeof document !== "undefined") {
     if (!players[0].control) {
       setTimeout(() => game(), v * 2);
     } else {
-      toggleDice(true);
+      addDiceEvent();
     }
   }
 
@@ -560,107 +564,110 @@ if (typeof document !== "undefined") {
 
   function game() {
     const num = rollDice();
-    rollDiceAnim(num);
+    nextDiceValue = num - 1; // SlotMachine is 0-indexed
     person = players[s];
-    const move = setInterval(() => playerMove(s), v);
-    setTimeout(
-      () => {
-        clearInterval(move);
-        const place = places[person.position];
-        // Buy property
-        if (!place.owner) {
-          if (person.control) {
-            showDialog("purchase", person.money > place.value);
-          } else {
-            setTimeout(() => dialogClicked("purchase", person.money - place.value > 3000), v / 3);
-          }
-        } else if (place.owner && place.owner !== person.name && place.owner !== "sean") {
-          // Pay rent
-          const owner = players.find((p) => p.name === place.owner);
-          if (owner.stop) {
-            showMsgbox("房子主人不在，免费过夜1晚！");
-          } else {
-            const state = 5 / (place.state * 3 + 1);
-            const cost = place.value / (state > 0.5 ? Math.ceil(state) : state);
-            person.money -= cost;
-            owner.money += cost;
-            showMsgbox(`${owner.name}感谢${person.name}在${place.name}消费$${Math.floor(cost)}`);
-            checkBankruptUI();
-          }
-          gameSequence(s);
-        } else if (place.owner === person.name) {
-          // Upgrade
-          if (place.state === 3) {
-            gameSequence(s);
-          } else {
+    SoundManager.play("roll");
+    DICE.shuffle(3).then(() => {
+      const move = setInterval(() => playerMove(s), v);
+      setTimeout(
+        () => {
+          clearInterval(move);
+          const place = places[person.position];
+          // Buy property
+          if (!place.owner) {
             if (person.control) {
-              showDialog("upgrade", person.money > place.value * 0.5);
+              showDialog("purchase", person.money > place.value);
             } else {
-              dialogClicked("upgrade", person.money - place.value / 2 > 2000);
+              setTimeout(() => dialogClicked("purchase", person.money - place.value > 3000), v / 3);
             }
-          }
-        } else if (place.state === "goodEvent") {
-          const money = 500 * generateNum(0, 7);
-          person.money += money;
-          showMsgbox(`恭喜你捡到了$${money}`);
-          gameSequence(s);
-        } else if (place.state === "badEvent") {
-          const money = 300 * generateNum(0, 7);
-          person.money -= money;
-          showMsgbox(`你需要向税务局缴纳税收$${money}`);
-          checkBankruptUI();
-          gameSequence(s);
-        } else if (place.state === "jail") {
-          person.stop = generateNum(1, 3);
-          showMsgbox(`偷税漏税被抓，关押${person.stop}天`);
-          gameSequence(s);
-        } else if (place.state === "casino") {
-          const diceNum = rollDice();
-          rollDiceAnim(diceNum);
-          setTimeout(() => {
-            const casinoMoney = diceNum * 500;
-            person.money += casinoMoney;
-            showMsgbox(`恭喜你获得了$${casinoMoney}`);
-            updateInfo();
+          } else if (place.owner && place.owner !== person.name && place.owner !== "sean") {
+            // Pay rent
+            const owner = players.find((p) => p.name === place.owner);
+            if (owner.stop) {
+              showMsgbox("房子主人不在，免费过夜1晚！");
+            } else {
+              const state = 5 / (place.state * 3 + 1);
+              const cost = place.value / (state > 0.5 ? Math.ceil(state) : state);
+              person.money -= cost;
+              owner.money += cost;
+              showMsgbox(`${owner.name}感谢${person.name}在${place.name}消费$${Math.floor(cost)}`);
+              checkBankruptUI();
+            }
             gameSequence(s);
-          }, v * 2);
-        } else if (place.state === "surprise") {
-          const event = generateNum(0, 30); // Fixed: 0-30 inclusive
-          person.money += FATE_CARDS[event].value;
-          if (FATE_CARDS[event].stop) {
+          } else if (place.owner === person.name) {
+            // Upgrade
+            if (place.state === 3) {
+              gameSequence(s);
+            } else {
+              if (person.control) {
+                showDialog("upgrade", person.money > place.value * 0.5);
+              } else {
+                dialogClicked("upgrade", person.money - place.value / 2 > 2000);
+              }
+            }
+          } else if (place.state === "goodEvent") {
+            const money = 500 * generateNum(0, 7);
+            person.money += money;
+            showMsgbox(`恭喜你捡到了$${money}`);
+            gameSequence(s);
+          } else if (place.state === "badEvent") {
+            const money = 300 * generateNum(0, 7);
+            person.money -= money;
+            showMsgbox(`你需要向税务局缴纳税收$${money}`);
+            checkBankruptUI();
+            gameSequence(s);
+          } else if (place.state === "jail") {
+            person.stop = generateNum(1, 3);
+            showMsgbox(`偷税漏税被抓，关押${person.stop}天`);
+            gameSequence(s);
+          } else if (place.state === "casino") {
+            const diceNum = rollDice();
+            nextDiceValue = diceNum - 1;
+            DICE.shuffle(3).then(() => {
+              const casinoMoney = diceNum * 500;
+              person.money += casinoMoney;
+              showMsgbox(`恭喜你获得了$${casinoMoney}`);
+              updateInfo();
+              gameSequence(s);
+            });
+          } else if (place.state === "surprise") {
+            const event = generateNum(0, 30); // Fixed: 0-30 inclusive
+            person.money += FATE_CARDS[event].value;
+            if (FATE_CARDS[event].stop) {
+              setTimeout(() => {
+                person.position = 11;
+                person.stop = FATE_CARDS[event].stop;
+                places[11].node.append(person.node);
+                checkBankruptUI();
+                gameSequence(s);
+              }, v * 1.5);
+            } else {
+              checkBankruptUI();
+              gameSequence(s);
+            }
+            showMsgbox(FATE_CARDS[event].text);
+          } else if (place.state === "airport") {
+            const des = place.name === "白云机场" ? "英国" : "中国";
+            showMsgbox(`你花费$800搭乘飞机前往${des}`);
             setTimeout(() => {
-              person.position = 11;
-              person.stop = FATE_CARDS[event].stop;
-              places[11].node.append(person.node);
+              person.position = 30 - person.position;
+              places[person.position].node.append(person.node);
               checkBankruptUI();
               gameSequence(s);
             }, v * 1.5);
-          } else {
+            person.money -= 800;
+          } else if (place.state === "trip") {
+            person.stop = generateNum(1, 3);
+            person.money -= person.stop * 1000;
+            showMsgbox(`${person.name}花费${person.stop * 1000}享受旅游度假${person.stop}天`);
             checkBankruptUI();
             gameSequence(s);
           }
-          showMsgbox(FATE_CARDS[event].text);
-        } else if (place.state === "airport") {
-          const des = place.name === "白云机场" ? "英国" : "中国";
-          showMsgbox(`你花费$800搭乘飞机前往${des}`);
-          setTimeout(() => {
-            person.position = 30 - person.position;
-            places[person.position].node.append(person.node);
-            checkBankruptUI();
-            gameSequence(s);
-          }, v * 1.5);
-          person.money -= 800;
-        } else if (place.state === "trip") {
-          person.stop = generateNum(1, 3);
-          person.money -= person.stop * 1000;
-          showMsgbox(`${person.name}花费${person.stop * 1000}享受旅游度假${person.stop}天`);
-          checkBankruptUI();
-          gameSequence(s);
-        }
-        updateInfo();
-      },
-      v * (num + 0.9)
-    );
+          updateInfo();
+        },
+        v * (num + 0.9)
+      );
+    });
   }
 
   function dialogClicked(type, action) {
@@ -746,7 +753,7 @@ if (typeof document !== "undefined") {
     if (!player.control) {
       setTimeout(() => game(), v * 2);
     } else {
-      toggleDice(true);
+      addDiceEvent();
     }
     person = player;
     s = index;
@@ -761,17 +768,19 @@ if (typeof document !== "undefined") {
     return PLAYER_COLORS[idx] || "#333";
   }
 
-  function rollDiceAnim(num) {
-    const bg = generateNum(1, 2);
-    diceEl.style.background = `url(images/s${bg}.jpg)`;
-    setTimeout(() => {
-      diceEl.style.background = `url(images/${num}.jpg)`;
-    }, 300);
-    toggleDice(false);
+  function addDiceEvent() {
+    $j("#dice")
+      .off("click")
+      .on("click", () => {
+        if (!person || !person.control) return;
+        $j("#dice").off("click").removeClass("pointer");
+        game();
+      })
+      .addClass("pointer");
   }
 
-  function toggleDice(state) {
-    diceEl.style.pointerEvents = state ? "auto" : "none";
+  function removeDiceEvent() {
+    $j("#dice").off("click").removeClass("pointer");
   }
 
   function updatePlayer(name) {
