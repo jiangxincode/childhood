@@ -366,7 +366,7 @@ if (typeof document !== "undefined") {
   let playerNumber = 0;
   let npcNumber = 0;
   let startMoney = 0;
-  let v = 800; // animation speed ms
+  const ANIM_SPEED = 800; // animation speed ms
   let person; // current player reference
   let DICE; // SlotMachine instance
   let nextDiceValue = 0;
@@ -423,26 +423,6 @@ if (typeof document !== "undefined") {
       randomize() {
         return nextDiceValue;
       },
-    });
-
-    // Bind speed button
-    document.getElementById("btn-speed").addEventListener("click", function () {
-      const text = v > 600 ? "正常" : "加快";
-      this.innerHTML = `${text}速度`;
-      v = 1300 - v;
-    });
-    // Bind autopilot button
-    let autopilot = false;
-    document.getElementById("btn-autopilot").addEventListener("click", function () {
-      autopilot = !autopilot;
-      this.innerHTML = autopilot ? "取消托管" : "开启托管";
-      players.forEach((p) => {
-        if (autopilot) {
-          if (p.control) p.control = "";
-        } else {
-          if (p.control === "") p.control = 1;
-        }
-      });
     });
 
     // Bind dialog cancel button
@@ -526,7 +506,7 @@ if (typeof document !== "undefined") {
     writeInfo();
     // If first player is NPC, auto-roll
     if (!players[0].control) {
-      setTimeout(() => game(), v * 2);
+      setTimeout(() => game(), ANIM_SPEED * 2);
     } else {
       addDiceEvent();
     }
@@ -545,7 +525,7 @@ if (typeof document !== "undefined") {
       if (!checkPlayerState(index)) {
         gameSequence(index);
       }
-    }, v);
+    }, ANIM_SPEED);
   }
 
   function playerMove(index) {
@@ -565,7 +545,7 @@ if (typeof document !== "undefined") {
     person = players[s];
     SoundManager.play("roll");
     DICE.shuffle(3).then(() => {
-      const move = setInterval(() => playerMove(s), v);
+      const move = setInterval(() => playerMove(s), ANIM_SPEED);
       setTimeout(
         () => {
           clearInterval(move);
@@ -575,7 +555,10 @@ if (typeof document !== "undefined") {
             if (person.control) {
               showDialog("purchase", person.money > place.value);
             } else {
-              setTimeout(() => dialogClicked("purchase", person.money - place.value > 3000), v / 3);
+              setTimeout(
+                () => dialogClicked("purchase", person.money - place.value > 3000),
+                ANIM_SPEED / 3
+              );
             }
           } else if (place.owner && place.owner !== person.name && place.owner !== "sean") {
             // Pay rent
@@ -637,7 +620,7 @@ if (typeof document !== "undefined") {
                 places[11].node.append(person.node);
                 checkBankruptUI();
                 gameSequence(s);
-              }, v * 1.5);
+              }, ANIM_SPEED * 1.5);
             } else {
               checkBankruptUI();
               gameSequence(s);
@@ -651,7 +634,7 @@ if (typeof document !== "undefined") {
               places[person.position].node.append(person.node);
               checkBankruptUI();
               gameSequence(s);
-            }, v * 1.5);
+            }, ANIM_SPEED * 1.5);
             person.money -= 800;
           } else if (place.state === "trip") {
             person.stop = generateNum(1, 3);
@@ -662,7 +645,7 @@ if (typeof document !== "undefined") {
           }
           updateInfo();
         },
-        v * (num + 0.9)
+        ANIM_SPEED * (num + 0.9)
       );
     });
   }
@@ -712,7 +695,7 @@ if (typeof document !== "undefined") {
           chipNode.append(person.node);
         }
         checkFinish();
-      }, v / 2);
+      }, ANIM_SPEED / 2);
     }
   }
 
@@ -728,7 +711,7 @@ if (typeof document !== "undefined") {
     if (count === 1) {
       setTimeout(() => {
         showGameOver(winner.name);
-      }, v * 2);
+      }, ANIM_SPEED * 2);
     }
   }
 
@@ -747,7 +730,7 @@ if (typeof document !== "undefined") {
       return false;
     }
     if (!player.control) {
-      setTimeout(() => game(), v * 2);
+      setTimeout(() => game(), ANIM_SPEED * 2);
     } else {
       addDiceEvent();
     }
@@ -863,7 +846,7 @@ if (typeof document !== "undefined") {
     msgboxEl.innerHTML = msg;
     setTimeout(() => {
       msgboxEl.style.display = "none";
-    }, v * 1.6);
+    }, ANIM_SPEED * 1.6);
   }
 
   function showGameOver(winnerName) {

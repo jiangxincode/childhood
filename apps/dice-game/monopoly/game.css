@@ -181,21 +181,6 @@ body {
   font-size: 13px;
 }
 
-.ctrl-btn {
-  padding: 4px 12px;
-  border: none;
-  border-radius: 6px;
-  background: #f0f0f0;
-  color: #454545;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.ctrl-btn:hover {
-  background: #e0e0e0;
-}
-
 #player-status {
   display: flex;
   gap: 10px;
