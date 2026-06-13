@@ -372,7 +372,7 @@ if (typeof document !== "undefined") {
   let nextDiceValue = 0;
 
   // DOM references
-  let mapEl, titleEl, infoEl;
+  let mapEl;
   let dialogEl, infoboxEl, msgboxEl;
 
   const TOKEN_COLORS = ["#e53935", "#1565c0", "#f9a825", "#2e7d32"];
@@ -381,8 +381,6 @@ if (typeof document !== "undefined") {
   function init() {
     SoundManager.init("../../audio");
     mapEl = document.querySelector(".map");
-    titleEl = document.querySelector(".title");
-    infoEl = document.querySelector(".info");
     dialogEl = document.querySelector(".dialog");
     infoboxEl = document.querySelector(".infobox");
     msgboxEl = document.querySelector(".msgbox");
@@ -522,7 +520,6 @@ if (typeof document !== "undefined") {
     document.getElementById("option-panel").classList.add("hidden");
     document.getElementById("status-bar").style.display = "flex";
     document.getElementById("game-main").style.display = "flex";
-    titleEl.style.visibility = "visible";
     s = 0;
     person = players[0];
     updatePlayer(players[0].name);
@@ -710,10 +707,9 @@ if (typeof document !== "undefined") {
           }
         });
         // Move player token off board
-        const infoNode = infoEl.children[players.indexOf(person)];
-        if (infoNode) {
-          infoNode.firstElementChild.style.display = "none";
-          infoNode.append(person.node);
+        const chipNode = document.getElementById(`chip-${players.indexOf(person)}`);
+        if (chipNode) {
+          chipNode.append(person.node);
         }
         checkFinish();
       }, v / 2);
@@ -784,8 +780,9 @@ if (typeof document !== "undefined") {
   }
 
   function updatePlayer(name) {
-    titleEl.innerHTML = name;
-    titleEl.style.background = getPlayerColor(name);
+    const el = document.getElementById("current-player");
+    el.textContent = name;
+    el.style.background = getPlayerColor(name);
   }
 
   function updateRound() {
@@ -794,25 +791,25 @@ if (typeof document !== "undefined") {
   }
 
   function writeInfo() {
+    const statusEl = document.getElementById("player-status");
+    statusEl.innerHTML = "";
     const num = playerNumber + npcNumber;
     for (let i = 0; i < num; i++) {
-      const node = document.createElement("div");
-      const h2 = document.createElement("h2");
-      const h3 = document.createElement("h3");
-      h3.innerHTML = `$${players[i].money}`;
-      h2.innerHTML = players[i].name;
-      h2.style.background = getPlayerColor(players[i].name);
-      node.append(h3);
-      node.append(h2);
-      infoEl.append(node);
+      const chip = document.createElement("span");
+      chip.className = "player-chip";
+      chip.id = `chip-${i}`;
+      chip.innerHTML = `<span class="chip-dot" style="background:${getPlayerColor(players[i].name)}"></span>${players[i].name} $${players[i].money}`;
+      statusEl.append(chip);
     }
   }
 
   function updateInfo() {
     const num = playerNumber + npcNumber;
     for (let i = 0; i < num; i++) {
-      if (infoEl.children[i]) {
-        infoEl.children[i].firstElementChild.innerHTML = "$" + players[i].money;
+      const chip = document.getElementById(`chip-${i}`);
+      if (chip) {
+        chip.innerHTML = `<span class="chip-dot" style="background:${getPlayerColor(players[i].name)}"></span>${players[i].name} $${players[i].money}`;
+        if (players[i].state === "bankrupt") chip.classList.add("bankrupt");
       }
     }
   }

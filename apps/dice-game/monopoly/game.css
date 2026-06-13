@@ -196,6 +196,36 @@ body {
   background: #e0e0e0;
 }
 
+#player-status {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.player-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: #f5f5f5;
+  font-size: 13px;
+  color: #333;
+  white-space: nowrap;
+}
+
+.player-chip.bankrupt {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+.chip-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 /* =============================================
    Main Game Area
    ============================================= */
@@ -321,17 +351,6 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-}
-
-/* Current player title */
-.title {
-  display: inline-block;
-  padding: 4px 16px;
-  color: #fff;
-  border-radius: 8px;
-  font-size: 15px;
-  visibility: hidden;
 }
 
 /* Dice area */
@@ -398,40 +417,6 @@ body {
 
 .dice.pointer {
   cursor: pointer;
-}
-
-/* Player info area */
-.info {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  padding: 0 8px;
-}
-
-.info > div {
-  position: relative;
-  flex: 1;
-  max-width: 120px;
-  text-align: center;
-  padding-bottom: 4px;
-}
-
-.info h2 {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 8px;
-  color: #fff;
-  white-space: nowrap;
-  font-size: 13px;
-}
-
-.info h3 {
-  font-size: 13px;
-  white-space: nowrap;
-  margin-bottom: 2px;
-  color: #e65100;
-  font-weight: 600;
 }
 
 /* Building sprites */
