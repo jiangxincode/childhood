@@ -1,5 +1,5 @@
 /* =============================================
-   Monopoly Game — CSS (replica of reference)
+   Monopoly Game — Layout inspired by Flying Chess
    ============================================= */
 
 * {
@@ -8,6 +8,7 @@
   font-family: "Microsoft YaHei", "Comic Sans MS", "PingFang SC", sans-serif;
   user-select: none;
   outline: transparent;
+  box-sizing: border-box;
 }
 
 li {
@@ -17,9 +18,10 @@ li {
 html,
 body {
   width: 100%;
-  height: 100%;
-  overflow: hidden;
+  min-height: 100vh;
+  background: #f5f5f5;
   color: #454545;
+  font-size: 14px;
 }
 
 ::-webkit-scrollbar {
@@ -108,7 +110,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 700px;
+  width: 500px;
   height: 200px;
   background: #f2f2f2;
   border-radius: 13px;
@@ -131,26 +133,15 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 20px;
 }
 
 .choosechr li {
-  position: relative;
-  width: 100px;
-  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-}
-
-.choosechr img {
-  width: 80%;
-  transition: 0.5s;
-}
-
-.choosechr img:hover {
-  width: 95%;
 }
 
 .token-preview {
@@ -172,25 +163,89 @@ body {
   text-align: center;
   background: #42afe1;
   color: #fff;
-  padding: 2px 6px;
+  padding: 2px 8px;
   border-radius: 4px;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 /* =============================================
-   Map (Board)
+   Status Bar
+   ============================================= */
+#status-bar {
+  display: none;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 20px;
+  background: #fff;
+  border-radius: 10px;
+  margin: 10px auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  width: fit-content;
+  max-width: 900px;
+  font-size: 14px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-item .label {
+  color: #888;
+}
+
+.team-indicator {
+  display: inline-block;
+  padding: 2px 12px;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.ctrl-btn {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #f0f0f0;
+  color: #454545;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ctrl-btn:hover {
+  background: #e0e0e0;
+}
+
+/* =============================================
+   Main Game Area
+   ============================================= */
+#game-main {
+  display: none;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: center;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+
+/* =============================================
+   Map (Board) — fixed size, not full-screen
    ============================================= */
 .map {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   grid-template-rows: repeat(5, 1fr);
   grid-gap: 3px;
-  overflow: hidden;
+  width: 960px;
+  height: 400px;
+  background: #e8e8e8;
+  border-radius: 10px;
+  padding: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
 }
 
 .box {
@@ -203,8 +258,9 @@ body {
     -1px 1px 1px inset #454545,
     -1px -1px 1px inset #454545;
   text-align: center;
-  border-radius: 13px;
+  border-radius: 6px;
   background: #fff;
+  overflow: hidden;
 }
 
 .box h3 {
@@ -214,89 +270,80 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  font-size: 15px;
+  font-size: 13px;
   width: 100%;
-  height: 30px;
-  line-height: 30px;
-  border-top-right-radius: 13px;
-  border-top-left-radius: 13px;
+  height: 22px;
+  line-height: 22px;
+  border-top-right-radius: 6px;
+  border-top-left-radius: 6px;
   overflow: hidden;
   white-space: nowrap;
 }
 
 /* Player tokens */
 .box .chr {
-  width: 85%;
   position: absolute;
-  bottom: 5%;
+  bottom: 5px;
   left: 50%;
   transform: translateX(-50%);
-  animation: moving 0.8s;
-  z-index: 1;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 2px solid #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 11px;
   color: #fff;
   font-weight: bold;
+  z-index: 1;
+  animation: tokenBounce 0.3s ease;
+}
+
+@keyframes tokenBounce {
+  0% {
+    transform: translateX(-50%) scale(0.5);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.2);
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+  }
 }
 
 /* Center area */
 .big-box {
   position: relative;
-  background: #fff;
+  background: #fafafa;
   box-shadow: none;
   grid-area: 2 / 2 / -2 / -2;
-  text-align: left;
+  text-align: center;
   border-radius: 0;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 /* Current player title */
 .title {
   display: inline-block;
-  padding: 5px 13px;
+  padding: 4px 16px;
   color: #fff;
-  border-radius: 10px;
+  border-radius: 8px;
+  font-size: 15px;
   visibility: hidden;
-  margin: 8px;
-}
-
-/* Buttons */
-.big-box button {
-  position: relative;
-  float: right;
-  border: none;
-  margin-left: 3px;
-  margin-top: 8px;
-  margin-right: 8px;
-  padding: 7px 13px;
-  border-radius: 10px;
-  cursor: pointer;
-  color: #fff;
-  background: #454545;
-}
-
-.big-box button:hover {
-  background: #666;
-}
-
-.big-box span {
-  position: relative;
-  float: right;
-  margin-right: 8px;
-  margin-top: 12px;
-  font-size: 14px;
 }
 
 /* Dice area */
 .control {
-  position: absolute;
-  width: 169px;
-  height: 169px;
+  position: relative;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   box-shadow:
     2px 2px 2px #888,
@@ -307,10 +354,8 @@ body {
     -4px -4px 4px #999 inset,
     4px -4px 4px #999 inset,
     -4px 4px 4px #999 inset;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   background: #f0f0f0;
+  flex-shrink: 0;
 }
 
 .dice {
@@ -318,92 +363,99 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   background-image: url(images/1.jpg);
   background-size: cover;
   cursor: pointer;
-  border-radius: 25%;
+  border-radius: 20px;
 }
 
 /* Player info area */
 .info {
-  position: absolute;
-  bottom: 0;
-  left: 0;
   width: 100%;
-  height: 99px;
   display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 8px;
 }
 
 .info > div {
-  display: inline-block;
   position: relative;
-  width: calc(25% - 5px);
-  height: 100%;
+  flex: 1;
+  max-width: 120px;
+  text-align: center;
+  padding-bottom: 4px;
 }
 
 .info h2 {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 3px 13px;
-  border-radius: 10px;
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 8px;
   color: #fff;
   white-space: nowrap;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .info h3 {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 14px;
+  font-size: 13px;
   white-space: nowrap;
+  margin-bottom: 2px;
+  color: #e65100;
+  font-weight: 600;
 }
 
-.info .chr {
+/* Building sprites */
+.box img.house {
   position: absolute;
-  width: 65px;
+  bottom: 3px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 3;
-  bottom: 36px;
+  width: 85%;
+  z-index: 0;
 }
 
-/* Instruction panel */
-.instruction {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #f2f2f2;
+/* =============================================
+   Rules Panel (sidebar, always visible)
+   ============================================= */
+#rules-panel {
+  background: #fff;
   border-radius: 10px;
-  transition: 0.5s;
-  z-index: 2;
-  height: 0;
-  overflow: scroll;
-}
-
-.instruction h2 {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.instruction ul {
-  box-sizing: border-box;
-  padding: 13px;
-}
-
-.instruction li {
-  list-style-type: circle;
-  list-style-position: inside;
-  margin: 5px;
-  font-size: 14px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  width: 220px;
+  font-size: 13px;
   line-height: 1.6;
+  flex-shrink: 0;
+}
+
+#rules-panel h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: #333;
+  border-bottom: 2px solid #8b5a2b;
+  padding-bottom: 8px;
+}
+
+.rule-section {
+  margin-bottom: 12px;
+}
+
+.rule-section h4 {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.rule-section ul {
+  list-style: none;
+  padding-left: 4px;
+}
+
+.rule-section li {
+  color: #666;
+  padding: 1px 0;
+  font-size: 12px;
 }
 
 /* =============================================
@@ -414,8 +466,8 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 600px;
-  height: 260px;
+  width: 400px;
+  height: 200px;
   border-radius: 13px;
   background: #fff;
   border: 3px solid #454545;
@@ -425,7 +477,7 @@ body {
 
 .dialog p {
   width: 100%;
-  font-size: 22px;
+  font-size: 18px;
   text-align: center;
   position: absolute;
   top: 50%;
@@ -440,41 +492,41 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  height: 52px;
-  line-height: 52px;
+  height: 44px;
+  line-height: 44px;
   text-indent: 1em;
-  font-size: 20px;
-  letter-spacing: 13px;
+  font-size: 18px;
+  letter-spacing: 8px;
   width: 100%;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
 }
 
-.btn {
+.dialog .btn {
   background: #f2f2f2;
   width: 50%;
   height: 20%;
   position: absolute;
   bottom: 0%;
   text-align: center;
-  line-height: 60px;
+  line-height: 40px;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 16px;
 }
 
-.btn:first-of-type {
+.dialog .btn:first-of-type {
   left: 0;
   border-bottom-left-radius: 8px;
   color: #000;
   box-shadow: -1px 0 silver inset;
 }
 
-.btn:last-of-type {
+.dialog .btn:last-of-type {
   right: 0;
   border-bottom-right-radius: 8px;
 }
 
-.btn:hover {
+.dialog .btn:hover {
   box-shadow: 0 5em inset silver;
 }
 
@@ -483,14 +535,14 @@ body {
    ============================================= */
 .msgbox {
   position: fixed;
-  top: 45%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
   border: 2px solid #666;
   border-radius: 13px;
   font-weight: 100;
-  font-size: 22px;
-  padding: 2em 2em;
+  font-size: 18px;
+  padding: 1.5em 2em;
   background: #f1f1f1;
   white-space: nowrap;
   display: none;
@@ -505,8 +557,8 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 200px;
-  height: 300px;
+  width: 180px;
+  height: 260px;
   border-radius: 13px;
   background: #f2f2f2;
   border: 3px solid #454545;
@@ -521,10 +573,10 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  height: 52px;
-  line-height: 52px;
+  height: 44px;
+  line-height: 44px;
   text-indent: 1em;
-  font-size: 16px;
+  font-size: 14px;
   width: 100%;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
@@ -533,8 +585,6 @@ body {
 .infobox ul {
   width: 100%;
   height: 80%;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
   position: absolute;
   top: 20%;
   left: 0;
@@ -542,9 +592,9 @@ body {
 
 .infobox li {
   display: block;
-  width: calc(100% - 20px);
-  padding: 10px;
-  font-size: 14px;
+  width: calc(100% - 16px);
+  padding: 8px;
+  font-size: 13px;
 }
 
 /* =============================================
@@ -590,15 +640,6 @@ body {
   bottom: -13%;
   left: -30%;
   animation: c5 2s;
-}
-
-/* Building sprites */
-.box img.house {
-  position: absolute;
-  bottom: 5%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
 }
 
 /* =============================================
@@ -649,18 +690,6 @@ body {
 /* =============================================
    Animations
    ============================================= */
-@keyframes moving {
-  0% {
-    width: 85%;
-  }
-  50% {
-    width: 100%;
-  }
-  100% {
-    width: 85%;
-  }
-}
-
 @keyframes c1 {
   0% {
     opacity: 0;
@@ -744,7 +773,34 @@ body {
 /* =============================================
    Responsive
    ============================================= */
-@media (max-width: 700px) {
+@media (max-width: 1000px) {
+  #game-main {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #rules-panel {
+    width: 100%;
+    max-width: 720px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .map {
+    width: 100%;
+    max-width: 960px;
+    height: auto;
+    aspect-ratio: 12 / 5;
+  }
+}
+
+@media (max-width: 750px) {
+  .map {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 12 / 5;
+  }
+
   .welcome {
     font-size: 24px;
   }
@@ -764,19 +820,19 @@ body {
   }
 
   .box h3 {
-    font-size: 10px;
-    height: 20px;
-    line-height: 20px;
+    font-size: 8px;
+    height: 14px;
+    line-height: 14px;
   }
 
   .control {
-    width: 100px;
-    height: 100px;
+    width: 60px;
+    height: 60px;
   }
 
   .dice {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
   }
 
   .dialog {
@@ -784,7 +840,7 @@ body {
   }
 
   .msgbox {
-    font-size: 16px;
+    font-size: 14px;
     white-space: normal;
     text-align: center;
   }

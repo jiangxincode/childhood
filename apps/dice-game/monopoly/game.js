@@ -433,35 +433,24 @@ if (typeof document !== "undefined") {
       game();
     });
 
-    // Bind buttons
-    const buttons = document.querySelectorAll(".big-box button");
-    buttons[0].addEventListener("click", function () {
-      const instr = document.querySelector(".instruction");
-      if (this.innerHTML === "规则介绍") {
-        this.innerHTML = "返回";
-        instr.style.height = "100%";
-      } else {
-        this.innerHTML = "规则介绍";
-        instr.style.height = "0";
-      }
-    });
-    buttons[1].addEventListener("click", function () {
+    // Bind speed button
+    document.getElementById("btn-speed").addEventListener("click", function () {
       const text = v > 600 ? "正常" : "加快";
       this.innerHTML = `${text}速度`;
       v = 1300 - v;
     });
-    buttons[2].addEventListener("click", function () {
-      if (this.innerHTML === "开启托管") {
-        this.innerHTML = "取消托管";
-        players.forEach((p) => {
+    // Bind autopilot button
+    let autopilot = false;
+    document.getElementById("btn-autopilot").addEventListener("click", function () {
+      autopilot = !autopilot;
+      this.innerHTML = autopilot ? "取消托管" : "开启托管";
+      players.forEach((p) => {
+        if (autopilot) {
           if (p.control) p.control = "";
-        });
-      } else {
-        this.innerHTML = "开启托管";
-        players.forEach((p) => {
+        } else {
           if (p.control === "") p.control = 1;
-        });
-      }
+        }
+      });
     });
 
     // Bind dialog cancel button
@@ -559,6 +548,8 @@ if (typeof document !== "undefined") {
 
   function gameStart() {
     choosechrEl.parentElement.style.display = "none";
+    document.getElementById("status-bar").style.display = "flex";
+    document.getElementById("game-main").style.display = "flex";
     titleEl.style.visibility = "visible";
     s = 0;
     person = players[0];
@@ -821,8 +812,8 @@ if (typeof document !== "undefined") {
   }
 
   function updateRound() {
-    const num = +document.querySelector(".big-box span b").innerHTML + 1;
-    document.querySelector(".big-box span b").innerHTML = num;
+    const el = document.getElementById("round-count");
+    el.textContent = +el.textContent + 1;
   }
 
   function writeInfo() {
