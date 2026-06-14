@@ -172,6 +172,16 @@
     </image:image>
   </url>
   <url>
+    <loc>https://jiangxincode.github.io/childhood/apps/board-game/shogi/index.html</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://jiangxincode.github.io/childhood/images/board-game/%E5%B0%86%E6%A3%8B.jpg</image:loc>
+      <image:title>将棋 - 日本传统策略棋盘游戏</image:title>
+    </image:image>
+  </url>
+  <url>
     <loc>https://jiangxincode.github.io/childhood/apps/dice-game/flying-chess/index.html</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
