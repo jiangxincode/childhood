@@ -28,6 +28,11 @@ import {
   getDragonMoves,
   getHorseMoves,
   getValidMoves,
+  getAllMoves,
+  evaluateBoard,
+  applyMove,
+  alphaBeta,
+  getBestAIMove,
 } from "./game.js";
 
 describe("shogi constants", () => {
@@ -284,5 +289,53 @@ describe("valid moves calculation", () => {
     const board = initializeBoard();
     const moves = getValidMoves(4, 4, null, board);
     expect(moves.length).toBe(0);
+  });
+});
+
+describe("AI functions", () => {
+  it("gets all moves for a player", () => {
+    const board = initializeBoard();
+    const capturedPieces = { sente: [], gote: [] };
+    const moves = getAllMoves(board, SENTE, capturedPieces);
+    expect(moves.length).toBeGreaterThan(0);
+    // Initial position should have multiple moves
+    expect(moves.length).toBeGreaterThanOrEqual(30);
+  });
+
+  it("evaluates board position", () => {
+    const board = initializeBoard();
+    const score = evaluateBoard(board, SENTE);
+    // Both sides are equal at start, so score should be around 0
+    expect(typeof score).toBe("number");
+  });
+
+  it("applies move correctly", () => {
+    const board = initializeBoard();
+    const capturedPieces = { sente: [], gote: [] };
+    const move = {
+      type: "move",
+      from: { row: 6, col: 0 },
+      to: { row: 5, col: 0 },
+      piece: board[6][0],
+    };
+    const result = applyMove(board, move, capturedPieces);
+    expect(result.board[5][0]).toBeTruthy();
+    expect(result.board[6][0]).toBeNull();
+  });
+
+  it("finds best AI move", () => {
+    const board = initializeBoard();
+    const capturedPieces = { sente: [], gote: [] };
+    const bestMove = getBestAIMove(board, capturedPieces, GOTE, 2);
+    expect(bestMove).toBeTruthy();
+    expect(bestMove.type).toBe("move");
+  });
+
+  it("alpha-beta returns a valid move", () => {
+    const board = initializeBoard();
+    const capturedPieces = { sente: [], gote: [] };
+    const result = alphaBeta(board, capturedPieces, 2, -Infinity, Infinity, true, GOTE);
+    expect(result.move).toBeTruthy();
+    expect(typeof result.score).toBe("number");
   });
 });

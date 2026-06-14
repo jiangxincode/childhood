@@ -526,6 +526,224 @@ function getValidMoves(row, col, piece, board) {
   return moves;
 }
 
+// Get all possible moves for a player
+function getAllMoves(board, player, capturedPieces) {
+  const allMoves = [];
+
+  // Board moves
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      const piece = board[row][col];
+      if (piece && piece.player === player) {
+        const moves = getValidMoves(row, col, piece, board);
+        for (const move of moves) {
+          allMoves.push({
+            type: "move",
+            from: { row, col },
+            to: move,
+            piece: piece,
+          });
+        }
+      }
+    }
+  }
+
+  // Drop moves (if captured pieces available)
+  if (capturedPieces && capturedPieces[player]) {
+    const uniquePieces = [];
+    const seen = new Set();
+    for (const piece of capturedPieces[player]) {
+      const key = piece.type;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniquePieces.push(piece);
+      }
+    }
+
+    for (const piece of uniquePieces) {
+      for (let row = 0; row < BOARD_SIZE; row++) {
+        for (let col = 0; col < BOARD_SIZE; col++) {
+          if (!board[row][col]) {
+            // Check pawn restrictions
+            if (piece.type === PIECE_TYPES.PAWN) {
+              let hasPawn = false;
+              for (let r = 0; r < BOARD_SIZE; r++) {
+                const p = board[r][col];
+                if (p && p.type === PIECE_TYPES.PAWN && p.player === player && !p.promoted) {
+                  hasPawn = true;
+                  break;
+                }
+              }
+              if (hasPawn) continue;
+            }
+            allMoves.push({
+              type: "drop",
+              to: { row, col },
+              piece: piece,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  return allMoves;
+}
+
+// Evaluate board position
+function evaluateBoard(board, player) {
+  let score = 0;
+  const opponent = player === SENTE ? GOTE : SENTE;
+
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      const piece = board[row][col];
+      if (!piece) continue;
+
+      let value = piece.promoted ? PROMOTED_VALUES[piece.type] : PIECE_VALUES[piece.type];
+
+      // Position bonus: pieces in center are more valuable
+      const centerBonus = (4 - Math.abs(col - 4)) * 10 + (4 - Math.abs(row - 4)) * 10;
+      value += centerBonus;
+
+      // Promotion zone bonus
+      if (!piece.promoted && canPromote(piece, row)) {
+        value += 50;
+      }
+
+      if (piece.player === player) {
+        score += value;
+      } else {
+        score -= value;
+      }
+    }
+  }
+
+  // Bonus for captured pieces
+  return score;
+}
+
+// Apply a move to the board (returns new board)
+function applyMove(board, move, capturedPieces) {
+  const newBoard = board.map((row) => [...row]);
+  const newCaptured = {
+    sente: [...(capturedPieces?.sente || [])],
+    gote: [...(capturedPieces?.gote || [])],
+  };
+
+  if (move.type === "drop") {
+    newBoard[move.to.row][move.to.col] = {
+      type: move.piece.type,
+      player: move.piece.player,
+      promoted: false,
+    };
+    // Remove from captured pieces
+    const idx = newCaptured[move.piece.player].findIndex((p) => p.type === move.piece.type);
+    if (idx !== -1) {
+      newCaptured[move.piece.player].splice(idx, 1);
+    }
+  } else {
+    const piece = newBoard[move.from.row][move.from.col];
+    const target = newBoard[move.to.row][move.to.col];
+
+    // Capture
+    if (target) {
+      newCaptured[piece.player].push({
+        type: target.type,
+        promoted: false,
+      });
+    }
+
+    // Move piece
+    newBoard[move.to.row][move.to.col] = { ...piece };
+    newBoard[move.from.row][move.from.col] = null;
+
+    // Auto-promote if in promotion zone
+    const movedPiece = newBoard[move.to.row][move.to.col];
+    if (canPromote(movedPiece, move.to.row)) {
+      // Auto-promote if entering or leaving promotion zone with non-king/gold
+      if (move.to.row <= 2 || move.to.row >= 6) {
+        movedPiece.promoted = true;
+      }
+    }
+  }
+
+  return { board: newBoard, capturedPieces: newCaptured };
+}
+
+// Alpha-Beta with pruning
+function alphaBeta(board, capturedPieces, depth, alpha, beta, maximizingPlayer, aiPlayer) {
+  if (depth === 0 || isGameOver(board)) {
+    return { score: evaluateBoard(board, aiPlayer), move: null };
+  }
+
+  const currentPlayer = maximizingPlayer ? aiPlayer : aiPlayer === SENTE ? GOTE : SENTE;
+  const moves = getAllMoves(board, currentPlayer, capturedPieces);
+
+  if (moves.length === 0) {
+    return { score: maximizingPlayer ? -99999 : 99999, move: null };
+  }
+
+  // Sort moves for better pruning (captures first)
+  moves.sort((a, b) => {
+    const aCapture = a.type === "move" && board[a.to.row][a.to.col] ? 1 : 0;
+    const bCapture = b.type === "move" && board[b.to.row][b.to.col] ? 1 : 0;
+    return bCapture - aCapture;
+  });
+
+  let bestMove = moves[0];
+
+  if (maximizingPlayer) {
+    let maxEval = -Infinity;
+    for (const move of moves) {
+      const result = applyMove(board, move, capturedPieces);
+      const evaluation = alphaBeta(
+        result.board,
+        result.capturedPieces,
+        depth - 1,
+        alpha,
+        beta,
+        false,
+        aiPlayer
+      );
+      if (evaluation.score > maxEval) {
+        maxEval = evaluation.score;
+        bestMove = move;
+      }
+      alpha = Math.max(alpha, evaluation.score);
+      if (beta <= alpha) break;
+    }
+    return { score: maxEval, move: bestMove };
+  } else {
+    let minEval = Infinity;
+    for (const move of moves) {
+      const result = applyMove(board, move, capturedPieces);
+      const evaluation = alphaBeta(
+        result.board,
+        result.capturedPieces,
+        depth - 1,
+        alpha,
+        beta,
+        true,
+        aiPlayer
+      );
+      if (evaluation.score < minEval) {
+        minEval = evaluation.score;
+        bestMove = move;
+      }
+      beta = Math.min(beta, evaluation.score);
+      if (beta <= alpha) break;
+    }
+    return { score: minEval, move: bestMove };
+  }
+}
+
+// Get best AI move
+function getBestAIMove(board, capturedPieces, aiPlayer, depth = 3) {
+  const result = alphaBeta(board, capturedPieces, depth, -Infinity, Infinity, true, aiPlayer);
+  return result.move;
+}
+
 // Export for testing
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
@@ -555,6 +773,11 @@ if (typeof module !== "undefined" && module.exports) {
     getDragonMoves: getDragonMoves,
     getHorseMoves: getHorseMoves,
     getValidMoves: getValidMoves,
+    getAllMoves: getAllMoves,
+    evaluateBoard: evaluateBoard,
+    applyMove: applyMove,
+    alphaBeta: alphaBeta,
+    getBestAIMove: getBestAIMove,
   };
 }
 
@@ -968,38 +1191,45 @@ if (typeof document !== "undefined") {
     gameState.gameOver = false;
   }
 
-  // Make AI move (simple implementation)
+  // Make AI move using Alpha-Beta pruning
   function makeAIMove() {
     if (gameState.gameOver || gameState.currentPlayer !== GOTE) return;
 
-    // Get all possible moves for AI
-    const allMoves = [];
-    for (let row = 0; row < BOARD_SIZE; row++) {
-      for (let col = 0; col < BOARD_SIZE; col++) {
-        const piece = gameState.board[row][col];
-        if (piece && piece.player === GOTE) {
-          const moves = getValidMoves(row, col, piece, gameState.board);
-          for (const move of moves) {
-            allMoves.push({
-              from: { row, col },
-              to: move,
-              piece: piece,
-            });
-          }
-        }
+    showMessage("电脑正在思考...", "info");
+
+    // Use setTimeout to allow UI to update
+    setTimeout(() => {
+      const bestMove = getBestAIMove(
+        gameState.board,
+        gameState.capturedPieces,
+        GOTE,
+        gameState.aiDepth
+      );
+
+      if (!bestMove) {
+        endGame();
+        return;
       }
-    }
 
-    if (allMoves.length === 0) {
-      endGame();
-      return;
-    }
-
-    // Simple AI: choose a random move
-    const randomMove = allMoves[Math.floor(Math.random() * allMoves.length)];
-
-    // Make the move
-    makeMove(randomMove.from.row, randomMove.from.col, randomMove.to.row, randomMove.to.col);
+      if (bestMove.type === "drop") {
+        // Drop move
+        gameState.board[bestMove.to.row][bestMove.to.col] = {
+          type: bestMove.piece.type,
+          player: GOTE,
+          promoted: false,
+        };
+        // Remove from captured pieces
+        const idx = gameState.capturedPieces.gote.findIndex((p) => p.type === bestMove.piece.type);
+        if (idx !== -1) {
+          gameState.capturedPieces.gote.splice(idx, 1);
+        }
+        showMessage(`电脑打入了 ${getPieceName(bestMove.piece)}`);
+        switchPlayer();
+      } else {
+        // Normal move
+        makeMove(bestMove.from.row, bestMove.from.col, bestMove.to.row, bestMove.to.col);
+      }
+    }, 100);
   }
 
   // Drop piece functionality (for captured pieces)
