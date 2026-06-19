@@ -526,6 +526,31 @@ function getValidMoves(row, col, piece, board) {
   return moves;
 }
 
+// Check whether a king of the given player is still on the board
+function hasKing(board, player) {
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      const p = board[row][col];
+      if (p && p.type === PIECE_TYPES.KING && p.player === player) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// Whether a piece type may legally be dropped on a given row
+// (pawns/lances need a forward square, knights need two forward squares)
+function canDropOn(type, player, row) {
+  if (type === PIECE_TYPES.PAWN || type === PIECE_TYPES.LANCE) {
+    return player === SENTE ? row >= 1 : row <= BOARD_SIZE - 2;
+  }
+  if (type === PIECE_TYPES.KNIGHT) {
+    return player === SENTE ? row >= 2 : row <= BOARD_SIZE - 3;
+  }
+  return true;
+}
+
 // Get all possible moves for a player
 function getAllMoves(board, player, capturedPieces) {
   const allMoves = [];
@@ -564,6 +589,8 @@ function getAllMoves(board, player, capturedPieces) {
       for (let row = 0; row < BOARD_SIZE; row++) {
         for (let col = 0; col < BOARD_SIZE; col++) {
           if (!board[row][col]) {
+            // Cannot drop a piece where it would never have a legal move
+            if (!canDropOn(piece.type, player, row)) continue;
             // Check pawn restrictions
             if (piece.type === PIECE_TYPES.PAWN) {
               let hasPawn = false;
@@ -579,7 +606,7 @@ function getAllMoves(board, player, capturedPieces) {
             allMoves.push({
               type: "drop",
               to: { row, col },
-              piece: piece,
+              piece: { type: piece.type, player: player, promoted: false },
             });
           }
         }
@@ -590,10 +617,27 @@ function getAllMoves(board, player, capturedPieces) {
   return allMoves;
 }
 
-// Evaluate board position
-function evaluateBoard(board, player) {
+// Evaluate board position from `player`'s perspective.
+// Considers material on board, pieces in hand, board position and king pressure.
+function evaluateBoard(board, player, capturedPieces) {
   let score = 0;
   const opponent = player === SENTE ? GOTE : SENTE;
+
+  // Locate both kings first so we can score attacking pressure
+  let playerKing = null;
+  let oppKing = null;
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      const piece = board[row][col];
+      if (piece && piece.type === PIECE_TYPES.KING) {
+        if (piece.player === player) {
+          playerKing = { row, col };
+        } else {
+          oppKing = { row, col };
+        }
+      }
+    }
+  }
 
   for (let row = 0; row < BOARD_SIZE; row++) {
     for (let col = 0; col < BOARD_SIZE; col++) {
@@ -602,13 +646,21 @@ function evaluateBoard(board, player) {
 
       let value = piece.promoted ? PROMOTED_VALUES[piece.type] : PIECE_VALUES[piece.type];
 
-      // Position bonus: pieces in center are more valuable
-      const centerBonus = (4 - Math.abs(col - 4)) * 10 + (4 - Math.abs(row - 4)) * 10;
-      value += centerBonus;
+      if (piece.type !== PIECE_TYPES.KING) {
+        // Position bonus: pieces in center are more valuable
+        value += (4 - Math.abs(col - 4)) * 4 + (4 - Math.abs(row - 4)) * 4;
 
-      // Promotion zone bonus
-      if (!piece.promoted && canPromote(piece, row)) {
-        value += 50;
+        // Promotion zone bonus
+        if (!piece.promoted && canPromote(piece, row)) {
+          value += 40;
+        }
+
+        // Aggression: reward pieces that crowd the enemy king
+        const enemyKing = piece.player === player ? oppKing : playerKing;
+        if (enemyKing) {
+          const dist = Math.abs(row - enemyKing.row) + Math.abs(col - enemyKing.col);
+          value += Math.max(0, 8 - dist) * 3;
+        }
       }
 
       if (piece.player === player) {
@@ -619,7 +671,16 @@ function evaluateBoard(board, player) {
     }
   }
 
-  // Bonus for captured pieces
+  // Pieces in hand are valuable in shogi since they can be dropped anywhere
+  if (capturedPieces) {
+    for (const p of capturedPieces[player] || []) {
+      score += PIECE_VALUES[p.type] * 0.95;
+    }
+    for (const p of capturedPieces[opponent] || []) {
+      score -= PIECE_VALUES[p.type] * 0.95;
+    }
+  }
+
   return score;
 }
 
@@ -671,10 +732,37 @@ function applyMove(board, move, capturedPieces) {
   return { board: newBoard, capturedPieces: newCaptured };
 }
 
-// Alpha-Beta with pruning
-function alphaBeta(board, capturedPieces, depth, alpha, beta, maximizingPlayer, aiPlayer) {
-  if (depth === 0 || isGameOver(board)) {
-    return { score: evaluateBoard(board, aiPlayer), move: null };
+// Search budget (ms) for the AI's iterative deepening
+const AI_TIME_LIMIT = 1500;
+
+// Move-ordering score: try the most valuable captures first for better pruning
+function moveOrderScore(board, move) {
+  if (move.type !== "move") return 0;
+  const target = board[move.to.row][move.to.col];
+  if (!target) return 0;
+  return target.promoted ? PROMOTED_VALUES[target.type] : PIECE_VALUES[target.type];
+}
+
+// Alpha-Beta with pruning. `deadline` (optional epoch ms) bounds the search time.
+function alphaBeta(
+  board,
+  capturedPieces,
+  depth,
+  alpha,
+  beta,
+  maximizingPlayer,
+  aiPlayer,
+  deadline
+) {
+  // Terminal: a king has been captured. Scale by remaining depth so the AI
+  // prefers faster wins and delays losses (i.e. it defends its own king).
+  if (isGameOver(board)) {
+    const aiAlive = hasKing(board, aiPlayer);
+    return { score: aiAlive ? 100000 + depth : -100000 - depth, move: null };
+  }
+
+  if (depth === 0) {
+    return { score: evaluateBoard(board, aiPlayer, capturedPieces), move: null };
   }
 
   const currentPlayer = maximizingPlayer ? aiPlayer : aiPlayer === SENTE ? GOTE : SENTE;
@@ -684,12 +772,8 @@ function alphaBeta(board, capturedPieces, depth, alpha, beta, maximizingPlayer, 
     return { score: maximizingPlayer ? -99999 : 99999, move: null };
   }
 
-  // Sort moves for better pruning (captures first)
-  moves.sort((a, b) => {
-    const aCapture = a.type === "move" && board[a.to.row][a.to.col] ? 1 : 0;
-    const bCapture = b.type === "move" && board[b.to.row][b.to.col] ? 1 : 0;
-    return bCapture - aCapture;
-  });
+  // Sort moves for better pruning (most valuable captures first)
+  moves.sort((a, b) => moveOrderScore(board, b) - moveOrderScore(board, a));
 
   let bestMove = moves[0];
 
@@ -704,7 +788,8 @@ function alphaBeta(board, capturedPieces, depth, alpha, beta, maximizingPlayer, 
         alpha,
         beta,
         false,
-        aiPlayer
+        aiPlayer,
+        deadline
       );
       if (evaluation.score > maxEval) {
         maxEval = evaluation.score;
@@ -712,6 +797,7 @@ function alphaBeta(board, capturedPieces, depth, alpha, beta, maximizingPlayer, 
       }
       alpha = Math.max(alpha, evaluation.score);
       if (beta <= alpha) break;
+      if (deadline && Date.now() > deadline) break;
     }
     return { score: maxEval, move: bestMove };
   } else {
@@ -725,7 +811,8 @@ function alphaBeta(board, capturedPieces, depth, alpha, beta, maximizingPlayer, 
         alpha,
         beta,
         true,
-        aiPlayer
+        aiPlayer,
+        deadline
       );
       if (evaluation.score < minEval) {
         minEval = evaluation.score;
@@ -733,15 +820,123 @@ function alphaBeta(board, capturedPieces, depth, alpha, beta, maximizingPlayer, 
       }
       beta = Math.min(beta, evaluation.score);
       if (beta <= alpha) break;
+      if (deadline && Date.now() > deadline) break;
     }
     return { score: minEval, move: bestMove };
   }
 }
 
-// Get best AI move
+// Locate a player's king on the board
+function findKing(board, player) {
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      const p = board[row][col];
+      if (p && p.type === PIECE_TYPES.KING && p.player === player) {
+        return { row, col };
+      }
+    }
+  }
+  return null;
+}
+
+// Whether `player`'s king is currently attacked by the opponent
+function isInCheck(board, player) {
+  const king = findKing(board, player);
+  if (!king) return false;
+  const opponent = player === SENTE ? GOTE : SENTE;
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      const piece = board[row][col];
+      if (!piece || piece.player !== opponent) continue;
+      const moves = getValidMoves(row, col, piece, board);
+      for (const m of moves) {
+        if (m.row === king.row && m.col === king.col) return true;
+      }
+    }
+  }
+  return false;
+}
+
+// Get the legal moves for a player: pseudo-legal moves that do not leave the
+// player's own king in check. `skipUchifuzume` avoids infinite recursion when
+// validating the "no checkmate by pawn drop" rule.
+function getLegalMoves(board, player, capturedPieces, skipUchifuzume) {
+  const opponent = player === SENTE ? GOTE : SENTE;
+  const legal = [];
+  for (const move of getAllMoves(board, player, capturedPieces)) {
+    const result = applyMove(board, move, capturedPieces);
+    if (isInCheck(result.board, player)) continue;
+    // Uchifuzume: a pawn drop may not deliver immediate checkmate
+    if (!skipUchifuzume && move.type === "drop" && move.piece.type === PIECE_TYPES.PAWN) {
+      if (
+        isInCheck(result.board, opponent) &&
+        getLegalMoves(result.board, opponent, result.capturedPieces, true).length === 0
+      ) {
+        continue;
+      }
+    }
+    legal.push(move);
+  }
+  return legal;
+}
+
+// Describe the situation for the player to move: check / checkmate / stalemate
+function getGameStatus(board, player, capturedPieces) {
+  const inCheck = isInCheck(board, player);
+  const hasMove = getLegalMoves(board, player, capturedPieces).length > 0;
+  return {
+    inCheck: inCheck,
+    checkmate: inCheck && !hasMove,
+    stalemate: !inCheck && !hasMove,
+    gameOver: !hasMove,
+  };
+}
+
+// Get best AI move using iterative deepening within a time budget.
+// Only legal moves (which never leave the AI's own king in check) are considered
+// at the root; `depth` is the maximum search depth.
 function getBestAIMove(board, capturedPieces, aiPlayer, depth = 3) {
-  const result = alphaBeta(board, capturedPieces, depth, -Infinity, Infinity, true, aiPlayer);
-  return result.move;
+  const rootMoves = getLegalMoves(board, aiPlayer, capturedPieces);
+  if (rootMoves.length === 0) return null;
+
+  rootMoves.sort((a, b) => moveOrderScore(board, b) - moveOrderScore(board, a));
+
+  const deadline = Date.now() + AI_TIME_LIMIT;
+  let bestMove = rootMoves[0];
+
+  for (let d = 1; d <= depth; d++) {
+    let localBest = null;
+    let localBestScore = -Infinity;
+    let alpha = -Infinity;
+
+    for (const move of rootMoves) {
+      const result = applyMove(board, move, capturedPieces);
+      const evaluation = alphaBeta(
+        result.board,
+        result.capturedPieces,
+        d - 1,
+        alpha,
+        Infinity,
+        false,
+        aiPlayer,
+        deadline
+      );
+      if (evaluation.score > localBestScore) {
+        localBestScore = evaluation.score;
+        localBest = move;
+      }
+      if (evaluation.score > alpha) alpha = evaluation.score;
+      if (Date.now() > deadline) break;
+    }
+
+    // Adopt this iteration's result only if it finished inside the time budget
+    if (localBest && Date.now() <= deadline) {
+      bestMove = localBest;
+    }
+    if (Date.now() > deadline) break;
+  }
+
+  return bestMove;
 }
 
 // Export for testing
@@ -762,6 +957,10 @@ if (typeof module !== "undefined" && module.exports) {
     getPieceName: getPieceName,
     canPromote: canPromote,
     isGameOver: isGameOver,
+    findKing: findKing,
+    isInCheck: isInCheck,
+    getLegalMoves: getLegalMoves,
+    getGameStatus: getGameStatus,
     getKingMoves: getKingMoves,
     getRookMoves: getRookMoves,
     getBishopMoves: getBishopMoves,
@@ -795,6 +994,7 @@ if (typeof document !== "undefined") {
     gameOver: false,
     mode: "pvp",
     aiDepth: 3,
+    dropMode: null,
   };
 
   // DOM elements
@@ -826,6 +1026,7 @@ if (typeof document !== "undefined") {
     gameState.moveHistory = [];
     gameState.turnCount = 0;
     gameState.gameOver = false;
+    gameState.dropMode = null;
 
     // Draw the board
     drawBoard();
@@ -1014,8 +1215,11 @@ if (typeof document !== "undefined") {
     if (gameState.gameOver) return;
 
     const rect = boardCanvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    // Account for CSS scaling of the canvas (responsive layout)
+    const scaleX = boardCanvas.width / rect.width;
+    const scaleY = boardCanvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
 
     // Convert to board coordinates
     const col = Math.floor((x - BOARD_PADDING) / CELL_SIZE);
@@ -1023,6 +1227,12 @@ if (typeof document !== "undefined") {
 
     // Check if click is within board bounds
     if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
+      return;
+    }
+
+    // Drop placement mode takes priority
+    if (gameState.dropMode !== null) {
+      handleDropPlacement(row, col);
       return;
     }
 
@@ -1036,6 +1246,19 @@ if (typeof document !== "undefined") {
     }
   }
 
+  // Compute the legal destinations for a piece (moves that do not leave the
+  // player's own king in check)
+  function legalDestinations(row, col, piece) {
+    return getValidMoves(row, col, piece, gameState.board).filter((m) => {
+      const result = applyMove(
+        gameState.board,
+        { type: "move", from: { row, col }, to: m, piece: piece },
+        gameState.capturedPieces
+      );
+      return !isInCheck(result.board, piece.player);
+    });
+  }
+
   // Handle piece selection
   function handlePieceSelection(row, col) {
     const piece = gameState.board[row][col];
@@ -1043,7 +1266,7 @@ if (typeof document !== "undefined") {
     // Check if there's a piece and it belongs to current player
     if (piece && piece.player === gameState.currentPlayer) {
       gameState.selectedPiece = { row, col };
-      gameState.validMoves = getValidMoves(row, col, piece, gameState.board);
+      gameState.validMoves = legalDestinations(row, col, piece);
       drawBoard();
       showMessage(`已选中 ${getPieceName(piece)}`);
     }
@@ -1057,7 +1280,7 @@ if (typeof document !== "undefined") {
     // Check if clicking on own piece (change selection)
     if (targetPiece && targetPiece.player === gameState.currentPlayer) {
       gameState.selectedPiece = { row, col };
-      gameState.validMoves = getValidMoves(row, col, targetPiece, gameState.board);
+      gameState.validMoves = legalDestinations(row, col, targetPiece);
       drawBoard();
       showMessage(`已选中 ${getPieceName(targetPiece)}`);
       return;
@@ -1074,8 +1297,21 @@ if (typeof document !== "undefined") {
     }
   }
 
-  // Make a move
-  function makeMove(fromRow, fromCol, toRow, toCol) {
+  // Whether a piece is forced to promote on the given row
+  // (otherwise it would have no legal move afterwards)
+  function mustPromote(piece, row) {
+    if (piece.type === PIECE_TYPES.PAWN || piece.type === PIECE_TYPES.LANCE) {
+      return piece.player === SENTE ? row === 0 : row === BOARD_SIZE - 1;
+    }
+    if (piece.type === PIECE_TYPES.KNIGHT) {
+      return piece.player === SENTE ? row <= 1 : row >= BOARD_SIZE - 2;
+    }
+    return false;
+  }
+
+  // Make a move. When `autoPromote` is true (AI moves) promotion happens
+  // automatically without showing the human promotion dialog.
+  function makeMove(fromRow, fromCol, toRow, toCol, autoPromote = false) {
     const piece = gameState.board[fromRow][fromCol];
     const targetPiece = gameState.board[toRow][toCol];
 
@@ -1095,18 +1331,20 @@ if (typeof document !== "undefined") {
 
     // Check for promotion
     if (canPromote(piece, toRow)) {
-      showPromotionDialog(piece, toRow, toCol);
+      // AI (or a forced promotion) promotes immediately without a dialog
+      if (autoPromote || mustPromote(piece, toRow)) {
+        piece.promoted = true;
+        recordMove(fromRow, fromCol, toRow, toCol, piece, targetPiece);
+        switchPlayer();
+      } else {
+        showPromotionDialog(piece, toRow, toCol);
+      }
     } else {
       // Record move
       recordMove(fromRow, fromCol, toRow, toCol, piece, targetPiece);
 
-      // Switch player
+      // Switch player (handles check / checkmate detection)
       switchPlayer();
-
-      // Check for game over
-      if (isGameOver(gameState.board)) {
-        endGame();
-      }
     }
   }
 
@@ -1136,13 +1374,8 @@ if (typeof document !== "undefined") {
     const fromCol = gameState.selectedPiece.col;
     recordMove(fromRow, fromCol, row, col, piece, null);
 
-    // Switch player
+    // Switch player (handles check / checkmate detection)
     switchPlayer();
-
-    // Check for game over
-    if (isGameOver(gameState.board)) {
-      endGame();
-    }
   }
 
   // Record a move
@@ -1163,10 +1396,26 @@ if (typeof document !== "undefined") {
     gameState.currentPlayer = gameState.currentPlayer === SENTE ? GOTE : SENTE;
     gameState.selectedPiece = null;
     gameState.validMoves = [];
+    gameState.dropMode = null;
 
     // Update display
     updateDisplay();
     drawBoard();
+
+    // Evaluate the new player's situation: checkmate / stalemate / check
+    const status = getGameStatus(
+      gameState.board,
+      gameState.currentPlayer,
+      gameState.capturedPieces
+    );
+    if (status.gameOver) {
+      endGame(status);
+      return;
+    }
+    if (status.inCheck) {
+      const who = gameState.currentPlayer === SENTE ? "先手" : "后手";
+      showMessage(`将军！${who}的王被攻击，必须应将`, "error");
+    }
 
     // If PvE mode and it's AI's turn
     if (gameState.mode === "pve" && gameState.currentPlayer === GOTE) {
@@ -1174,12 +1423,19 @@ if (typeof document !== "undefined") {
     }
   }
 
-  // End the game
-  function endGame() {
+  // End the game. `status` describes how the player to move was defeated.
+  function endGame(status) {
     gameState.gameOver = true;
     const winner = gameState.currentPlayer === SENTE ? "后手" : "先手";
 
-    document.getElementById("winner-text").textContent = `${winner} 获胜！`;
+    let suffix = "";
+    if (status && status.checkmate) {
+      suffix = "（将杀）";
+    } else if (status && status.stalemate) {
+      suffix = "（无合法走法）";
+    }
+
+    document.getElementById("winner-text").textContent = `${winner} 获胜！${suffix}`;
     document.getElementById("game-over").style.display = "flex";
   }
 
@@ -1207,7 +1463,7 @@ if (typeof document !== "undefined") {
       );
 
       if (!bestMove) {
-        endGame();
+        endGame(getGameStatus(gameState.board, GOTE, gameState.capturedPieces));
         return;
       }
 
@@ -1226,15 +1482,26 @@ if (typeof document !== "undefined") {
         showMessage(`电脑打入了 ${getPieceName(bestMove.piece)}`);
         switchPlayer();
       } else {
-        // Normal move
-        makeMove(bestMove.from.row, bestMove.from.col, bestMove.to.row, bestMove.to.col);
+        // Normal move (AI promotes automatically when possible)
+        makeMove(bestMove.from.row, bestMove.from.col, bestMove.to.row, bestMove.to.col, true);
       }
     }, 100);
   }
 
-  // Drop piece functionality (for captured pieces)
+  // Open the drop dialog listing the current player's captured pieces
   function showDropDialog() {
-    if (gameState.capturedPieces[gameState.currentPlayer].length === 0) {
+    if (gameState.gameOver) return;
+    // In PvE only the human (sente) may open the drop dialog
+    if (gameState.mode === "pve" && gameState.currentPlayer !== SENTE) return;
+
+    // Toggle off if already in placement mode
+    if (gameState.dropMode !== null) {
+      cancelDrop();
+      return;
+    }
+
+    const hand = gameState.capturedPieces[gameState.currentPlayer];
+    if (hand.length === 0) {
       showMessage("没有可打入的棋子");
       return;
     }
@@ -1242,106 +1509,83 @@ if (typeof document !== "undefined") {
     dropOverlay.style.display = "flex";
     dropPiecesContainer.innerHTML = "";
 
-    // Create buttons for each captured piece
-    gameState.capturedPieces[gameState.currentPlayer].forEach((piece, index) => {
+    // One button per distinct captured piece type
+    const seen = new Set();
+    hand.forEach((piece) => {
+      if (seen.has(piece.type)) return;
+      seen.add(piece.type);
       const btn = document.createElement("button");
       btn.className = "drop-btn";
       btn.textContent = PIECE_SYMBOLS[piece.type]?.[gameState.currentPlayer] || "?";
-      btn.addEventListener("click", () => handleDropPiece(index));
+      btn.title = getPieceName({ type: piece.type, promoted: false });
+      btn.addEventListener("click", () => startDropPlacement(piece.type));
       dropPiecesContainer.appendChild(btn);
     });
   }
 
-  // Handle dropping a piece
-  function handleDropPiece(pieceIndex) {
+  // Cancel drop selection / placement mode
+  function cancelDrop() {
     dropOverlay.style.display = "none";
-    showMessage("点击棋盘位置打入棋子");
-
-    // Store the piece to drop
-    gameState.pieceToDrop = pieceIndex;
-
-    // Set up click handler for drop position
-    const dropHandler = (e) => {
-      const rect = boardCanvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const col = Math.floor((x - BOARD_PADDING) / CELL_SIZE);
-      const row = Math.floor((y - BOARD_PADDING) / CELL_SIZE);
-
-      if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
-        // Check if position is empty
-        if (!gameState.board[row][col]) {
-          // Check for pawn restrictions
-          const pieceToDrop = gameState.capturedPieces[gameState.currentPlayer][pieceIndex];
-          if (pieceToDrop.type === PIECE_TYPES.PAWN) {
-            // Check for existing pawn in same column
-            let hasPawn = false;
-            for (let r = 0; r < BOARD_SIZE; r++) {
-              const p = gameState.board[r][col];
-              if (
-                p &&
-                p.type === PIECE_TYPES.PAWN &&
-                p.player === gameState.currentPlayer &&
-                !p.promoted
-              ) {
-                hasPawn = true;
-                break;
-              }
-            }
-            if (hasPawn) {
-              showMessage("同列不能有两个步兵");
-              return;
-            }
-
-            // Check for immediate checkmate with pawn drop
-            if (wouldCauseCheckmate(row, col, pieceToDrop)) {
-              showMessage("不能通过打入步兵将死对方");
-              return;
-            }
-          }
-
-          // Place the piece
-          gameState.board[row][col] = {
-            type: pieceToDrop.type,
-            player: gameState.currentPlayer,
-            promoted: false,
-          };
-
-          // Remove from captured pieces
-          gameState.capturedPieces[gameState.currentPlayer].splice(pieceIndex, 1);
-
-          // Switch player
-          switchPlayer();
-          showMessage(`打入了 ${getPieceName(pieceToDrop)}`);
-        } else {
-          showMessage("该位置已有棋子");
-        }
-      }
-
-      // Remove handler
-      boardCanvas.removeEventListener("click", dropHandler);
-    };
-
-    boardCanvas.addEventListener("click", dropHandler);
+    if (gameState.dropMode !== null) {
+      gameState.dropMode = null;
+      drawBoard();
+      showMessage("已取消打入");
+    }
   }
 
-  // Check if dropping a pawn would cause checkmate
-  function wouldCauseCheckmate(row, col, piece) {
-    // Simple check - just verify if the pawn would directly attack the king
-    const opponent = piece.player === SENTE ? GOTE : SENTE;
-    const direction = piece.player === SENTE ? -1 : 1;
+  // Enter board placement mode for the chosen captured piece type
+  function startDropPlacement(pieceType) {
+    dropOverlay.style.display = "none";
+    gameState.dropMode = pieceType;
+    gameState.selectedPiece = null;
+    gameState.validMoves = [];
+    drawBoard();
+    const name = getPieceName({ type: pieceType, promoted: false });
+    showMessage(`点击棋盘空位打入 ${name}（再次点击“打入”可取消）`);
+  }
 
-    // Check if pawn attacks opponent's king
-    const targetRow = row + direction;
-    if (targetRow >= 0 && targetRow < BOARD_SIZE) {
-      const targetPiece = gameState.board[targetRow][col];
-      if (targetPiece && targetPiece.type === PIECE_TYPES.KING && targetPiece.player === opponent) {
-        return true;
+  // Place the in-hand piece on the board, validating shogi drop rules
+  function handleDropPlacement(row, col) {
+    const pieceType = gameState.dropMode;
+    const player = gameState.currentPlayer;
+
+    // The move must be among the player's legal moves (covers empty-square,
+    // nifu, last-rank and uchifuzume restrictions, and resolving any check)
+    const isLegal = getLegalMoves(gameState.board, player, gameState.capturedPieces).some(
+      (m) => m.type === "drop" && m.piece.type === pieceType && m.to.row === row && m.to.col === col
+    );
+
+    if (!isLegal) {
+      if (gameState.board[row][col]) {
+        showMessage("该位置已有棋子", "error");
+      } else {
+        showMessage("该位置不能打入此棋子", "error");
       }
+      return;
     }
 
-    return false;
+    // Place the piece and remove one from hand
+    gameState.board[row][col] = { type: pieceType, player: player, promoted: false };
+    const idx = gameState.capturedPieces[player].findIndex((p) => p.type === pieceType);
+    if (idx !== -1) {
+      gameState.capturedPieces[player].splice(idx, 1);
+    }
+    gameState.dropMode = null;
+
+    recordDrop(row, col, pieceType, player);
+    showMessage(`打入了 ${getPieceName({ type: pieceType, promoted: false })}`);
+    switchPlayer();
+  }
+
+  // Record a drop in move history
+  function recordDrop(row, col, pieceType, player) {
+    gameState.moveHistory.push({
+      drop: true,
+      to: { row, col },
+      piece: { type: pieceType, player: player, promoted: false },
+      player: player,
+    });
+    gameState.turnCount++;
   }
 
   // Start the game
@@ -1379,6 +1623,16 @@ if (typeof document !== "undefined") {
 
     // Board click
     boardCanvas.addEventListener("click", handleBoardClick);
+
+    // Drop (打入) button and cancel
+    const btnDrop = document.getElementById("btn-drop");
+    if (btnDrop) {
+      btnDrop.addEventListener("click", showDropDialog);
+    }
+    const btnDropCancel = document.getElementById("btn-drop-cancel");
+    if (btnDropCancel) {
+      btnDropCancel.addEventListener("click", cancelDrop);
+    }
 
     // Promotion buttons
     document.querySelectorAll(".promo-btn").forEach((btn) => {

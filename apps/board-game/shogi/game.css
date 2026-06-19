@@ -31,7 +31,9 @@ body {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
   font-family: inherit;
 }
 
@@ -107,6 +109,23 @@ body {
 .btn-online {
   background: #1565c0;
   color: #fff;
+}
+
+/* ---- Action Button (e.g. drop / cancel) ---- */
+.btn-action {
+  padding: 6px 18px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  background: #b58863;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.btn-action:hover {
+  background: #a07550;
 }
 
 /* ---- Rock Paper Scissors ---- */
@@ -267,7 +286,9 @@ body {
   border-radius: 10px;
   background: #fff;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -321,7 +342,9 @@ body {
   border-radius: 10px;
   background: #fff;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
   display: flex;
   align-items: center;
   justify-content: center;
