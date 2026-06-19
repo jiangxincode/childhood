@@ -289,6 +289,34 @@ body {
   background: rgba(76, 175, 80, 0.2);
 }
 
+#message.check {
+  color: #fff;
+  background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+  font-size: 20px;
+  font-weight: bold;
+  animation: checkPulse 0.5s ease-in-out 2;
+  box-shadow: 0 4px 15px rgba(229, 57, 53, 0.4);
+}
+
+#message.checkmate {
+  color: #fff;
+  background: linear-gradient(135deg, #ff6f00 0%, #e65100 100%);
+  font-size: 24px;
+  font-weight: bold;
+  animation: checkmatePulse 0.3s ease-in-out 3;
+  box-shadow: 0 4px 20px rgba(255, 111, 0, 0.5);
+}
+
+@keyframes checkPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+@keyframes checkmatePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
 /* ---- Game Over ---- */
 #game-over .overlay-content h2 {
   font-size: 28px;
