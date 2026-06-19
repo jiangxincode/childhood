@@ -40,6 +40,7 @@ import {
   getCannonMoves,
   getPawnMoves,
   checkGameOver,
+  isInCheck,
   evaluateBoard,
   getBestAIMove,
   createGameState,
@@ -494,6 +495,70 @@ describe("checkGameOver", () => {
     var result = checkGameOver(board, BLACK);
     expect(result).not.toBeNull();
     expect(result.winner).toBe(RED);
+  });
+});
+
+describe("isInCheck", () => {
+  it("returns false for initial board", () => {
+    var board = createBoard();
+    expect(isInCheck(board, RED)).toBe(false);
+    expect(isInCheck(board, BLACK)).toBe(false);
+  });
+  it("detects check by chariot", () => {
+    // Red general at (4,8), black chariot directly below at (4,9)
+    var board = [];
+    for (var c = 0; c < COLS; c++) board.push(new Array(ROWS).fill(EMPTY));
+    board[4][8] = R_GENERAL;
+    board[4][0] = B_GENERAL;
+    board[4][9] = B_CHARIOT; // attacks R_GENERAL vertically
+    expect(isInCheck(board, RED)).toBe(true);
+  });
+  it("detects check by cannon", () => {
+    // Red general at (4,8), black cannon at (4,0) with platform at (4,4)
+    var board = [];
+    for (var c = 0; c < COLS; c++) board.push(new Array(ROWS).fill(EMPTY));
+    board[4][8] = R_GENERAL;
+    board[4][0] = B_GENERAL;
+    board[4][0] = B_CANNON; // override B_GENERAL position for test
+    board[4][4] = B_PAWN; // cannon platform
+    board[3][0] = B_GENERAL; // put black general elsewhere
+    expect(isInCheck(board, RED)).toBe(true);
+  });
+  it("detects check by horse", () => {
+    // Red general at (4,8), black horse at (3,6) can attack (4,8)
+    var board = [];
+    for (var c = 0; c < COLS; c++) board.push(new Array(ROWS).fill(EMPTY));
+    board[4][8] = R_GENERAL;
+    board[4][0] = B_GENERAL;
+    board[3][6] = B_HORSE; // can attack (4,8) via (dx=1, dy=2)
+    expect(isInCheck(board, RED)).toBe(true);
+  });
+  it("detects check by pawn", () => {
+    // Red general at (4,8), black pawn at (4,7) can attack forward
+    var board = [];
+    for (var c = 0; c < COLS; c++) board.push(new Array(ROWS).fill(EMPTY));
+    board[4][8] = R_GENERAL;
+    board[4][0] = B_GENERAL;
+    board[4][7] = B_PAWN; // can attack (4,8) forward
+    expect(isInCheck(board, RED)).toBe(true);
+  });
+  it("returns false when blocked", () => {
+    // Red general at (4,8), black chariot at (4,0) blocked by piece at (4,4)
+    var board = [];
+    for (var c = 0; c < COLS; c++) board.push(new Array(ROWS).fill(EMPTY));
+    board[4][8] = R_GENERAL;
+    board[4][0] = B_CHARIOT;
+    board[4][4] = R_PAWN; // blocks the attack
+    board[3][0] = B_GENERAL;
+    expect(isInCheck(board, RED)).toBe(false);
+  });
+  it("returns false when no attackers", () => {
+    var board = [];
+    for (var c = 0; c < COLS; c++) board.push(new Array(ROWS).fill(EMPTY));
+    board[4][8] = R_GENERAL;
+    board[4][0] = B_GENERAL;
+    expect(isInCheck(board, RED)).toBe(false);
+    expect(isInCheck(board, BLACK)).toBe(false);
   });
 });
 

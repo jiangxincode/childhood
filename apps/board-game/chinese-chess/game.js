@@ -584,6 +584,50 @@ function getAllMoves(board, color) {
 // Win/loss detection
 // ============================================================
 
+// Check if the given color's general is under attack by any opponent piece.
+function isInCheck(board, color) {
+  // Find the general's position
+  let gc = -1,
+    gr = -1;
+  const genPiece = color === RED ? R_GENERAL : B_GENERAL;
+  for (let c = 3; c <= 5; c++) {
+    const minR = color === RED ? 7 : 0;
+    const maxR = color === RED ? 9 : 2;
+    for (let r = minR; r <= maxR; r++) {
+      if (board[c][r] === genPiece) {
+        gc = c;
+        gr = r;
+        break;
+      }
+    }
+    if (gc !== -1) break;
+  }
+  if (gc === -1) return false; // General not found (captured)
+
+  const opponent = getOpponent(color);
+  // Check if any opponent piece can attack the general's position
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      if (board[c][r] !== EMPTY && getOwner(board[c][r]) === opponent) {
+        const piece = board[c][r];
+        let moves = [];
+        if (isGeneral(piece)) moves = getGeneralMoves(board, c, r, opponent);
+        else if (isAdvisor(piece)) moves = getAdvisorMoves(board, c, r, opponent);
+        else if (isElephant(piece)) moves = getElephantMoves(board, c, r, opponent);
+        else if (isHorse(piece)) moves = getHorseMoves(board, c, r, opponent);
+        else if (isChariot(piece)) moves = getChariotMoves(board, c, r, opponent);
+        else if (isCannon(piece)) moves = getCannonMoves(board, c, r, opponent);
+        else if (isPawn(piece)) moves = getPawnMoves(board, c, r, opponent);
+
+        for (const move of moves) {
+          if (move.toC === gc && move.toR === gr) return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 function checkGameOver(board, nextPlayer) {
   let redGeneral = false,
     blackGeneral = false;
@@ -941,6 +985,7 @@ function createGameState(mode) {
     selectedPiece: null,
     validMoves: [],
     lastMove: null,
+    checkStatus: null, // null | "check" | "checkmate"
   };
 }
 
@@ -992,6 +1037,7 @@ if (typeof module !== "undefined" && module.exports) {
     getCannonMoves: getCannonMoves,
     getPawnMoves: getPawnMoves,
     checkGameOver: checkGameOver,
+    isInCheck: isInCheck,
     evaluateBoard: evaluateBoard,
     alphaBeta: alphaBeta,
     getBestAIMove: getBestAIMove,
@@ -1265,9 +1311,15 @@ if (typeof document !== "undefined") {
     }
 
     if (state.gameOver) {
-      updateMessage("游戏结束！", "info");
+      if (state.checkStatus === "checkmate") {
+        updateMessage("绝杀！", "error");
+      } else {
+        updateMessage("游戏结束！", "info");
+      }
     } else if (state.aiThinking) {
       updateMessage("电脑正在思考...", "info");
+    } else if (state.checkStatus === "check") {
+      updateMessage(getPlayerName(state.currentPlayer) + "被将军！", "error");
     } else if (state.mode === "pve" && state.currentPlayer === state.aiTeam) {
       updateMessage("轮到电脑行动", "info");
     } else {
@@ -1405,10 +1457,13 @@ if (typeof document !== "undefined") {
 
   function endTurn() {
     const nextPlayer = getOpponent(gameState.currentPlayer);
+    const inCheck = isInCheck(gameState.board, nextPlayer);
     const gameOverResult = checkGameOver(gameState.board, nextPlayer);
     if (gameOverResult) {
       gameState.gameOver = true;
       gameState.winner = gameOverResult.winner;
+      // Distinguish checkmate from other game over reasons
+      gameState.checkStatus = gameOverResult.reason === "no_moves" && inCheck ? "checkmate" : null;
       renderGame(gameState);
       setTimeout(() => {
         showGameOver(gameState);
@@ -1417,6 +1472,7 @@ if (typeof document !== "undefined") {
     }
 
     gameState.currentPlayer = nextPlayer;
+    gameState.checkStatus = inCheck ? "check" : null;
     renderGame(gameState);
 
     if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) {
