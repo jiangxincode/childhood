@@ -339,11 +339,11 @@ function getValidMoves(board, c, r) {
   else if (isCannon(piece)) moves = getCannonMoves(board, c, r, color);
   else if (isPawn(piece)) moves = getPawnMoves(board, c, r, color);
 
-  // General facing rule: illegal if own general faces opponent general after move
+  // Filter out illegal moves: general facing and leaving own general in check
   const validMoves = [];
   for (const move of moves) {
     const newBoard = applyMove(board, move);
-    if (!isGeneralFacing(newBoard, color)) {
+    if (!isGeneralFacing(newBoard, color) && !isInCheck(newBoard, color)) {
       validMoves.push(move);
     }
   }
