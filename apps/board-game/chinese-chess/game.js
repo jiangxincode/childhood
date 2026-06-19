@@ -1476,7 +1476,11 @@ if (typeof document !== "undefined") {
     renderGame(gameState);
 
     if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) {
-      triggerAI();
+      // Delay AI to let check message display briefly
+      const aiDelay = inCheck ? 1000 : 300;
+      setTimeout(() => {
+        triggerAI();
+      }, aiDelay);
     }
   }
 
