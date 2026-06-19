@@ -1312,14 +1312,14 @@ if (typeof document !== "undefined") {
 
     if (state.gameOver) {
       if (state.checkStatus === "checkmate") {
-        updateMessage("绝杀！", "error");
+        updateMessage("绝杀！", "checkmate");
       } else {
         updateMessage("游戏结束！", "info");
       }
     } else if (state.aiThinking) {
       updateMessage("电脑正在思考...", "info");
     } else if (state.checkStatus === "check") {
-      updateMessage(getPlayerName(state.currentPlayer) + "被将军！", "error");
+      updateMessage(getPlayerName(state.currentPlayer) + "被将军！", "check");
     } else if (state.mode === "pve" && state.currentPlayer === state.aiTeam) {
       updateMessage("轮到电脑行动", "info");
     } else {
@@ -1340,7 +1340,11 @@ if (typeof document !== "undefined") {
   function updateMessage(text, type) {
     const el = document.getElementById("message");
     el.textContent = text;
-    if (type === "error") {
+    if (type === "check") {
+      el.className = "check";
+    } else if (type === "checkmate") {
+      el.className = "checkmate";
+    } else if (type === "error") {
       el.className = "error";
     } else if (type === "info") {
       el.className = "info";
