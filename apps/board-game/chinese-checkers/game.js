@@ -192,13 +192,13 @@ function initPlayerPositions() {
     }
   }
 
-  // Target positions: opposite diagonal positions
-  TARGET_POSITIONS[RED] = START_POSITIONS[BLUE].slice();
-  TARGET_POSITIONS[BLUE] = START_POSITIONS[RED].slice();
-  TARGET_POSITIONS[GREEN] = START_POSITIONS[ORANGE].slice();
-  TARGET_POSITIONS[YELLOW] = START_POSITIONS[PURPLE].slice();
-  TARGET_POSITIONS[PURPLE] = START_POSITIONS[YELLOW].slice();
-  TARGET_POSITIONS[ORANGE] = START_POSITIONS[GREEN].slice();
+  // Target positions: the directly opposite triangle (180° across the board)
+  TARGET_POSITIONS[RED] = START_POSITIONS[PURPLE].slice();
+  TARGET_POSITIONS[PURPLE] = START_POSITIONS[RED].slice();
+  TARGET_POSITIONS[BLUE] = START_POSITIONS[GREEN].slice();
+  TARGET_POSITIONS[GREEN] = START_POSITIONS[BLUE].slice();
+  TARGET_POSITIONS[YELLOW] = START_POSITIONS[ORANGE].slice();
+  TARGET_POSITIONS[ORANGE] = START_POSITIONS[YELLOW].slice();
 }
 
 initPlayerPositions();
@@ -344,12 +344,19 @@ function makeMove(board, from, to) {
 
 function checkWin(board, player) {
   const targets = TARGET_POSITIONS[player];
+  let ownCount = 0;
   for (const t of targets) {
-    if (board[t] !== player) {
+    // The destination must be completely filled
+    if (board[t] === EMPTY) {
       return false;
     }
+    if (board[t] === player) {
+      ownCount++;
+    }
   }
-  return true;
+  // Anti-blocking rule: a full destination wins as long as at least one piece
+  // is the player's own, so an opponent parked in the destination cannot deny the win.
+  return ownCount > 0;
 }
 
 function checkGameOver(board, players) {
@@ -472,18 +479,31 @@ function getBestAIMove(board, player, allPlayers) {
 // Game state
 // ============================================================
 
+// Standard player layouts per player count (mainstream Chinese checkers setup).
+// Opposite pairs are RED-PURPLE, BLUE-GREEN, YELLOW-ORANGE.
+// - 2 players: one opposite pair
+// - 3 players: three triangles 120° apart (each destination is empty)
+// - 4 players: two opposite pairs (one opposite pair left empty)
+// - 6 players: every triangle
+// Lists are ordered around the board for natural turn rotation.
+const PLAYER_SETS = {
+  2: [RED, PURPLE],
+  3: [RED, BLUE, ORANGE],
+  4: [RED, BLUE, PURPLE, GREEN],
+  6: [RED, YELLOW, BLUE, PURPLE, ORANGE, GREEN],
+};
+
 function createGameState(mode, playerCount) {
-  const players = [];
-  for (let i = 1; i <= playerCount; i++) {
-    players.push(i);
-  }
+  const players = PLAYER_SETS[playerCount]
+    ? PLAYER_SETS[playerCount].slice()
+    : Array.from({ length: playerCount }, (_, i) => i + 1);
 
   return {
     mode: mode,
     playerCount: playerCount,
     players: players,
     board: createBoard(),
-    currentPlayer: RED,
+    currentPlayer: players[0],
     playerTeam: null,
     aiTeam: null,
     gameOver: false,
@@ -540,6 +560,7 @@ if (typeof module !== "undefined" && module.exports) {
     getRPSName: getRPSName,
     createGameState: createGameState,
     initGame: initGame,
+    PLAYER_SETS: PLAYER_SETS,
   };
 }
 
@@ -1033,19 +1054,14 @@ if (typeof document !== "undefined") {
 
   // Get board rotation angle for player (to place player's start area at bottom)
   function getPlayerRotation(player) {
-    // Red is at top, needs 180-degree rotation
-    // Green is at upper-left, needs 120-degree rotation
-    // Yellow is at upper-right, needs 240-degree rotation
-    // Blue is at bottom-right, no rotation needed
-    // Orange is at bottom-left, no rotation needed
-    // Purple is at bottom, no rotation needed
+    // Each triangle sits 60° apart; rotate so the player's home triangle is at the bottom.
     const rotations = {
-      1: 180, // Red
-      2: 0, // Blue
-      3: 120, // Green
-      4: 240, // Yellow
+      1: 180, // Red (top)
+      4: 120, // Yellow (top-right)
+      2: 60, // Blue (bottom-right)
       5: 0, // Purple (bottom)
-      6: 0, // Orange (bottom-left)
+      6: 300, // Orange (bottom-left)
+      3: 240, // Green (top-left)
     };
     return rotations[player] || 0;
   }
@@ -1060,22 +1076,11 @@ if (typeof document !== "undefined") {
     gameState.firstPlayer = gameState.currentPlayer;
 
     if (mode === "pve") {
-      // Determine player and AI teams
-      if (firstPlayer) {
-        gameState.playerTeam = firstPlayer;
-        // AI gets other players
-        const aiPlayers = [];
-        for (const p of gameState.players) {
-          if (p !== firstPlayer) {
-            aiPlayers.push(p);
-          }
-        }
-        gameState.aiTeam = aiPlayers[0]; // Primary opponent
-      } else {
-        gameState.playerTeam = RED;
-        gameState.aiTeam = BLUE;
-      }
-      // Set board rotation to place player at bottom
+      // Human always plays the first side, the AI plays the directly opposite side.
+      // The passed-in firstPlayer only decides who moves first (the RPS winner).
+      gameState.playerTeam = gameState.players[0];
+      gameState.aiTeam = gameState.players[1];
+      // Set board rotation to place the human's pieces at the bottom
       gameState.boardRotation = getPlayerRotation(gameState.playerTeam);
     } else {
       // PVP mode, rotate based on first player
@@ -1264,6 +1269,8 @@ if (typeof document !== "undefined") {
     const myChoice = rpsChoices.online;
     const theirChoice = rpsChoices.remote;
     const iWin = result.firstPlayer === localPlayerRole;
+    // The first mover is the host (RED) or guest (PURPLE)
+    const firstColor = result.firstPlayer === "host" ? RED : PURPLE;
 
     resultEl.textContent =
       "你选择了" +
@@ -1271,8 +1278,8 @@ if (typeof document !== "undefined") {
       "，对方选择了" +
       getRPSName(theirChoice) +
       (iWin
-        ? "，你赢了！你先手(" + PLAYER_COLORS[RED].name + ")。"
-        : "，你输了！对方先手(" + PLAYER_COLORS[RED].name + ")。");
+        ? "，你赢了！你先手(" + PLAYER_COLORS[firstColor].name + ")。"
+        : "，你输了！对方先手(" + PLAYER_COLORS[firstColor].name + ")。");
 
     setTimeout(() => {
       startOnlineGame(result.firstPlayer);
@@ -1284,7 +1291,7 @@ if (typeof document !== "undefined") {
     initGame(gameState);
 
     const hostPiece = RED;
-    const guestPiece = BLUE;
+    const guestPiece = PURPLE;
 
     if (localPlayerRole === "host") {
       localTeam = firstPlayerRole === "host" ? hostPiece : guestPiece;
@@ -1369,6 +1376,7 @@ if (typeof document !== "undefined") {
 
       const resultEl = document.getElementById("rps-result");
       const humanWins = judgeRPS(choice, aiChoice);
+      const sides = PLAYER_SETS[currentPlayerCount] || [RED, PURPLE];
 
       if (humanWins === 1) {
         SoundManager.play("victory");
@@ -1378,10 +1386,10 @@ if (typeof document !== "undefined") {
           "，电脑选择了" +
           getRPSName(aiChoice) +
           "，你赢了！你先手(" +
-          PLAYER_COLORS[RED].name +
+          PLAYER_COLORS[sides[0]].name +
           ")。";
         setTimeout(() => {
-          startGame(currentMode, currentPlayerCount, RED);
+          startGame(currentMode, currentPlayerCount, sides[0]);
         }, 1500);
       } else if (humanWins === -1) {
         SoundManager.play("lose");
@@ -1391,10 +1399,10 @@ if (typeof document !== "undefined") {
           "，电脑选择了" +
           getRPSName(aiChoice) +
           "，你输了！电脑先手(" +
-          PLAYER_COLORS[BLUE].name +
+          PLAYER_COLORS[sides[1]].name +
           ")。";
         setTimeout(() => {
-          startGame(currentMode, currentPlayerCount, BLUE);
+          startGame(currentMode, currentPlayerCount, sides[1]);
         }, 1500);
       } else {
         SoundManager.play("draw");
@@ -1420,6 +1428,7 @@ if (typeof document !== "undefined") {
       if (rpsChoices.player1 && rpsChoices.player2) {
         const resultEl = document.getElementById("rps-result");
         const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
+        const sides = PLAYER_SETS[currentPlayerCount] || [RED, PURPLE];
 
         if (winner === 1) {
           SoundManager.play("victory");
@@ -1429,10 +1438,10 @@ if (typeof document !== "undefined") {
             "，玩家2选择了" +
             getRPSName(rpsChoices.player2) +
             "，玩家1赢了！玩家1先手(" +
-            PLAYER_COLORS[RED].name +
+            PLAYER_COLORS[sides[0]].name +
             ")。";
           setTimeout(() => {
-            startGame(currentMode, currentPlayerCount, RED);
+            startGame(currentMode, currentPlayerCount, sides[0]);
           }, 1500);
         } else if (winner === -1) {
           SoundManager.play("victory");
@@ -1442,10 +1451,10 @@ if (typeof document !== "undefined") {
             "，玩家2选择了" +
             getRPSName(rpsChoices.player2) +
             "，玩家2赢了！玩家2先手(" +
-            PLAYER_COLORS[BLUE].name +
+            PLAYER_COLORS[sides[1]].name +
             ")。";
           setTimeout(() => {
-            startGame(currentMode, currentPlayerCount, BLUE);
+            startGame(currentMode, currentPlayerCount, sides[1]);
           }, 1500);
         } else {
           SoundManager.play("draw");
