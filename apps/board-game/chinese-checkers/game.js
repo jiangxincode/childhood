@@ -561,25 +561,134 @@ if (typeof document !== "undefined") {
   const CELL_SIZE = 28;
   const PADDING = 60;
 
-  // Color zones
-  const AREA_COLORS = {
-    red: "#e53935",
-    green: "#4caf50",
-    blue: "#03a9f4",
-    yellow: "#fdd835",
-    purple: "#7b1fa2",
-    orange: "#ef6c00",
-    center: "#fdd835",
+  // Reference-style board palette (matches the cover image)
+  const ZONE_COLORS = {
+    red: "#ec2f2f",
+    cyan: "#29abe2",
+    green: "#2bb24c",
+    yellow: "#fff200",
+  };
+  // Star points colored clockwise from the top; opposite points share a color
+  const ZONE_SEQUENCE = [
+    ZONE_COLORS.red,
+    ZONE_COLORS.cyan,
+    ZONE_COLORS.green,
+    ZONE_COLORS.red,
+    ZONE_COLORS.cyan,
+    ZONE_COLORS.green,
+  ];
+  const HOLE_FILL = "#ffffff";
+  const HOLE_STROKE = "#1f1f1f";
+  const LINK_COLOR = "#1a1a1a";
+
+  // Glossy marble base colors per player (the movable pieces)
+  const MARBLE_COLORS = {
+    1: "#f44336", // red
+    2: "#2196f3", // blue
+    3: "#4caf50", // green
+    4: "#ffca28", // yellow
+    5: "#ab47bc", // purple
+    6: "#ff9800", // orange
   };
 
-  // Determine which color zone a position belongs to - only color start positions
-  function getAreaColor(cell) {
+  // Lighten (positive percent) or darken (negative percent) a hex color
+  function shadeColor(hex, percent) {
+    const num = parseInt(hex.slice(1), 16);
+    const target = percent < 0 ? 0 : 255;
+    const ratio = Math.abs(percent) / 100;
+    let r = (num >> 16) & 0xff;
+    let g = (num >> 8) & 0xff;
+    let b = num & 0xff;
+    r = Math.round((target - r) * ratio) + r;
+    g = Math.round((target - g) * ratio) + g;
+    b = Math.round((target - b) * ratio) + b;
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+
+  // Build an SVG radial gradient element from [offset, color] stops
+  function createRadialGradient(id, cx, cy, r, stops) {
+    const grad = document.createElementNS("http://www.w3.org/2000/svg", "radialGradient");
+    grad.setAttribute("id", id);
+    grad.setAttribute("cx", cx);
+    grad.setAttribute("cy", cy);
+    grad.setAttribute("r", r);
+    for (const [offset, color] of stops) {
+      const stop = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+      stop.setAttribute("offset", offset);
+      stop.setAttribute("stop-color", color);
+      grad.appendChild(stop);
+    }
+    return grad;
+  }
+
+  // Convex hull (Andrew's monotone chain), returns ordered hull vertices
+  function convexHull(points) {
+    const pts = points.slice().sort((a, b) => a.x - b.x || a.y - b.y);
+    if (pts.length < 3) {
+      return pts;
+    }
+    const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+    const lower = [];
+    for (const p of pts) {
+      while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) {
+        lower.pop();
+      }
+      lower.push(p);
+    }
+    const upper = [];
+    for (let i = pts.length - 1; i >= 0; i--) {
+      const p = pts[i];
+      while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) {
+        upper.pop();
+      }
+      upper.push(p);
+    }
+    lower.pop();
+    upper.pop();
+    return lower.concat(upper);
+  }
+
+  // Group cells into the 6 star points + center hexagon and assign zone colors.
+  // The point color is chosen by its orientation so it stays correct after rotation.
+  function getRegionFills() {
+    let bx = 0;
+    let by = 0;
+    for (let c = 0; c < TOTAL_POSITIONS; c++) {
+      const pp = cellToPixel(c);
+      bx += pp.x;
+      by += pp.y;
+    }
+    bx /= TOTAL_POSITIONS;
+    by /= TOTAL_POSITIONS;
+
+    const inStart = {};
+    const fills = [];
     for (let p = 1; p <= 6; p++) {
-      if (START_POSITIONS[p].includes(cell)) {
-        return PLAYER_COLORS[p].color;
+      const grp = START_POSITIONS[p];
+      let gx = 0;
+      let gy = 0;
+      for (const c of grp) {
+        inStart[c] = true;
+        const pp = cellToPixel(c);
+        gx += pp.x;
+        gy += pp.y;
+      }
+      gx /= grp.length;
+      gy /= grp.length;
+      const deg = (Math.atan2(gy - by, gx - bx) * 180) / Math.PI;
+      const idx = ((Math.round((deg + 90) / 60) % 6) + 6) % 6;
+      fills.push({ color: ZONE_SEQUENCE[idx], cells: grp });
+    }
+
+    const centerCells = [];
+    for (let c = 0; c < TOTAL_POSITIONS; c++) {
+      if (!inStart[c]) {
+        centerCells.push(c);
       }
     }
-    return AREA_COLORS.center;
+    // Draw the center first so the colored points overlap cleanly on top
+    fills.unshift({ color: ZONE_COLORS.yellow, cells: centerCells });
+    return fills;
   }
 
   // Convert axial coordinates to pixel coordinates (reference: anchengjian implementation)
@@ -627,40 +736,80 @@ if (typeof document !== "undefined") {
     g.setAttribute("transform", "rotate(" + rotation + " " + centerX + " " + centerY + ")");
     svg.appendChild(g);
 
-    // Background
-    const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    bg.setAttribute("width", width);
-    bg.setAttribute("height", height);
-    bg.setAttribute("fill", "#fdd835");
-    bg.setAttribute("rx", "15");
-    g.appendChild(bg);
+    // Defs: glossy gradients for the marble pieces
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    const defs = document.createElementNS(SVG_NS, "defs");
+    for (let p = 1; p <= 6; p++) {
+      const base = MARBLE_COLORS[p];
+      defs.appendChild(
+        createRadialGradient("marble-" + p, "35%", "30%", "70%", [
+          ["0%", shadeColor(base, 70)],
+          ["45%", base],
+          ["100%", shadeColor(base, -40)],
+        ])
+      );
+    }
+    svg.appendChild(defs);
 
-    // Draw all valid positions (with area colors)
+    // Colored star zones: 6 points + center hexagon, filled as solid regions
+    const EXPAND = CELL_SIZE * 0.55;
+    for (const fill of getRegionFills()) {
+      const pts = fill.cells.map((c) => cellToPixel(c));
+      let hx = 0;
+      let hy = 0;
+      for (const pt of pts) {
+        hx += pt.x;
+        hy += pt.y;
+      }
+      hx /= pts.length;
+      hy /= pts.length;
+      const coords = convexHull(pts)
+        .map((pt) => {
+          const dx = pt.x - hx;
+          const dy = pt.y - hy;
+          const len = Math.hypot(dx, dy) || 1;
+          return pt.x + (dx / len) * EXPAND + "," + (pt.y + (dy / len) * EXPAND);
+        })
+        .join(" ");
+      const poly = document.createElementNS(SVG_NS, "polygon");
+      poly.setAttribute("points", coords);
+      poly.setAttribute("fill", fill.color);
+      poly.style.pointerEvents = "none";
+      g.appendChild(poly);
+    }
+
+    // Lattice lines connecting adjacent holes
+    for (let cell = 0; cell < TOTAL_POSITIONS; cell++) {
+      const p1 = cellToPixel(cell);
+      for (const n of ADJACENT[cell]) {
+        if (n > cell) {
+          const p2 = cellToPixel(n);
+          const line = document.createElementNS(SVG_NS, "line");
+          line.setAttribute("x1", p1.x);
+          line.setAttribute("y1", p1.y);
+          line.setAttribute("x2", p2.x);
+          line.setAttribute("y2", p2.y);
+          line.setAttribute("stroke", LINK_COLOR);
+          line.setAttribute("stroke-width", "1.5");
+          line.style.pointerEvents = "none";
+          g.appendChild(line);
+        }
+      }
+    }
+
+    // White holes (occupied holes are covered by a marble piece later)
     for (let cell = 0; cell < TOTAL_POSITIONS; cell++) {
       const pos = cellToPixel(cell);
-      const areaColor = getAreaColor(cell);
-
-      const hex = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      hex.setAttribute("cx", pos.x);
-      hex.setAttribute("cy", pos.y);
-      hex.setAttribute("r", CELL_SIZE * 0.42);
-      hex.setAttribute("fill", areaColor);
-      hex.setAttribute("stroke", "#000000");
-      hex.setAttribute("stroke-width", "1.5");
-      hex.dataset.cell = cell;
-      hex.style.cursor = "pointer";
-      g.appendChild(hex);
-
-      // White inner circle
-      const inner = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      inner.setAttribute("cx", pos.x);
-      inner.setAttribute("cy", pos.y);
-      inner.setAttribute("r", CELL_SIZE * 0.32);
-      inner.setAttribute("fill", "#ffffff");
-      inner.setAttribute("stroke", "none");
-      inner.dataset.cell = cell;
-      inner.style.cursor = "pointer";
-      g.appendChild(inner);
+      const hole = document.createElementNS(SVG_NS, "circle");
+      hole.setAttribute("cx", pos.x);
+      hole.setAttribute("cy", pos.y);
+      hole.setAttribute("r", CELL_SIZE * 0.4);
+      hole.setAttribute("fill", HOLE_FILL);
+      hole.setAttribute("stroke", HOLE_STROKE);
+      hole.setAttribute("stroke-width", "1.5");
+      hole.dataset.cell = cell;
+      hole.style.cursor = "pointer";
+      g.appendChild(hole);
     }
 
     // Draw pieces
@@ -693,10 +842,10 @@ if (typeof document !== "undefined") {
     const piece = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     piece.setAttribute("cx", pos.x);
     piece.setAttribute("cy", pos.y);
-    piece.setAttribute("r", CELL_SIZE * 0.28);
-    piece.setAttribute("fill", "#ffffff");
-    piece.setAttribute("stroke", "#000000");
-    piece.setAttribute("stroke-width", "2");
+    piece.setAttribute("r", CELL_SIZE * 0.34);
+    piece.setAttribute("fill", "url(#marble-" + player + ")");
+    piece.setAttribute("stroke", shadeColor(MARBLE_COLORS[player], -45));
+    piece.setAttribute("stroke-width", "1.2");
     piece.setAttribute("class", "piece");
     piece.dataset.cell = cell;
 
