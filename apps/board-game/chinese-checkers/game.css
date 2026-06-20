@@ -10,7 +10,7 @@
 
 body {
   font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: radial-gradient(circle at 50% 40%, #f8b079 0%, #ef975b 80%);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -109,7 +109,7 @@ body {
 }
 
 .btn-restart {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #ffb74d 0%, #ff8a65 50%, #ff7043 100%);
   color: white;
   font-size: 18px;
 }
@@ -239,9 +239,7 @@ body {
    ============================================================ */
 
 #board-svg {
-  background: #f5f0e1;
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  background: transparent;
 }
 
 /* ============================================================
