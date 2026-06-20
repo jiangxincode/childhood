@@ -564,12 +564,12 @@ if (typeof document !== "undefined") {
   // Color zones
   const AREA_COLORS = {
     red: "#e53935",
-    green: "#2e7d32",
-    blue: "#1565c0",
-    yellow: "#f9a825",
+    green: "#4caf50",
+    blue: "#03a9f4",
+    yellow: "#fdd835",
     purple: "#7b1fa2",
     orange: "#ef6c00",
-    center: "#d4a574",
+    center: "#fdd835",
   };
 
   // Determine which color zone a position belongs to - only color start positions
@@ -631,7 +631,7 @@ if (typeof document !== "undefined") {
     const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
     bg.setAttribute("width", width);
     bg.setAttribute("height", height);
-    bg.setAttribute("fill", "#8B4513");
+    bg.setAttribute("fill", "#fdd835");
     bg.setAttribute("rx", "15");
     g.appendChild(bg);
 
@@ -645,7 +645,7 @@ if (typeof document !== "undefined") {
       hex.setAttribute("cy", pos.y);
       hex.setAttribute("r", CELL_SIZE * 0.42);
       hex.setAttribute("fill", areaColor);
-      hex.setAttribute("stroke", "#2d1810");
+      hex.setAttribute("stroke", "#000000");
       hex.setAttribute("stroke-width", "1.5");
       hex.dataset.cell = cell;
       hex.style.cursor = "pointer";
@@ -656,7 +656,7 @@ if (typeof document !== "undefined") {
       inner.setAttribute("cx", pos.x);
       inner.setAttribute("cy", pos.y);
       inner.setAttribute("r", CELL_SIZE * 0.32);
-      inner.setAttribute("fill", "#fff8f0");
+      inner.setAttribute("fill", "#ffffff");
       inner.setAttribute("stroke", "none");
       inner.dataset.cell = cell;
       inner.style.cursor = "pointer";
@@ -694,41 +694,11 @@ if (typeof document !== "undefined") {
     piece.setAttribute("cx", pos.x);
     piece.setAttribute("cy", pos.y);
     piece.setAttribute("r", CELL_SIZE * 0.28);
-    piece.setAttribute("fill", PLAYER_COLORS[player].color);
-    piece.setAttribute("stroke", "#2d1810");
+    piece.setAttribute("fill", "#ffffff");
+    piece.setAttribute("stroke", "#000000");
     piece.setAttribute("stroke-width", "2");
     piece.setAttribute("class", "piece");
     piece.dataset.cell = cell;
-
-    // Add gradient for 3D effect
-    const gradientId = "gradient-" + player;
-    let gradient = document.getElementById(gradientId);
-    if (!gradient) {
-      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-      gradient = document.createElementNS("http://www.w3.org/2000/svg", "radialGradient");
-      gradient.setAttribute("id", gradientId);
-      gradient.setAttribute("cx", "30%");
-      gradient.setAttribute("cy", "30%");
-      gradient.setAttribute("r", "70%");
-
-      const stop1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
-      stop1.setAttribute("offset", "0%");
-      stop1.setAttribute("stop-color", "white");
-      stop1.setAttribute("stop-opacity", "0.4");
-
-      const stop2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
-      stop2.setAttribute("offset", "100%");
-      stop2.setAttribute("stop-color", "black");
-      stop2.setAttribute("stop-opacity", "0.2");
-
-      gradient.appendChild(stop1);
-      gradient.appendChild(stop2);
-      defs.appendChild(gradient);
-      parent.appendChild(defs);
-    }
-    piece.setAttribute("fill", "url(#" + gradientId + ")");
-    piece.setAttribute("stroke", "#2d1810");
-    piece.setAttribute("stroke-width", "2");
 
     if (gameState.selectedPiece === cell) {
       piece.classList.add("selected");
