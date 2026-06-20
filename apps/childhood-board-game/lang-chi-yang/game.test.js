@@ -122,7 +122,7 @@ describe("createGameState", () => {
   it("creates initial state with correct defaults", () => {
     const state = createGameState("pvp");
     expect(state.mode).toBe("pvp");
-    expect(state.currentPlayer).toBe(PLAYER_A);
+    expect(state.currentPlayer).toBe(PLAYER_B); // Wolf always moves first
     expect(state.piecesA).toBe(INITIAL_A);
     expect(state.piecesB).toBe(INITIAL_B);
     expect(state.gameOver).toBe(false);

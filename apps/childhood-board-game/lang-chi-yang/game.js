@@ -77,7 +77,7 @@ function createGameState(mode) {
   return {
     mode: mode,
     board: getInitialBoard(),
-    currentPlayer: PLAYER_A,
+    currentPlayer: PLAYER_B, // Wolf (狼) always moves first
     playerTeam: null,
     aiTeam: null,
     piecesA: INITIAL_A,
@@ -697,13 +697,13 @@ if (typeof document !== "undefined") {
     }, 600);
   }
 
-  function startGame(mode, firstPlayer) {
+  function startGame(mode, playerTeam) {
     state = createGameState(mode);
-    state.currentPlayer = firstPlayer || PLAYER_A;
-    state.firstPlayer = firstPlayer || PLAYER_A;
+    state.currentPlayer = PLAYER_B; // Wolf always moves first
+    state.firstPlayer = PLAYER_B;
     if (mode === "pve") {
-      state.playerTeam = PLAYER_A;
-      state.aiTeam = PLAYER_B;
+      state.playerTeam = playerTeam;
+      state.aiTeam = playerTeam === PLAYER_A ? PLAYER_B : PLAYER_A;
     }
     selectedPiece = null;
     document.getElementById("mode-selection").style.display = "none";
@@ -727,16 +727,24 @@ if (typeof document !== "undefined") {
       if (result === 1) {
         SoundManager.play("victory");
         resultDiv.innerHTML =
-          "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，你先手！</p>";
+          "<p>你出" +
+          getRPSName(choice) +
+          "，电脑出" +
+          getRPSName(aiChoice) +
+          "，你赢了！你扮演狼（先手）。</p>";
         setTimeout(() => {
-          startGame("pve", PLAYER_A);
+          startGame("pve", PLAYER_B); // Winner plays as wolf
         }, 1500);
       } else if (result === -1) {
         SoundManager.play("lose");
         resultDiv.innerHTML =
-          "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，电脑先手！</p>";
+          "<p>你出" +
+          getRPSName(choice) +
+          "，电脑出" +
+          getRPSName(aiChoice) +
+          "，你输了！电脑扮演狼（先手）。</p>";
         setTimeout(() => {
-          startGame("pve", PLAYER_B);
+          startGame("pve", PLAYER_A); // Loser plays as sheep
         }, 1500);
       } else {
         SoundManager.play("draw");
@@ -880,7 +888,7 @@ if (typeof document !== "undefined") {
       getRPSName(myChoice) +
       "，对方选择了" +
       getRPSName(theirChoice) +
-      (iWin ? "，你赢了！你先手（羊）。" : "，你输了！对方先手（羊）。");
+      (iWin ? "，你赢了！你扮演狼（先手）。" : "，你输了！对方扮演狼（先手）。");
 
     setTimeout(() => {
       startOnlineGame(result.firstPlayer);
@@ -890,19 +898,22 @@ if (typeof document !== "undefined") {
   function startOnlineGame(firstPlayerRole) {
     state = createGameState("online");
 
-    var hostPiece = PLAYER_A;
-    var guestPiece = PLAYER_B;
+    // Winner plays as wolf (PLAYER_B), loser plays as sheep (PLAYER_A)
+    var winnerPiece = PLAYER_B;
+    var loserPiece = PLAYER_A;
 
-    if (localPlayerRole === "host") {
-      localTeam = firstPlayerRole === "host" ? hostPiece : guestPiece;
-      remoteTeam = firstPlayerRole === "host" ? guestPiece : hostPiece;
+    if (localPlayerRole === firstPlayerRole) {
+      // I am the winner (first player), play as wolf
+      localTeam = winnerPiece;
+      remoteTeam = loserPiece;
     } else {
-      localTeam = firstPlayerRole === "guest" ? hostPiece : guestPiece;
-      remoteTeam = firstPlayerRole === "guest" ? guestPiece : hostPiece;
+      // I am the loser, play as sheep
+      localTeam = loserPiece;
+      remoteTeam = winnerPiece;
     }
 
-    state.currentPlayer = firstPlayerRole === "host" ? hostPiece : guestPiece;
-    state.firstPlayer = state.currentPlayer;
+    state.currentPlayer = PLAYER_B; // Wolf always moves first
+    state.firstPlayer = PLAYER_B;
     state.playerTeam = localTeam;
 
     selectedPiece = null;
