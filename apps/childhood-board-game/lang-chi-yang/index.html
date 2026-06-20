@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>狼吃羊 - 童年游戏合集</title>
-  <meta name="description" content="在线免费玩狼吃羊，经典童年棋盘游戏，4x5棋盘羊群对抗狼群，狼可隔空跳吃羊，羊群围困狼群即获胜，支持双人对战和人机对战，无需下载，即开即玩。">
+  <meta name="description" content="在线免费玩狼吃羊，经典童年棋盘游戏，5x5棋盘羊群对抗狼群，狼可隔空跳吃羊，羊群围困狼群即获胜，支持双人对战和人机对战，无需下载，即开即玩。">
   <meta name="keywords" content="狼吃羊,童年棋盘,棋盘游戏,策略游戏,在线游戏,免费游戏">
   <link rel="canonical" href="https://jiangxincode.github.io/childhood/apps/childhood-board-game/lang-chi-yang/index.html">
   <!-- Open Graph / 社交分享 -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="狼吃羊 - 童年游戏合集">
-  <meta property="og:description" content="在线免费玩狼吃羊，经典童年棋盘游戏，4x5棋盘羊群对抗狼群，狼可隔空跳吃羊，羊群围困狼群即获胜，支持双人对战和人机对战，无需下载，即开即玩。">
+  <meta property="og:description" content="在线免费玩狼吃羊，经典童年棋盘游戏，5x5棋盘羊群对抗狼群，狼可隔空跳吃羊，羊群围困狼群即获胜，支持双人对战和人机对战，无需下载，即开即玩。">
   <meta property="og:url" content="https://jiangxincode.github.io/childhood/apps/childhood-board-game/lang-chi-yang/index.html">
   <meta property="og:site_name" content="童年游戏合集">
   <meta property="og:image" content="https://jiangxincode.github.io/childhood/images/childhood-board-game/%E7%8B%BC%E5%90%83%E7%BE%8A.jpg">
@@ -19,7 +19,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="狼吃羊 - 童年游戏合集">
-  <meta name="twitter:description" content="在线免费玩狼吃羊，经典童年棋盘游戏，4x5棋盘羊群对抗狼群，狼可隔空跳吃羊，羊群围困狼群即获胜，支持双人对战和人机对战，无需下载，即开即玩。">
+  <meta name="twitter:description" content="在线免费玩狼吃羊，经典童年棋盘游戏，5x5棋盘羊群对抗狼群，狼可隔空跳吃羊，羊群围困狼群即获胜，支持双人对战和人机对战，无需下载，即开即玩。">
   <meta name="twitter:image" content="https://jiangxincode.github.io/childhood/images/childhood-board-game/%E7%8B%BC%E5%90%83%E7%BE%8A.jpg">
   <script type="application/ld+json">
 {
@@ -30,7 +30,7 @@
       "name": "狼吃羊",
       "url": "https://jiangxincode.github.io/childhood/apps/childhood-board-game/lang-chi-yang/index.html",
       "image": "https://jiangxincode.github.io/childhood/images/childhood-board-game/%E7%8B%BC%E5%90%83%E7%BE%8A.jpg",
-      "description": "在线免费玩狼吃羊，经典童年棋盘游戏，4x5棋盘羊群对抗狼群，狼可隔空跳吃羊，羊群围困狼群即获胜，支持双人对战和人机对战，无需下载，即开即玩。",
+      "description": "在线免费玩狼吃羊，经典童年棋盘游戏，5x5棋盘羊群对抗狼群，狼可隔空跳吃羊，羊群围困狼群即获胜，支持双人对战和人机对战，无需下载，即开即玩。",
       "inLanguage": "zh-CN",
       "genre": "童年棋盘游戏",
       "applicationCategory": "Game",
@@ -151,11 +151,11 @@
       </div>
       <div class="status-item">
         <span class="label">羊：</span>
-        <span id="pieces-a" class="team-a">10</span>
+        <span id="pieces-a" class="team-a">15</span>
       </div>
       <div class="status-item">
         <span class="label">狼：</span>
-        <span id="pieces-b" class="team-b">2</span>
+        <span id="pieces-b" class="team-b">3</span>
       </div>
     </div>
 
@@ -167,23 +167,25 @@
         <div class="rule-section">
           <h4>🎮 基本规则</h4>
           <ul>
-            <li>4x5棋盘，羊10子 vs 狼2子</li>
+            <li>5x5棋盘，狼3子 vs 羊15子</li>
+            <li>狼永远先行动</li>
             <li>每回合移动一颗棋子一步（上下左右）</li>
             <li>狼可隔一空格跳吃羊</li>
+            <li>石头剪刀布决定谁扮演狼（先手）</li>
           </ul>
         </div>
         <div class="rule-section">
           <h4>🏆 胜利条件</h4>
           <ul>
-            <li>狼：吃掉羊使其少于3颗</li>
+            <li>狼：吃掉羊使其少于等于3颗</li>
             <li>羊：围住狼使其无路可走</li>
           </ul>
         </div>
         <div id="rule-pve" class="rule-section">
           <h4>🤖 人机模式</h4>
           <ul>
-            <li>你操控羊，AI操控狼</li>
-            <li>AI会优先吃子并寻找安全位置</li>
+            <li>石头剪刀布决定你扮演狼还是羊</li>
+            <li>狼先行动，AI会优先吃子并寻找安全位置</li>
           </ul>
         </div>
       </div>

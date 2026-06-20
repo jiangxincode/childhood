@@ -1,7 +1,7 @@
 /* eslint-disable no-var, no-undef */
 // ============================================================
 // 狼吃羊 (Lang Chi Yang) - Wolf Eats Sheep
-// 2 players, 4x5 grid, asymmetric: 2 wolves vs 10 sheep
+// 2 players, 5x5 grid, asymmetric: 3 wolves vs 15 sheep
 // ============================================================
 
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
@@ -10,14 +10,14 @@ if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   var getRPSName = _gameUtils.getRPSName;
 }
 
-var PLAYER_A = "A"; // Sheep (羊) - 10 pieces
-var PLAYER_B = "B"; // Wolf (狼) - 2 pieces
+var PLAYER_A = "A"; // Sheep (羊) - 15 pieces
+var PLAYER_B = "B"; // Wolf (狼) - 3 pieces
 var EMPTY = null;
 var ROW_COUNT = 5;
-var COL_COUNT = 4;
-var INITIAL_A = 10; // Sheep starts with 10 pieces
-var INITIAL_B = 2; // Wolf starts with 2 pieces
-var MIN_A_TO_LOSE = 3; // If sheep has fewer than 3 pieces, wolf wins
+var COL_COUNT = 5;
+var INITIAL_A = 15; // Sheep starts with 15 pieces
+var INITIAL_B = 3; // Wolf starts with 3 pieces
+var MIN_A_TO_LOSE = 4; // If sheep has fewer than 4 pieces (<=3), wolf wins
 
 // SVG board rendering constants
 var BOARD_PADDING = 40;
@@ -47,23 +47,29 @@ function createBoard() {
 
 function getInitialBoard() {
   var board = createBoard();
-  // Wolf (B): top row middle positions
+  // Wolf (B): top row middle 3 positions (col 1,2,3)
   board[0][1] = PLAYER_B;
   board[0][2] = PLAYER_B;
-  // Sheep (A): rows 2-4, all columns = 10 pieces
-  // Row 2: only (2,0) and (2,3)
+  board[0][3] = PLAYER_B;
+  // Sheep (A): rows 2-4, all 5 columns = 15 pieces
+  // Row 2: all 5 columns
   board[2][0] = PLAYER_A;
+  board[2][1] = PLAYER_A;
+  board[2][2] = PLAYER_A;
   board[2][3] = PLAYER_A;
-  // Row 3: all 4 columns
+  board[2][4] = PLAYER_A;
+  // Row 3: all 5 columns
   board[3][0] = PLAYER_A;
   board[3][1] = PLAYER_A;
   board[3][2] = PLAYER_A;
   board[3][3] = PLAYER_A;
-  // Row 4: all 4 columns
+  board[3][4] = PLAYER_A;
+  // Row 4: all 5 columns
   board[4][0] = PLAYER_A;
   board[4][1] = PLAYER_A;
   board[4][2] = PLAYER_A;
   board[4][3] = PLAYER_A;
+  board[4][4] = PLAYER_A;
   return board;
 }
 
@@ -71,7 +77,7 @@ function createGameState(mode) {
   return {
     mode: mode,
     board: getInitialBoard(),
-    currentPlayer: PLAYER_A,
+    currentPlayer: PLAYER_B, // Wolf (狼) always moves first
     playerTeam: null,
     aiTeam: null,
     piecesA: INITIAL_A,
@@ -382,6 +388,7 @@ if (typeof document !== "undefined") {
   SoundManager.init("../../audio");
   var state = null;
   var selectedPiece = null;
+  var boardFlipped = false; // true when player is wolf (bottom)
 
   // Online mode state
   var networkProtocol = null;
@@ -396,6 +403,14 @@ if (typeof document !== "undefined") {
       cx: BOARD_PADDING + x * CELL_SIZE,
       cy: BOARD_PADDING + y * CELL_SIZE,
     };
+  }
+
+  // Convert screen coordinates to board coordinates (handle flip)
+  function screenToBoard(sx, sy) {
+    if (boardFlipped) {
+      return { x: sx, y: ROW_COUNT - 1 - sy };
+    }
+    return { x: sx, y: sy };
   }
 
   function initBoard() {
@@ -432,13 +447,14 @@ if (typeof document !== "undefined") {
     }
 
     // Interactive intersection nodes
-    for (var y = 0; y < ROW_COUNT; y++) {
-      for (var x = 0; x < COL_COUNT; x++) {
-        var pt = nodeToPx(x, y);
+    for (var sy = 0; sy < ROW_COUNT; sy++) {
+      for (var sx = 0; sx < COL_COUNT; sx++) {
+        var boardPos = screenToBoard(sx, sy);
+        var pt = nodeToPx(sx, sy);
         var g = document.createElementNS(svgNS, "g");
         g.setAttribute("class", "node");
-        g.dataset.x = x;
-        g.dataset.y = y;
+        g.dataset.x = boardPos.x;
+        g.dataset.y = boardPos.y;
         g.setAttribute("transform", "translate(" + pt.cx + "," + pt.cy + ")");
 
         // Wide invisible hit area for easier tapping
@@ -472,7 +488,7 @@ if (typeof document !== "undefined") {
             return function () {
               handlePositionClick(cx, cy);
             };
-          })(x, y)
+          })(sx, sy)
         );
         svg.appendChild(g);
       }
@@ -575,9 +591,10 @@ if (typeof document !== "undefined") {
     if (state.mode === "online" && state.currentPlayer !== localTeam) return;
     if (state.mode === "pve" && state.currentPlayer === state.aiTeam) return;
 
-    // SVG (x, y) maps to board (r=y, c=x)
-    var r = y;
-    var c = x;
+    // Convert screen coordinates to board coordinates
+    var boardPos = screenToBoard(x, y);
+    var r = boardPos.y;
+    var c = boardPos.x;
 
     // Select own piece
     if (state.board[r][c] === state.currentPlayer) {
@@ -691,13 +708,17 @@ if (typeof document !== "undefined") {
     }, 600);
   }
 
-  function startGame(mode, firstPlayer) {
+  function startGame(mode, playerTeam) {
     state = createGameState(mode);
-    state.currentPlayer = firstPlayer || PLAYER_A;
-    state.firstPlayer = firstPlayer || PLAYER_A;
+    state.currentPlayer = PLAYER_B; // Wolf always moves first
+    state.firstPlayer = PLAYER_B;
     if (mode === "pve") {
-      state.playerTeam = PLAYER_A;
-      state.aiTeam = PLAYER_B;
+      state.playerTeam = playerTeam;
+      state.aiTeam = playerTeam === PLAYER_A ? PLAYER_B : PLAYER_A;
+      // Flip board so player's pieces are at the bottom
+      boardFlipped = playerTeam === PLAYER_B;
+    } else {
+      boardFlipped = false;
     }
     selectedPiece = null;
     document.getElementById("mode-selection").style.display = "none";
@@ -721,16 +742,24 @@ if (typeof document !== "undefined") {
       if (result === 1) {
         SoundManager.play("victory");
         resultDiv.innerHTML =
-          "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，你先手！</p>";
+          "<p>你出" +
+          getRPSName(choice) +
+          "，电脑出" +
+          getRPSName(aiChoice) +
+          "，你赢了！你扮演狼（先手）。</p>";
         setTimeout(() => {
-          startGame("pve", PLAYER_A);
+          startGame("pve", PLAYER_B); // Winner plays as wolf
         }, 1500);
       } else if (result === -1) {
         SoundManager.play("lose");
         resultDiv.innerHTML =
-          "<p>你出" + getRPSName(choice) + "，电脑出" + getRPSName(aiChoice) + "，电脑先手！</p>";
+          "<p>你出" +
+          getRPSName(choice) +
+          "，电脑出" +
+          getRPSName(aiChoice) +
+          "，你输了！电脑扮演狼（先手）。</p>";
         setTimeout(() => {
-          startGame("pve", PLAYER_B);
+          startGame("pve", PLAYER_A); // Loser plays as sheep
         }, 1500);
       } else {
         SoundManager.play("draw");
@@ -874,7 +903,7 @@ if (typeof document !== "undefined") {
       getRPSName(myChoice) +
       "，对方选择了" +
       getRPSName(theirChoice) +
-      (iWin ? "，你赢了！你先手（羊）。" : "，你输了！对方先手（羊）。");
+      (iWin ? "，你赢了！你扮演狼（先手）。" : "，你输了！对方扮演狼（先手）。");
 
     setTimeout(() => {
       startOnlineGame(result.firstPlayer);
@@ -884,20 +913,25 @@ if (typeof document !== "undefined") {
   function startOnlineGame(firstPlayerRole) {
     state = createGameState("online");
 
-    var hostPiece = PLAYER_A;
-    var guestPiece = PLAYER_B;
+    // Winner plays as wolf (PLAYER_B), loser plays as sheep (PLAYER_A)
+    var winnerPiece = PLAYER_B;
+    var loserPiece = PLAYER_A;
 
-    if (localPlayerRole === "host") {
-      localTeam = firstPlayerRole === "host" ? hostPiece : guestPiece;
-      remoteTeam = firstPlayerRole === "host" ? guestPiece : hostPiece;
+    if (localPlayerRole === firstPlayerRole) {
+      // I am the winner (first player), play as wolf
+      localTeam = winnerPiece;
+      remoteTeam = loserPiece;
     } else {
-      localTeam = firstPlayerRole === "guest" ? hostPiece : guestPiece;
-      remoteTeam = firstPlayerRole === "guest" ? guestPiece : hostPiece;
+      // I am the loser, play as sheep
+      localTeam = loserPiece;
+      remoteTeam = winnerPiece;
     }
 
-    state.currentPlayer = firstPlayerRole === "host" ? hostPiece : guestPiece;
-    state.firstPlayer = state.currentPlayer;
+    state.currentPlayer = PLAYER_B; // Wolf always moves first
+    state.firstPlayer = PLAYER_B;
     state.playerTeam = localTeam;
+    // Flip board so player's pieces are at the bottom
+    boardFlipped = localTeam === PLAYER_B;
 
     selectedPiece = null;
     document.getElementById("rps-online").style.display = "none";

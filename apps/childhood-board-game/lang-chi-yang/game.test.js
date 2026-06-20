@@ -34,20 +34,20 @@ describe("constants", () => {
     expect(ROW_COUNT).toBe(5);
   });
 
-  it("COL_COUNT is 4", () => {
-    expect(COL_COUNT).toBe(4);
+  it("COL_COUNT is 5", () => {
+    expect(COL_COUNT).toBe(5);
   });
 
-  it("INITIAL_A is 10", () => {
-    expect(INITIAL_A).toBe(10);
+  it("INITIAL_A is 15", () => {
+    expect(INITIAL_A).toBe(15);
   });
 
-  it("INITIAL_B is 2", () => {
-    expect(INITIAL_B).toBe(2);
+  it("INITIAL_B is 3", () => {
+    expect(INITIAL_B).toBe(3);
   });
 
-  it("MIN_A_TO_LOSE is 3", () => {
-    expect(MIN_A_TO_LOSE).toBe(3);
+  it("MIN_A_TO_LOSE is 4", () => {
+    expect(MIN_A_TO_LOSE).toBe(4);
   });
 
   it("DIRECTIONS has 4 entries", () => {
@@ -56,12 +56,12 @@ describe("constants", () => {
 });
 
 describe("createBoard", () => {
-  it("creates 5x4 board filled with EMPTY", () => {
+  it("creates 5x5 board filled with EMPTY", () => {
     const board = createBoard();
     expect(board.length).toBe(5);
     for (let r = 0; r < 5; r++) {
-      expect(board[r].length).toBe(4);
-      for (let c = 0; c < 4; c++) {
+      expect(board[r].length).toBe(5);
+      for (let c = 0; c < 5; c++) {
         expect(board[r][c]).toBe(EMPTY);
       }
     }
@@ -69,50 +69,50 @@ describe("createBoard", () => {
 });
 
 describe("getInitialBoard", () => {
-  it("has 2 B (wolf) pieces at top row middle", () => {
+  it("has 3 B (wolf) pieces at top row middle (col 1,2,3)", () => {
     const board = getInitialBoard();
     expect(board[0][0]).toBe(EMPTY);
     expect(board[0][1]).toBe(PLAYER_B);
     expect(board[0][2]).toBe(PLAYER_B);
-    expect(board[0][3]).toBe(EMPTY);
+    expect(board[0][3]).toBe(PLAYER_B);
+    expect(board[0][4]).toBe(EMPTY);
   });
 
-  it("has 10 A (sheep) pieces in rows 2-4", () => {
+  it("has 15 A (sheep) pieces in rows 2-4", () => {
     const board = getInitialBoard();
     let countA = 0;
     for (let r = 0; r < 5; r++) {
-      for (let c = 0; c < 4; c++) {
+      for (let c = 0; c < 5; c++) {
         if (board[r][c] === PLAYER_A) countA++;
       }
     }
-    expect(countA).toBe(10);
+    expect(countA).toBe(15);
   });
 
-  it("row 2 has A at (2,0) and (2,3) only", () => {
+  it("row 2 has A in all 5 columns", () => {
     const board = getInitialBoard();
-    expect(board[2][0]).toBe(PLAYER_A);
-    expect(board[2][1]).toBe(EMPTY);
-    expect(board[2][2]).toBe(EMPTY);
-    expect(board[2][3]).toBe(PLAYER_A);
+    for (let c = 0; c < 5; c++) {
+      expect(board[2][c]).toBe(PLAYER_A);
+    }
   });
 
-  it("row 3 has A in all 4 columns", () => {
+  it("row 3 has A in all 5 columns", () => {
     const board = getInitialBoard();
-    for (let c = 0; c < 4; c++) {
+    for (let c = 0; c < 5; c++) {
       expect(board[3][c]).toBe(PLAYER_A);
     }
   });
 
-  it("row 4 has A in all 4 columns", () => {
+  it("row 4 has A in all 5 columns", () => {
     const board = getInitialBoard();
-    for (let c = 0; c < 4; c++) {
+    for (let c = 0; c < 5; c++) {
       expect(board[4][c]).toBe(PLAYER_A);
     }
   });
 
   it("row 1 has no pieces", () => {
     const board = getInitialBoard();
-    for (let c = 0; c < 4; c++) {
+    for (let c = 0; c < 5; c++) {
       expect(board[1][c]).toBe(EMPTY);
     }
   });
@@ -122,7 +122,7 @@ describe("createGameState", () => {
   it("creates initial state with correct defaults", () => {
     const state = createGameState("pvp");
     expect(state.mode).toBe("pvp");
-    expect(state.currentPlayer).toBe(PLAYER_A);
+    expect(state.currentPlayer).toBe(PLAYER_B); // Wolf always moves first
     expect(state.piecesA).toBe(INITIAL_A);
     expect(state.piecesB).toBe(INITIAL_B);
     expect(state.gameOver).toBe(false);
@@ -135,7 +135,7 @@ describe("createGameState", () => {
 describe("inBounds", () => {
   it("returns true for valid coordinates", () => {
     expect(inBounds(0, 0)).toBe(true);
-    expect(inBounds(4, 3)).toBe(true);
+    expect(inBounds(4, 4)).toBe(true);
     expect(inBounds(2, 1)).toBe(true);
   });
 
@@ -143,7 +143,7 @@ describe("inBounds", () => {
     expect(inBounds(-1, 0)).toBe(false);
     expect(inBounds(0, -1)).toBe(false);
     expect(inBounds(5, 0)).toBe(false);
-    expect(inBounds(0, 4)).toBe(false);
+    expect(inBounds(0, 5)).toBe(false);
   });
 });
 
@@ -170,8 +170,8 @@ describe("getAdjacentCells", () => {
     expect(adj.length).toBe(2);
   });
 
-  it("returns 2 neighbors for corner (0,3)", () => {
-    const adj = getAdjacentCells(0, 3);
+  it("returns 2 neighbors for corner (0,4)", () => {
+    const adj = getAdjacentCells(0, 4);
     expect(adj.length).toBe(2);
   });
 
@@ -180,8 +180,8 @@ describe("getAdjacentCells", () => {
     expect(adj.length).toBe(3);
   });
 
-  it("returns 4 neighbors for center (2,1)", () => {
-    const adj = getAdjacentCells(2, 1);
+  it("returns 4 neighbors for center (2,2)", () => {
+    const adj = getAdjacentCells(2, 2);
     expect(adj.length).toBe(4);
   });
 });
@@ -244,10 +244,10 @@ describe("getJumpMoves", () => {
 
   it("does not jump off board", () => {
     const board = createBoard();
-    board[4][0] = PLAYER_B;
-    board[3][0] = EMPTY;
-    board[2][0] = PLAYER_A;
-    const moves = getJumpMoves(board, 4, 0);
+    board[4][1] = PLAYER_B;
+    board[3][1] = EMPTY;
+    board[2][1] = PLAYER_A;
+    const moves = getJumpMoves(board, 4, 1);
     expect(moves.length).toBe(1);
     expect(moves[0].toR).toBe(2);
   });
@@ -267,9 +267,10 @@ describe("getJumpMoves", () => {
 describe("getValidMoves", () => {
   it("returns step moves for A pieces", () => {
     const board = createBoard();
-    board[0][1] = PLAYER_A;
+    board[0][2] = PLAYER_A;
     const moves = getValidMoves(board, PLAYER_A);
-    expect(moves.length).toBe(3); // (0,0), (0,2), (1,1)
+    // (0,2) has 3 neighbors: (0,1), (0,3), (1,2)
+    expect(moves.length).toBe(3);
     for (let i = 0; i < moves.length; i++) {
       expect(moves[i].type).toBe("step");
     }
@@ -277,8 +278,8 @@ describe("getValidMoves", () => {
 
   it("returns step and jump moves for B pieces", () => {
     const board = createBoard();
-    board[0][1] = PLAYER_B;
-    // (0,0), (0,2), (1,1) are empty
+    board[0][2] = PLAYER_B;
+    // (0,1), (0,3), (1,2) are empty
     const moves = getValidMoves(board, PLAYER_B);
     const stepMoves = moves.filter((m) => m.type === "step");
     const jumpMoves = moves.filter((m) => m.type === "jump");
@@ -304,10 +305,23 @@ describe("checkWin", () => {
     expect(checkWin(board)).toBeNull();
   });
 
+  it("wolf wins when sheep pieces drop to 3 or below", () => {
+    const board = createBoard();
+    board[0][0] = PLAYER_B;
+    board[0][1] = PLAYER_B;
+    board[0][2] = PLAYER_B;
+    board[1][0] = PLAYER_A;
+    board[1][1] = PLAYER_A;
+    board[1][2] = PLAYER_A;
+    // Exactly 3 sheep pieces - wolf wins
+    expect(checkWin(board)).toBe(PLAYER_B);
+  });
+
   it("wolf wins when sheep pieces drop below 3", () => {
     const board = createBoard();
     board[0][0] = PLAYER_B;
     board[0][1] = PLAYER_B;
+    board[0][2] = PLAYER_B;
     board[1][0] = PLAYER_A;
     board[1][1] = PLAYER_A;
     // Only 2 sheep pieces
@@ -325,13 +339,18 @@ describe("checkWin", () => {
     board[2][1] = PLAYER_A;
     board[2][2] = PLAYER_A;
     board[2][3] = PLAYER_A;
+    board[2][4] = PLAYER_A;
     board[3][0] = PLAYER_A;
     board[3][1] = PLAYER_A;
     board[3][2] = PLAYER_A;
     board[3][3] = PLAYER_A;
+    board[3][4] = PLAYER_A;
     board[4][0] = PLAYER_A;
     board[4][1] = PLAYER_A;
-    // 12 sheep pieces, wolf has no moves
+    board[4][2] = PLAYER_A;
+    board[4][3] = PLAYER_A;
+    board[4][4] = PLAYER_A;
+    // 16 sheep pieces, wolf has no moves
     expect(checkWin(board)).toBe(PLAYER_A);
   });
 
@@ -342,18 +361,22 @@ describe("checkWin", () => {
     board[0][1] = PLAYER_A;
     board[0][2] = PLAYER_A;
     board[0][3] = PLAYER_A;
+    board[0][4] = PLAYER_A;
     board[1][0] = PLAYER_A;
     board[1][1] = PLAYER_A;
     expect(checkWin(board)).toBe(PLAYER_A);
   });
 
-  it("does not declare winner if wolf has moves", () => {
+  it("does not declare winner if sheep > 3 and wolf has moves", () => {
     const board = createBoard();
     board[0][0] = PLAYER_B;
     board[0][1] = EMPTY; // wolf can move here
     board[1][0] = PLAYER_A;
-    // Only 1 sheep piece, but wolf has moves so game continues until sheep < 3
-    expect(checkWin(board)).toBe(PLAYER_B); // sheep < 3
+    board[1][1] = PLAYER_A;
+    board[1][2] = PLAYER_A;
+    board[1][3] = PLAYER_A;
+    // 4 sheep pieces (> 3), wolf has moves - game continues
+    expect(checkWin(board)).toBeNull();
   });
 });
 
@@ -381,21 +404,21 @@ describe("applyMove", () => {
 
   it("applies jump move and removes captured piece", () => {
     const board = createBoard();
-    board[0][1] = PLAYER_B;
-    board[2][1] = PLAYER_A;
+    board[0][2] = PLAYER_B;
+    board[2][2] = PLAYER_A;
     const move = {
       fromR: 0,
-      fromC: 1,
+      fromC: 2,
       toR: 2,
-      toC: 1,
+      toC: 2,
       captureR: 2,
-      captureC: 1,
+      captureC: 2,
       type: "jump",
     };
     const newBoard = applyMove(board, move);
-    expect(newBoard[0][1]).toBe(EMPTY);
-    expect(newBoard[1][1]).toBe(EMPTY);
-    expect(newBoard[2][1]).toBe(PLAYER_B); // Wolf lands on captured position
+    expect(newBoard[0][2]).toBe(EMPTY);
+    expect(newBoard[1][2]).toBe(EMPTY);
+    expect(newBoard[2][2]).toBe(PLAYER_B); // Wolf lands on captured position
   });
 });
 
@@ -422,24 +445,27 @@ describe("getBestAIMove", () => {
     const state = createGameState("pve");
     state.aiTeam = PLAYER_B;
     state.board = createBoard();
-    state.board[0][1] = PLAYER_B;
-    state.board[1][1] = EMPTY;
-    state.board[2][1] = PLAYER_A;
-    state.board[2][0] = PLAYER_A;
+    state.board[0][2] = PLAYER_B;
+    state.board[1][2] = EMPTY;
     state.board[2][2] = PLAYER_A;
+    state.board[2][0] = PLAYER_A;
+    state.board[2][1] = PLAYER_A;
     state.board[2][3] = PLAYER_A;
+    state.board[2][4] = PLAYER_A;
     state.board[3][0] = PLAYER_A;
     state.board[3][1] = PLAYER_A;
     state.board[3][2] = PLAYER_A;
     state.board[3][3] = PLAYER_A;
+    state.board[3][4] = PLAYER_A;
     state.board[4][0] = PLAYER_A;
     state.board[4][1] = PLAYER_A;
     state.board[4][2] = PLAYER_A;
     state.board[4][3] = PLAYER_A;
+    state.board[4][4] = PLAYER_A;
     const move = getBestAIMove(state);
     expect(move.type).toBe("jump");
     expect(move.toR).toBe(2);
-    expect(move.toC).toBe(1);
+    expect(move.toC).toBe(2);
   });
 
   it("returns a valid move for sheep (A)", () => {
