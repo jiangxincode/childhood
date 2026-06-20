@@ -192,13 +192,13 @@ function initPlayerPositions() {
     }
   }
 
-  // Target positions: opposite diagonal positions
-  TARGET_POSITIONS[RED] = START_POSITIONS[BLUE].slice();
-  TARGET_POSITIONS[BLUE] = START_POSITIONS[RED].slice();
-  TARGET_POSITIONS[GREEN] = START_POSITIONS[ORANGE].slice();
-  TARGET_POSITIONS[YELLOW] = START_POSITIONS[PURPLE].slice();
-  TARGET_POSITIONS[PURPLE] = START_POSITIONS[YELLOW].slice();
-  TARGET_POSITIONS[ORANGE] = START_POSITIONS[GREEN].slice();
+  // Target positions: the directly opposite triangle (180° across the board)
+  TARGET_POSITIONS[RED] = START_POSITIONS[PURPLE].slice();
+  TARGET_POSITIONS[PURPLE] = START_POSITIONS[RED].slice();
+  TARGET_POSITIONS[BLUE] = START_POSITIONS[GREEN].slice();
+  TARGET_POSITIONS[GREEN] = START_POSITIONS[BLUE].slice();
+  TARGET_POSITIONS[YELLOW] = START_POSITIONS[ORANGE].slice();
+  TARGET_POSITIONS[ORANGE] = START_POSITIONS[YELLOW].slice();
 }
 
 initPlayerPositions();
@@ -344,12 +344,19 @@ function makeMove(board, from, to) {
 
 function checkWin(board, player) {
   const targets = TARGET_POSITIONS[player];
+  let ownCount = 0;
   for (const t of targets) {
-    if (board[t] !== player) {
+    // The destination must be completely filled
+    if (board[t] === EMPTY) {
       return false;
     }
+    if (board[t] === player) {
+      ownCount++;
+    }
   }
-  return true;
+  // Anti-blocking rule: a full destination wins as long as at least one piece
+  // is the player's own, so an opponent parked in the destination cannot deny the win.
+  return ownCount > 0;
 }
 
 function checkGameOver(board, players) {
@@ -472,18 +479,31 @@ function getBestAIMove(board, player, allPlayers) {
 // Game state
 // ============================================================
 
+// Standard player layouts per player count (mainstream Chinese checkers setup).
+// Opposite pairs are RED-PURPLE, BLUE-GREEN, YELLOW-ORANGE.
+// - 2 players: one opposite pair
+// - 3 players: three triangles 120° apart (each destination is empty)
+// - 4 players: two opposite pairs (one opposite pair left empty)
+// - 6 players: every triangle
+// Lists are ordered around the board for natural turn rotation.
+const PLAYER_SETS = {
+  2: [RED, PURPLE],
+  3: [RED, BLUE, ORANGE],
+  4: [RED, BLUE, PURPLE, GREEN],
+  6: [RED, YELLOW, BLUE, PURPLE, ORANGE, GREEN],
+};
+
 function createGameState(mode, playerCount) {
-  const players = [];
-  for (let i = 1; i <= playerCount; i++) {
-    players.push(i);
-  }
+  const players = PLAYER_SETS[playerCount]
+    ? PLAYER_SETS[playerCount].slice()
+    : Array.from({ length: playerCount }, (_, i) => i + 1);
 
   return {
     mode: mode,
     playerCount: playerCount,
     players: players,
     board: createBoard(),
-    currentPlayer: RED,
+    currentPlayer: players[0],
     playerTeam: null,
     aiTeam: null,
     gameOver: false,
@@ -540,6 +560,7 @@ if (typeof module !== "undefined" && module.exports) {
     getRPSName: getRPSName,
     createGameState: createGameState,
     initGame: initGame,
+    PLAYER_SETS: PLAYER_SETS,
   };
 }
 
@@ -547,9 +568,7 @@ if (typeof document !== "undefined") {
   // Initialize sound manager
   SoundManager.init("../../audio");
   let gameState = null;
-  let rpsChoices = { player1: null, player2: null, human: null };
-  let currentMode = null;
-  let currentPlayerCount = 2;
+  let rpsChoices = { online: null, remote: null };
 
   // Online mode state
   let networkProtocol = null;
@@ -561,22 +580,10 @@ if (typeof document !== "undefined") {
   const CELL_SIZE = 28;
   const PADDING = 60;
 
-  // Reference-style board palette (matches the cover image)
-  const ZONE_COLORS = {
-    red: "#ec2f2f",
-    cyan: "#29abe2",
-    green: "#2bb24c",
-    yellow: "#fff200",
-  };
-  // Star points colored clockwise from the top; opposite points share a color
-  const ZONE_SEQUENCE = [
-    ZONE_COLORS.red,
-    ZONE_COLORS.cyan,
-    ZONE_COLORS.green,
-    ZONE_COLORS.red,
-    ZONE_COLORS.cyan,
-    ZONE_COLORS.green,
-  ];
+  // Board zone palette. Each star point uses its own player's full color so a piece
+  // always sits on a same-colored corner; the center hexagon stays neutral. Pieces are
+  // separated from the board by the white hole ring, a dark stroke and a soft glow.
+  const ZONE_CENTER = "#f0ead6"; // neutral eggshell, distinct from all 6 player hues
   const HOLE_FILL = "#ffffff";
   const HOLE_STROKE = "#1f1f1f";
   const LINK_COLOR = "#1a1a1a";
@@ -649,35 +656,16 @@ if (typeof document !== "undefined") {
   }
 
   // Group cells into the 6 star points + center hexagon and assign zone colors.
-  // The point color is chosen by its orientation so it stays correct after rotation.
+  // Each star point uses its own player's color (lightened) so pieces match their corner.
   function getRegionFills() {
-    let bx = 0;
-    let by = 0;
-    for (let c = 0; c < TOTAL_POSITIONS; c++) {
-      const pp = cellToPixel(c);
-      bx += pp.x;
-      by += pp.y;
-    }
-    bx /= TOTAL_POSITIONS;
-    by /= TOTAL_POSITIONS;
-
     const inStart = {};
     const fills = [];
     for (let p = 1; p <= 6; p++) {
       const grp = START_POSITIONS[p];
-      let gx = 0;
-      let gy = 0;
       for (const c of grp) {
         inStart[c] = true;
-        const pp = cellToPixel(c);
-        gx += pp.x;
-        gy += pp.y;
       }
-      gx /= grp.length;
-      gy /= grp.length;
-      const deg = (Math.atan2(gy - by, gx - bx) * 180) / Math.PI;
-      const idx = ((Math.round((deg + 90) / 60) % 6) + 6) % 6;
-      fills.push({ color: ZONE_SEQUENCE[idx], cells: grp });
+      fills.push({ color: MARBLE_COLORS[p], cells: grp });
     }
 
     const centerCells = [];
@@ -687,7 +675,7 @@ if (typeof document !== "undefined") {
       }
     }
     // Draw the center first so the colored points overlap cleanly on top
-    fills.unshift({ color: ZONE_COLORS.yellow, cells: centerCells });
+    fills.unshift({ color: ZONE_CENTER, cells: centerCells });
     return fills;
   }
 
@@ -749,6 +737,21 @@ if (typeof document !== "undefined") {
         ])
       );
     }
+    // Soft drop-shadow glow so a piece lifts off a same-colored corner
+    const glow = document.createElementNS(SVG_NS, "filter");
+    glow.setAttribute("id", "marble-glow");
+    glow.setAttribute("x", "-60%");
+    glow.setAttribute("y", "-60%");
+    glow.setAttribute("width", "220%");
+    glow.setAttribute("height", "220%");
+    const shadow = document.createElementNS(SVG_NS, "feDropShadow");
+    shadow.setAttribute("dx", "0");
+    shadow.setAttribute("dy", "1");
+    shadow.setAttribute("stdDeviation", "1.3");
+    shadow.setAttribute("flood-color", "#000000");
+    shadow.setAttribute("flood-opacity", "0.55");
+    glow.appendChild(shadow);
+    defs.appendChild(glow);
     svg.appendChild(defs);
 
     // Colored star zones: 6 points + center hexagon, filled as solid regions
@@ -844,8 +847,9 @@ if (typeof document !== "undefined") {
     piece.setAttribute("cy", pos.y);
     piece.setAttribute("r", CELL_SIZE * 0.34);
     piece.setAttribute("fill", "url(#marble-" + player + ")");
-    piece.setAttribute("stroke", shadeColor(MARBLE_COLORS[player], -45));
-    piece.setAttribute("stroke-width", "1.2");
+    piece.setAttribute("stroke", shadeColor(MARBLE_COLORS[player], -55));
+    piece.setAttribute("stroke-width", "1.6");
+    piece.setAttribute("filter", "url(#marble-glow)");
     piece.setAttribute("class", "piece");
     piece.dataset.cell = cell;
 
@@ -857,23 +861,9 @@ if (typeof document !== "undefined") {
   }
 
   function updateStatusBar() {
-    // Current acting side - shown as 玩家/电脑 (PVE) or 玩家1/玩家2/... (PVP)
-    // Reorder players so that the firstPlayer (RPS winner) is 玩家1.
-    let sidesOrder = gameState.players;
-    if (gameState.firstPlayer) {
-      const startIdx = gameState.players.indexOf(gameState.firstPlayer);
-      if (startIdx > 0) {
-        sidesOrder = gameState.players.slice(startIdx).concat(gameState.players.slice(0, startIdx));
-      }
-    }
-    const label = getCurrentPlayerLabel({
-      mode: gameState.mode,
-      currentSide: gameState.currentPlayer,
-      playerSide: gameState.mode === "online" ? localTeam : gameState.playerTeam,
-      sidesOrder: sidesOrder,
-    });
+    const text = currentLabelText(gameState.currentPlayer);
     const currentConfig = PLAYER_COLORS[gameState.currentPlayer];
-    document.getElementById("current-player").textContent = label.text;
+    document.getElementById("current-player").textContent = text;
     document.getElementById("current-player").className =
       "team-indicator " + currentConfig.textClass;
     document.getElementById("turn-count").textContent = gameState.turnCount;
@@ -894,27 +884,13 @@ if (typeof document !== "undefined") {
   function showGameOver() {
     const winnerText = document.getElementById("winner-text");
     if (gameState.winner) {
-      // Play victory/lose sound
+      // Play victory/lose sound based on whether a human seat won
       const isPlayerWin =
-        gameState.mode === "pve" ? gameState.winner === gameState.playerTeam : true;
+        gameState.mode === "online"
+          ? gameState.winner === localTeam
+          : gameState.playerTypes[gameState.winner] === "human";
       SoundManager.play(isPlayerWin ? "victory" : "lose");
-      // Show 玩家/电脑 (PVE) or 玩家1/玩家2/... (PVP), reordered by firstPlayer
-      let sidesOrder = gameState.players;
-      if (gameState.firstPlayer) {
-        const startIdx = gameState.players.indexOf(gameState.firstPlayer);
-        if (startIdx > 0) {
-          sidesOrder = gameState.players
-            .slice(startIdx)
-            .concat(gameState.players.slice(0, startIdx));
-        }
-      }
-      const label = getCurrentPlayerLabel({
-        mode: gameState.mode,
-        currentSide: gameState.winner,
-        playerSide: gameState.mode === "online" ? localTeam : gameState.playerTeam,
-        sidesOrder: sidesOrder,
-      });
-      winnerText.textContent = label.text + " 获胜！";
+      winnerText.textContent = currentLabelText(gameState.winner) + " 获胜！";
     } else {
       SoundManager.play("draw");
       winnerText.textContent = "平局！";
@@ -924,8 +900,11 @@ if (typeof document !== "undefined") {
 
   function handleSvgClick(e) {
     if (!gameState || gameState.gameOver || gameState.aiThinking) return;
-    if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) return;
-    if (gameState.mode === "online" && gameState.currentPlayer !== localTeam) return;
+    if (gameState.mode === "online") {
+      if (gameState.currentPlayer !== localTeam) return;
+    } else if (gameState.playerTypes && gameState.playerTypes[gameState.currentPlayer] === "ai") {
+      return;
+    }
 
     const target = e.target;
     const cell = Number.parseInt(target.dataset.cell);
@@ -996,23 +975,9 @@ if (typeof document !== "undefined") {
 
     drawBoard();
     updateStatusBar();
-    // Reuse updateStatusBar's label logic for the message
-    let sidesOrder = gameState.players;
-    if (gameState.firstPlayer) {
-      const startIdx = gameState.players.indexOf(gameState.firstPlayer);
-      if (startIdx > 0) {
-        sidesOrder = gameState.players.slice(startIdx).concat(gameState.players.slice(0, startIdx));
-      }
-    }
-    const label = getCurrentPlayerLabel({
-      mode: gameState.mode,
-      currentSide: gameState.currentPlayer,
-      playerSide: gameState.mode === "online" ? localTeam : gameState.playerTeam,
-      sidesOrder: sidesOrder,
-    });
-    updateMessage("轮到 " + label.text + " 行动", "info");
+    updateMessage("轮到 " + currentLabelText(gameState.currentPlayer) + " 行动", "info");
 
-    if (gameState.mode === "pve" && gameState.currentPlayer === gameState.aiTeam) {
+    if (gameState.mode !== "online" && gameState.playerTypes[gameState.currentPlayer] === "ai") {
       triggerAI();
     }
   }
@@ -1020,8 +985,9 @@ if (typeof document !== "undefined") {
   function triggerAI() {
     gameState.aiThinking = true;
     updateMessage("电脑正在思考...", "info");
+    const aiPlayer = gameState.currentPlayer;
     setTimeout(() => {
-      const move = getBestAIMove(gameState.board, gameState.aiTeam);
+      const move = getBestAIMove(gameState.board, aiPlayer, gameState.players);
       gameState.aiThinking = false;
       if (move) {
         doMove(move.from, move.to);
@@ -1033,97 +999,137 @@ if (typeof document !== "undefined") {
 
   // Get board rotation angle for player (to place player's start area at bottom)
   function getPlayerRotation(player) {
-    // Red is at top, needs 180-degree rotation
-    // Green is at upper-left, needs 120-degree rotation
-    // Yellow is at upper-right, needs 240-degree rotation
-    // Blue is at bottom-right, no rotation needed
-    // Orange is at bottom-left, no rotation needed
-    // Purple is at bottom, no rotation needed
+    // Each triangle sits 60° apart; rotate so the player's home triangle is at the bottom.
     const rotations = {
-      1: 180, // Red
-      2: 0, // Blue
-      3: 120, // Green
-      4: 240, // Yellow
+      1: 180, // Red (top)
+      4: 120, // Yellow (top-right)
+      2: 60, // Blue (bottom-right)
       5: 0, // Purple (bottom)
-      6: 0, // Orange (bottom-left)
+      6: 300, // Orange (bottom-left)
+      3: 240, // Green (top-left)
     };
     return rotations[player] || 0;
   }
 
-  function startGame(mode, playerCount, firstPlayer) {
-    gameState = createGameState(mode, playerCount);
-    initGame(gameState);
+  // Seats listed in around-the-board turn order
+  const SEAT_ORDER = [RED, YELLOW, BLUE, PURPLE, ORANGE, GREEN];
+  const SEAT_SELECT_IDS = {
+    [RED]: "seat-red",
+    [YELLOW]: "seat-yellow",
+    [BLUE]: "seat-blue",
+    [PURPLE]: "seat-purple",
+    [ORANGE]: "seat-orange",
+    [GREEN]: "seat-green",
+  };
 
-    if (firstPlayer) {
-      gameState.currentPlayer = firstPlayer;
-    }
-    gameState.firstPlayer = gameState.currentPlayer;
-
-    if (mode === "pve") {
-      // Determine player and AI teams
-      if (firstPlayer) {
-        gameState.playerTeam = firstPlayer;
-        // AI gets other players
-        const aiPlayers = [];
-        for (const p of gameState.players) {
-          if (p !== firstPlayer) {
-            aiPlayers.push(p);
-          }
-        }
-        gameState.aiTeam = aiPlayers[0]; // Primary opponent
-      } else {
-        gameState.playerTeam = RED;
-        gameState.aiTeam = BLUE;
+  // Read the per-seat selectors into an active player list and a human/ai type map
+  function readSeatConfig() {
+    const players = [];
+    const types = {};
+    for (const p of SEAT_ORDER) {
+      const sel = document.getElementById(SEAT_SELECT_IDS[p]);
+      const val = sel ? sel.value : "close";
+      if (val === "normal") {
+        players.push(p);
+        types[p] = "human";
+      } else if (val === "computer") {
+        players.push(p);
+        types[p] = "ai";
       }
-      // Set board rotation to place player at bottom
-      gameState.boardRotation = getPlayerRotation(gameState.playerTeam);
-    } else {
-      // PVP mode, rotate based on first player
-      gameState.boardRotation = firstPlayer ? getPlayerRotation(firstPlayer) : 0;
     }
+    return { players: players, types: types };
+  }
+
+  // Label for a seat: 玩家 / 玩家N for humans, 电脑 / 电脑N for AIs (numbered only when >1)
+  function seatLabelText(player) {
+    let humanTotal = 0;
+    let aiTotal = 0;
+    for (const p of gameState.players) {
+      if (gameState.playerTypes[p] === "human") {
+        humanTotal++;
+      } else {
+        aiTotal++;
+      }
+    }
+    let humanIdx = 0;
+    let aiIdx = 0;
+    for (const p of gameState.players) {
+      if (gameState.playerTypes[p] === "human") {
+        humanIdx++;
+        if (p === player) {
+          return humanTotal > 1 ? "玩家" + humanIdx : "玩家";
+        }
+      } else {
+        aiIdx++;
+        if (p === player) {
+          return aiTotal > 1 ? "电脑" + aiIdx : "电脑";
+        }
+      }
+    }
+    return PLAYER_COLORS[player] ? PLAYER_COLORS[player].name : "";
+  }
+
+  function currentLabelText(side) {
+    if (gameState.mode === "online") {
+      return getCurrentPlayerLabel({ mode: "online", currentSide: side, playerSide: localTeam })
+        .text;
+    }
+    return seatLabelText(side);
+  }
+
+  function startLocalGame(players, types) {
+    gameState = {
+      mode: "local",
+      playerCount: players.length,
+      players: players,
+      playerTypes: types,
+      board: createBoard(),
+      currentPlayer: players[0],
+      gameOver: false,
+      winner: null,
+      turnCount: 0,
+      selectedPiece: null,
+      validMoves: [],
+      aiThinking: false,
+    };
+    for (const p of players) {
+      placePieces(gameState.board, p);
+    }
+    gameState.firstPlayer = players[0];
+
+    // Place the first human seat (or first seat) at the bottom of the board
+    let bottomSeat = players[0];
+    for (const p of players) {
+      if (types[p] === "human") {
+        bottomSeat = p;
+        break;
+      }
+    }
+    gameState.boardRotation = getPlayerRotation(bottomSeat);
 
     document.getElementById("mode-selection").style.display = "none";
-    document.getElementById("rps-section").style.display = "none";
     document.getElementById("game-area").style.display = "flex";
-    document.getElementById("rule-pve").style.display = mode === "pve" ? "block" : "none";
+    const hasAI = players.some((p) => types[p] === "ai");
+    document.getElementById("rule-pve").style.display = hasAI ? "block" : "none";
     document.getElementById("game-over").style.display = "none";
 
     let colorRulesHtml = "";
-    for (const player of gameState.players) {
-      const config = PLAYER_COLORS[player];
-      let prefix = "";
-      if (mode === "pve") {
-        prefix = player === gameState.playerTeam ? "玩家 - " : "电脑 - ";
-      }
+    for (const p of players) {
+      const config = PLAYER_COLORS[p];
+      const prefix = (types[p] === "human" ? "玩家" : "电脑") + " - ";
       colorRulesHtml += '<li style="color:' + config.color + '">' + prefix + config.name + "</li>";
     }
     document.getElementById("color-rules").innerHTML = colorRulesHtml;
 
     drawBoard();
     updateStatusBar();
-    // Build initial message via shared label helper for consistent naming
-    let sidesOrderInit = gameState.players;
-    if (gameState.firstPlayer) {
-      const startIdxInit = gameState.players.indexOf(gameState.firstPlayer);
-      if (startIdxInit > 0) {
-        sidesOrderInit = gameState.players
-          .slice(startIdxInit)
-          .concat(gameState.players.slice(0, startIdxInit));
-      }
-    }
-    const initLabel = getCurrentPlayerLabel({
-      mode: gameState.mode,
-      currentSide: gameState.currentPlayer,
-      playerSide: gameState.playerTeam,
-      sidesOrder: sidesOrderInit,
-    });
-    updateMessage("游戏开始！" + initLabel.text + " 先手", "info");
+    updateMessage("游戏开始！" + currentLabelText(gameState.currentPlayer) + " 先手", "info");
 
     const svg = document.getElementById("board-svg");
     svg.onclick = handleSvgClick;
 
-    // If AI goes first, trigger AI action
-    if (mode === "pve" && gameState.currentPlayer !== gameState.playerTeam) {
+    // If the first seat is an AI, let it move
+    if (types[gameState.currentPlayer] === "ai") {
       triggerAI();
     }
   }
@@ -1136,10 +1142,9 @@ if (typeof document !== "undefined") {
     document.getElementById("game-over").style.display = "none";
     document.getElementById("game-area").style.display = "none";
     document.getElementById("rps-online").style.display = "none";
-    document.getElementById("rps-section").style.display = "none";
     document.getElementById("mode-selection").style.display = "flex";
     gameState = null;
-    rpsChoices = { player1: null, player2: null, human: null };
+    rpsChoices = { online: null, remote: null };
   }
 
   // --- Online mode functions ---
@@ -1189,13 +1194,7 @@ if (typeof document !== "undefined") {
   function startOnlineRPS() {
     document.getElementById("mode-selection").style.display = "none";
     document.getElementById("rps-online").style.display = "flex";
-    rpsChoices = {
-      player1: null,
-      player2: null,
-      human: null,
-      online: null,
-      remote: null,
-    };
+    rpsChoices = { online: null, remote: null };
     document.getElementById("rps-online-status").textContent = "请选择";
     document.getElementById("rps-online-result").textContent = "";
     document
@@ -1264,6 +1263,8 @@ if (typeof document !== "undefined") {
     const myChoice = rpsChoices.online;
     const theirChoice = rpsChoices.remote;
     const iWin = result.firstPlayer === localPlayerRole;
+    // The first mover is the host (RED) or guest (PURPLE)
+    const firstColor = result.firstPlayer === "host" ? RED : PURPLE;
 
     resultEl.textContent =
       "你选择了" +
@@ -1271,8 +1272,8 @@ if (typeof document !== "undefined") {
       "，对方选择了" +
       getRPSName(theirChoice) +
       (iWin
-        ? "，你赢了！你先手(" + PLAYER_COLORS[RED].name + ")。"
-        : "，你输了！对方先手(" + PLAYER_COLORS[RED].name + ")。");
+        ? "，你赢了！你先手(" + PLAYER_COLORS[firstColor].name + ")。"
+        : "，你输了！对方先手(" + PLAYER_COLORS[firstColor].name + ")。");
 
     setTimeout(() => {
       startOnlineGame(result.firstPlayer);
@@ -1284,7 +1285,7 @@ if (typeof document !== "undefined") {
     initGame(gameState);
 
     const hostPiece = RED;
-    const guestPiece = BLUE;
+    const guestPiece = PURPLE;
 
     if (localPlayerRole === "host") {
       localTeam = firstPlayerRole === "host" ? hostPiece : guestPiece;
@@ -1354,167 +1355,21 @@ if (typeof document !== "undefined") {
     cleanupNetwork();
   }
 
-  function handleRPSChoice(player, choice, ev) {
-    SoundManager.play("click");
-    if (player === "human") {
-      rpsChoices.human = choice;
-      document.querySelectorAll("#rps-player-buttons .btn-rps").forEach((btn) => {
-        btn.classList.remove("selected");
-      });
-      ev.target.classList.add("selected");
-
-      const choices = ["rock", "scissors", "paper"];
-      const aiChoice = choices[Math.floor(Math.random() * 3)];
-      rpsChoices.player2 = aiChoice;
-
-      const resultEl = document.getElementById("rps-result");
-      const humanWins = judgeRPS(choice, aiChoice);
-
-      if (humanWins === 1) {
-        SoundManager.play("victory");
-        resultEl.textContent =
-          "你选择了" +
-          getRPSName(choice) +
-          "，电脑选择了" +
-          getRPSName(aiChoice) +
-          "，你赢了！你先手(" +
-          PLAYER_COLORS[RED].name +
-          ")。";
-        setTimeout(() => {
-          startGame(currentMode, currentPlayerCount, RED);
-        }, 1500);
-      } else if (humanWins === -1) {
-        SoundManager.play("lose");
-        resultEl.textContent =
-          "你选择了" +
-          getRPSName(choice) +
-          "，电脑选择了" +
-          getRPSName(aiChoice) +
-          "，你输了！电脑先手(" +
-          PLAYER_COLORS[BLUE].name +
-          ")。";
-        setTimeout(() => {
-          startGame(currentMode, currentPlayerCount, BLUE);
-        }, 1500);
-      } else {
-        SoundManager.play("draw");
-        resultEl.textContent =
-          "你选择了" +
-          getRPSName(choice) +
-          "，电脑选择了" +
-          getRPSName(aiChoice) +
-          "，平局！重新选择。";
-        rpsChoices.human = null;
-        rpsChoices.player2 = null;
-      }
-    } else {
-      rpsChoices["player" + player] = choice;
-      document.querySelectorAll("#rps-p" + player + "-buttons .btn-rps").forEach((btn) => {
-        btn.classList.remove("selected");
-      });
-      event.target.classList.add("selected");
-
-      const statusEl = document.getElementById("rps-p" + player + "-status");
-      statusEl.textContent = "已选择：" + getRPSName(choice);
-
-      if (rpsChoices.player1 && rpsChoices.player2) {
-        const resultEl = document.getElementById("rps-result");
-        const winner = judgeRPS(rpsChoices.player1, rpsChoices.player2);
-
-        if (winner === 1) {
-          SoundManager.play("victory");
-          resultEl.textContent =
-            "玩家1选择了" +
-            getRPSName(rpsChoices.player1) +
-            "，玩家2选择了" +
-            getRPSName(rpsChoices.player2) +
-            "，玩家1赢了！玩家1先手(" +
-            PLAYER_COLORS[RED].name +
-            ")。";
-          setTimeout(() => {
-            startGame(currentMode, currentPlayerCount, RED);
-          }, 1500);
-        } else if (winner === -1) {
-          SoundManager.play("victory");
-          resultEl.textContent =
-            "玩家1选择了" +
-            getRPSName(rpsChoices.player1) +
-            "，玩家2选择了" +
-            getRPSName(rpsChoices.player2) +
-            "，玩家2赢了！玩家2先手(" +
-            PLAYER_COLORS[BLUE].name +
-            ")。";
-          setTimeout(() => {
-            startGame(currentMode, currentPlayerCount, BLUE);
-          }, 1500);
-        } else {
-          SoundManager.play("draw");
-          resultEl.textContent =
-            "玩家1选择了" +
-            getRPSName(rpsChoices.player1) +
-            "，玩家2选择了" +
-            getRPSName(rpsChoices.player2) +
-            "，平局！重新选择。";
-          rpsChoices.player1 = null;
-          rpsChoices.player2 = null;
-          document.getElementById("rps-p1-status").textContent = "请选择";
-          document.getElementById("rps-p2-status").textContent = "请选择";
-          document.querySelectorAll(".btn-rps").forEach((btn) => {
-            btn.classList.remove("selected");
-          });
-        }
-      }
-    }
-  }
-
   document.addEventListener("DOMContentLoaded", () => {
-    // PVP mode buttons
-    document.getElementById("btn-2p").addEventListener("click", () => {
-      currentMode = "pvp";
-      currentPlayerCount = 2;
-      document.getElementById("mode-selection").style.display = "none";
-      document.getElementById("rps-section").style.display = "flex";
-      document.getElementById("rps-pvp").style.display = "block";
-      document.getElementById("rps-pve").style.display = "none";
-      rpsChoices = { player1: null, player2: null, human: null };
-    });
-    document.getElementById("btn-3p").addEventListener("click", () => {
-      currentMode = "pvp";
-      currentPlayerCount = 3;
-      document.getElementById("mode-selection").style.display = "none";
-      document.getElementById("rps-section").style.display = "flex";
-      document.getElementById("rps-pvp").style.display = "block";
-      document.getElementById("rps-pve").style.display = "none";
-      rpsChoices = { player1: null, player2: null, human: null };
-    });
-    document.getElementById("btn-4p").addEventListener("click", () => {
-      currentMode = "pvp";
-      currentPlayerCount = 4;
-      document.getElementById("mode-selection").style.display = "none";
-      document.getElementById("rps-section").style.display = "flex";
-      document.getElementById("rps-pvp").style.display = "block";
-      document.getElementById("rps-pve").style.display = "none";
-      rpsChoices = { player1: null, player2: null, human: null };
-    });
-    document.getElementById("btn-6p").addEventListener("click", () => {
-      currentMode = "pvp";
-      currentPlayerCount = 6;
-      document.getElementById("mode-selection").style.display = "none";
-      document.getElementById("rps-section").style.display = "flex";
-      document.getElementById("rps-pvp").style.display = "block";
-      document.getElementById("rps-pve").style.display = "none";
-      rpsChoices = { player1: null, player2: null, human: null };
-    });
-
-    // PVE mode buttons
-    document.getElementById("btn-pve").addEventListener("click", () => {
-      currentMode = "pve";
-      currentPlayerCount = 2;
-      document.getElementById("mode-selection").style.display = "none";
-      document.getElementById("rps-section").style.display = "flex";
-      document.getElementById("rps-pvp").style.display = "none";
-      document.getElementById("rps-pve").style.display = "block";
-      rpsChoices = { player1: null, player2: null, human: null };
+    // Start a local game from the per-seat configuration
+    document.getElementById("btn-begin").addEventListener("click", () => {
+      const cfg = readSeatConfig();
+      const errEl = document.getElementById("seat-error");
+      if (cfg.players.length < 2) {
+        if (errEl) {
+          errEl.textContent = "请至少选择两方参与（玩家或电脑）";
+        }
+        return;
+      }
+      if (errEl) {
+        errEl.textContent = "";
+      }
+      startLocalGame(cfg.players, cfg.types);
     });
 
     // Online mode button
@@ -1552,19 +1407,9 @@ if (typeof document !== "undefined") {
       });
     });
 
-    // Rock-Paper-Scissors button events
-    document.querySelectorAll(".btn-rps").forEach((button) => {
-      button.addEventListener("click", (ev) => {
-        const player = ev.target.dataset.player;
-        const choice = ev.target.dataset.choice;
-        handleRPSChoice(player, choice, ev);
-      });
-    });
-
     document.getElementById("btn-restart").addEventListener("click", restartGame);
 
     document.getElementById("mode-selection").style.display = "flex";
-    document.getElementById("rps-section").style.display = "none";
     document.getElementById("game-area").style.display = "none";
     document.getElementById("game-over").style.display = "none";
   });

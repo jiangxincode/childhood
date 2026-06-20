@@ -68,6 +68,66 @@ body {
   flex-wrap: nowrap;
 }
 
+/* ============================================================
+   Seat Configuration (per-color human/computer selection)
+   ============================================================ */
+
+.seat-config {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seat-hint {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.seat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+
+.seat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.seat-row label {
+  font-size: 15px;
+  color: #333;
+  min-width: 36px;
+  text-align: left;
+}
+
+.seat-row select {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+}
+
+.seat-error {
+  color: #c62828;
+  font-size: 13px;
+  min-height: 16px;
+}
+
 .btn {
   padding: 15px 30px;
   font-size: 18px;
@@ -118,7 +178,7 @@ body {
    Rock Paper Scissors
    ============================================================ */
 
-#rps-section h2 {
+#rps-online h2 {
   margin-bottom: 24px;
   color: #333;
 }

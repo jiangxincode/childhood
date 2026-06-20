@@ -93,52 +93,68 @@
     <div class="overlay-content">
       <h1 class="game-title">中国跳棋</h1>
       <p class="subtitle">经典跳棋游戏</p>
-      <div class="mode-buttons">
-        <button id="btn-2p" class="btn btn-pvp">双人对战</button>
-        <button id="btn-3p" class="btn btn-pvp">三人对战</button>
-        <button id="btn-4p" class="btn btn-pvp">四人对战</button>
-        <button id="btn-6p" class="btn btn-pvp">六人对战</button>
-        <button id="btn-pve" class="btn btn-pve">人机对战</button>
+      <div class="seat-config">
+        <p class="seat-hint">选择每一方由谁来玩</p>
+        <div class="seat-grid">
+          <div class="seat-row">
+            <span class="color-dot" style="background:#f44336"></span>
+            <label for="seat-red">红方</label>
+            <select id="seat-red">
+              <option value="normal" selected>玩家</option>
+              <option value="computer">电脑</option>
+              <option value="close">无</option>
+            </select>
+          </div>
+          <div class="seat-row">
+            <span class="color-dot" style="background:#ffca28"></span>
+            <label for="seat-yellow">黄方</label>
+            <select id="seat-yellow">
+              <option value="normal">玩家</option>
+              <option value="computer">电脑</option>
+              <option value="close" selected>无</option>
+            </select>
+          </div>
+          <div class="seat-row">
+            <span class="color-dot" style="background:#2196f3"></span>
+            <label for="seat-blue">蓝方</label>
+            <select id="seat-blue">
+              <option value="normal">玩家</option>
+              <option value="computer">电脑</option>
+              <option value="close" selected>无</option>
+            </select>
+          </div>
+          <div class="seat-row">
+            <span class="color-dot" style="background:#ab47bc"></span>
+            <label for="seat-purple">紫方</label>
+            <select id="seat-purple">
+              <option value="normal">玩家</option>
+              <option value="computer" selected>电脑</option>
+              <option value="close">无</option>
+            </select>
+          </div>
+          <div class="seat-row">
+            <span class="color-dot" style="background:#ff9800"></span>
+            <label for="seat-orange">橙方</label>
+            <select id="seat-orange">
+              <option value="normal">玩家</option>
+              <option value="computer">电脑</option>
+              <option value="close" selected>无</option>
+            </select>
+          </div>
+          <div class="seat-row">
+            <span class="color-dot" style="background:#4caf50"></span>
+            <label for="seat-green">绿方</label>
+            <select id="seat-green">
+              <option value="normal">玩家</option>
+              <option value="computer">电脑</option>
+              <option value="close" selected>无</option>
+            </select>
+          </div>
+        </div>
+        <p id="seat-error" class="seat-error"></p>
+        <button id="btn-begin" class="btn btn-pvp">开始游戏</button>
         <button id="btn-online" class="btn btn-online">联网对战</button>
       </div>
-    </div>
-  </div>
-
-  <!-- 石头剪刀布选择界面 -->
-  <div id="rps-section" class="overlay" style="display:none;">
-    <div class="overlay-content">
-      <h2>石头剪刀布 - 决定先手</h2>
-      <div id="rps-pvp" style="display:none;">
-        <div class="rps-player">
-          <h3>玩家1 选择</h3>
-          <div class="rps-buttons" id="rps-p1-buttons">
-            <button class="btn btn-rps" data-player="1" data-choice="rock">✊ 石头</button>
-            <button class="btn btn-rps" data-player="1" data-choice="scissors">✌️ 剪刀</button>
-            <button class="btn btn-rps" data-player="1" data-choice="paper">🖐️ 布</button>
-          </div>
-          <p id="rps-p1-status" class="rps-status">请选择</p>
-        </div>
-        <div class="rps-player">
-          <h3>玩家2 选择</h3>
-          <div class="rps-buttons" id="rps-p2-buttons">
-            <button class="btn btn-rps" data-player="2" data-choice="rock">✊ 石头</button>
-            <button class="btn btn-rps" data-player="2" data-choice="scissors">✌️ 剪刀</button>
-            <button class="btn btn-rps" data-player="2" data-choice="paper">🖐️ 布</button>
-          </div>
-          <p id="rps-p2-status" class="rps-status">请选择</p>
-        </div>
-      </div>
-      <div id="rps-pve" style="display:none;">
-        <div class="rps-player">
-          <h3>你的选择</h3>
-          <div class="rps-buttons" id="rps-player-buttons">
-            <button class="btn btn-rps" data-player="human" data-choice="rock">✊ 石头</button>
-            <button class="btn btn-rps" data-player="human" data-choice="scissors">✌️ 剪刀</button>
-            <button class="btn btn-rps" data-player="human" data-choice="paper">🖐️ 布</button>
-          </div>
-        </div>
-      </div>
-      <div id="rps-result" class="rps-result"></div>
     </div>
   </div>
 

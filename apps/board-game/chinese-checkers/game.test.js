@@ -33,6 +33,7 @@ import {
   getRPSName,
   createGameState,
   initGame,
+  PLAYER_SETS,
 } from "./game.js";
 
 describe("constants", () => {
@@ -120,11 +121,44 @@ describe("START_POSITIONS", () => {
 });
 
 describe("TARGET_POSITIONS", () => {
-  it("RED target is BLUE start", () => {
-    expect(TARGET_POSITIONS[RED]).toEqual(START_POSITIONS[BLUE]);
+  it("RED target is the directly opposite (PURPLE) start", () => {
+    expect(TARGET_POSITIONS[RED]).toEqual(START_POSITIONS[PURPLE]);
   });
-  it("GREEN target is ORANGE start", () => {
-    expect(TARGET_POSITIONS[GREEN]).toEqual(START_POSITIONS[ORANGE]);
+  it("PURPLE target is RED start (opposite pair)", () => {
+    expect(TARGET_POSITIONS[PURPLE]).toEqual(START_POSITIONS[RED]);
+  });
+  it("BLUE target is the directly opposite (GREEN) start", () => {
+    expect(TARGET_POSITIONS[BLUE]).toEqual(START_POSITIONS[GREEN]);
+  });
+  it("YELLOW target is the directly opposite (ORANGE) start", () => {
+    expect(TARGET_POSITIONS[YELLOW]).toEqual(START_POSITIONS[ORANGE]);
+  });
+  it("every player's target is its point-symmetric opposite triangle", () => {
+    // board center in axial coordinates
+    let cx = 0;
+    let cy = 0;
+    for (let c = 0; c < TOTAL_POSITIONS; c++) {
+      cx += positions[c].x;
+      cy += positions[c].y;
+    }
+    cx /= TOTAL_POSITIONS;
+    cy /= TOTAL_POSITIONS;
+    const centroid = (cells) => {
+      let x = 0;
+      let y = 0;
+      for (const c of cells) {
+        x += positions[c].x;
+        y += positions[c].y;
+      }
+      return { x: x / cells.length, y: y / cells.length };
+    };
+    for (let p = RED; p <= ORANGE; p++) {
+      const start = centroid(START_POSITIONS[p]);
+      const target = centroid(TARGET_POSITIONS[p]);
+      // start and target centroids must be symmetric about the board center
+      expect(start.x + target.x).toBeCloseTo(2 * cx, 5);
+      expect(start.y + target.y).toBeCloseTo(2 * cy, 5);
+    }
   });
 });
 
@@ -227,7 +261,7 @@ describe("createGameState", () => {
     var state = createGameState("pvp", 2);
     expect(state.mode).toBe("pvp");
     expect(state.playerCount).toBe(2);
-    expect(state.players).toEqual([1, 2]);
+    expect(state.players).toEqual([RED, PURPLE]);
     expect(state.currentPlayer).toBe(RED);
     expect(state.gameOver).toBe(false);
   });
@@ -507,6 +541,26 @@ describe("checkWin (supplementary)", () => {
     }
     expect(checkWin(board, RED)).toBe(false);
   });
+  it("anti-blocking: full destination with at least one own piece wins", () => {
+    var board = createBoard();
+    var targets = TARGET_POSITIONS[RED];
+    // 9 own pieces in, opponent parks one piece in the last destination hole
+    for (var i = 0; i < targets.length - 1; i++) {
+      board[targets[i]] = RED;
+    }
+    board[targets[targets.length - 1]] = BLUE;
+    // Destination is full and at least one piece is RED's own -> RED wins
+    expect(checkWin(board, RED)).toBe(true);
+  });
+  it("anti-blocking: a single own piece is enough when the rest is filled", () => {
+    var board = createBoard();
+    var targets = TARGET_POSITIONS[RED];
+    board[targets[0]] = RED;
+    for (var i = 1; i < targets.length; i++) {
+      board[targets[i]] = BLUE;
+    }
+    expect(checkWin(board, RED)).toBe(true);
+  });
 });
 
 // ============================================================
@@ -543,13 +597,13 @@ describe("createGameState (supplementary)", () => {
     expect(state.gameOver).toBe(false);
     expect(state.winner).toBeNull();
   });
-  it("different playerCount creates correct players array", () => {
+  it("different playerCount creates standard player sets", () => {
     var state2 = createGameState("pvp", 2);
-    expect(state2.players).toEqual([1, 2]);
+    expect(state2.players).toEqual([RED, PURPLE]);
     var state4 = createGameState("pvp", 4);
-    expect(state4.players).toEqual([1, 2, 3, 4]);
+    expect(state4.players).toEqual([RED, BLUE, PURPLE, GREEN]);
     var state6 = createGameState("pvp", 6);
-    expect(state6.players).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(state6.players).toEqual([RED, YELLOW, BLUE, PURPLE, ORANGE, GREEN]);
   });
 });
 
@@ -701,5 +755,59 @@ describe("getBestAIMove (supplementary)", () => {
     expect(move === null || (typeof move.from === "number" && typeof move.to === "number")).toBe(
       true
     );
+  });
+});
+
+// ============================================================
+// New tests: standard player layouts (PLAYER_SETS)
+// ============================================================
+
+describe("PLAYER_SETS (standard layouts)", () => {
+  const OPPOSITE = {
+    [RED]: PURPLE,
+    [PURPLE]: RED,
+    [BLUE]: GREEN,
+    [GREEN]: BLUE,
+    [YELLOW]: ORANGE,
+    [ORANGE]: YELLOW,
+  };
+
+  it("defines layouts for 2, 3, 4 and 6 players", () => {
+    expect(PLAYER_SETS[2].length).toBe(2);
+    expect(PLAYER_SETS[3].length).toBe(3);
+    expect(PLAYER_SETS[4].length).toBe(4);
+    expect(PLAYER_SETS[6].length).toBe(6);
+  });
+
+  it("2 players occupy a directly opposite pair", () => {
+    var set = PLAYER_SETS[2];
+    expect(OPPOSITE[set[0]]).toBe(set[1]);
+  });
+
+  it("3 players leave every destination empty (no opposing pair)", () => {
+    var set = PLAYER_SETS[3];
+    for (var i = 0; i < set.length; i++) {
+      expect(set.indexOf(OPPOSITE[set[i]])).toBe(-1);
+    }
+  });
+
+  it("4 players form two opposite pairs", () => {
+    var set = PLAYER_SETS[4];
+    for (var i = 0; i < set.length; i++) {
+      // each player's opposite is also playing
+      expect(set.indexOf(OPPOSITE[set[i]])).not.toBe(-1);
+    }
+  });
+
+  it("6 players use all six triangles", () => {
+    var set = PLAYER_SETS[6].slice().sort((a, b) => a - b);
+    expect(set).toEqual([RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE].sort((a, b) => a - b));
+  });
+
+  it("no player set contains duplicates", () => {
+    [2, 3, 4, 6].forEach((n) => {
+      var set = PLAYER_SETS[n];
+      expect(new Set(set).size).toBe(set.length);
+    });
   });
 });
