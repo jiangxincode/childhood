@@ -388,6 +388,7 @@ if (typeof document !== "undefined") {
   SoundManager.init("../../audio");
   var state = null;
   var selectedPiece = null;
+  var boardFlipped = false; // true when player is wolf (bottom)
 
   // Online mode state
   var networkProtocol = null;
@@ -402,6 +403,14 @@ if (typeof document !== "undefined") {
       cx: BOARD_PADDING + x * CELL_SIZE,
       cy: BOARD_PADDING + y * CELL_SIZE,
     };
+  }
+
+  // Convert screen coordinates to board coordinates (handle flip)
+  function screenToBoard(sx, sy) {
+    if (boardFlipped) {
+      return { x: sx, y: ROW_COUNT - 1 - sy };
+    }
+    return { x: sx, y: sy };
   }
 
   function initBoard() {
@@ -438,13 +447,14 @@ if (typeof document !== "undefined") {
     }
 
     // Interactive intersection nodes
-    for (var y = 0; y < ROW_COUNT; y++) {
-      for (var x = 0; x < COL_COUNT; x++) {
-        var pt = nodeToPx(x, y);
+    for (var sy = 0; sy < ROW_COUNT; sy++) {
+      for (var sx = 0; sx < COL_COUNT; sx++) {
+        var boardPos = screenToBoard(sx, sy);
+        var pt = nodeToPx(sx, sy);
         var g = document.createElementNS(svgNS, "g");
         g.setAttribute("class", "node");
-        g.dataset.x = x;
-        g.dataset.y = y;
+        g.dataset.x = boardPos.x;
+        g.dataset.y = boardPos.y;
         g.setAttribute("transform", "translate(" + pt.cx + "," + pt.cy + ")");
 
         // Wide invisible hit area for easier tapping
@@ -581,9 +591,10 @@ if (typeof document !== "undefined") {
     if (state.mode === "online" && state.currentPlayer !== localTeam) return;
     if (state.mode === "pve" && state.currentPlayer === state.aiTeam) return;
 
-    // SVG (x, y) maps to board (r=y, c=x)
-    var r = y;
-    var c = x;
+    // Convert screen coordinates to board coordinates
+    var boardPos = screenToBoard(x, y);
+    var r = boardPos.y;
+    var c = boardPos.x;
 
     // Select own piece
     if (state.board[r][c] === state.currentPlayer) {
@@ -704,6 +715,10 @@ if (typeof document !== "undefined") {
     if (mode === "pve") {
       state.playerTeam = playerTeam;
       state.aiTeam = playerTeam === PLAYER_A ? PLAYER_B : PLAYER_A;
+      // Flip board so player's pieces are at the bottom
+      boardFlipped = playerTeam === PLAYER_B;
+    } else {
+      boardFlipped = false;
     }
     selectedPiece = null;
     document.getElementById("mode-selection").style.display = "none";
@@ -915,6 +930,8 @@ if (typeof document !== "undefined") {
     state.currentPlayer = PLAYER_B; // Wolf always moves first
     state.firstPlayer = PLAYER_B;
     state.playerTeam = localTeam;
+    // Flip board so player's pieces are at the bottom
+    boardFlipped = localTeam === PLAYER_B;
 
     selectedPiece = null;
     document.getElementById("rps-online").style.display = "none";
