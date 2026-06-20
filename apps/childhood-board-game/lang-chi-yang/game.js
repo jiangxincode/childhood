@@ -1,7 +1,7 @@
 /* eslint-disable no-var, no-undef */
 // ============================================================
 // 狼吃羊 (Lang Chi Yang) - Wolf Eats Sheep
-// 2 players, 4x5 grid, asymmetric: 2 wolves vs 10 sheep
+// 2 players, 5x5 grid, asymmetric: 3 wolves vs 15 sheep
 // ============================================================
 
 if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
@@ -10,14 +10,14 @@ if (typeof judgeRPS === "undefined" && typeof require !== "undefined") {
   var getRPSName = _gameUtils.getRPSName;
 }
 
-var PLAYER_A = "A"; // Sheep (羊) - 10 pieces
-var PLAYER_B = "B"; // Wolf (狼) - 2 pieces
+var PLAYER_A = "A"; // Sheep (羊) - 15 pieces
+var PLAYER_B = "B"; // Wolf (狼) - 3 pieces
 var EMPTY = null;
 var ROW_COUNT = 5;
-var COL_COUNT = 4;
-var INITIAL_A = 10; // Sheep starts with 10 pieces
-var INITIAL_B = 2; // Wolf starts with 2 pieces
-var MIN_A_TO_LOSE = 3; // If sheep has fewer than 3 pieces, wolf wins
+var COL_COUNT = 5;
+var INITIAL_A = 15; // Sheep starts with 15 pieces
+var INITIAL_B = 3; // Wolf starts with 3 pieces
+var MIN_A_TO_LOSE = 4; // If sheep has fewer than 4 pieces (<=3), wolf wins
 
 // SVG board rendering constants
 var BOARD_PADDING = 40;
@@ -47,23 +47,29 @@ function createBoard() {
 
 function getInitialBoard() {
   var board = createBoard();
-  // Wolf (B): top row middle positions
+  // Wolf (B): top row middle 3 positions (col 1,2,3)
   board[0][1] = PLAYER_B;
   board[0][2] = PLAYER_B;
-  // Sheep (A): rows 2-4, all columns = 10 pieces
-  // Row 2: only (2,0) and (2,3)
+  board[0][3] = PLAYER_B;
+  // Sheep (A): rows 2-4, all 5 columns = 15 pieces
+  // Row 2: all 5 columns
   board[2][0] = PLAYER_A;
+  board[2][1] = PLAYER_A;
+  board[2][2] = PLAYER_A;
   board[2][3] = PLAYER_A;
-  // Row 3: all 4 columns
+  board[2][4] = PLAYER_A;
+  // Row 3: all 5 columns
   board[3][0] = PLAYER_A;
   board[3][1] = PLAYER_A;
   board[3][2] = PLAYER_A;
   board[3][3] = PLAYER_A;
-  // Row 4: all 4 columns
+  board[3][4] = PLAYER_A;
+  // Row 4: all 5 columns
   board[4][0] = PLAYER_A;
   board[4][1] = PLAYER_A;
   board[4][2] = PLAYER_A;
   board[4][3] = PLAYER_A;
+  board[4][4] = PLAYER_A;
   return board;
 }
 
