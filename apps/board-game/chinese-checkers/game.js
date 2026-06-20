@@ -582,22 +582,10 @@ if (typeof document !== "undefined") {
   const CELL_SIZE = 28;
   const PADDING = 60;
 
-  // Reference-style board palette (matches the cover image)
-  const ZONE_COLORS = {
-    red: "#ec2f2f",
-    cyan: "#29abe2",
-    green: "#2bb24c",
-    yellow: "#fff200",
-  };
-  // Star points colored clockwise from the top; opposite points share a color
-  const ZONE_SEQUENCE = [
-    ZONE_COLORS.red,
-    ZONE_COLORS.cyan,
-    ZONE_COLORS.green,
-    ZONE_COLORS.red,
-    ZONE_COLORS.cyan,
-    ZONE_COLORS.green,
-  ];
+  // Board zone palette. Each star point uses its own player's full color so a piece
+  // always sits on a same-colored corner; the center hexagon stays neutral. Pieces are
+  // separated from the board by the white hole ring, a dark stroke and a soft glow.
+  const ZONE_CENTER = "#f0ead6"; // neutral eggshell, distinct from all 6 player hues
   const HOLE_FILL = "#ffffff";
   const HOLE_STROKE = "#1f1f1f";
   const LINK_COLOR = "#1a1a1a";
@@ -670,35 +658,16 @@ if (typeof document !== "undefined") {
   }
 
   // Group cells into the 6 star points + center hexagon and assign zone colors.
-  // The point color is chosen by its orientation so it stays correct after rotation.
+  // Each star point uses its own player's color (lightened) so pieces match their corner.
   function getRegionFills() {
-    let bx = 0;
-    let by = 0;
-    for (let c = 0; c < TOTAL_POSITIONS; c++) {
-      const pp = cellToPixel(c);
-      bx += pp.x;
-      by += pp.y;
-    }
-    bx /= TOTAL_POSITIONS;
-    by /= TOTAL_POSITIONS;
-
     const inStart = {};
     const fills = [];
     for (let p = 1; p <= 6; p++) {
       const grp = START_POSITIONS[p];
-      let gx = 0;
-      let gy = 0;
       for (const c of grp) {
         inStart[c] = true;
-        const pp = cellToPixel(c);
-        gx += pp.x;
-        gy += pp.y;
       }
-      gx /= grp.length;
-      gy /= grp.length;
-      const deg = (Math.atan2(gy - by, gx - bx) * 180) / Math.PI;
-      const idx = ((Math.round((deg + 90) / 60) % 6) + 6) % 6;
-      fills.push({ color: ZONE_SEQUENCE[idx], cells: grp });
+      fills.push({ color: MARBLE_COLORS[p], cells: grp });
     }
 
     const centerCells = [];
@@ -708,7 +677,7 @@ if (typeof document !== "undefined") {
       }
     }
     // Draw the center first so the colored points overlap cleanly on top
-    fills.unshift({ color: ZONE_COLORS.yellow, cells: centerCells });
+    fills.unshift({ color: ZONE_CENTER, cells: centerCells });
     return fills;
   }
 
@@ -770,6 +739,21 @@ if (typeof document !== "undefined") {
         ])
       );
     }
+    // Soft drop-shadow glow so a piece lifts off a same-colored corner
+    const glow = document.createElementNS(SVG_NS, "filter");
+    glow.setAttribute("id", "marble-glow");
+    glow.setAttribute("x", "-60%");
+    glow.setAttribute("y", "-60%");
+    glow.setAttribute("width", "220%");
+    glow.setAttribute("height", "220%");
+    const shadow = document.createElementNS(SVG_NS, "feDropShadow");
+    shadow.setAttribute("dx", "0");
+    shadow.setAttribute("dy", "1");
+    shadow.setAttribute("stdDeviation", "1.3");
+    shadow.setAttribute("flood-color", "#000000");
+    shadow.setAttribute("flood-opacity", "0.55");
+    glow.appendChild(shadow);
+    defs.appendChild(glow);
     svg.appendChild(defs);
 
     // Colored star zones: 6 points + center hexagon, filled as solid regions
@@ -865,8 +849,9 @@ if (typeof document !== "undefined") {
     piece.setAttribute("cy", pos.y);
     piece.setAttribute("r", CELL_SIZE * 0.34);
     piece.setAttribute("fill", "url(#marble-" + player + ")");
-    piece.setAttribute("stroke", shadeColor(MARBLE_COLORS[player], -45));
-    piece.setAttribute("stroke-width", "1.2");
+    piece.setAttribute("stroke", shadeColor(MARBLE_COLORS[player], -55));
+    piece.setAttribute("stroke-width", "1.6");
+    piece.setAttribute("filter", "url(#marble-glow)");
     piece.setAttribute("class", "piece");
     piece.dataset.cell = cell;
 
