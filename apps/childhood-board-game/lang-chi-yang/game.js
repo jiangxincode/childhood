@@ -488,7 +488,7 @@ if (typeof document !== "undefined") {
             return function () {
               handlePositionClick(cx, cy);
             };
-          })(x, y)
+          })(sx, sy)
         );
         svg.appendChild(g);
       }
