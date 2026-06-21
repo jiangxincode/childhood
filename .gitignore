@@ -29,3 +29,6 @@ sonar-report.xml
 src-tauri/target/
 src-tauri/icons/
 src-tauri/gen/
+
+tmp/
+*.lock
