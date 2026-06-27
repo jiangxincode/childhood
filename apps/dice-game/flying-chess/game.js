@@ -569,32 +569,6 @@ if (typeof $j !== "undefined") {
     }, 500);
   }
 
-  function getComputerRandomIndex(leng) {
-    const num = Math.floor(Math.random() * 10);
-    switch (leng) {
-      case 1:
-        return 0;
-      case 2:
-        if (num == 0 || num == 1) {
-          return num;
-        } else {
-          return getComputerRandomIndex(leng);
-        }
-      case 3:
-        if (num == 0 || num == 1 || num == 2) {
-          return num;
-        } else {
-          return getComputerRandomIndex(leng);
-        }
-      case 4:
-        if (num == 0 || num == 1 || num == 2 || num == 3) {
-          return num;
-        } else {
-          return getComputerRandomIndex(leng);
-        }
-    }
-  }
-
   const Computer = function () {
     this.performing = function () {
       setTimeout(() => {
@@ -605,7 +579,7 @@ if (typeof $j !== "undefined") {
           }
         });
         if (planeList && planeList.length > 0) {
-          const randomNum = getComputerRandomIndex(planeList.length);
+          const randomNum = globalThis.GameAI.selectComputerPlaneIndex(planeList.length);
           $j(planeList[randomNum]).trigger("click");
           if (diceNum == 6) {
             diceClick();

@@ -383,11 +383,6 @@ function checkGameOver(board, currentTeam, state) {
  * @param {number} rank
  * @returns {number}
  */
-function pieceValue(rank) {
-  if (rank === 1) return 10;
-  if (rank === 8) return 5;
-  return 9 - rank;
-}
 
 /**
  * AI decision: smart one-step lookahead.
@@ -396,21 +391,37 @@ function pieceValue(rank) {
  * @param {string} aiTeam - AI team 'dragon' | 'tiger'
  * @returns {{type, from?, to?, x?, y?}|null}
  */
-function aiDecide(state, aiTeam) {
-  return smartAiDecide(state, aiTeam, {
-    canCapture: canCapture,
-    isMutualDestruction: isMutualDestruction,
-    pieceValue: pieceValue,
-    getValidCaptures: function (board, x, y, team) {
-      return getValidCaptures(board, x, y, team);
-    },
-    getValidMoves: getValidMoves,
-  });
-}
 
 // ============================================================
 // Module exports (Node.js environment)
 // ============================================================
+const createGameAI =
+  typeof module !== "undefined" && module.exports
+    ? require("./ai.js").createGameAI
+    : globalThis.GameAI.createGameAI;
+
+const { pieceValue, aiDecide } = createGameAI({
+  smartAiDecide,
+  getValidMoves,
+  DRAGON_PIECES,
+  TIGER_PIECES,
+  RANK_MAP,
+  IMAGE_MAP,
+  TEAM_MAP,
+  getImagePath,
+  getTeam,
+  getRank,
+  canCapture,
+  isMutualDestruction,
+  createGameState,
+  getValidCaptures,
+  flipCard,
+  moveCard,
+  captureCard,
+  hasAnyLegalAction,
+  checkGameOver,
+});
+
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     DRAGON_PIECES,

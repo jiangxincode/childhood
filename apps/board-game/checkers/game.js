@@ -17,7 +17,6 @@ const RED_KING = 3;
 const WHITE_KING = 4;
 
 // AI search depth
-const AI_DEPTH = 4;
 
 // Evaluation weights
 const WEIGHT_PIECE = 100;
@@ -259,122 +258,6 @@ function checkGameOver(board, currentPlayer) {
 // AI: Alpha-Beta Pruning
 // ============================================================
 
-function evaluateBoard(board, aiPlayer) {
-  let score = 0;
-  const opponent = getOpponent(aiPlayer);
-
-  for (let r = 0; r < BOARD_SIZE; r++) {
-    for (let c = 0; c < BOARD_SIZE; c++) {
-      const piece = board[r][c];
-      if (piece === EMPTY) continue;
-
-      const isAI = getOwner(piece) === aiPlayer;
-      const sign = isAI ? 1 : -1;
-
-      // Base score
-      if (isKing(piece)) {
-        score += sign * WEIGHT_KING;
-      } else {
-        score += sign * WEIGHT_PIECE;
-        // Advance bonus
-        if (isAI) {
-          if (aiPlayer === RED) score += sign * r * WEIGHT_ADVANCE;
-          else score += sign * (BOARD_SIZE - 1 - r) * WEIGHT_ADVANCE;
-        } else if (opponent === RED) {
-          score += sign * r * WEIGHT_ADVANCE;
-        } else {
-          score += sign * (BOARD_SIZE - 1 - r) * WEIGHT_ADVANCE;
-        }
-      }
-
-      // Center position bonus
-      const centerDist = Math.abs(r - 3.5) + Math.abs(c - 3.5);
-      score += sign * (7 - centerDist) * WEIGHT_CENTER;
-    }
-  }
-
-  // Threat evaluation
-  score += evaluateThreats(board, aiPlayer);
-
-  return score;
-}
-
-function evaluateThreats(board, player) {
-  let score = 0;
-  const opponent = getOpponent(player);
-  // Check if opponent can capture our pieces
-  for (let r = 0; r < BOARD_SIZE; r++) {
-    for (let c = 0; c < BOARD_SIZE; c++) {
-      if (getOwner(board[r][c]) === opponent) {
-        const caps = getCaptureMoves(board, r, c);
-        for (const cap of caps) {
-          const target = board[cap.capturedR][cap.capturedC];
-          if (getOwner(target) === player) {
-            score += WEIGHT_THREATENED * (isKing(target) ? 2.5 : 1);
-          }
-        }
-      }
-    }
-  }
-  return score;
-}
-
-function alphaBeta(board, depth, alpha, beta, isMaximizing, aiPlayer) {
-  const currentPlayer = isMaximizing ? aiPlayer : getOpponent(aiPlayer);
-  const gameOver = checkGameOver(board, currentPlayer);
-
-  if (gameOver) {
-    if (gameOver.winner === aiPlayer) return 99999 + depth;
-    return -99999 - depth;
-  }
-
-  if (depth === 0) {
-    return evaluateBoard(board, aiPlayer);
-  }
-
-  const moves = getAllMoves(board, currentPlayer);
-
-  if (isMaximizing) {
-    let maxEval = -Infinity;
-    for (const move of moves) {
-      const newBoard = applyMove(board, move);
-      const eval_ = alphaBeta(newBoard, depth - 1, alpha, beta, false, aiPlayer);
-      if (eval_ > maxEval) maxEval = eval_;
-      if (maxEval > alpha) alpha = maxEval;
-      if (beta <= alpha) break;
-    }
-    return maxEval;
-  } else {
-    let minEval = Infinity;
-    for (const move of moves) {
-      const newBoard = applyMove(board, move);
-      const eval_ = alphaBeta(newBoard, depth - 1, alpha, beta, true, aiPlayer);
-      if (eval_ < minEval) minEval = eval_;
-      if (minEval < beta) beta = minEval;
-      if (beta <= alpha) break;
-    }
-    return minEval;
-  }
-}
-
-function getBestAIMove(board, aiPlayer) {
-  const moves = getAllMoves(board, aiPlayer);
-  if (moves.length === 0) return null;
-
-  let bestMove = null;
-  let bestScore = -Infinity;
-
-  for (const move of moves) {
-    const newBoard = applyMove(board, move);
-    const score = alphaBeta(newBoard, AI_DEPTH - 1, -Infinity, Infinity, false, aiPlayer);
-    if (score > bestScore) {
-      bestScore = score;
-      bestMove = move;
-    }
-  }
-  return bestMove;
-}
-
 // ============================================================
 // Game state
 // ============================================================
@@ -403,6 +286,44 @@ function createGameState(mode) {
 // ============================================================
 // Export for testing
 // ============================================================
+
+const createGameAI =
+  typeof module !== "undefined" && module.exports
+    ? require("./ai.js").createGameAI
+    : globalThis.GameAI.createGameAI;
+
+const { AI_DEPTH, evaluateBoard, evaluateThreats, alphaBeta, getBestAIMove } = createGameAI({
+  BOARD_SIZE,
+  EMPTY,
+  RED,
+  WHITE,
+  RED_KING,
+  WHITE_KING,
+  WEIGHT_PIECE,
+  WEIGHT_KING,
+  WEIGHT_ADVANCE,
+  WEIGHT_CENTER,
+  WEIGHT_THREATENED,
+  createBoard,
+  copyBoard,
+  isRed,
+  isWhite,
+  isKing,
+  getOwner,
+  getOpponent,
+  getPlayerName,
+  promote,
+  inBounds,
+  getMoveDirs,
+  getCaptureDirs,
+  getSimpleMoves,
+  getCaptureMoves,
+  getAllMoves,
+  expandChainCaptures,
+  applyMove,
+  checkGameOver,
+  createGameState,
+});
 
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {

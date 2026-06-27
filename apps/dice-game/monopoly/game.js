@@ -297,41 +297,35 @@ function checkGameOver(state) {
 }
 
 // NPC decision: keep reserve money
-function npcDecision(state, playerIndex, eventType, data) {
-  const player = state.players[playerIndex];
-  if (eventType === "buyOffer") {
-    return player.money - data.value > 3000;
-  }
-  if (eventType === "upgradeOffer") {
-    return player.money - data.cost > 2000;
-  }
-  return false;
-}
 
 // Advance to next active player, update round
-function advanceTurn(state) {
-  const total = state.players.length;
-  let next = state.currentPlayer;
-  let safety = 0;
-  while (safety < total + 1) {
-    next = (next + 1) % total;
-    if (next === 0) state.round++;
-    const p = state.players[next];
-    if (p.state === "active") {
-      if (p.stop) {
-        p.stop--;
-        safety++;
-        continue;
-      }
-      state.currentPlayer = next;
-      return next;
-    }
-    safety++;
-  }
-  return -1;
-}
 
 // Conditional exports for testing
+const createGameAI =
+  typeof module !== "undefined" && module.exports
+    ? require("./ai.js").createGameAI
+    : globalThis.GameAI.createGameAI;
+
+const { npcDecision, advanceTurn } = createGameAI({
+  BOARD_DATA,
+  FATE_CARDS,
+  COLOR_SCHEME,
+  PLAYER_COLORS,
+  PLAYER_COLOR_NAMES,
+  BOARD_SIZE,
+  createGameState,
+  generateNum,
+  rollDice,
+  movePlayer,
+  calculateRent,
+  handleLanding,
+  buyProperty,
+  upgradeProperty,
+  checkBankrupt,
+  confiscateProperties,
+  checkGameOver,
+});
+
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     BOARD_DATA,
