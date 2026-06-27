@@ -13,7 +13,7 @@
   <a href="https://sonarcloud.io/dashboard?id=jiangxincode_childhood"><img src="https://sonarcloud.io/api/project_badges/measure?project=jiangxincode_childhood&metric=alert_status" alt="Quality Gate Status"></a>
 </p>
 
-一个纯前端经典游戏合集，收录了 **25 款**童年桌游与卡牌游戏，开箱即玩。支持双人对战、人机对战和联网对战。
+一个纯前端经典游戏合集，收录了 **26 款**童年桌游与卡牌游戏，开箱即玩。支持双人对战、人机对战和联网对战；人机模式可在对局中切换简单、普通、困难和大师四档 AI 难度。
 
 **在线体验**：[GitHub Pages（主站）](https://jiangxincode.github.io/childhood/) · [Cloudflare Pages（镜像）](https://childhood-cck.pages.dev/)
 
@@ -101,6 +101,7 @@ childhood/
 │   │   ├── ma-yi-ban-jia/            # 蚂蚁搬家
 │   │   └── si-bu-ding/               # 四步钉
 │   └── common/                       # 共享模块
+│       ├── ai-difficulty.js          # 统一 AI 难度控制组件
 │       ├── card-game-core.js         # 卡牌游戏核心逻辑
 │       ├── game-utils.js             # 游戏工具函数
 │       ├── webrtc-connection.js      # WebRTC P2P 连接管理器

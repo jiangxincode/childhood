@@ -59,9 +59,31 @@
       checkGameOver,
     } = deps;
 
-    function aiDecide(state, aiTeam) {
+    function aiDecide(state, aiTeam, difficulty) {
       const board = state.board;
       const gameType = state.gameType;
+      const level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      if (level === "easy") {
+        const actions = [];
+        for (let y = 0; y < ROWS; y++) {
+          for (let x = 0; x < COLS; x++) {
+            const piece = board[y][x];
+            if (gameType === "flip" && piece && piece.state === STATE_FACE_DOWN) {
+              actions.push({ type: "flip", from: { x, y }, to: { x, y } });
+            }
+            if (!piece || piece.team !== aiTeam || !isMovable(piece)) continue;
+            if (piece.state === STATE_FACE_DOWN) continue;
+            for (const move of getValidMoves(board, x, y, aiTeam, gameType)) {
+              actions.push({ type: "move", from: { x, y }, to: { x: move.x, y: move.y } });
+            }
+          }
+        }
+        return actions.length > 0 ? actions[Math.floor(Math.random() * actions.length)] : null;
+      }
 
       // Flip mode: prioritize flipping pieces
       if (gameType === "flip") {
@@ -156,7 +178,15 @@
       let pool = railwayMoves.length > 0 ? railwayMoves : normalMoves;
       if (pool.length === 0) pool = allMoves;
       if (pool.length > 0) {
-        const pick = pool[Math.floor(Math.random() * pool.length)];
+        let pick;
+        if (level === "hard" || level === "master") {
+          const direction = aiTeam === RED ? -1 : 1;
+          pool.sort((a, b) => (b.to.y - b.from.y) * direction - (a.to.y - a.from.y) * direction);
+          const candidateCount = level === "hard" ? Math.min(2, pool.length) : 1;
+          pick = pool[Math.floor(Math.random() * candidateCount)];
+        } else {
+          pick = pool[Math.floor(Math.random() * pool.length)];
+        }
         return { type: "move", from: pick.from, to: pick.to };
       }
 

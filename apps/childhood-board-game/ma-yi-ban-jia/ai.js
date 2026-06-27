@@ -113,10 +113,17 @@
       return worst;
     }
 
-    function getBestAIMove(state) {
+    function getBestAIMove(state, difficulty) {
       var aiPlayer = state.aiTeam;
       var moves = getValidMoves(state.board, aiPlayer);
       if (moves.length === 0) return null;
+
+      var level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      if (level === "easy") return moves[Math.floor(Math.random() * moves.length)];
 
       // Quick win check
       for (var w = 0; w < moves.length; w++) {
@@ -124,7 +131,7 @@
         if (checkWin(nb, aiPlayer)) return moves[w];
       }
 
-      var depth = 3; // 9x9 with jumps has a high branching factor; keep modest
+      var depth = { normal: 3, hard: 4, master: 5 }[level] || 3;
       var bestScore = -Infinity;
       var bestMoves = [];
       for (var i = 0; i < moves.length; i++) {

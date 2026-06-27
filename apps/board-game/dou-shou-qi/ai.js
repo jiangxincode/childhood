@@ -357,7 +357,7 @@
       return bestScore;
     }
 
-    function getBestAIMove(board, aiColor) {
+    function getBestAIMove(board, aiColor, difficulty) {
       transpositionTable.clear();
       killerMoves = [];
       historyTable = {};
@@ -366,13 +366,25 @@
       if (rootMoves.length === 0) return null;
       if (rootMoves.length === 1) return rootMoves[0];
 
-      searchDeadline = Date.now() + AI_TIME_BUDGET_MS;
+      const level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      if (level === "easy") return rootMoves[Math.floor(Math.random() * rootMoves.length)];
+      const profile = {
+        normal: { maxDepth: AI_MAX_DEPTH, time: AI_TIME_BUDGET_MS },
+        hard: { maxDepth: AI_MAX_DEPTH + 1, time: 2800 },
+        master: { maxDepth: AI_MAX_DEPTH + 2, time: 4000 },
+      }[level] || { maxDepth: AI_MAX_DEPTH, time: AI_TIME_BUDGET_MS };
+
+      searchDeadline = Date.now() + profile.time;
       let bestMove = rootMoves[0];
       let prevBest = null;
 
       try {
         // Iterative deepening
-        for (let depth = 1; depth <= AI_MAX_DEPTH; depth++) {
+        for (let depth = 1; depth <= profile.maxDepth; depth++) {
           let iterBest = null;
           let iterBestScore = -Infinity;
           let alpha = -Infinity;

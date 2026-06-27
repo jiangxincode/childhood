@@ -550,7 +550,11 @@ if (typeof document !== "undefined") {
               showDialog("purchase", person.money > place.value);
             } else {
               setTimeout(
-                () => dialogClicked("purchase", person.money - place.value > 3000),
+                () =>
+                  dialogClicked(
+                    "purchase",
+                    npcDecision({ players }, s, "buyOffer", { value: place.value })
+                  ),
                 ANIM_SPEED / 3
               );
             }
@@ -576,7 +580,10 @@ if (typeof document !== "undefined") {
               if (person.control) {
                 showDialog("upgrade", person.money > place.value * 0.5);
               } else {
-                dialogClicked("upgrade", person.money - place.value / 2 > 2000);
+                dialogClicked(
+                  "upgrade",
+                  npcDecision({ players }, s, "upgradeOffer", { cost: place.value / 2 })
+                );
               }
             }
           } else if (place.state === "goodEvent") {

@@ -48,8 +48,13 @@
       return 11 - piece.rank; // rank 2..9 -> value 9..2
     }
 
-    function aiDecide(state, aiTeam) {
+    function aiDecide(state, aiTeam, difficulty) {
       const board = state.board;
+      const level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
 
       // Priority 1: capture flag (highest priority, game-winning move)
       for (let y = 0; y < 5; y++) {
@@ -94,7 +99,7 @@
       };
 
       // Priority 2: capture
-      const cap = dependencies.chooseBestCapture(board, aiTeam, deps, 5);
+      const cap = dependencies.chooseBestCapture(board, aiTeam, deps, 5, level);
       if (cap) return cap;
 
       // Priority 3: approach the revealed flag with our smallest normal piece.
@@ -105,11 +110,11 @@
       if (approachFlag) return approachFlag;
 
       // Priority 4: flip
-      const flip = dependencies.chooseBestFlip(board, aiTeam, deps, 5);
+      const flip = dependencies.chooseBestFlip(board, aiTeam, deps, 5, level);
       if (flip) return flip;
 
       // Priority 5: move
-      const mv = dependencies.chooseBestMove(board, aiTeam, deps, 5);
+      const mv = dependencies.chooseBestMove(board, aiTeam, deps, 5, level);
       if (mv) return mv;
 
       return null;

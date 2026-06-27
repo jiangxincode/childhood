@@ -155,12 +155,68 @@
       return bestMove;
     }
 
-    function getBestAIMove(state) {
+    function evaluateForPlayer(board, aiPlayer) {
+      var winner = checkWin(board);
+      if (winner) return winner === aiPlayer ? 100000 : -100000;
+      var sheep = countPieces(board, PLAYER_A);
+      var wolfMobility = getValidMoves(board, PLAYER_B).length;
+      var sheepMobility = getValidMoves(board, PLAYER_A).length;
+      if (aiPlayer === PLAYER_B) {
+        return (INITIAL_A - sheep) * 100 + wolfMobility * 5 - sheepMobility;
+      }
+      return sheep * 50 - wolfMobility * 12 + sheepMobility;
+    }
+
+    function searchBestMove(state, depth) {
+      var aiPlayer = state.aiTeam;
+      var opponent = getOpponent(aiPlayer);
+      var moves = getValidMoves(state.board, aiPlayer);
+      var bestMove = moves[0];
+      var bestScore = -Infinity;
+      for (var i = 0; i < moves.length; i++) {
+        var next = applyMove(state.board, moves[i]);
+        var score = evaluateForPlayer(next, aiPlayer);
+        if (depth > 1 && !checkWin(next)) {
+          var replies = getValidMoves(next, opponent);
+          var worstReply = Infinity;
+          for (var j = 0; j < replies.length; j++) {
+            worstReply = Math.min(
+              worstReply,
+              evaluateForPlayer(applyMove(next, replies[j]), aiPlayer)
+            );
+          }
+          if (worstReply < Infinity) score = worstReply;
+        }
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = moves[i];
+        }
+      }
+      return bestMove;
+    }
+
+    function getBestAIMove(state, difficulty) {
+      var level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      var moves = getValidMoves(state.board, state.aiTeam);
+      if (moves.length === 0) return null;
+      if (level === "easy") return moves[Math.floor(Math.random() * moves.length)];
+      if (level === "hard") return searchBestMove(state, 1);
+      if (level === "master") return searchBestMove(state, 2);
       if (state.aiTeam === PLAYER_B) return getBestAIMove_B(state);
       return getBestAIMove_A(state);
     }
 
-    return { getBestAIMove_B, getBestAIMove_A, getBestAIMove };
+    return {
+      getBestAIMove_B,
+      getBestAIMove_A,
+      evaluateForPlayer,
+      searchBestMove,
+      getBestAIMove,
+    };
   }
   return { createGameAI };
 });

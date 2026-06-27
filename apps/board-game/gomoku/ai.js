@@ -27,8 +27,25 @@
 
     const SCORE_AI = [0, 220, 420, 2100, 20000];
 
-    function getBestAIMove(board, aiPlayer) {
+    function getBestAIMove(board, aiPlayer, difficulty) {
       const humanPlayer = getOpponent(aiPlayer);
+      const level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      if (level === "easy") {
+        const emptyCells = [];
+        for (let y = 0; y < BOARD_SIZE; y++) {
+          for (let x = 0; x < BOARD_SIZE; x++) {
+            if (board[y][x] === EMPTY) emptyCells.push({ x, y });
+          }
+        }
+        return emptyCells.length > 0
+          ? emptyCells[Math.floor(Math.random() * emptyCells.length)]
+          : null;
+      }
+      const attackWeight = { normal: 1, hard: 1.08, master: 1.16 }[level] || 1;
       const scoreAI = [];
       const scoreHuman = [];
       for (let i = 0; i < BOARD_SIZE; i++) {
@@ -80,7 +97,10 @@
           if (board[y][x] !== EMPTY) continue;
           if (scoreAI[x][y] === 0 && scoreHuman[x][y] === 0) continue;
 
-          const s = scoreAI[x][y] + scoreHuman[x][y];
+          const center = Math.floor(BOARD_SIZE / 2);
+          const centerBonus =
+            level === "master" ? BOARD_SIZE - Math.abs(x - center) - Math.abs(y - center) : 0;
+          const s = scoreAI[x][y] * attackWeight + scoreHuman[x][y] + centerBonus;
           if (s > maxScore) {
             maxScore = s;
             bestX = x;

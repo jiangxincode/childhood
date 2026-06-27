@@ -119,12 +119,19 @@
       return worst;
     }
 
-    function getBestAIMove(state) {
+    function getBestAIMove(state, difficulty) {
       var aiPlayer = state.aiTeam;
       var moves = getValidMoves(state.board, aiPlayer);
       if (moves.length === 0) return null;
 
-      var depth = 6;
+      var level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      if (level === "easy") return moves[Math.floor(Math.random() * moves.length)];
+
+      var depth = { normal: 6, hard: 7, master: 8 }[level] || 6;
       var bestScore = -Infinity;
       var bestMoves = [];
       for (var i = 0; i < moves.length; i++) {

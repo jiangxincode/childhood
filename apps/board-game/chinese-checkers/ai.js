@@ -214,15 +214,41 @@
       return score;
     }
 
-    function getBestAIMove(board, player, allPlayers) {
+    function getBestAIMove(board, player, allPlayers, difficulty) {
+      const level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
       let bestScore = -Infinity;
       let bestMove = null;
+      const legalMoves = [];
 
       for (let cell = 0; cell < TOTAL_POSITIONS; cell++) {
         if (board[cell] === player) {
           const moves = getLegalMoves(board, cell);
           for (const m of moves) {
-            const score = evaluateMove(board, player, cell, m, allPlayers);
+            legalMoves.push({ from: cell, to: m });
+            let score = evaluateMove(board, player, cell, m, allPlayers);
+            if (level === "hard" || level === "master") {
+              score += POSITION_SCORES[player][m] * 0.1;
+            }
+            if (level === "master") {
+              const nextBoard = board.slice();
+              nextBoard[m] = player;
+              nextBoard[cell] = EMPTY;
+              let futureBest = -Infinity;
+              for (let next = 0; next < TOTAL_POSITIONS; next++) {
+                if (nextBoard[next] !== player) continue;
+                for (const destination of getLegalMoves(nextBoard, next)) {
+                  futureBest = Math.max(
+                    futureBest,
+                    evaluateMove(nextBoard, player, next, destination, allPlayers)
+                  );
+                }
+              }
+              if (futureBest > -Infinity) score += futureBest * 0.2;
+            }
             if (score > bestScore) {
               bestScore = score;
               bestMove = { from: cell, to: m };
@@ -231,6 +257,9 @@
         }
       }
 
+      if (level === "easy" && legalMoves.length > 0) {
+        return legalMoves[Math.floor(Math.random() * legalMoves.length)];
+      }
       return bestMove;
     }
 

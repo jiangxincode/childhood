@@ -138,16 +138,24 @@
       }
     }
 
-    function getBestAIMove(board, aiPlayer) {
+    function getBestAIMove(board, aiPlayer, difficulty) {
       const moves = getAllMoves(board, aiPlayer);
       if (moves.length === 0) return null;
+      const level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      if (level === "easy") return moves[Math.floor(Math.random() * moves.length)];
+      const searchDepth =
+        { normal: AI_DEPTH, hard: AI_DEPTH + 1, master: AI_DEPTH + 2 }[level] || AI_DEPTH;
 
       let bestMove = null;
       let bestScore = -Infinity;
 
       for (const move of moves) {
         const newBoard = applyMove(board, move);
-        const score = alphaBeta(newBoard, AI_DEPTH - 1, -Infinity, Infinity, false, aiPlayer);
+        const score = alphaBeta(newBoard, searchDepth - 1, -Infinity, Infinity, false, aiPlayer);
         if (score > bestScore) {
           bestScore = score;
           bestMove = move;

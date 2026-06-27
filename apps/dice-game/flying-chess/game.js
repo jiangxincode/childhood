@@ -397,12 +397,7 @@ if (typeof $j !== "undefined") {
       new PLANEUSER("yellow", "computer"),
       new PLANEUSER("green", "computer"),
     ];
-    this.difficulty = "normal";
     this.currentUser = "red";
-
-    this.setDifficulty = function () {
-      this.difficulty = $j("#nandu").val();
-    };
 
     this.setUserList = function () {
       this.userList[0].state = $j("#redUser").val();
@@ -413,7 +408,6 @@ if (typeof $j !== "undefined") {
 
     this.begin = function () {
       this.setUserList();
-      this.setDifficulty();
       const qifeiVal = $j("#qifei").val();
       $j("#rule-takeoff").text("掷到" + qifeiVal + "飞机才能起飞");
       createPlane(planeOption.userList);
@@ -579,7 +573,11 @@ if (typeof $j !== "undefined") {
           }
         });
         if (planeList && planeList.length > 0) {
-          const randomNum = globalThis.GameAI.selectComputerPlaneIndex(planeList.length);
+          const candidates = planeList.map((plane) => ({
+            state: plane.attr("state"),
+            coordId: Number.parseInt(plane.attr("coordId")) || 0,
+          }));
+          const randomNum = globalThis.GameAI.selectComputerPlaneIndex(candidates);
           $j(planeList[randomNum]).trigger("click");
           if (diceNum == 6) {
             diceClick();

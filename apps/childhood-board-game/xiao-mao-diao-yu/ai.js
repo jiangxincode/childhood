@@ -93,10 +93,17 @@
       return { score: minScore, move: bestMove };
     }
 
-    function getBestAIMove(state) {
+    function getBestAIMove(state, difficulty) {
       var aiPlayer = state.aiTeam;
       var moves = getValidMoves(state.board, aiPlayer);
       if (moves.length === 0) return null;
+
+      var level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      if (level === "easy") return moves[Math.floor(Math.random() * moves.length)];
 
       // Take an immediate capture-and-win if available
       for (var i = 0; i < moves.length; i++) {
@@ -104,7 +111,7 @@
         if (countPieces(nb, getOpponent(aiPlayer)) === 0) return moves[i];
       }
 
-      var depth = 4;
+      var depth = { normal: 4, hard: 5, master: 6 }[level] || 4;
       var result = minimax(state.board, depth, true, aiPlayer, -Infinity, Infinity);
       return result.move || moves[0];
     }

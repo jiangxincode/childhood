@@ -292,7 +292,7 @@ function simulateCapture(board, from, to, mutual) {
  * @param {number} [size] - board size (default board.length)
  * @returns {{type:'capture',from:{x,y},to:{x,y}}|null}
  */
-function chooseBestCapture(board, aiTeam, deps, size) {
+function chooseBestCapture(board, aiTeam, deps, size, difficulty) {
   const dims = _boardDims(board, deps.inBounds);
   const N = size || dims.size;
   const { canCapture, isMutualDestruction, pieceValue, getValidCaptures } = deps;
@@ -337,12 +337,22 @@ function chooseBestCapture(board, aiTeam, deps, size) {
     }
   }
   if (allCaptures.length === 0) return null;
+  if (difficulty === "easy") {
+    const pick = allCaptures[Math.floor(Math.random() * allCaptures.length)];
+    return { type: "capture", from: pick.from, to: pick.to };
+  }
   allCaptures.sort((a, b) => {
     if (a.score !== b.score) return b.score - a.score;
     if (a.mutual !== b.mutual) return a.mutual ? 1 : -1;
     if (a.defenderRank !== b.defenderRank) return a.defenderRank - b.defenderRank;
     return b.attackerRank - a.attackerRank;
   });
+  if (
+    (difficulty === "hard" && allCaptures[0].score < -2) ||
+    (difficulty === "master" && allCaptures[0].score < 0)
+  ) {
+    return null;
+  }
   return { type: "capture", from: allCaptures[0].from, to: allCaptures[0].to };
 }
 
@@ -355,7 +365,7 @@ function chooseBestCapture(board, aiTeam, deps, size) {
  * @param {number} [size]
  * @returns {{type:'flip',x:number,y:number}|null}
  */
-function chooseBestFlip(board, aiTeam, deps, size) {
+function chooseBestFlip(board, aiTeam, deps, size, difficulty) {
   const dims = _boardDims(board, deps.inBounds);
   const N = size || dims.size;
   const { pieceValue } = deps;
@@ -367,6 +377,10 @@ function chooseBestFlip(board, aiTeam, deps, size) {
     }
   }
   if (faceDownCells.length === 0) return null;
+  if (difficulty === "easy") {
+    const pos = faceDownCells[Math.floor(Math.random() * faceDownCells.length)];
+    return { type: "flip", x: pos.x, y: pos.y };
+  }
 
   const center = (N - 1) / 2;
   const scored = faceDownCells.map((pos) => {
@@ -408,7 +422,7 @@ function chooseBestFlip(board, aiTeam, deps, size) {
  * @param {number} [size]
  * @returns {{type:'move',from:{x,y},to:{x,y}}|null}
  */
-function chooseBestMove(board, aiTeam, deps, size) {
+function chooseBestMove(board, aiTeam, deps, size, difficulty) {
   const dims = _boardDims(board, deps.inBounds);
   const N = size || dims.size;
   const { canCapture, pieceValue, getValidMoves } = deps;
@@ -471,6 +485,10 @@ function chooseBestMove(board, aiTeam, deps, size) {
     }
   }
   if (allMoves.length === 0) return null;
+  if (difficulty === "easy") {
+    const pick = allMoves[Math.floor(Math.random() * allMoves.length)];
+    return { type: "move", from: pick.from, to: pick.to };
+  }
   allMoves.sort((a, b) => b.score - a.score);
   const topScore = allMoves[0].score;
   const top = allMoves.filter((m) => m.score === topScore);
@@ -524,17 +542,22 @@ function chooseBestMove(board, aiTeam, deps, size) {
  * @param {Function} [deps.inBounds] - (x, y) => boolean (defaults to board size)
  * @returns {{type, from?, to?, x?, y?}|null}
  */
-function smartAiDecide(state, aiTeam, deps) {
+function smartAiDecide(state, aiTeam, deps, difficulty) {
   // Wrap a legacy pieceValue(rank) signature so the new helpers can call
   // pieceValue(card, otherCard?, role?) uniformly.
   const wrappedDeps = { ...deps, pieceValue: wrapPieceValue(deps.pieceValue) };
   const board = state.board;
+  const level =
+    difficulty ||
+    (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+      ? globalThis.AIDifficulty.getLevel()
+      : "normal");
 
-  const cap = chooseBestCapture(board, aiTeam, wrappedDeps);
+  const cap = chooseBestCapture(board, aiTeam, wrappedDeps, undefined, level);
   if (cap) return cap;
-  const flip = chooseBestFlip(board, aiTeam, wrappedDeps);
+  const flip = chooseBestFlip(board, aiTeam, wrappedDeps, undefined, level);
   if (flip) return flip;
-  const mv = chooseBestMove(board, aiTeam, wrappedDeps);
+  const mv = chooseBestMove(board, aiTeam, wrappedDeps, undefined, level);
   if (mv) return mv;
   return null;
 }

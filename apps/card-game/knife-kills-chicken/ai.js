@@ -49,8 +49,13 @@
       }
     }
 
-    function aiDecide(state, aiTeam) {
+    function aiDecide(state, aiTeam, difficulty) {
       const board = state.board;
+      const level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
       const deps = {
         canCapture: canCapture,
         isMutualDestruction: isMutualDestruction,
@@ -64,7 +69,7 @@
       };
 
       // Priority 1: capture
-      const cap = dependencies.chooseBestCapture(board, aiTeam, deps);
+      const cap = dependencies.chooseBestCapture(board, aiTeam, deps, undefined, level);
       if (cap) return cap;
 
       // Priority 2: carry weapon (rank by upgrade value gain)
@@ -72,11 +77,11 @@
       if (carryPick) return carryPick;
 
       // Priority 3: flip
-      const flip = dependencies.chooseBestFlip(board, aiTeam, deps);
+      const flip = dependencies.chooseBestFlip(board, aiTeam, deps, undefined, level);
       if (flip) return flip;
 
       // Priority 4: move
-      const mv = dependencies.chooseBestMove(board, aiTeam, deps);
+      const mv = dependencies.chooseBestMove(board, aiTeam, deps, undefined, level);
       if (mv) return mv;
 
       return null;

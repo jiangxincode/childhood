@@ -22,14 +22,19 @@
       return 8 - rank;
     }
 
-    function aiDecide(state, aiTeam) {
-      return dependencies.smartAiDecide(state, aiTeam, {
-        canCapture: canCapture,
-        isMutualDestruction: isMutualDestruction,
-        pieceValue: pieceValue,
-        getValidCaptures: getValidCaptures,
-        getValidMoves: dependencies.getValidMoves,
-      });
+    function aiDecide(state, aiTeam, difficulty) {
+      return dependencies.smartAiDecide(
+        state,
+        aiTeam,
+        {
+          canCapture: canCapture,
+          isMutualDestruction: isMutualDestruction,
+          pieceValue: pieceValue,
+          getValidCaptures: getValidCaptures,
+          getValidMoves: dependencies.getValidMoves,
+        },
+        difficulty
+      );
     }
 
     return { pieceValue, aiDecide };

@@ -113,9 +113,17 @@
       return bestScore;
     }
 
-    function getBestAIMove(board, aiColor, hasMoved) {
+    function getBestAIMove(board, aiColor, hasMoved, difficulty) {
       const moves = getAllMoves(board, aiColor, hasMoved);
       if (moves.length === 0) return null;
+      const level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      if (level === "easy") return moves[Math.floor(Math.random() * moves.length)];
+      const searchDepth =
+        { normal: AI_DEPTH, hard: AI_DEPTH + 1, master: AI_DEPTH + 2 }[level] || AI_DEPTH;
 
       let bestMove = null;
       let bestScore = -Infinity;
@@ -145,7 +153,7 @@
         const newBoard = applyMove(board, move);
         const score = -alphaBeta(
           newBoard,
-          AI_DEPTH - 1,
+          searchDepth - 1,
           -Infinity,
           Infinity,
           aiColor,
