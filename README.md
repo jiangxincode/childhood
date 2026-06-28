@@ -13,7 +13,7 @@
   <a href="https://sonarcloud.io/dashboard?id=jiangxincode_childhood"><img src="https://sonarcloud.io/api/project_badges/measure?project=jiangxincode_childhood&metric=alert_status" alt="Quality Gate Status"></a>
 </p>
 
-一个纯前端经典游戏合集，收录了 **26 款**童年桌游与卡牌游戏，开箱即玩。支持双人对战、人机对战和联网对战；人机模式可在对局中切换简单、普通、困难和大师四档 AI 难度。
+一个纯前端经典游戏合集，收录了 **27 款**童年桌游与卡牌游戏，开箱即玩。支持双人对战、人机对战和联网对战；人机模式可在对局中切换简单、普通、困难和大师四档 AI 难度。
 
 **在线体验**：[GitHub Pages（主站）](https://jiangxincode.github.io/childhood/) · [Cloudflare Pages（镜像）](https://childhood-cck.pages.dev/)
 
@@ -28,6 +28,10 @@
 | 军师旅团营 | 猫捉老鼠 | 小皇帝 |
 |:-------------:|:-------:|:------:|
 | ![军师旅团营](images/card-game/军师旅团营.jpg) | ![猫捉老鼠](images/card-game/猫捉老鼠.jpg) | ![小皇帝](images/card-game/小皇帝.jpg) |
+
+| 布告棋（官打捉贼） |
+|:------------------:|
+| ![布告棋](images/card-game/官打捉贼.jpg) |
 
 ## 经典棋盘游戏
 
@@ -76,7 +80,8 @@ childhood/
 │   │   ├── animal-chess/             # 兽棋
 │   │   ├── chinese-army-chess/       # 军师旅团营
 │   │   ├── cat-and-mouse/            # 猫捉老鼠
-│   │   └── little-emperor/           # 小皇帝
+│   │   ├── little-emperor/           # 小皇帝
+│   │   └── guan-da-zhuo-zei/         # 布告棋（官打捉贼）
 │   ├── board-game/                   # 经典棋盘游戏
 │   │   ├── chinese-chess/            # 中国象棋
 │   │   ├── international-chess/      # 国际象棋
@@ -101,7 +106,6 @@ childhood/
 │   │   ├── ma-yi-ban-jia/            # 蚂蚁搬家
 │   │   └── si-bu-ding/               # 四步钉
 │   └── common/                       # 共享模块
-│       ├── ai-difficulty.js          # 统一 AI 难度控制组件
 │       ├── card-game-core.js         # 卡牌游戏核心逻辑
 │       ├── game-utils.js             # 游戏工具函数
 │       ├── webrtc-connection.js      # WebRTC P2P 连接管理器

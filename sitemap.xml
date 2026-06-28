@@ -3,7 +3,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://jiangxincode.github.io/childhood/</loc>
-    <lastmod>2026-05-27</lastmod>
+    <lastmod>2026-06-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -69,6 +69,16 @@
     <image:image>
       <image:loc>https://jiangxincode.github.io/childhood/images/card-game/%E5%B0%8F%E7%9A%87%E5%B8%9D.jpg</image:loc>
       <image:title>小皇帝 - 经典童年卡牌游戏</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://jiangxincode.github.io/childhood/apps/card-game/guan-da-zhuo-zei/index.html</loc>
+    <lastmod>2026-06-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://jiangxincode.github.io/childhood/images/card-game/%E5%AE%98%E6%89%93%E6%8D%89%E8%B4%BC.jpg</image:loc>
+      <image:title>布告棋（官打捉贼）- 经典童年洋画片游戏</image:title>
     </image:image>
   </url>
   <url>

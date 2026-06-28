@@ -22,7 +22,7 @@ function gameFiles(fileName) {
 describe("AI difficulty coverage", () => {
   it("loads the shared control in every game page", () => {
     const pages = gameFiles("index.html");
-    expect(pages).toHaveLength(26);
+    expect(pages).toHaveLength(27);
     for (const page of pages) {
       expect(fs.readFileSync(page, "utf8")).toContain("../../common/ai-difficulty.js");
     }
@@ -30,7 +30,7 @@ describe("AI difficulty coverage", () => {
 
   it("reads difficulty directly or through the shared card AI", () => {
     const aiFiles = gameFiles("ai.js");
-    expect(aiFiles).toHaveLength(26);
+    expect(aiFiles).toHaveLength(27);
     for (const aiFile of aiFiles) {
       const source = fs.readFileSync(aiFile, "utf8");
       expect(source.includes("AIDifficulty") || source.includes("smartAiDecide")).toBe(true);

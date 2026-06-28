@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>布告棋 - 童年游戏合集</title>
+    <meta
+      name="description"
+      content="在线免费玩布告棋，经典官打捉贼洋画片游戏，支持本地四人、人机对战和两人联网。"
+    />
+    <meta name="keywords" content="布告棋,官打捉贼,洋画片,童年游戏,卡牌游戏,在线游戏" />
+    <link
+      rel="canonical"
+      href="https://jiangxincode.github.io/childhood/apps/card-game/guan-da-zhuo-zei/index.html"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="布告棋 - 童年游戏合集" />
+    <meta
+      property="og:description"
+      content="经典官打捉贼洋画片游戏，支持本地四人、人机对战和两人联网。"
+    />
+    <meta
+      property="og:url"
+      content="https://jiangxincode.github.io/childhood/apps/card-game/guan-da-zhuo-zei/index.html"
+    />
+    <meta property="og:site_name" content="童年游戏合集" />
+    <meta
+      property="og:image"
+      content="https://jiangxincode.github.io/childhood/images/card-game/%E5%AE%98%E6%89%93%E6%8D%89%E8%B4%BC.jpg"
+    />
+    <meta property="og:image:alt" content="布告棋 - 官打捉贼经典童年洋画片游戏" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="布告棋 - 童年游戏合集" />
+    <meta
+      name="twitter:description"
+      content="经典官打捉贼洋画片游戏，支持本地四人、人机对战和两人联网。"
+    />
+    <meta
+      name="twitter:image"
+      content="https://jiangxincode.github.io/childhood/images/card-game/%E5%AE%98%E6%89%93%E6%8D%89%E8%B4%BC.jpg"
+    />
+    <meta property="og:locale" content="zh_CN" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "布告棋",
+        "alternateName": "官打捉贼",
+        "url": "https://jiangxincode.github.io/childhood/apps/card-game/guan-da-zhuo-zei/index.html",
+        "image": "https://jiangxincode.github.io/childhood/images/card-game/%E5%AE%98%E6%89%93%E6%8D%89%E8%B4%BC.jpg",
+        "description": "在线免费玩布告棋，经典官打捉贼洋画片游戏，支持本地四人、人机对战和两人联网。",
+        "inLanguage": "zh-CN",
+        "genre": "卡牌游戏",
+        "applicationCategory": "Game",
+        "gamePlatform": ["Web", "Browser"],
+        "operatingSystem": "Any",
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "CNY"
+        },
+        "publisher": {
+          "@type": "Person",
+          "name": "JiangXin"
+        }
+      }
+    </script>
+    <script src="../../../js/base-fix.js"></script>
+    <link rel="stylesheet" href="game.css" />
+    <script src="../../../js/baidu-analytics.js"></script>
+    <script src="../../../js/common.js"></script>
+    <script src="../../common/sound-manager.js"></script>
+    <script src="../../common/webrtc-connection.js"></script>
+    <script src="../../common/network-game-protocol.js"></script>
+    <script src="../../common/room-ui.js"></script>
+    <link rel="stylesheet" href="../../common/room-ui.css" />
+    <script src="../../common/ai-difficulty.js"></script>
+  </head>
+  <body>
+    <div id="mode-selection" class="overlay">
+      <div class="overlay-content">
+        <h1>布告棋</h1>
+        <p class="subtitle">官打捉贼</p>
+        <p class="intro">16张洋画片随机分给4个人。根据身份依次完成通缉、抓捕和趣味判罚。</p>
+        <div class="mode-buttons">
+          <button id="btn-pvp" class="btn mode-btn pvp-btn">本地四人</button>
+          <button id="btn-pve" class="btn mode-btn pve-btn">人机对战</button>
+          <button id="btn-online" class="btn mode-btn online-btn">联网对战</button>
+        </div>
+      </div>
+    </div>
+
+    <main id="game-area" style="display: none">
+      <header class="game-header">
+        <div>
+          <h1>布告棋</h1>
+          <p id="mode-label">官打捉贼 · 四人游戏</p>
+        </div>
+        <button id="btn-new-game" class="btn secondary-btn">重新发牌</button>
+      </header>
+
+      <div class="layout">
+        <section class="game-column">
+          <div id="players" class="players"></div>
+          <section class="control-panel" aria-live="polite">
+            <span id="phase-name" class="phase-badge"></span>
+            <h2 id="prompt-text"></h2>
+            <div id="result-panel" class="result-panel" hidden></div>
+            <div id="action-buttons" class="action-buttons"></div>
+          </section>
+        </section>
+
+        <aside class="side-panel">
+          <section>
+            <h2>审案记录</h2>
+            <ol id="round-log" class="round-log"></ol>
+          </section>
+          <section class="rules">
+            <h2>游戏规则</h2>
+            <ol>
+              <li>16张牌洗匀后，每人获得4张。</li>
+              <li>布告牌指定强盗、小偷或土匪为通缉对象。</li>
+              <li>法官指定一名警务角色抓捕，抓对处罚坏人，抓错处罚抓捕者。</li>
+              <li>花样官、数量官、加减官和轻重官依次形成判罚。</li>
+              <li>皇帝与皇后决定是否执行；意见不同时猜拳裁决。</li>
+              <li>页面只展示趣味判罚结果，无需实际执行。</li>
+              <li>本地四人轮流查看手牌；联网模式为两名真人加两名电脑。</li>
+            </ol>
+          </section>
+        </aside>
+      </div>
+    </main>
+
+    <script src="ai.js"></script>
+    <script src="game.js"></script>
+  </body>
+</html>
