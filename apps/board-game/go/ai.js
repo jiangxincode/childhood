@@ -27,7 +27,7 @@
       createGameState,
     } = deps;
 
-    function getBestAIMove(board, aiPlayer, koPoint, capturesBlack, capturesWhite) {
+    function getBestAIMove(board, aiPlayer, koPoint, capturesBlack, capturesWhite, difficulty) {
       const legalMoves = getLegalMoves(board, aiPlayer, koPoint);
 
       if (legalMoves.length === 0) {
@@ -39,7 +39,13 @@
         return legalMoves[0];
       }
 
-      const simulations = 20; // Reduced for performance on 19x19 board
+      const level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      if (level === "easy") return legalMoves[Math.floor(Math.random() * legalMoves.length)];
+      const simulations = { normal: 20, hard: 50, master: 100 }[level] || 20;
       let bestMove = null;
       let bestScore = -Infinity;
 

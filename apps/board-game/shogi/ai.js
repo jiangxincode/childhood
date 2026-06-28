@@ -300,16 +300,27 @@
       };
     }
 
-    function getBestAIMove(board, capturedPieces, aiPlayer, depth = 3) {
+    function getBestAIMove(board, capturedPieces, aiPlayer, depth = 3, difficulty) {
       const rootMoves = getLegalMoves(board, aiPlayer, capturedPieces);
       if (rootMoves.length === 0) return null;
+      const level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      if (level === "easy") return rootMoves[Math.floor(Math.random() * rootMoves.length)];
+      const profile = {
+        normal: { depth: depth, time: AI_TIME_LIMIT },
+        hard: { depth: depth + 1, time: 2200 },
+        master: { depth: depth + 2, time: 3200 },
+      }[level] || { depth: depth, time: AI_TIME_LIMIT };
 
       rootMoves.sort((a, b) => moveOrderScore(board, b) - moveOrderScore(board, a));
 
-      const deadline = Date.now() + AI_TIME_LIMIT;
+      const deadline = Date.now() + profile.time;
       let bestMove = rootMoves[0];
 
-      for (let d = 1; d <= depth; d++) {
+      for (let d = 1; d <= profile.depth; d++) {
         let localBest = null;
         let localBestScore = -Infinity;
         let alpha = -Infinity;

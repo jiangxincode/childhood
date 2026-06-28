@@ -50,9 +50,22 @@
       }
     }
 
-    function getBestAIMove(board, aiPlayer) {
+    function getBestAIMove(board, aiPlayer, difficulty) {
       const moves = getValidMoves(board);
       if (moves.length === 0) return null;
+
+      const level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      if (level === "easy") return moves[Math.floor(Math.random() * moves.length)];
+      const hasRuntimeDifficulty =
+        difficulty || (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel);
+      const mistakeRate = { normal: 0.08, hard: 0.02, master: 0 }[level] || 0;
+      if (hasRuntimeDifficulty && Math.random() < mistakeRate) {
+        return moves[Math.floor(Math.random() * moves.length)];
+      }
 
       // First check if AI can win immediately
       for (const move of moves) {
@@ -66,6 +79,8 @@
         const newBoard = makeMove(board, move.x, move.y, opponent);
         if (checkWin(newBoard)) return move;
       }
+
+      const maxDepth = { normal: Infinity, hard: Infinity, master: Infinity }[level] || Infinity;
 
       // Minimax selects optimal move
       let bestScore = -100;

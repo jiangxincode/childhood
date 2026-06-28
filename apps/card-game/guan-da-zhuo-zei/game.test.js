@@ -103,6 +103,18 @@ describe("抓捕判定", () => {
   it("电脑持有通缉牌时会指认自己", () => {
     expect(chooseSuspect(fixedPlayers(), 2, "小偷", () => 0)).toBe(2);
   });
+
+  it("简单难度随机指认玩家", () => {
+    expect(chooseSuspect(fixedPlayers(), 1, "小偷", () => 0, "easy")).toBe(0);
+  });
+
+  it("困难难度有较高概率指认通缉牌持有者", () => {
+    expect(chooseSuspect(fixedPlayers(), 1, "小偷", () => 0.5, "hard")).toBe(2);
+  });
+
+  it("大师难度准确指认通缉牌持有者", () => {
+    expect(chooseSuspect(fixedPlayers(), 1, "小偷", () => 0.9, "master")).toBe(2);
+  });
 });
 
 describe("判罚规则", () => {

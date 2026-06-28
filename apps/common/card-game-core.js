@@ -284,6 +284,62 @@ function simulateCapture(board, from, to, mutual) {
   return newBoard;
 }
 
+function buildCaptureCandidate(board, x, y, targetPos, aiTeam, deps) {
+  const { canCapture, isMutualDestruction, pieceValue } = deps;
+  const card = board[y][x];
+  const target = board[targetPos.y][targetPos.x];
+  const mutual = isMutualDestruction(card, target);
+  const attackerValue = pieceValue(card, target, "attacker");
+  const defenderValue = pieceValue(target, card, "defender");
+  let score = defenderValue - attackerValue;
+  if (!mutual) {
+    const futureBoard = simulateCapture(board, { x, y }, targetPos, false);
+    const exposed = isPositionUnderThreat(
+      futureBoard,
+      targetPos.x,
+      targetPos.y,
+      aiTeam,
+      canCapture,
+      deps.inBounds
+    );
+    score = defenderValue - (exposed ? attackerValue : 0);
+  }
+  return {
+    from: { x, y },
+    to: targetPos,
+    score,
+    defenderRank: target.rank,
+    attackerRank: card.rank,
+    mutual,
+  };
+}
+
+function collectCaptureCandidates(board, aiTeam, deps, size) {
+  const captures = [];
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const card = board[y][x];
+      if (!card || !card.faceUp || card.team !== aiTeam) continue;
+      const targets = deps.getValidCaptures(board, x, y, aiTeam);
+      for (const target of targets) {
+        captures.push(buildCaptureCandidate(board, x, y, target, aiTeam, deps));
+      }
+    }
+  }
+  return captures;
+}
+
+function compareCaptureCandidates(a, b) {
+  if (a.score !== b.score) return b.score - a.score;
+  if (a.mutual !== b.mutual) return a.mutual ? 1 : -1;
+  if (a.defenderRank !== b.defenderRank) return a.defenderRank - b.defenderRank;
+  return b.attackerRank - a.attackerRank;
+}
+
+function shouldAvoidCapture(difficulty, score) {
+  return (difficulty === "hard" && score < -2) || (difficulty === "master" && score < 0);
+}
+
 /**
  * Pick the best capture among all legal captures (one-step lookahead).
  * @param {Array} board
@@ -292,57 +348,17 @@ function simulateCapture(board, from, to, mutual) {
  * @param {number} [size] - board size (default board.length)
  * @returns {{type:'capture',from:{x,y},to:{x,y}}|null}
  */
-function chooseBestCapture(board, aiTeam, deps, size) {
+function chooseBestCapture(board, aiTeam, deps, size, difficulty) {
   const dims = _boardDims(board, deps.inBounds);
   const N = size || dims.size;
-  const { canCapture, isMutualDestruction, pieceValue, getValidCaptures } = deps;
-  const allCaptures = [];
-  for (let y = 0; y < N; y++) {
-    for (let x = 0; x < N; x++) {
-      const card = board[y][x];
-      if (!card || !card.faceUp || card.team !== aiTeam) continue;
-      const targets = getValidCaptures(board, x, y, aiTeam);
-      for (let k = 0; k < targets.length; k++) {
-        const t = targets[k];
-        const target = board[t.y][t.x];
-        const mutual = isMutualDestruction(card, target);
-        const attVal = pieceValue(card, target, "attacker");
-        const defVal = pieceValue(target, card, "defender");
-        let score;
-        if (mutual) {
-          // Mutual destruction: net = enemy loss - own loss
-          score = defVal - attVal;
-        } else {
-          // Normal capture: simulate and check if attacker would be captured next turn
-          const futureBoard = simulateCapture(board, { x, y }, t, false);
-          const exposed = isPositionUnderThreat(
-            futureBoard,
-            t.x,
-            t.y,
-            aiTeam,
-            canCapture,
-            deps.inBounds
-          );
-          score = defVal - (exposed ? attVal : 0);
-        }
-        allCaptures.push({
-          from: { x, y },
-          to: t,
-          score,
-          defenderRank: target.rank,
-          attackerRank: card.rank,
-          mutual,
-        });
-      }
-    }
-  }
+  const allCaptures = collectCaptureCandidates(board, aiTeam, deps, N);
   if (allCaptures.length === 0) return null;
-  allCaptures.sort((a, b) => {
-    if (a.score !== b.score) return b.score - a.score;
-    if (a.mutual !== b.mutual) return a.mutual ? 1 : -1;
-    if (a.defenderRank !== b.defenderRank) return a.defenderRank - b.defenderRank;
-    return b.attackerRank - a.attackerRank;
-  });
+  if (difficulty === "easy") {
+    const pick = allCaptures[Math.floor(Math.random() * allCaptures.length)];
+    return { type: "capture", from: pick.from, to: pick.to };
+  }
+  allCaptures.sort(compareCaptureCandidates);
+  if (shouldAvoidCapture(difficulty, allCaptures[0].score)) return null;
   return { type: "capture", from: allCaptures[0].from, to: allCaptures[0].to };
 }
 
@@ -355,7 +371,7 @@ function chooseBestCapture(board, aiTeam, deps, size) {
  * @param {number} [size]
  * @returns {{type:'flip',x:number,y:number}|null}
  */
-function chooseBestFlip(board, aiTeam, deps, size) {
+function chooseBestFlip(board, aiTeam, deps, size, difficulty) {
   const dims = _boardDims(board, deps.inBounds);
   const N = size || dims.size;
   const { pieceValue } = deps;
@@ -367,6 +383,10 @@ function chooseBestFlip(board, aiTeam, deps, size) {
     }
   }
   if (faceDownCells.length === 0) return null;
+  if (difficulty === "easy") {
+    const pos = faceDownCells[Math.floor(Math.random() * faceDownCells.length)];
+    return { type: "flip", x: pos.x, y: pos.y };
+  }
 
   const center = (N - 1) / 2;
   const scored = faceDownCells.map((pos) => {
@@ -408,69 +428,78 @@ function chooseBestFlip(board, aiTeam, deps, size) {
  * @param {number} [size]
  * @returns {{type:'move',from:{x,y},to:{x,y}}|null}
  */
-function chooseBestMove(board, aiTeam, deps, size) {
-  const dims = _boardDims(board, deps.inBounds);
-  const N = size || dims.size;
-  const { canCapture, pieceValue, getValidMoves } = deps;
-  const allMoves = [];
-  for (let y = 0; y < N; y++) {
-    for (let x = 0; x < N; x++) {
+function getThreatAdjustment(currentThreatened, futureThreatened, cardValue) {
+  if (currentThreatened && !futureThreatened) return cardValue;
+  if (!currentThreatened && futureThreatened) return -cardValue * 1.5;
+  if (currentThreatened && futureThreatened) return -cardValue * 0.5;
+  return 0;
+}
+
+function getApproachBonus(board, position, card, aiTeam, deps, inBoundsFn) {
+  let bonus = 0;
+  for (const dir of DIRECTIONS) {
+    const x = position.x + dir.dx;
+    const y = position.y + dir.dy;
+    if (!inBoundsFn(x, y)) continue;
+    const enemy = board[y][x];
+    if (!enemy || !enemy.faceUp || enemy.team === aiTeam) continue;
+    if (!deps.canCapture(card, enemy)) continue;
+    bonus = Math.max(bonus, deps.pieceValue(enemy, card, "defender"));
+  }
+  return bonus;
+}
+
+function scoreMoveCandidate(board, from, to, aiTeam, deps, size, inBoundsFn) {
+  const card = board[from.y][from.x];
+  const cardValue = deps.pieceValue(card, null, "self");
+  const currentThreatened = isPositionUnderThreat(
+    board,
+    from.x,
+    from.y,
+    aiTeam,
+    deps.canCapture,
+    deps.inBounds
+  );
+  const futureBoard = simulateMove(board, from, to);
+  const futureThreatened = isPositionUnderThreat(
+    futureBoard,
+    to.x,
+    to.y,
+    aiTeam,
+    deps.canCapture,
+    deps.inBounds
+  );
+  const threatScore = getThreatAdjustment(currentThreatened, futureThreatened, cardValue);
+  const approachScore = getApproachBonus(futureBoard, to, card, aiTeam, deps, inBoundsFn) * 0.5;
+  const distanceScore = nearestEnemyDelta(board, from.x, from.y, to, aiTeam, size) * 0.05;
+  return threatScore + approachScore + distanceScore;
+}
+
+function collectMoveCandidates(board, aiTeam, deps, size, inBoundsFn) {
+  const moves = [];
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
       const card = board[y][x];
       if (!card || !card.faceUp || card.team !== aiTeam) continue;
-      const targets = getValidMoves(board, x, y);
-      for (let k = 0; k < targets.length; k++) {
-        const t = targets[k];
-        const cardVal = pieceValue(card, null, "self");
-        let score = 0;
-
-        const currThreatened = isPositionUnderThreat(
-          board,
-          x,
-          y,
-          aiTeam,
-          canCapture,
-          deps.inBounds
-        );
-        const futureBoard = simulateMove(board, { x, y }, t);
-        const futureThreatened = isPositionUnderThreat(
-          futureBoard,
-          t.x,
-          t.y,
-          aiTeam,
-          canCapture,
-          deps.inBounds
-        );
-
-        if (currThreatened && !futureThreatened) {
-          score += cardVal;
-        } else if (!currThreatened && futureThreatened) {
-          score -= cardVal * 1.5;
-        } else if (currThreatened && futureThreatened) {
-          score -= cardVal * 0.5;
-        }
-
-        let approachBonus = 0;
-        for (const dir of DIRECTIONS) {
-          const nx = t.x + dir.dx;
-          const ny = t.y + dir.dy;
-          if (!dims.inBounds(nx, ny)) continue;
-          const enemy = futureBoard[ny][nx];
-          if (!enemy || !enemy.faceUp || enemy.team === aiTeam) continue;
-          if (canCapture(card, enemy)) {
-            const ev = pieceValue(enemy, card, "defender");
-            if (ev > approachBonus) approachBonus = ev;
-          }
-        }
-        score += approachBonus * 0.5;
-
-        const enemyDistDelta = nearestEnemyDelta(board, x, y, t, aiTeam, N);
-        score += enemyDistDelta * 0.05;
-
-        allMoves.push({ from: { x, y }, to: t, score });
+      for (const target of deps.getValidMoves(board, x, y)) {
+        const from = { x, y };
+        const score = scoreMoveCandidate(board, from, target, aiTeam, deps, size, inBoundsFn);
+        moves.push({ from, to: target, score });
       }
     }
   }
+  return moves;
+}
+
+function chooseBestMove(board, aiTeam, deps, size, difficulty) {
+  const dims = _boardDims(board, deps.inBounds);
+  const N = size || dims.size;
+  const allMoves = collectMoveCandidates(board, aiTeam, deps, N, dims.inBounds);
   if (allMoves.length === 0) return null;
+  if (difficulty === "easy") {
+    const pick = allMoves[Math.floor(Math.random() * allMoves.length)];
+    return { type: "move", from: pick.from, to: pick.to };
+  }
   allMoves.sort((a, b) => b.score - a.score);
   const topScore = allMoves[0].score;
   const top = allMoves.filter((m) => m.score === topScore);
@@ -524,17 +553,22 @@ function chooseBestMove(board, aiTeam, deps, size) {
  * @param {Function} [deps.inBounds] - (x, y) => boolean (defaults to board size)
  * @returns {{type, from?, to?, x?, y?}|null}
  */
-function smartAiDecide(state, aiTeam, deps) {
+function smartAiDecide(state, aiTeam, deps, difficulty) {
   // Wrap a legacy pieceValue(rank) signature so the new helpers can call
   // pieceValue(card, otherCard?, role?) uniformly.
   const wrappedDeps = { ...deps, pieceValue: wrapPieceValue(deps.pieceValue) };
   const board = state.board;
+  const level =
+    difficulty ||
+    (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+      ? globalThis.AIDifficulty.getLevel()
+      : "normal");
 
-  const cap = chooseBestCapture(board, aiTeam, wrappedDeps);
+  const cap = chooseBestCapture(board, aiTeam, wrappedDeps, undefined, level);
   if (cap) return cap;
-  const flip = chooseBestFlip(board, aiTeam, wrappedDeps);
+  const flip = chooseBestFlip(board, aiTeam, wrappedDeps, undefined, level);
   if (flip) return flip;
-  const mv = chooseBestMove(board, aiTeam, wrappedDeps);
+  const mv = chooseBestMove(board, aiTeam, wrappedDeps, undefined, level);
   if (mv) return mv;
   return null;
 }

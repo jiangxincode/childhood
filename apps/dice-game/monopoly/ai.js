@@ -25,13 +25,24 @@
       checkGameOver,
     } = deps;
 
-    function npcDecision(state, playerIndex, eventType, data) {
+    function npcDecision(state, playerIndex, eventType, data, difficulty) {
       const player = state.players[playerIndex];
+      const level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      const reserves = {
+        easy: { buy: 6000, upgrade: 5000 },
+        normal: { buy: 3000, upgrade: 2000 },
+        hard: { buy: 1800, upgrade: 1200 },
+        master: { buy: 800, upgrade: 500 },
+      }[level] || { buy: 3000, upgrade: 2000 };
       if (eventType === "buyOffer") {
-        return player.money - data.value > 3000;
+        return player.money - data.value > reserves.buy;
       }
       if (eventType === "upgradeOffer") {
-        return player.money - data.cost > 2000;
+        return player.money - data.cost > reserves.upgrade;
       }
       return false;
     }

@@ -313,7 +313,7 @@
       return bestScore;
     }
 
-    function getBestAIMove(board, aiColor) {
+    function getBestAIMove(board, aiColor, difficulty) {
       // Initialize Zobrist keys on first call
       initZobrist();
       // Clear transposition table for each new move computation
@@ -323,7 +323,27 @@
       if (rootMoves.length === 0) return null;
       if (rootMoves.length === 1) return rootMoves[0];
 
-      searchDeadline = Date.now() + AI_TIME_BUDGET_MS;
+      const level =
+        difficulty ||
+        (globalThis.AIDifficulty && globalThis.AIDifficulty.getLevel
+          ? globalThis.AIDifficulty.getLevel()
+          : "normal");
+      if (level === "easy") return rootMoves[Math.floor(Math.random() * rootMoves.length)];
+      const profile = {
+        normal: {
+          startDepth: Math.max(1, AI_DEPTH - 2),
+          maxDepth: AI_MAX_DEPTH,
+          time: AI_TIME_BUDGET_MS,
+        },
+        hard: { startDepth: Math.max(2, AI_DEPTH - 1), maxDepth: AI_MAX_DEPTH + 1, time: 2200 },
+        master: { startDepth: AI_DEPTH, maxDepth: AI_MAX_DEPTH + 2, time: 3200 },
+      }[level] || {
+        startDepth: Math.max(1, AI_DEPTH - 2),
+        maxDepth: AI_MAX_DEPTH,
+        time: AI_TIME_BUDGET_MS,
+      };
+
+      searchDeadline = Date.now() + profile.time;
       let bestMove = rootMoves[0];
       let prevBest = null;
 
@@ -331,7 +351,7 @@
         // Iterative deepening: search depth 1..AI_MAX_DEPTH, reusing the previous
         // iteration's best move for ordering. Stops when the time budget is hit and
         // falls back to the best move from the last fully completed depth.
-        for (let depth = Math.max(1, AI_DEPTH - 2); depth <= AI_MAX_DEPTH; depth++) {
+        for (let depth = profile.startDepth; depth <= profile.maxDepth; depth++) {
           let iterBest = null;
           let iterBestScore = -Infinity;
           let alpha = -Infinity;
