@@ -1,0 +1,154 @@
+/* ============================================================
+   Shared board & piece theme for childhood board games.
+   Wooden board with glossy stone pieces. Linked after each
+   game's own game.css so these rules win on equal specificity.
+   ============================================================ */
+
+:root {
+  /* Wooden board palette */
+  --theme-wood-base: #d9a05f;
+  --theme-wood-dark: #b97c3a;
+  --theme-wood-grain: rgba(122, 74, 22, 0.18);
+  --theme-wood-frame: #7a4a1d;
+  --theme-carve: #5d3a1a;
+}
+
+/* ---- Wooden board frame ---- */
+#board {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--theme-wood-grain) 0 2px,
+      transparent 2px 8px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(122, 74, 22, 0.08) 0 1px,
+      transparent 1px 6px
+    ),
+    linear-gradient(135deg, var(--theme-wood-base) 0%, var(--theme-wood-dark) 100%);
+  border: 10px solid var(--theme-wood-frame);
+  border-radius: 18px;
+  box-shadow:
+    inset 0 2px 10px rgba(0, 0, 0, 0.3),
+    inset 0 -2px 6px rgba(255, 235, 200, 0.25),
+    0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Carved board lines */
+.board-line,
+.board-edge,
+.board-arc {
+  stroke: var(--theme-carve);
+}
+
+/* Carved intersection dots */
+.node-dot {
+  fill: var(--theme-carve);
+}
+
+/* Keep fixed-size SVGs inside the wooden frame on small screens */
+.board-svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---- Glossy stone pieces ---- */
+.node-circle {
+  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.35));
+}
+
+.node-a .node-circle,
+.node-x .node-circle {
+  fill: var(--a-color, var(--x-color, #1565c0));
+  fill: url(#piece-a);
+  stroke: rgba(0, 0, 0, 0.4);
+  stroke-width: 1.5;
+}
+
+.node-b .node-circle,
+.node-o .node-circle {
+  fill: var(--b-color, var(--o-color, #e53935));
+  fill: url(#piece-b);
+  stroke: rgba(0, 0, 0, 0.4);
+  stroke-width: 1.5;
+}
+
+.node-text {
+  fill: #fff;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 0.6px;
+}
+
+/* ---- Interaction states (unified across games) ---- */
+.node-selected .node-circle {
+  stroke: #ff9800;
+  stroke-width: 5;
+  filter: drop-shadow(0 0 8px rgba(255, 152, 0, 0.85));
+}
+
+.node-empty.node-highlight .node-circle,
+.node-highlight .node-circle {
+  fill: #fff59d;
+  stroke: #f9a825;
+  stroke-width: 4;
+}
+
+.node-empty.node-jump .node-circle {
+  fill: #ffccbc;
+  stroke: #e64a19;
+  stroke-width: 4;
+}
+
+.node-win .node-circle {
+  stroke: #ffd600;
+  stroke-width: 5;
+  animation: themeWinPulse 0.8s ease-in-out infinite alternate;
+}
+
+.node-captured .node-circle,
+.node-capture .node-circle {
+  stroke: #c62828;
+  stroke-width: 5;
+  filter: drop-shadow(0 0 8px rgba(198, 40, 40, 0.85));
+}
+
+.node-triple .node-circle {
+  fill: #90caf9;
+  stroke: #1565c0;
+  stroke-width: 4;
+}
+
+@keyframes themeWinPulse {
+  from {
+    filter: drop-shadow(0 0 4px rgba(255, 214, 0, 0.6));
+  }
+  to {
+    filter: drop-shadow(0 0 14px rgba(255, 214, 0, 1));
+  }
+}
+
+/* ---- Game-specific decorative elements ---- */
+.well-circle {
+  fill: rgba(80, 50, 20, 0.25);
+  stroke: var(--theme-carve);
+  stroke-width: 4;
+}
+
+.well-label,
+.tip-label,
+.node-num {
+  fill: var(--theme-carve);
+}
+
+.tian-yuan {
+  fill: var(--theme-carve);
+}
+
+.tian-yuan-text {
+  fill: #fff;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 0.6px;
+}

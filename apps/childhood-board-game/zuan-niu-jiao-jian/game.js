@@ -320,6 +320,11 @@ if (typeof document !== "undefined") {
     svg.setAttribute("viewBox", "0 0 940 530");
     svg.setAttribute("class", "board-svg");
 
+    // Shared board theme: glossy stone gradients for pieces.
+    if (window.ChildhoodBoardTheme) {
+      window.ChildhoodBoardTheme.addGradients(svg);
+    }
+
     // 1) Draw the two smooth boundary arcs as Catmull-Rom-to-Bezier paths.
     function arcPath(indices) {
       // Convert a sequence of points into a smooth path. We emit the first

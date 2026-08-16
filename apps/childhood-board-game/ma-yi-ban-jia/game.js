@@ -297,6 +297,11 @@ if (typeof document !== "undefined") {
     svg.setAttribute("viewBox", "0 0 " + BOARD_VIEW + " " + BOARD_VIEW);
     svg.setAttribute("class", "board-svg");
 
+    // Shared board theme: glossy stone gradients for pieces.
+    if (window.ChildhoodBoardTheme) {
+      window.ChildhoodBoardTheme.addGradients(svg);
+    }
+
     // Grid lines (9 horizontal + 9 vertical)
     for (var i = 0; i < BOARD_SIZE; i++) {
       var p0 = nodeToPx(0, i);
