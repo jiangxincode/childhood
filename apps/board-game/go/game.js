@@ -475,13 +475,12 @@ if (typeof document !== "undefined") {
   }
 
   function drawBoard() {
-    // Background
-    context.fillStyle = "#f0d9b5";
-    context.fillRect(0, 0, canvasSize, canvasSize);
+    // Shared wooden board base and grain
+    BoardGameTheme.drawWoodenBoard(context, canvasSize, canvasSize);
 
-    // Grid lines
-    context.strokeStyle = "#8b7355";
-    context.lineWidth = 1;
+    // Carved grid lines
+    context.strokeStyle = BoardGameTheme.PALETTE.carve;
+    context.lineWidth = 1.2;
     for (let i = 0; i < BOARD_SIZE; i++) {
       const pos = MARGIN + i * CELL_SIZE;
       // Vertical lines
@@ -508,7 +507,7 @@ if (typeof document !== "undefined") {
       { x: 15, y: 9 },
       { x: 15, y: 15 },
     ];
-    context.fillStyle = "#8b7355";
+    context.fillStyle = BoardGameTheme.PALETTE.carve;
     for (const sp of starPoints) {
       const sx = MARGIN + sp.x * CELL_SIZE;
       const sy = MARGIN + sp.y * CELL_SIZE;
@@ -521,25 +520,20 @@ if (typeof document !== "undefined") {
   function drawStone(x, y, player) {
     const cx = MARGIN + x * CELL_SIZE;
     const cy = MARGIN + y * CELL_SIZE;
-    const gradient = context.createRadialGradient(cx + 2, cy - 2, 2, cx, cy, STONE_RADIUS);
-    if (player === BLACK) {
-      gradient.addColorStop(0, "#636766");
-      gradient.addColorStop(1, "#0A0A0A");
-    } else {
-      gradient.addColorStop(0, "#F9F9F9");
-      gradient.addColorStop(1, "#D1D1D1");
-    }
-    context.fillStyle = gradient;
-    context.beginPath();
-    context.arc(cx, cy, STONE_RADIUS, 0, Math.PI * 2);
-    context.fill();
+    BoardGameTheme.glossyDisc(
+      context,
+      cx,
+      cy,
+      STONE_RADIUS,
+      player === BLACK ? "#3a3f44" : "#f2f2f2"
+    );
   }
 
   function drawLastMoveMarker(x, y) {
     const cx = MARGIN + x * CELL_SIZE;
     const cy = MARGIN + y * CELL_SIZE;
-    context.strokeStyle = "#e53935";
-    context.lineWidth = 2;
+    context.strokeStyle = "rgba(229, 57, 53, 0.9)";
+    context.lineWidth = 2.5;
     context.beginPath();
     context.arc(cx, cy, 5, 0, Math.PI * 2);
     context.stroke();

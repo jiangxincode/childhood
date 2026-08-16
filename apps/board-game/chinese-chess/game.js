@@ -903,27 +903,22 @@ if (typeof document !== "undefined") {
   }
 
   function drawBoard() {
-    // Wood texture background
-    const bgGradient = context.createLinearGradient(0, 0, BOARD_W, BOARD_H);
-    bgGradient.addColorStop(0, "#d4a76a");
-    bgGradient.addColorStop(0.5, "#c89b58");
-    bgGradient.addColorStop(1, "#d4a76a");
-    context.fillStyle = bgGradient;
-    context.fillRect(0, 0, BOARD_W, BOARD_H);
+    // Shared wooden board base and grain
+    BoardGameTheme.drawWoodenBoard(context, BOARD_W, BOARD_H);
 
-    // Wood grain effect
-    context.strokeStyle = "rgba(139, 90, 43, 0.1)";
-    context.lineWidth = 1;
-    for (let i = 0; i < BOARD_H; i += 4) {
-      context.beginPath();
-      context.moveTo(0, i);
-      context.lineTo(BOARD_W, i + Math.sin(i * 0.05) * 3);
-      context.stroke();
-    }
+    // Carved outer frame
+    context.strokeStyle = BoardGameTheme.PALETTE.frame;
+    context.lineWidth = 3;
+    context.strokeRect(
+      toCanvasX(0) - CELL_SIZE / 2,
+      toCanvasY(0) - CELL_SIZE / 2,
+      (COLS - 1) * CELL_SIZE + CELL_SIZE,
+      (ROWS - 1) * CELL_SIZE + CELL_SIZE
+    );
 
-    // Grid lines
-    context.strokeStyle = "#5a3d1a";
-    context.lineWidth = 1.5;
+    // Carved grid lines
+    context.strokeStyle = BoardGameTheme.PALETTE.carve;
+    context.lineWidth = 1.6;
 
     // Horizontal lines
     for (let r = 0; r < ROWS; r++) {
@@ -970,12 +965,15 @@ if (typeof document !== "undefined") {
     context.lineTo(toCanvasX(3), toCanvasY(9));
     context.stroke();
 
-    // Chu River Han Border
-    context.fillStyle = "#5a3d1a";
+    // Chu River Han Border (carved text with a subtle relief shadow)
     context.font = 'bold 32px "KaiTi", "楷体", "STKaiti", serif';
     context.textAlign = "center";
     context.textBaseline = "middle";
     const riverY = (toCanvasY(4) + toCanvasY(5)) / 2;
+    context.fillStyle = "rgba(0, 0, 0, 0.25)";
+    context.fillText("楚 河", toCanvasX(2) + 1, riverY + 1);
+    context.fillText("漢 界", toCanvasX(6) + 1, riverY + 1);
+    context.fillStyle = BoardGameTheme.PALETTE.carve;
     context.fillText("楚 河", toCanvasX(2), riverY);
     context.fillText("漢 界", toCanvasX(6), riverY);
   }
@@ -985,41 +983,29 @@ if (typeof document !== "undefined") {
     const cy = toCanvasY(r);
     const color = getOwner(piece);
 
-    // Shadow for 3D effect
-    context.fillStyle = "rgba(0, 0, 0, 0.35)";
-    context.beginPath();
-    context.arc(cx + 2, cy + 3, PIECE_RADIUS, 0, Math.PI * 2);
-    context.fill();
+    // Wooden disc with the shared glossy material
+    BoardGameTheme.glossyDisc(context, cx, cy, PIECE_RADIUS, "#e8d5a8", {
+      light: 0.75,
+      dark: 0.42,
+      rim: "#5a3d1a",
+      rimWidth: 2.5,
+      highlight: "rgba(255, 255, 255, 0.18)",
+    });
 
-    // Piece base - unified light wood color
-    const gradient = context.createRadialGradient(cx - 5, cy - 5, 2, cx, cy, PIECE_RADIUS);
-    gradient.addColorStop(0, "#f5e6c8");
-    gradient.addColorStop(0.7, "#e8d5a8");
-    gradient.addColorStop(1, "#d4c090");
-    context.fillStyle = gradient;
-    context.beginPath();
-    context.arc(cx, cy, PIECE_RADIUS, 0, Math.PI * 2);
-    context.fill();
-
-    // Outer ring - dark brown border
-    context.strokeStyle = "#5a3d1a";
-    context.lineWidth = 2.5;
-    context.beginPath();
-    context.arc(cx, cy, PIECE_RADIUS, 0, Math.PI * 2);
-    context.stroke();
-
-    // Inner ring - decorative circle
+    // Inner decorative ring
     context.strokeStyle = "#8b6914";
     context.lineWidth = 1.5;
     context.beginPath();
     context.arc(cx, cy, PIECE_RADIUS - 4, 0, Math.PI * 2);
     context.stroke();
 
-    // Text - red for red side, black for black side
-    context.fillStyle = color === RED ? "#c0392b" : "#1a1a1a";
+    // Character with a subtle relief (shadow then main text)
     context.font = 'bold 22px "KaiTi", "楷体", "STKaiti", serif';
     context.textAlign = "center";
     context.textBaseline = "middle";
+    context.fillStyle = "rgba(0, 0, 0, 0.22)";
+    context.fillText(PIECE_NAMES[piece], cx + 1, cy + 2);
+    context.fillStyle = color === RED ? "#b71c1c" : "#141414";
     context.fillText(PIECE_NAMES[piece], cx, cy + 1);
   }
 

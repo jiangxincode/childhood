@@ -791,13 +791,12 @@ if (typeof document !== "undefined") {
     // Clear canvas
     ctx.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
 
-    // Draw board background
-    ctx.fillStyle = "#f0d9b5";
-    ctx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
+    // Shared wooden board base and grain
+    BoardGameTheme.drawWoodenBoard(ctx, boardCanvas.width, boardCanvas.height);
 
-    // Draw grid lines
-    ctx.strokeStyle = "#333";
-    ctx.lineWidth = 1;
+    // Carved grid lines
+    ctx.strokeStyle = BoardGameTheme.PALETTE.carve;
+    ctx.lineWidth = 1.2;
 
     // Vertical lines
     for (let i = 0; i <= BOARD_SIZE; i++) {
@@ -815,8 +814,8 @@ if (typeof document !== "undefined") {
       ctx.stroke();
     }
 
-    // Draw star points (for reference)
-    ctx.fillStyle = "#333";
+    // Carved star points (for reference)
+    ctx.fillStyle = BoardGameTheme.PALETTE.carve;
     for (const row of [2, 5, 8]) {
       for (const col of [2, 5, 8]) {
         ctx.beginPath();
@@ -857,8 +856,25 @@ if (typeof document !== "undefined") {
     const x = BOARD_PADDING + col * CELL_SIZE;
     const y = BOARD_PADDING + row * CELL_SIZE;
 
-    // Both players use the same wood color
-    ctx.fillStyle = "#DEB887"; // BurlyWood - traditional shogi piece color
+    // Soft shadow under the piece
+    ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+    ctx.beginPath();
+    ctx.ellipse(
+      x + CELL_SIZE * 0.5 + 1,
+      y + CELL_SIZE * 0.92,
+      CELL_SIZE * 0.32,
+      3.5,
+      0,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+
+    // Both players use the same polished wood look
+    const grad = ctx.createLinearGradient(x, y, x + CELL_SIZE, y + CELL_SIZE);
+    grad.addColorStop(0, "#f3e3c2");
+    grad.addColorStop(1, "#d2b27e");
+    ctx.fillStyle = grad;
     ctx.strokeStyle = "#8B7355"; // Darker wood color for border
     ctx.lineWidth = 2;
 

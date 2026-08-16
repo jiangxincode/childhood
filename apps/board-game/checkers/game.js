@@ -388,43 +388,39 @@ if (typeof document !== "undefined") {
   }
 
   function drawBoard() {
+    const lightColor = "#f0d9b5";
+    const darkColor = "#9a672f";
     for (let r = 0; r < BOARD_SIZE; r++) {
       for (let c = 0; c < BOARD_SIZE; c++) {
-        context.fillStyle = (r + c) % 2 === 0 ? "#f0d9b5" : "#8b6914";
+        context.fillStyle = (r + c) % 2 === 0 ? lightColor : darkColor;
         context.fillRect(c * CELL_SIZE, r * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       }
     }
+    // Wooden slab frame
+    context.strokeStyle = BoardGameTheme.PALETTE.frame;
+    context.lineWidth = 3;
+    context.strokeRect(1.5, 1.5, BOARD_PX - 3, BOARD_PX - 3);
   }
 
   function drawPiece(x, y, piece) {
     const cx = x * CELL_SIZE + CELL_SIZE / 2;
     const cy = y * CELL_SIZE + CELL_SIZE / 2;
 
-    const gradient = context.createRadialGradient(cx + 2, cy - 2, 2, cx, cy, PIECE_RADIUS);
-    if (isRed(piece)) {
-      gradient.addColorStop(0, "#ff6b6b");
-      gradient.addColorStop(1, "#c0392b");
-    } else {
-      gradient.addColorStop(0, "#ffffff");
-      gradient.addColorStop(1, "#bdc3c7");
-    }
-    context.fillStyle = gradient;
-    context.beginPath();
-    context.arc(cx, cy, PIECE_RADIUS, 0, Math.PI * 2);
-    context.fill();
-
-    // Border
-    context.strokeStyle = isRed(piece) ? "#922b21" : "#7f8c8d";
-    context.lineWidth = 1.5;
-    context.stroke();
+    // Glossy disc with the shared material treatment
+    BoardGameTheme.glossyDisc(context, cx, cy, PIECE_RADIUS, isRed(piece) ? "#d32f2f" : "#f5f5f5", {
+      rimWidth: 1.6,
+    });
 
     // King marker
     if (isKing(piece)) {
       context.fillStyle = "#ffd700";
+      context.strokeStyle = "#8d6e00";
+      context.lineWidth = 1;
       context.font = "bold 18px sans-serif";
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.fillText("♚", cx, cy);
+      context.strokeText("♚", cx, cy);
     }
   }
 

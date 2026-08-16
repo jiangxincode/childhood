@@ -1,0 +1,47 @@
+/* ============================================================
+   Shared board & piece theme for classic board games
+   (apps/board-game). One warm wooden palette with glossy pieces.
+   Linked after each game's own game.css so these rules win on
+   equal specificity. Hex values mirror board-game-theme.js.
+   ============================================================ */
+
+:root {
+  --board-game-wood-light: #e2b877;
+  --board-game-wood-mid: #d9a95f;
+  --board-game-wood-dark: #cd9a52;
+  --board-game-carve: #5d3a1a;
+  --board-game-frame: #7a4a1d;
+}
+
+/* Wooden slab frame shared by canvas / DOM / SVG boards */
+#board-canvas,
+#board-container,
+#board {
+  background: linear-gradient(
+    135deg,
+    var(--board-game-wood-light),
+    var(--board-game-wood-dark)
+  );
+  border: 8px solid var(--board-game-frame);
+  border-radius: 14px;
+  box-shadow:
+    inset 0 2px 10px rgba(0, 0, 0, 0.3),
+    inset 0 -2px 6px rgba(255, 235, 200, 0.25),
+    0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+#board-svg {
+  border: 8px solid var(--board-game-frame);
+  border-radius: 14px;
+  box-shadow:
+    inset 0 2px 10px rgba(0, 0, 0, 0.3),
+    inset 0 -2px 6px rgba(255, 235, 200, 0.25),
+    0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Keep fixed-size boards responsive inside the wooden frame */
+#board-canvas,
+#board-svg {
+  max-width: 100%;
+  height: auto;
+}

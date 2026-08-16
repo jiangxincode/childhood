@@ -440,16 +440,19 @@ if (typeof document !== "undefined") {
   const CELL_SIZE = 28;
   const PADDING = 60;
 
-  // Board zone palette. Each star point uses its own player's full color so a piece
-  // always sits on a same-colored corner; the center hexagon stays neutral. Pieces are
-  // separated from the board by the white hole ring, a dark stroke and a soft glow.
-  const ZONE_CENTER = "#f0ead6"; // neutral eggshell, distinct from all 6 player hues
+  // Shared wooden board palette (mirrors board-game-theme.js) so this board
+  // matches the other classic board games.
+  const BOARD_WOOD_LIGHT = "#e2b877";
+  const BOARD_WOOD_DARK = "#cd9a52";
+  const BOARD_CARVE = "#5d3a1a";
   const HOLE_FILL = "#ffffff";
-  const HOLE_STROKE = "#1f1f1f";
-  const LINK_COLOR = "#1a1a1a";
+  const HOLE_STROKE = "#5d3a1a";
 
-  // Glossy marble base colors per player (the movable pieces)
-  const MARBLE_COLORS = {
+  // Neutral center hexagon, distinct from the 6 player hues
+  const ZONE_CENTER = "#f0ead6";
+
+  // Piece colors per player (piece identity); pieces use the shared glossy disc look.
+  const PIECE_COLORS = {
     1: "#f44336", // red
     2: "#2196f3", // blue
     3: "#4caf50", // green
@@ -470,6 +473,14 @@ if (typeof document !== "undefined") {
     g = Math.round((target - g) * ratio) + g;
     b = Math.round((target - b) * ratio) + b;
     return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+
+  // Perceived luminance of a hex color, 0 (dark) .. 1 (light)
+  function luminance(hex) {
+    const num = parseInt(hex.slice(1), 16);
+    return (
+      (0.299 * ((num >> 16) & 0xff) + 0.587 * ((num >> 8) & 0xff) + 0.114 * (num & 0xff)) / 255
+    );
   }
 
   // Build an SVG radial gradient element from [offset, color] stops
@@ -516,7 +527,7 @@ if (typeof document !== "undefined") {
   }
 
   // Group cells into the 6 star points + center hexagon and assign zone colors.
-  // Each star point uses its own player's color (lightened) so pieces match their corner.
+  // Each star point keeps its player's color so pieces start on their own corner.
   function getRegionFills() {
     const inStart = {};
     const fills = [];
@@ -525,7 +536,7 @@ if (typeof document !== "undefined") {
       for (const c of grp) {
         inStart[c] = true;
       }
-      fills.push({ color: MARBLE_COLORS[p], cells: grp });
+      fills.push({ color: PIECE_COLORS[p], cells: grp });
     }
 
     const centerCells = [];
@@ -582,24 +593,41 @@ if (typeof document !== "undefined") {
     const centerY = height / 2;
     const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
     g.setAttribute("transform", "rotate(" + rotation + " " + centerX + " " + centerY + ")");
-    svg.appendChild(g);
 
-    // Defs: glossy gradients for the marble pieces
+    // Defs: wooden board surface + glossy piece gradients
     const SVG_NS = "http://www.w3.org/2000/svg";
     const defs = document.createElementNS(SVG_NS, "defs");
+
+    const wood = document.createElementNS(SVG_NS, "linearGradient");
+    wood.setAttribute("id", "wood-board");
+    wood.setAttribute("x1", "0");
+    wood.setAttribute("y1", "0");
+    wood.setAttribute("x2", "1");
+    wood.setAttribute("y2", "1");
+    for (const [offset, color] of [
+      ["0%", BOARD_WOOD_LIGHT],
+      ["100%", BOARD_WOOD_DARK],
+    ]) {
+      const stop = document.createElementNS(SVG_NS, "stop");
+      stop.setAttribute("offset", offset);
+      stop.setAttribute("stop-color", color);
+      wood.appendChild(stop);
+    }
+    defs.appendChild(wood);
+
     for (let p = 1; p <= 6; p++) {
-      const base = MARBLE_COLORS[p];
+      const base = PIECE_COLORS[p];
       defs.appendChild(
-        createRadialGradient("marble-" + p, "35%", "30%", "70%", [
-          ["0%", shadeColor(base, 70)],
-          ["45%", base],
-          ["100%", shadeColor(base, -40)],
+        createRadialGradient("piece-" + p, "35%", "30%", "70%", [
+          ["0%", shadeColor(base, 55)],
+          ["50%", base],
+          ["100%", shadeColor(base, -35)],
         ])
       );
     }
-    // Soft drop-shadow glow so a piece lifts off a same-colored corner
+    // Soft drop-shadow glow so a piece lifts off the board
     const glow = document.createElementNS(SVG_NS, "filter");
-    glow.setAttribute("id", "marble-glow");
+    glow.setAttribute("id", "piece-glow");
     glow.setAttribute("x", "-60%");
     glow.setAttribute("y", "-60%");
     glow.setAttribute("width", "220%");
@@ -614,7 +642,20 @@ if (typeof document !== "undefined") {
     defs.appendChild(glow);
     svg.appendChild(defs);
 
-    // Colored star zones: 6 points + center hexagon, filled as solid regions
+    // Wooden board surface
+    const boardBg = document.createElementNS(SVG_NS, "rect");
+    boardBg.setAttribute("x", "0");
+    boardBg.setAttribute("y", "0");
+    boardBg.setAttribute("width", width);
+    boardBg.setAttribute("height", height);
+    boardBg.setAttribute("fill", "url(#wood-board)");
+    boardBg.style.pointerEvents = "none";
+    svg.appendChild(boardBg);
+
+    // Board content (lattice, holes, pieces) paints on top of the wooden surface
+    svg.appendChild(g);
+
+    // Colored starting zones: each player's star point keeps its color
     const EXPAND = CELL_SIZE * 0.55;
     for (const fill of getRegionFills()) {
       const pts = fill.cells.map((c) => cellToPixel(c));
@@ -652,7 +693,7 @@ if (typeof document !== "undefined") {
           line.setAttribute("y1", p1.y);
           line.setAttribute("x2", p2.x);
           line.setAttribute("y2", p2.y);
-          line.setAttribute("stroke", LINK_COLOR);
+          line.setAttribute("stroke", BOARD_CARVE);
           line.setAttribute("stroke-width", "1.5");
           line.style.pointerEvents = "none";
           g.appendChild(line);
@@ -660,7 +701,7 @@ if (typeof document !== "undefined") {
       }
     }
 
-    // White holes (occupied holes are covered by a marble piece later)
+    // Holes (occupied holes are covered by a piece later)
     for (let cell = 0; cell < TOTAL_POSITIONS; cell++) {
       const pos = cellToPixel(cell);
       const hole = document.createElementNS(SVG_NS, "circle");
@@ -702,14 +743,15 @@ if (typeof document !== "undefined") {
 
   function drawPiece(parent, cell, player) {
     const pos = cellToPixel(cell);
+    const radius = CELL_SIZE * 0.34;
     const piece = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     piece.setAttribute("cx", pos.x);
     piece.setAttribute("cy", pos.y);
-    piece.setAttribute("r", CELL_SIZE * 0.34);
-    piece.setAttribute("fill", "url(#marble-" + player + ")");
-    piece.setAttribute("stroke", shadeColor(MARBLE_COLORS[player], -55));
+    piece.setAttribute("r", radius);
+    piece.setAttribute("fill", "url(#piece-" + player + ")");
+    piece.setAttribute("stroke", shadeColor(PIECE_COLORS[player], -55));
     piece.setAttribute("stroke-width", "1.6");
-    piece.setAttribute("filter", "url(#marble-glow)");
+    piece.setAttribute("filter", "url(#piece-glow)");
     piece.setAttribute("class", "piece");
     piece.dataset.cell = cell;
 
@@ -718,6 +760,16 @@ if (typeof document !== "undefined") {
     }
 
     parent.appendChild(piece);
+
+    // Specular highlight matching the glossy pieces of the other board games
+    const shine = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    shine.setAttribute("cx", pos.x - radius * 0.28);
+    shine.setAttribute("cy", pos.y - radius * 0.3);
+    shine.setAttribute("r", radius * 0.26);
+    shine.setAttribute("fill", "#ffffff");
+    shine.setAttribute("opacity", luminance(PIECE_COLORS[player]) < 0.5 ? "0.35" : "0.75");
+    shine.style.pointerEvents = "none";
+    parent.appendChild(shine);
   }
 
   function updateStatusBar() {

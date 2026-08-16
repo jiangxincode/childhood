@@ -643,34 +643,12 @@ if (typeof document !== "undefined") {
   let localTeam = null;
   let remoteTeam = null;
 
-  // Board image
-  let boardImage = null;
-
-  // Board dimensions (matching reference image proportions)
+  // Board dimensions (matching the original board layout)
   const CELL_SIZE = 65;
-  const PADDING = 30;
-  const BOARD_W = CELL_SIZE * (COLS - 1) + PADDING * 2;
-  const BOARD_H = CELL_SIZE * (ROWS - 1) + PADDING * 2;
+  const PADDING = 8;
+  const BOARD_W = CELL_SIZE * COLS + PADDING * 2;
+  const BOARD_H = CELL_SIZE * ROWS + PADDING * 2;
   const PIECE_RADIUS = 25;
-
-  function loadImage(src) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        boardImage = img;
-        resolve(img);
-      };
-      img.onerror = () => {
-        resolve(null);
-      };
-      img.src = src;
-    });
-  }
-
-  async function preloadImages() {
-    // Load board image only
-    await loadImage("images/dou_shou_qi_board.png");
-  }
 
   function initBoard() {
     canvas = document.getElementById("board-canvas");
@@ -686,87 +664,81 @@ if (typeof document !== "undefined") {
 
   function toCanvasX(c) {
     const col = gameState && gameState.boardFlipped ? COLS - 1 - c : c;
-    return PADDING + col * CELL_SIZE;
+    return PADDING + col * CELL_SIZE + CELL_SIZE / 2;
   }
 
   function toCanvasY(r) {
     const row = gameState && gameState.boardFlipped ? ROWS - 1 - r : r;
-    return PADDING + row * CELL_SIZE;
+    return PADDING + row * CELL_SIZE + CELL_SIZE / 2;
   }
 
   function drawBoard() {
-    // Draw board background image if loaded
-    if (boardImage) {
-      context.drawImage(boardImage, 0, 0, BOARD_W, BOARD_H);
-    } else {
-      // Fallback: draw white background with red grid
-      context.fillStyle = "#ffffff";
-      context.fillRect(0, 0, BOARD_W, BOARD_H);
+    // White board base (matches the original board image)
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, BOARD_W, BOARD_H);
 
-      // Red grid lines
-      context.strokeStyle = "#d32f2f";
-      context.lineWidth = 2;
+    // Neutral black outer border
+    context.strokeStyle = "#000000";
+    context.lineWidth = 4;
+    context.strokeRect(2, 2, BOARD_W - 4, BOARD_H - 4);
 
-      // Horizontal lines
-      for (let r = 0; r < ROWS; r++) {
-        context.beginPath();
-        context.moveTo(toCanvasX(0), toCanvasY(r));
-        context.lineTo(toCanvasX(COLS - 1), toCanvasY(r));
-        context.stroke();
-      }
+    // Neutral black grid lines
+    context.strokeStyle = "#000000";
+    context.lineWidth = 3;
 
-      // Vertical lines
-      for (let c = 0; c < COLS; c++) {
-        context.beginPath();
-        context.moveTo(toCanvasX(c), toCanvasY(0));
-        context.lineTo(toCanvasX(c), toCanvasY(ROWS - 1));
-        context.stroke();
-      }
+    // Horizontal lines (grid rows, including outer edges)
+    for (let r = 0; r <= ROWS; r++) {
+      context.beginPath();
+      const y = PADDING + r * CELL_SIZE;
+      context.moveTo(PADDING, y);
+      context.lineTo(PADDING + COLS * CELL_SIZE, y);
+      context.stroke();
+    }
 
-      // Draw river (red wave pattern)
-      for (let c = 1; c <= 5; c++) {
-        if (c === 3) continue; // Skip center column
-        for (let r = 3; r <= 5; r++) {
-          const cx = toCanvasX(c);
-          const cy = toCanvasY(r);
-          const halfCell = CELL_SIZE / 2;
+    // Vertical lines (grid columns, including outer edges)
+    for (let c = 0; c <= COLS; c++) {
+      context.beginPath();
+      const x = PADDING + c * CELL_SIZE;
+      context.moveTo(x, PADDING);
+      context.lineTo(x, PADDING + ROWS * CELL_SIZE);
+      context.stroke();
+    }
 
-          // Red wave pattern
-          context.strokeStyle = "#d32f2f";
-          context.lineWidth = 1.5;
-          for (let i = 0; i < 4; i++) {
-            context.beginPath();
-            const y = cy - halfCell + 10 + i * 12;
-            context.moveTo(cx - halfCell + 3, y);
-            context.quadraticCurveTo(cx, y - 5, cx + halfCell - 3, y);
-            context.stroke();
-          }
+    // River waves between the two camps (neutral black wave lines)
+    for (let c = 1; c <= 5; c++) {
+      if (c === 3) continue; // Skip center column
+      for (let r = 3; r <= 5; r++) {
+        const cx = toCanvasX(c);
+        const cy = toCanvasY(r);
+        const halfCell = CELL_SIZE / 2;
+
+        context.strokeStyle = "#000000";
+        context.lineWidth = 2;
+        for (let i = 0; i < 5; i++) {
+          const y = cy - halfCell + 9 + i * 11;
+          context.beginPath();
+          context.moveTo(cx - halfCell + 5, y);
+          context.quadraticCurveTo(cx - halfCell * 0.5, y - 5, cx, y);
+          context.quadraticCurveTo(cx + halfCell * 0.5, y + 5, cx + halfCell - 5, y);
+          context.stroke();
         }
       }
-
-      // Draw den circles
-      context.strokeStyle = "#d32f2f";
-      context.lineWidth = 2;
-      // Black den (top)
-      context.beginPath();
-      context.arc(toCanvasX(3), toCanvasY(0), 18, 0, Math.PI * 2);
-      context.stroke();
-      // Red den (bottom)
-      context.beginPath();
-      context.arc(toCanvasX(3), toCanvasY(8), 18, 0, Math.PI * 2);
-      context.stroke();
-
-      // Draw trap marks
-      context.lineWidth = 1.5;
-      // Black traps
-      drawTrapMark(toCanvasX(2), toCanvasY(0));
-      drawTrapMark(toCanvasX(4), toCanvasY(0));
-      drawTrapMark(toCanvasX(3), toCanvasY(1));
-      // Red traps
-      drawTrapMark(toCanvasX(2), toCanvasY(8));
-      drawTrapMark(toCanvasX(4), toCanvasY(8));
-      drawTrapMark(toCanvasX(3), toCanvasY(7));
     }
+
+    // Den circles: black camp (top) / red camp (bottom), with 獸穴 labels
+    context.strokeStyle = "#000000";
+    context.lineWidth = 3;
+    context.beginPath();
+    context.arc(toCanvasX(3), toCanvasY(0), 22, 0, Math.PI * 2);
+    context.stroke();
+    context.strokeStyle = "#d32f2f";
+    context.beginPath();
+    context.arc(toCanvasX(3), toCanvasY(8), 22, 0, Math.PI * 2);
+    context.stroke();
+
+    // Terrain labels (獸穴 / 陷阱) and animal names on the starting cells
+    drawTerrainLabels();
+    drawStartCharacters();
 
     // Draw selection and valid moves
     if (gameState && gameState.selectedPiece) {
@@ -789,17 +761,84 @@ if (typeof document !== "undefined") {
     }
   }
 
-  function drawTrapMark(cx, cy) {
-    const size = 12;
-    context.strokeStyle = "#d32f2f";
-    context.lineWidth = 1.5;
-    // Draw X mark
-    context.beginPath();
-    context.moveTo(cx - size, cy - size);
-    context.lineTo(cx + size, cy + size);
-    context.moveTo(cx + size, cy - size);
-    context.lineTo(cx - size, cy + size);
-    context.stroke();
+  // Label the dens (獸穴) and the traps around them (陷阱), matching the
+  // classic board design. Each camp uses its own team color.
+  function drawTerrainLabels() {
+    context.font = 'bold 20px "KaiTi", "楷体", "STKaiti", serif';
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+
+    const camps = [
+      {
+        color: "#000000",
+        den: { c: 3, r: 0 },
+        traps: [
+          { c: 2, r: 0 },
+          { c: 4, r: 0 },
+          { c: 3, r: 1 },
+        ],
+      },
+      {
+        color: "#d32f2f",
+        den: { c: 3, r: 8 },
+        traps: [
+          { c: 2, r: 8 },
+          { c: 4, r: 8 },
+          { c: 3, r: 7 },
+        ],
+      },
+    ];
+
+    for (const camp of camps) {
+      context.fillStyle = camp.color;
+      context.fillText("獸穴", toCanvasX(camp.den.c), toCanvasY(camp.den.r));
+      for (const cell of camp.traps) {
+        context.fillText("陷阱", toCanvasX(cell.c), toCanvasY(cell.r));
+      }
+    }
+  }
+
+  // Print the animal name on each starting cell, matching the original board.
+  function drawStartCharacters() {
+    context.font = 'bold 30px "KaiTi", "楷体", "STKaiti", serif';
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+
+    const camps = [
+      {
+        color: "#000000",
+        cells: [
+          { c: 0, r: 0, name: PIECE_NAMES[LION] },
+          { c: 6, r: 0, name: PIECE_NAMES[TIGER] },
+          { c: 1, r: 1, name: PIECE_NAMES[DOG] },
+          { c: 5, r: 1, name: PIECE_NAMES[CAT] },
+          { c: 0, r: 2, name: PIECE_NAMES[RAT] },
+          { c: 2, r: 2, name: PIECE_NAMES[LEOPARD] },
+          { c: 4, r: 2, name: PIECE_NAMES[WOLF] },
+          { c: 6, r: 2, name: PIECE_NAMES[ELEPHANT] },
+        ],
+      },
+      {
+        color: "#d32f2f",
+        cells: [
+          { c: 0, r: 6, name: PIECE_NAMES[ELEPHANT] },
+          { c: 2, r: 6, name: PIECE_NAMES[WOLF] },
+          { c: 4, r: 6, name: PIECE_NAMES[LEOPARD] },
+          { c: 6, r: 6, name: PIECE_NAMES[RAT] },
+          { c: 1, r: 7, name: PIECE_NAMES[CAT] },
+          { c: 5, r: 7, name: PIECE_NAMES[DOG] },
+          { c: 0, r: 8, name: PIECE_NAMES[TIGER] },
+          { c: 6, r: 8, name: PIECE_NAMES[LION] },
+        ],
+      },
+    ];
+
+    for (const camp of camps) {
+      context.fillStyle = camp.color;
+      for (const cell of camp.cells) {
+        context.fillText(cell.name, toCanvasX(cell.c), toCanvasY(cell.r));
+      }
+    }
   }
 
   function drawPiece(c, r, piece) {
@@ -807,30 +846,16 @@ if (typeof document !== "undefined") {
     const cy = toCanvasY(r);
     const color = piece.team;
 
-    // Shadow
-    context.fillStyle = "rgba(0, 0, 0, 0.3)";
-    context.beginPath();
-    context.arc(cx + 2, cy + 3, PIECE_RADIUS, 0, Math.PI * 2);
-    context.fill();
+    // Wooden disc with the shared glossy material
+    BoardGameTheme.glossyDisc(context, cx, cy, PIECE_RADIUS, "#e8d5a8", {
+      light: 0.75,
+      dark: 0.42,
+      rim: color === RED ? "#c0392b" : "#1a1a1a",
+      rimWidth: 3,
+      highlight: "rgba(255, 255, 255, 0.18)",
+    });
 
-    // Piece background
-    const gradient = context.createRadialGradient(cx - 3, cy - 3, 2, cx, cy, PIECE_RADIUS);
-    gradient.addColorStop(0, "#f5e6c8");
-    gradient.addColorStop(0.7, "#e8d5a8");
-    gradient.addColorStop(1, "#d4c090");
-    context.fillStyle = gradient;
-    context.beginPath();
-    context.arc(cx, cy, PIECE_RADIUS, 0, Math.PI * 2);
-    context.fill();
-
-    // Outer ring
-    context.strokeStyle = color === RED ? "#c0392b" : "#1a1a1a";
-    context.lineWidth = 3;
-    context.beginPath();
-    context.arc(cx, cy, PIECE_RADIUS, 0, Math.PI * 2);
-    context.stroke();
-
-    // Inner ring
+    // Inner decorative ring
     context.strokeStyle = color === RED ? "#e74c3c" : "#333";
     context.lineWidth = 1.5;
     context.beginPath();
@@ -994,8 +1019,8 @@ if (typeof document !== "undefined") {
     const scaleY = BOARD_H / rect.height;
     const px = (e.clientX - rect.left) * scaleX;
     const py = (e.clientY - rect.top) * scaleY;
-    let col = Math.round((px - PADDING) / CELL_SIZE);
-    let row = Math.round((py - PADDING) / CELL_SIZE);
+    let col = Math.round((px - PADDING - CELL_SIZE / 2) / CELL_SIZE);
+    let row = Math.round((py - PADDING - CELL_SIZE / 2) / CELL_SIZE);
     if (gameState.boardFlipped) {
       col = COLS - 1 - col;
       row = ROWS - 1 - row;
@@ -1140,7 +1165,6 @@ if (typeof document !== "undefined") {
     document.getElementById("rule-pve").style.display = mode === "pve" ? "block" : "none";
     document.getElementById("game-over").style.display = "none";
 
-    await preloadImages();
     initBoard();
     renderGame(gameState);
     canvas.onclick = handleCanvasClick;

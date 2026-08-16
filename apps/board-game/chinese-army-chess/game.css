@@ -270,13 +270,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 700;
-  background: #fef7cc;
-  border: 2px solid #fdc44c;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  background: radial-gradient(circle at 35% 30%, #fbf0d5, #f0d295 60%, #ddb86f);
+  border: 2px solid #c69a4e;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
   z-index: 10;
   user-select: none;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -295,9 +297,24 @@ body {
 }
 
 .chess-face-down {
-  background: #5b7d1a;
-  border: 2px solid #4a6a14;
+  background: radial-gradient(circle at 35% 30%, #e8cf9f, #cdab6d 55%, #b78f4e);
+  border: 2px solid #8a6633;
   color: transparent;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.chess-face-down::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1.5px solid rgba(90, 58, 26, 0.4);
+  border-radius: 4px;
+  pointer-events: none;
 }
 
 .chess-selected {

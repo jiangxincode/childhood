@@ -57,6 +57,8 @@ export default [
         $j: "writable",
         SlotMachine: "readonly",
         Vue: "readonly",
+        // Shared board theme helper from apps/board-game/board-game-theme.js
+        BoardGameTheme: "readonly",
         // Shared helper from apps/common/game-utils.js (loaded via <script> in browser)
         getCurrentPlayerLabel: "readonly",
         planeOption: "writable",
