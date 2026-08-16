@@ -1071,16 +1071,16 @@ if (typeof document !== "undefined") {
     const gDiag = document.createElementNS(ns, "g");
     const gStation = document.createElementNS(ns, "g");
 
-    // ---- Highways (gray thin lines) ----
+    // ---- Highways (thin black lines) ----
     // Horizontal highways
     const hHighwayRows = [0, 2, 3, 4, 7, 8, 9, 11];
     for (const y of hHighwayRows) {
-      addSVGLine(gHighway, ns, { x1: svgX(0), y1: svgY(y), x2: svgX(4), y2: svgY(y) }, "gray", 1);
+      addSVGLine(gHighway, ns, { x1: svgX(0), y1: svgY(y), x2: svgX(4), y2: svgY(y) }, "#000", 1);
     }
     // Vertical highways
     for (let x = 0; x < COLS; x++) {
-      addSVGLine(gHighway, ns, { x1: svgX(x), y1: svgY(0), x2: svgX(x), y2: svgY(5) }, "gray", 1);
-      addSVGLine(gHighway, ns, { x1: svgX(x), y1: svgY(6), x2: svgX(x), y2: svgY(11) }, "gray", 1);
+      addSVGLine(gHighway, ns, { x1: svgX(x), y1: svgY(0), x2: svgX(x), y2: svgY(5) }, "#000", 1);
+      addSVGLine(gHighway, ns, { x1: svgX(x), y1: svgY(6), x2: svgX(x), y2: svgY(11) }, "#000", 1);
     }
 
     // ---- Railways (gold/black striped thick lines) ----
@@ -1118,7 +1118,7 @@ if (typeof document !== "undefined") {
       4
     );
 
-    // ---- Diagonals (gray dashed lines) ----
+    // ---- Diagonals (black dashed lines) ----
     const drawn = {};
     for (let y = 0; y < ROWS; y++) {
       for (let x = 0; x < COLS; x++) {
@@ -1143,7 +1143,7 @@ if (typeof document !== "undefined") {
           line.setAttribute("y1", svgY(y));
           line.setAttribute("x2", svgX(nx));
           line.setAttribute("y2", svgY(ny));
-          line.setAttribute("stroke", "gray");
+          line.setAttribute("stroke", "#000");
           line.setAttribute("stroke-width", "1");
           line.setAttribute("stroke-dasharray", "4,3");
           gDiag.appendChild(line);
@@ -1171,7 +1171,7 @@ if (typeof document !== "undefined") {
           ellipse.setAttribute("rx", CAMP_RX);
           ellipse.setAttribute("ry", CAMP_RY);
           ellipse.setAttribute("fill", "#fff");
-          ellipse.setAttribute("stroke", "gray");
+          ellipse.setAttribute("stroke", "#000");
           ellipse.setAttribute("stroke-width", "1");
           ellipse.classList.add("station-xingying");
           gStation.appendChild(ellipse);
@@ -1184,7 +1184,7 @@ if (typeof document !== "undefined") {
           rect.setAttribute("width", STATION_W);
           rect.setAttribute("height", STATION_H);
           rect.setAttribute("fill", "#fff");
-          rect.setAttribute("stroke", "gray");
+          rect.setAttribute("stroke", "#000");
           rect.setAttribute("stroke-width", "1");
           rect.setAttribute("rx", "3");
           rect.classList.add(isBaseCamp(x, y) ? "station-dabenying" : "station");
@@ -1197,8 +1197,8 @@ if (typeof document !== "undefined") {
         text.setAttribute("text-anchor", "middle");
         text.setAttribute("dominant-baseline", "central");
         text.setAttribute("font-size", "10");
-        text.setAttribute("fill", "#aaa");
-        text.setAttribute("font-weight", "400");
+        text.setAttribute("fill", "#000000");
+        text.setAttribute("font-weight", "700");
         text.textContent = label;
         gStation.appendChild(text);
       }
