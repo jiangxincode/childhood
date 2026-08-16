@@ -827,7 +827,7 @@ if (typeof document !== "undefined") {
       }
     }
     // Coordinate labels
-    context.fillStyle = "#666";
+    context.fillStyle = BoardGameTheme.PALETTE.carve;
     context.font = "11px sans-serif";
     context.textAlign = "center";
     context.textBaseline = "middle";
@@ -849,33 +849,13 @@ if (typeof document !== "undefined") {
     const color = getOwner(piece);
     const radius = CELL_SIZE * 0.4;
 
-    // Shadow
-    context.fillStyle = "rgba(0,0,0,0.2)";
-    context.beginPath();
-    context.arc(cx + 1, cy + 1, radius, 0, Math.PI * 2);
-    context.fill();
-
-    // Piece base color
-    const gradient = context.createRadialGradient(cx - 4, cy - 4, 2, cx, cy, radius);
-    if (color === WHITE) {
-      gradient.addColorStop(0, "#ffffff");
-      gradient.addColorStop(1, "#d4d4d4");
-    } else {
-      gradient.addColorStop(0, "#5a5a5a");
-      gradient.addColorStop(1, "#1a1a1a");
-    }
-    context.fillStyle = gradient;
-    context.beginPath();
-    context.arc(cx, cy, radius, 0, Math.PI * 2);
-    context.fill();
-
-    // Border
-    context.strokeStyle = color === WHITE ? "#888" : "#000";
-    context.lineWidth = 1.5;
-    context.stroke();
+    // Glossy piece body with the shared material treatment
+    BoardGameTheme.glossyDisc(context, cx, cy, radius, color === WHITE ? "#f2f2f2" : "#2e2e2e", {
+      rimWidth: 1.5,
+    });
 
     // Unicode symbol
-    context.fillStyle = color === WHITE ? "#000" : "#fff";
+    context.fillStyle = color === WHITE ? "#2c2c2c" : "#fff";
     context.font = "bold " + Math.floor(CELL_SIZE * 0.55) + "px serif";
     context.textAlign = "center";
     context.textBaseline = "middle";
