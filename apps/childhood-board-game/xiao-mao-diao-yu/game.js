@@ -341,6 +341,11 @@ if (typeof document !== "undefined") {
     svg.setAttribute("height", height);
     svg.setAttribute("class", "board-svg");
 
+    // Shared board theme: glossy stone gradients for pieces.
+    if (window.ChildhoodBoardTheme) {
+      window.ChildhoodBoardTheme.addGradients(svg);
+    }
+
     // Draw edges first (so nodes paint on top)
     for (var i = 0; i < ADJACENCY.length; i++) {
       var neighbors = ADJACENCY[i];

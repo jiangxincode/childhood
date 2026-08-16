@@ -277,6 +277,11 @@ if (typeof document !== "undefined") {
     svg.setAttribute("width", "100%");
     svg.setAttribute("style", "max-width: 440px; height: auto;");
 
+    // Shared board theme: glossy stone gradients for pieces.
+    if (window.ChildhoodBoardTheme) {
+      window.ChildhoodBoardTheme.addGradients(svg);
+    }
+
     // Draw well circle on the right side (replaces the 1-3 edge)
     var wellCircle = document.createElementNS(svgNS, "circle");
     wellCircle.setAttribute("cx", 380);

@@ -339,6 +339,11 @@ if (typeof document !== "undefined") {
     svg.setAttribute("viewBox", "0 0 " + BOARD_VIEW + " " + BOARD_VIEW);
     svg.setAttribute("class", "board-svg");
 
+    // Shared board theme: glossy stone gradients for pieces.
+    if (window.ChildhoodBoardTheme) {
+      window.ChildhoodBoardTheme.addGradients(svg);
+    }
+
     // 4 horizontal + 4 vertical lines forming the grid of intersections
     for (var i = 0; i < BOARD_SIZE; i++) {
       var p0 = nodeToPx(0, i);
