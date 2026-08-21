@@ -1,7 +1,7 @@
 {
   "productName": "童年游戏合集",
   "version": "1.0.0",
-  "identifier": "io.github.jiangxincode.childhood",
+  "identifier": "io.github.AloysHF.childhood",
   "build": {
     "beforeDevCommand": "npm run build:dist",
     "beforeBuildCommand": "npm run build:dist",
@@ -41,7 +41,7 @@
     "longDescription": "免费玩刀杀鸡、龙虎斗、五子棋、中国象棋、围棋、跳棋等23款经典童年棋牌游戏，离线即玩。",
     "copyright": "Copyright © 2026 JiangXin",
     "publisher": "JiangXin",
-    "homepage": "https://jiangxincode.github.io/childhood/",
+    "homepage": "https://aloyshf.github.io/childhood/",
     "linux": {
       "deb": {
         "depends": []

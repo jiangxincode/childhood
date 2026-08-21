@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.head.appendChild(style);
 
   // GitHub icon group (all pages)
-  const repo = "jiangxincode/childhood";
+  const repo = "AloysHF/childhood";
   const icons = document.createElement("div");
   icons.className = "github-icons";
   icons.innerHTML = [

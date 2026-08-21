@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://jiangxincode.github.io/childhood/sitemap.xml
+Sitemap: https://aloyshf.github.io/childhood/sitemap.xml

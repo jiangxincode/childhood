@@ -5,7 +5,7 @@ description = "Childhood classic games collection"
 authors = ["JiangXin"]
 edition = "2021"
 license = "Apache-2.0"
-repository = "https://github.com/jiangxincode/childhood"
+repository = "https://github.com/AloysHF/childhood"
 rust-version = "1.77"
 
 [lib]
