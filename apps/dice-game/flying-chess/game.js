@@ -483,12 +483,15 @@ if (typeof $j !== "undefined") {
           break;
       }
       if (type == "attack") {
-        $j(obj).animate({ top: top, left: left }).attr({ coordId: 0, step: 0, state: "unready" });
+        $j(obj)
+          .removeClass("plane-finished")
+          .animate({ top: top, left: left })
+          .attr({ coordId: 0, step: 0, state: "unready" });
       } else {
         $j(obj)
           .animate({ top: top, left: left }, () => {})
           .attr({ state: "win" })
-          .html("win");
+          .addClass("plane-finished");
       }
     };
 
@@ -627,6 +630,9 @@ if (typeof $j !== "undefined") {
     for (let i = 0; i < 4; i++) {
       const plane = document.createElement("div");
       plane.className = "plane";
+      plane.setAttribute("aria-label", COLOR_NAMES[type] + "方" + (i + 1) + "号飞机");
+      plane.innerHTML =
+        '<svg viewBox="0 0 50 50" aria-hidden="true"><path d="M25 4c-2.7 0-4 4.5-4 10v6L7 28v5l14-4v9l-6 5v3l10-3 10 3v-3l-6-5v-9l14 4v-5l-14-8v-6c0-5.5-1.3-10-4-10z"/></svg>';
       switch (i) {
         case 1:
           left += 95;
@@ -639,28 +645,11 @@ if (typeof $j !== "undefined") {
           left += 95;
           break;
       }
-      let imgUrl = "";
-      switch (type) {
-        case "red":
-          imgUrl = 'url("images/plane_red_b.png")';
-          break;
-        case "blue":
-          imgUrl = 'url("images/plane_blue_b.png")';
-          break;
-        case "yellow":
-          imgUrl = 'url("images/plane_yellow_b.png")';
-          break;
-        case "green":
-          imgUrl = 'url("images/plane_green_b.png")';
-          break;
-      }
       $j(plane)
         .attr({ type: type, num: i + 1, state: "unready" })
         .css({
           top: top + "px",
           left: left + "px",
-          "background-image": imgUrl,
-          "background-size": "cover",
         });
       $j(".main").append(plane);
     }
@@ -1226,6 +1215,9 @@ if (typeof $j !== "undefined") {
 
   // ---- DOMContentLoaded ----
   $j(() => {
+    if (globalThis.FlyingChessBoard) {
+      globalThis.FlyingChessBoard.render(document.querySelector(".main"), COORD, INIT_COORDS);
+    }
     window.onbeforeunload = function (event) {
       const n = event.screenX - window.screenLeft;
       const b = n > document.documentElement.scrollWidth - 20;
