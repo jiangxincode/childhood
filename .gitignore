@@ -32,3 +32,6 @@ src-tauri/gen/
 
 tmp/
 *.lock
+
+# Vitest coverage output
+coverage/
