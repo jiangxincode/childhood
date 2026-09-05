@@ -8,39 +8,39 @@
 // Each entry: { name, value, type, domIndex, icon, bg }
 // type: "property" | "goodEvent" | "badEvent" | "surprise" | "jail" | "casino" | "airport" | "trip"
 // domIndex: the DOM element index for clockwise visual layout in 12x5 grid
-// icon: emoji shown as background visual
-// bg: background color for the cell
+// icon: emoji shown inside the cream circle
+// bg: cell colour, cycling the Flying Chess palette so adjacent cells differ
 const BOARD_DATA = [
-  { name: "起点", value: 2000, type: "goodEvent", domIndex: 18, icon: "🏁", bg: "#fff9c4" },
-  { name: "中国", value: 5000, type: "property", domIndex: 19, icon: "🇨🇳", bg: "#ffcdd2" },
-  { name: "越南", value: 1000, type: "property", domIndex: 20, icon: "🇻🇳", bg: "#ffcdd2" },
-  { name: "韩国", value: 1300, type: "property", domIndex: 21, icon: "🇰🇷", bg: "#ffcdd2" },
-  { name: "机会", value: 1000, type: "surprise", domIndex: 22, icon: "❓", bg: "#e3f2fd" },
-  { name: "日本", value: 3000, type: "property", domIndex: 23, icon: "🇯🇵", bg: "#ffcdd2" },
-  { name: "俄罗斯", value: 4000, type: "property", domIndex: 24, icon: "🇷🇺", bg: "#ffcdd2" },
-  { name: "白云机场", value: 1000, type: "airport", domIndex: 25, icon: "✈️", bg: "#c8e6c9" },
-  { name: "交所得税", value: 1000, type: "badEvent", domIndex: 26, icon: "💸", bg: "#ffe0b2" },
-  { name: "命运", value: 1000, type: "surprise", domIndex: 27, icon: "🃏", bg: "#e3f2fd" },
-  { name: "埃及", value: 1600, type: "property", domIndex: 28, icon: "🇪🇬", bg: "#ffcdd2" },
-  { name: "监狱", value: 0, type: "jail", domIndex: 29, icon: "🔒", bg: "#e0e0e0" },
-  { name: "澳大利亚", value: 2400, type: "property", domIndex: 17, icon: "🇦🇺", bg: "#ffcdd2" },
-  { name: "新西兰", value: 1800, type: "property", domIndex: 15, icon: "🇳🇿", bg: "#ffcdd2" },
-  { name: "南极洲", value: 20000, type: "property", domIndex: 13, icon: "🏔️", bg: "#e0f7fa" },
-  { name: "赌场", value: 1000, type: "casino", domIndex: 11, icon: "🎰", bg: "#fff3e0" },
-  { name: "机会", value: 1000, type: "surprise", domIndex: 10, icon: "❓", bg: "#e3f2fd" },
-  { name: "捡到钱", value: 1000, type: "goodEvent", domIndex: 9, icon: "💰", bg: "#fff9c4" },
-  { name: "巴西", value: 2000, type: "property", domIndex: 8, icon: "🇧🇷", bg: "#ffcdd2" },
-  { name: "阿根廷", value: 2200, type: "property", domIndex: 7, icon: "🇦🇷", bg: "#ffcdd2" },
-  { name: "墨西哥", value: 2400, type: "property", domIndex: 6, icon: "🇲🇽", bg: "#ffcdd2" },
-  { name: "美国", value: 4500, type: "property", domIndex: 5, icon: "🇺🇸", bg: "#ffcdd2" },
-  { name: "意大利", value: 3000, type: "property", domIndex: 4, icon: "🇮🇹", bg: "#ffcdd2" },
-  { name: "伦敦机场", value: 1000, type: "airport", domIndex: 3, icon: "✈️", bg: "#c8e6c9" },
-  { name: "英国", value: 3600, type: "property", domIndex: 2, icon: "🇬🇧", bg: "#ffcdd2" },
-  { name: "命运", value: 1000, type: "surprise", domIndex: 1, icon: "🃏", bg: "#e3f2fd" },
-  { name: "阿尔卑斯山", value: 1000, type: "trip", domIndex: 0, icon: "🏖️", bg: "#e0f7fa" },
-  { name: "德国", value: 3400, type: "property", domIndex: 12, icon: "🇩🇪", bg: "#ffcdd2" },
-  { name: "法国", value: 3200, type: "property", domIndex: 14, icon: "🇫🇷", bg: "#ffcdd2" },
-  { name: "西班牙", value: 2800, type: "property", domIndex: 16, icon: "🇪🇸", bg: "#ffcdd2" },
+  { name: "起点", value: 2000, type: "goodEvent", domIndex: 18, icon: "🏁", bg: "#e77918" },
+  { name: "中国", value: 5000, type: "property", domIndex: 19, icon: "🇨🇳", bg: "#db224e" },
+  { name: "越南", value: 1000, type: "property", domIndex: 20, icon: "🇻🇳", bg: "#76c5f0" },
+  { name: "韩国", value: 1300, type: "property", domIndex: 21, icon: "🇰🇷", bg: "#e77918" },
+  { name: "机会", value: 1000, type: "surprise", domIndex: 22, icon: "❓", bg: "#76c5f0" },
+  { name: "日本", value: 3000, type: "property", domIndex: 23, icon: "🇯🇵", bg: "#83c326" },
+  { name: "俄罗斯", value: 4000, type: "property", domIndex: 24, icon: "🇷🇺", bg: "#db224e" },
+  { name: "白云机场", value: 1000, type: "airport", domIndex: 25, icon: "✈️", bg: "#83c326" },
+  { name: "交所得税", value: 1000, type: "badEvent", domIndex: 26, icon: "💸", bg: "#db224e" },
+  { name: "命运", value: 1000, type: "surprise", domIndex: 27, icon: "🃏", bg: "#76c5f0" },
+  { name: "埃及", value: 1600, type: "property", domIndex: 28, icon: "🇪🇬", bg: "#e77918" },
+  { name: "监狱", value: 0, type: "jail", domIndex: 29, icon: "🔒", bg: "#8a8a72" },
+  { name: "澳大利亚", value: 2400, type: "property", domIndex: 17, icon: "🇦🇺", bg: "#83c326" },
+  { name: "新西兰", value: 1800, type: "property", domIndex: 15, icon: "🇳🇿", bg: "#76c5f0" },
+  { name: "南极洲", value: 20000, type: "property", domIndex: 13, icon: "🏔️", bg: "#db224e" },
+  { name: "赌场", value: 1000, type: "casino", domIndex: 11, icon: "🎰", bg: "#e77918" },
+  { name: "机会", value: 1000, type: "surprise", domIndex: 10, icon: "❓", bg: "#76c5f0" },
+  { name: "捡到钱", value: 1000, type: "goodEvent", domIndex: 9, icon: "💰", bg: "#83c326" },
+  { name: "巴西", value: 2000, type: "property", domIndex: 8, icon: "🇧🇷", bg: "#76c5f0" },
+  { name: "阿根廷", value: 2200, type: "property", domIndex: 7, icon: "🇦🇷", bg: "#e77918" },
+  { name: "墨西哥", value: 2400, type: "property", domIndex: 6, icon: "🇲🇽", bg: "#83c326" },
+  { name: "美国", value: 4500, type: "property", domIndex: 5, icon: "🇺🇸", bg: "#db224e" },
+  { name: "意大利", value: 3000, type: "property", domIndex: 4, icon: "🇮🇹", bg: "#76c5f0" },
+  { name: "伦敦机场", value: 1000, type: "airport", domIndex: 3, icon: "✈️", bg: "#83c326" },
+  { name: "英国", value: 3600, type: "property", domIndex: 2, icon: "🇬🇧", bg: "#e77918" },
+  { name: "命运", value: 1000, type: "surprise", domIndex: 1, icon: "🃏", bg: "#76c5f0" },
+  { name: "阿尔卑斯山", value: 1000, type: "trip", domIndex: 0, icon: "🏖️", bg: "#83c326" },
+  { name: "德国", value: 3400, type: "property", domIndex: 12, icon: "🇩🇪", bg: "#e77918" },
+  { name: "法国", value: 3200, type: "property", domIndex: 14, icon: "🇫🇷", bg: "#83c326" },
+  { name: "西班牙", value: 2800, type: "property", domIndex: 16, icon: "🇪🇸", bg: "#db224e" },
 ];
 
 // 31 fate cards (chance/fate events)
@@ -89,9 +89,34 @@ const COLOR_SCHEME = {
   "Green Lantern": "#5FAE2E",
 };
 
-// Generic player colors for non-character mode
-const PLAYER_COLORS = ["#e53935", "#1565c0", "#f9a825", "#2e7d32"];
+// Generic player colors for non-character mode (Flying Chess plane palette)
+const PLAYER_COLORS = ["#dc2108", "#0873c5", "#e77918", "#0aa21c"];
 const PLAYER_COLOR_NAMES = ["红", "蓝", "黄", "绿"];
+
+// Flat SVG buildings drawn in the Flying Chess palette (level 1-3)
+const BUILDING_SVGS = [
+  `<svg viewBox="0 0 60 48" aria-hidden="true" focusable="false">
+    <polygon points="6,24 30,6 54,24" fill="#db224e"/>
+    <rect x="13" y="24" width="34" height="20" fill="#fffdca"/>
+    <rect x="26" y="31" width="9" height="13" fill="#db224e"/>
+  </svg>`,
+  `<svg viewBox="0 0 60 48" aria-hidden="true" focusable="false">
+    <polygon points="2,22 30,4 58,22" fill="#e77918"/>
+    <rect x="8" y="22" width="44" height="22" fill="#fffdca"/>
+    <rect x="13" y="27" width="9" height="9" fill="#76c5f0"/>
+    <rect x="38" y="27" width="9" height="9" fill="#76c5f0"/>
+    <rect x="26" y="31" width="9" height="13" fill="#8a8a72"/>
+  </svg>`,
+  `<svg viewBox="0 0 60 48" aria-hidden="true" focusable="false">
+    <rect x="12" y="8" width="36" height="36" fill="#76c5f0"/>
+    <rect x="9" y="4" width="42" height="6" fill="#db224e"/>
+    <rect x="17" y="16" width="8" height="7" fill="#fffdca"/>
+    <rect x="35" y="16" width="8" height="7" fill="#fffdca"/>
+    <rect x="17" y="27" width="8" height="7" fill="#fffdca"/>
+    <rect x="35" y="27" width="8" height="7" fill="#fffdca"/>
+    <rect x="26" y="34" width="8" height="10" fill="#8a8a72"/>
+  </svg>`,
+];
 
 const BOARD_SIZE = 30;
 
@@ -369,8 +394,31 @@ if (typeof document !== "undefined") {
   let mapEl;
   let dialogEl, infoboxEl, msgboxEl;
 
-  const TOKEN_COLORS = ["#e53935", "#1565c0", "#f9a825", "#2e7d32"];
+  const TOKEN_COLORS = ["#dc2108", "#0873c5", "#e77918", "#0aa21c"];
   const TOKEN_NAMES = ["红", "蓝", "黄", "绿"];
+
+  // Spread the tokens inside a cell so co-located players stay visible
+  function layoutTokens(cell) {
+    const tokens = cell.querySelectorAll(".chr");
+    const slots = {
+      1: [50],
+      2: [30, 70],
+      3: [22, 50, 78],
+      4: [16, 39, 61, 84],
+    }[Math.min(tokens.length, 4)] || [50];
+    tokens.forEach((token, i) => {
+      token.style.left = `${slots[Math.min(i, slots.length - 1)]}%`;
+    });
+  }
+
+  // Ownership mark: colour ring around the cell plus around its icon circle
+  function setOwnerMark(node, color) {
+    node.style.boxShadow = color ? `inset 0 0 0 3px ${color}` : "none";
+    const icon = node.querySelector(".cell-icon");
+    if (icon) {
+      icon.style.borderColor = color || "transparent";
+    }
+  }
 
   function init() {
     SoundManager.init("../../audio");
@@ -476,6 +524,7 @@ if (typeof document !== "undefined") {
       node.style.background = TOKEN_COLORS[i];
       node.textContent = TOKEN_NAMES[i];
       places[0].node.append(node);
+      layoutTokens(places[0].node);
       players.push({
         name: TOKEN_NAMES[i],
         index: players.length,
@@ -523,14 +572,19 @@ if (typeof document !== "undefined") {
   }
 
   function playerMove(index) {
+    const oldCell = places[person.position].node;
     if (person.position === 29) {
       person.position = -1;
-      places[0].node.append(players[index].node);
       updateInfo();
       players[index].money += 1000;
     }
     person.position++;
-    places[person.position].node.append(players[index].node);
+    const newCell = places[person.position].node;
+    if (newCell !== oldCell) {
+      newCell.append(players[index].node);
+    }
+    layoutTokens(oldCell);
+    layoutTokens(newCell);
   }
 
   function game() {
@@ -616,9 +670,12 @@ if (typeof document !== "undefined") {
             person.money += FATE_CARDS[event].value;
             if (FATE_CARDS[event].stop) {
               setTimeout(() => {
+                const oldCell = places[person.position].node;
                 person.position = 11;
                 person.stop = FATE_CARDS[event].stop;
                 places[11].node.append(person.node);
+                layoutTokens(oldCell);
+                layoutTokens(places[11].node);
                 checkBankruptUI();
                 gameSequence(s);
               }, ANIM_SPEED * 1.5);
@@ -631,8 +688,11 @@ if (typeof document !== "undefined") {
             const des = place.name === "白云机场" ? "英国" : "中国";
             showMsgbox(`你花费$800搭乘飞机前往${des}`);
             setTimeout(() => {
+              const oldCell = places[person.position].node;
               person.position = 30 - person.position;
               places[person.position].node.append(person.node);
+              layoutTokens(oldCell);
+              layoutTokens(places[person.position].node);
               checkBankruptUI();
               gameSequence(s);
             }, ANIM_SPEED * 1.5);
@@ -661,8 +721,7 @@ if (typeof document !== "undefined") {
     if (type === "purchase") {
       place.owner = person.name;
       person.money -= place.value;
-      const color = getPlayerColor(person.name);
-      place.node.style.boxShadow = `3px 3px 3px inset ${color},3px -3px 3px inset ${color},-3px 3px 3px inset ${color}, -3px -3px 3px inset ${color}`;
+      setOwnerMark(place.node, getPlayerColor(person.name));
       showMsgbox(`恭喜你获得了${place.name}`);
       gameSequence(s);
     } else {
@@ -686,14 +745,14 @@ if (typeof document !== "undefined") {
         places.forEach((place) => {
           if (place.owner === person.name) {
             place.owner = "";
-            place.node.style.boxShadow =
-              "1px 1px 1px inset #454545, 1px -1px 1px inset #454545, -1px 1px 1px inset #454545, -1px -1px 1px inset #454545";
+            setOwnerMark(place.node, null);
           }
         });
         // Move player token off board
         const chipNode = document.getElementById(`chip-${players.indexOf(person)}`);
         if (chipNode) {
           chipNode.append(person.node);
+          layoutTokens(person.node.closest(".box") || places[person.position].node);
         }
         checkFinish();
       }, ANIM_SPEED / 2);
@@ -799,20 +858,15 @@ if (typeof document !== "undefined") {
   }
 
   function upgradeHouse(node, level) {
-    // Construction animation
+    // Construction pulse, then the flat SVG building pops in
     const construct = document.createElement("div");
     construct.className = "construct";
-    for (let i = 0; i < 5; i++) {
-      const img = document.createElement("img");
-      img.src = `images/c${i + 1}.png`;
-      construct.append(img);
-    }
     node.prepend(construct);
     setTimeout(() => {
-      node.removeChild(construct);
-      const building = document.createElement("img");
-      building.src = `images/l${level + 1}.png`;
+      construct.remove();
+      const building = document.createElement("div");
       building.className = "house";
+      building.innerHTML = BUILDING_SVGS[level];
       node.append(building);
       gameSequence(s);
     }, 2000);
@@ -833,7 +887,7 @@ if (typeof document !== "undefined") {
       dialogEl.children[2].style.background = "#f2f2f2";
     } else {
       dialogEl.children[2].style.pointerEvents = "none";
-      dialogEl.children[2].style.background = "#454545";
+      dialogEl.children[2].style.background = "#8a8a72";
     }
     dialogEl.children[2].onclick = () => dialogClicked(type, true);
   }
