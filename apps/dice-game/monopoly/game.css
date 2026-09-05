@@ -224,19 +224,20 @@ body {
 }
 
 /* =============================================
-   Map (Board) — fixed size, not full-screen
+   Map (Board) — Flying Chess look: cream board,
+   flat palette cells with cream gaps
    ============================================= */
 .map {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   grid-template-rows: repeat(5, 1fr);
-  grid-gap: 3px;
+  grid-gap: 4px;
   width: 960px;
   height: 400px;
-  background: #e8e8e8;
+  background: #fffdca;
+  border: 1px solid #8a8a72;
   border-radius: 10px;
-  padding: 3px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 4px;
   flex-shrink: 0;
 }
 
@@ -244,70 +245,67 @@ body {
   position: relative;
   height: 100%;
   width: 100%;
-  box-shadow:
-    1px 1px 1px inset #454545,
-    1px -1px 1px inset #454545,
-    -1px 1px 1px inset #454545,
-    -1px -1px 1px inset #454545;
   text-align: center;
   border-radius: 6px;
   overflow: hidden;
   user-select: none;
 }
 
-/* Background icon for each cell — centered below the h3 label */
-.cell-icon {
-  position: absolute;
-  top: 22px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36px;
-  line-height: 1;
-  opacity: 0.35;
-  pointer-events: none;
-  z-index: 0;
-}
-
+/* Cream text on the coloured cell, like Flying Chess letters */
 .box h3 {
-  background: rgba(69, 69, 69, 0.9);
-  color: #fff;
-  font-weight: 100;
+  background: none;
+  color: #fffdca;
+  font-weight: 700;
   position: absolute;
-  top: 0;
+  top: 4px;
   left: 0;
-  font-size: 13px;
+  font-size: 12px;
   width: 100%;
-  height: 22px;
-  line-height: 22px;
-  border-top-right-radius: 6px;
-  border-top-left-radius: 6px;
+  height: 16px;
+  line-height: 16px;
   overflow: hidden;
   white-space: nowrap;
   z-index: 1;
 }
 
-/* Player tokens */
+/* Icon inside a cream circle, echoing the board cells of Flying Chess */
+.cell-icon {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #fffdca;
+  border: 3px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Player tokens: Flying Chess badge style (colour disc, cream ring/text) */
 .box .chr {
   position: absolute;
-  bottom: 5px;
+  bottom: 3px;
   left: 50%;
   transform: translateX(-50%);
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  border: 2px solid #fffdca;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  color: #fff;
+  color: #fffdca;
   font-weight: bold;
-  z-index: 1;
+  z-index: 2;
   animation: tokenBounce 0.3s ease;
 }
 
@@ -323,10 +321,11 @@ body {
   }
 }
 
-/* Center area */
+/* Center area — same cream as the board, with a Flying Chess
+   style pinwheel of chevrons pointing at the dice */
 .big-box {
   position: relative;
-  background: #fafafa;
+  background: none;
   box-shadow: none;
   grid-area: 2 / 2 / -2 / -2;
   text-align: center;
@@ -338,22 +337,23 @@ body {
   justify-content: center;
 }
 
+.board-decor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 /* Dice area */
 .control {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
-  box-shadow:
-    2px 2px 2px #888,
-    -2px 2px 2px #888,
-    2px -2px 2px #888,
-    -2px -2px 2px #888,
-    4px 4px 4px #999 inset,
-    -4px -4px 4px #999 inset,
-    4px -4px 4px #999 inset,
-    -4px 4px 4px #999 inset;
-  background: #f0f0f0;
+  border: 2px solid #8a8a72;
+  background: #fffdca;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   flex-shrink: 0;
 }
 
@@ -404,14 +404,27 @@ body {
   cursor: pointer;
 }
 
-/* Building sprites */
-.box img.house {
+/* Building sprites — flat inline SVG in the Flying Chess palette */
+.box .house {
   position: absolute;
-  bottom: 3px;
+  bottom: 2px;
   left: 50%;
   transform: translateX(-50%);
-  width: 85%;
-  z-index: 0;
+  width: 64%;
+  z-index: 1;
+  pointer-events: none;
+  animation: buildingPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.box .house svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Once a building stands, the type icon steps back */
+.box:has(.house) .cell-icon {
+  opacity: 0.3;
 }
 
 /* =============================================
@@ -469,7 +482,7 @@ body {
   height: 200px;
   border-radius: 13px;
   background: #fff;
-  border: 3px solid #454545;
+  border: 3px solid #8a8a72;
   display: none;
   z-index: 10;
 }
@@ -485,9 +498,9 @@ body {
 }
 
 .dialog h2 {
-  background: #454545;
-  color: #fff;
-  font-weight: 100;
+  background: #8a8a72;
+  color: #fffdca;
+  font-weight: 700;
   position: absolute;
   top: 0;
   left: 0;
@@ -537,12 +550,12 @@ body {
   top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
-  border: 2px solid #666;
+  border: 2px solid #8a8a72;
   border-radius: 13px;
   font-weight: 100;
   font-size: 18px;
   padding: 1.5em 2em;
-  background: #f1f1f1;
+  background: #fffdca;
   white-space: nowrap;
   display: none;
   z-index: 8;
@@ -559,16 +572,16 @@ body {
   width: 180px;
   height: 260px;
   border-radius: 13px;
-  background: #f2f2f2;
-  border: 3px solid #454545;
+  background: #fffdca;
+  border: 3px solid #8a8a72;
   display: none;
   z-index: 6;
 }
 
 .infobox h2 {
-  background: #454545;
-  color: #fff;
-  font-weight: 100;
+  background: #8a8a72;
+  color: #fffdca;
+  font-weight: 700;
   position: absolute;
   top: 0;
   left: 0;
@@ -597,48 +610,54 @@ body {
 }
 
 /* =============================================
-   Construction Animation
+   Construction pulse (replaces the old sprite clips)
    ============================================= */
-.construct img {
+.construct {
   position: absolute;
+  inset: 0;
   z-index: 3;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.construct img:first-child {
-  width: 100%;
-  bottom: 0%;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: c1 2s;
+.construct::before,
+.construct::after {
+  content: "";
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid #fffdca;
+  opacity: 0;
+  animation: buildRing 0.55s ease-out 3;
 }
 
-.construct img:nth-child(2) {
-  width: 100%;
-  bottom: 3%;
-  right: -30%;
-  animation: c2 2s;
+.construct::after {
+  animation-delay: 0.18s;
 }
 
-.construct img:nth-child(3) {
-  width: 100%;
-  bottom: 3%;
-  left: -30%;
-  animation: c3 2s;
+@keyframes buildRing {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
 }
 
-.construct img:nth-child(4) {
-  width: 50%;
-  bottom: 30%;
-  right: 0%;
-  transform: rotate(-45deg);
-  animation: c4 2s;
-}
-
-.construct img:nth-child(5) {
-  width: 180%;
-  bottom: -13%;
-  left: -30%;
-  animation: c5 2s;
+@keyframes buildingPop {
+  0% {
+    transform: translateX(-50%) scale(0.2);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
 }
 
 /* =============================================
@@ -676,7 +695,7 @@ body {
   border-radius: 8px;
   font-size: 1.1em;
   cursor: pointer;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: #333;
   color: #fff;
   font-weight: 600;
   margin-top: 16px;
@@ -687,90 +706,7 @@ body {
 }
 
 /* =============================================
-   Animations
-   ============================================= */
-@keyframes c1 {
-  0% {
-    opacity: 0;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes c2 {
-  0% {
-    opacity: 0;
-    right: -100%;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    right: -30%;
-  }
-}
-
-@keyframes c3 {
-  0% {
-    opacity: 0;
-    left: -100%;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    left: -30%;
-  }
-}
-
-@keyframes c4 {
-  0% {
-    opacity: 0;
-    transform: rotate(-45deg);
-  }
-  20% {
-    opacity: 1;
-    transform: rotate(-45deg);
-  }
-  40% {
-    transform: rotate(-90deg);
-  }
-  60% {
-    transform: rotate(-45deg);
-  }
-  80% {
-    opacity: 1;
-    transform: rotate(-90deg);
-  }
-  100% {
-    opacity: 0;
-    transform: rotate(-45deg);
-  }
-}
-
-@keyframes c5 {
-  0% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 0;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-/* =============================================
-   Responsive
+   Game Over Overlay
    ============================================= */
 @media (max-width: 1000px) {
   #game-main {
@@ -836,12 +772,14 @@ body {
 
   .box h3 {
     font-size: 8px;
-    height: 14px;
-    line-height: 14px;
+    height: 12px;
+    line-height: 12px;
   }
 
   .cell-icon {
-    font-size: 20px;
+    width: 28px;
+    height: 28px;
+    font-size: 15px;
   }
 
   .control {

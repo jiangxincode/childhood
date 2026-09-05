@@ -90,7 +90,7 @@
     />
     <script src="../../../js/baidu-analytics.js"></script>
     <script src="../../../js/common.js"></script>
-  <script src="../../common/ai-difficulty.js"></script>
+    <script src="../../common/ai-difficulty.js"></script>
     <script src="../../common/sound-manager.js"></script>
   </head>
   <body>
@@ -102,7 +102,7 @@
         <form class="option-form" onsubmit="return false;">
           <div class="form-grid">
             <div class="form-group">
-              <span class="color-dot" style="background: #e53935"></span>
+              <span class="color-dot" style="background: #dc2108"></span>
               <label for="p-red">红方</label>
               <select id="p-red">
                 <option value="human" selected>玩家</option>
@@ -111,7 +111,7 @@
               </select>
             </div>
             <div class="form-group">
-              <span class="color-dot" style="background: #1565c0"></span>
+              <span class="color-dot" style="background: #0873c5"></span>
               <label for="p-blue">蓝方</label>
               <select id="p-blue">
                 <option value="human">玩家</option>
@@ -120,7 +120,7 @@
               </select>
             </div>
             <div class="form-group">
-              <span class="color-dot" style="background: #f9a825"></span>
+              <span class="color-dot" style="background: #e77918"></span>
               <label for="p-yellow">黄方</label>
               <select id="p-yellow">
                 <option value="human">玩家</option>
@@ -129,7 +129,7 @@
               </select>
             </div>
             <div class="form-group">
-              <span class="color-dot" style="background: #2e7d32"></span>
+              <span class="color-dot" style="background: #0aa21c"></span>
               <label for="p-green">绿方</label>
               <select id="p-green">
                 <option value="human">玩家</option>
@@ -172,6 +172,18 @@
       <!-- Board -->
       <div class="map">
         <div class="big-box">
+          <svg
+            class="board-decor"
+            viewBox="0 0 790 236"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <polygon points="351,8 439,8 395,78" fill="#db224e" />
+            <polygon points="439,228 351,228 395,158" fill="#e77918" />
+            <polygon points="8,84 8,152 88,118" fill="#83c326" />
+            <polygon points="782,84 782,152 702,118" fill="#76c5f0" />
+          </svg>
           <div class="control">
             <div class="dice" id="dice">
               <div class="slot slot1"></div>
