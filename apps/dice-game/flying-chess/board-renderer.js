@@ -3,25 +3,36 @@
 
   const SVG_NS = "http://www.w3.org/2000/svg";
   const BOARD_SIZE = 985;
-  const CELL_SIZE = 50;
-  const BOARD_COLOR = "#fffccb";
+  const BOARD_COLOR = "#fffdca";
+  // Colours sampled from the original background artwork
   const TEAM_COLORS = {
-    red: "#dc1c4b",
-    blue: "#69bce2",
-    yellow: "#ed780b",
-    green: "#7bc31c",
+    red: "#db224e",
+    blue: "#76c5f0",
+    yellow: "#e77918",
+    green: "#83c326",
   };
   const PAD_COLORS = {
-    red: "#ee9bbb",
-    blue: "#b9dff2",
-    yellow: "#fff000",
-    green: "#c5e66b",
+    red: "#f09abd",
+    blue: "#c5e5fa",
+    yellow: "#fff500",
+    green: "#c5de69",
   };
-  const FINISH_COLORS = { 6: "red", 7: "blue", 8: "yellow", 9: "green" };
+  // Softer variants used for the fuel-station decorations, sampled from
+  // the original artwork (they read duller than the team colours)
+  const FUEL_COLORS = {
+    red: "#b03545",
+    blue: "#74aebc",
+    yellow: "#c4761f",
+    green: "#82b42c",
+  };
+  const CIRCLE_RADIUS = 17.5;
+  const PAD_RADIUS = 37;
+  const FONT_FAMILY = "Verdana, 'Microsoft YaHei', Arial, sans-serif";
+  // Letters printed inside the track circles, keyed by coord id
   const CELL_LABELS = {
     1: "N",
     3: "P",
-    4: "O",
+    5: "O",
     8: "Q",
     11: "R",
     14: "S",
@@ -38,8 +49,134 @@
     42: "K",
     44: "J",
     47: "L",
-    50: "M",
+    50: "W",
   };
+  // Hangar team per quadrant, clockwise from top-left
+  const QUADRANT_TEAMS = ["green", "red", "blue", "yellow"];
+
+  // ------------------------------------------------------------------
+  // Geometry of one quadrant (top-left) measured from the original
+  // artwork; the other three quadrants are 90° rotations of it.
+  // Rectangles are [x, y, w, h]; triangles are flat vertex lists.
+  // ------------------------------------------------------------------
+  const QUADRANT_CELLS = [
+    { id: 40, tri: [146, 259, 146, 360, 45, 360] },
+    { id: 41, rect: [148, 256, 53, 105] },
+    { id: 42, rect: [203, 256, 52, 105] },
+    { id: 43, tri: [258, 260, 258, 360, 357, 360] },
+    { id: 44, tri: [262, 257, 361, 257, 361, 357] },
+    { id: 45, rect: [256, 203, 105, 52] },
+    { id: 46, rect: [256, 148, 105, 52] },
+    { id: 47, tri: [360, 46, 360, 145, 261, 145] },
+    { id: 48, rect: [364, 42, 50, 104] },
+    { id: 49, rect: [416, 42, 50, 104] },
+    { id: 50, rect: [469, 42, 50, 104] },
+    { id: 51, rect: [521, 42, 50, 104] },
+    { id: 52, rect: [573, 42, 50, 104] },
+  ];
+  // Finish runway of the quadrant: shaft rectangle + arrow head polygon,
+  // coloured with the team of the next quadrant (clockwise).
+  const QUADRANT_RUNWAY = {
+    shaft: [469, 42, 50, 366],
+    head: [421, 408, 567, 408, 494, 480],
+  };
+  const HANGAR = [40, 40, 207, 207];
+  // Dashed "fuel station" arrows: [from, to, tip] along the given axis.
+  // Text mode: "h" horizontal, "h180" horizontal upside down,
+  // "v" upright characters stacked vertically, "v180" the same column
+  // rotated 180° (characters upside down, read bottom-up).
+  const FUEL_SIDES = [
+    {
+      team: "yellow",
+      axis: "h",
+      line: 307,
+      arrows: [
+        [366, 456, 465],
+        [527, 616, 625],
+      ],
+      texts: [
+        { x: 434.5, y: 288.5, mode: "h" },
+        { x: 587.5, y: 290.5, mode: "h" },
+      ],
+    },
+    {
+      team: "green",
+      axis: "v",
+      line: 686,
+      arrows: [
+        [366, 456, 465],
+        [527, 616, 625],
+      ],
+      texts: [
+        { x: 703.5, y: 432, mode: "v" },
+        { x: 703.5, y: 588.5, mode: "v" },
+      ],
+    },
+    {
+      team: "red",
+      axis: "h",
+      line: 686,
+      arrows: [
+        [619, 529, 520],
+        [458, 367, 358],
+      ],
+      texts: [
+        { x: 547, y: 694.5, mode: "h180" },
+        { x: 388.5, y: 694.5, mode: "h180" },
+      ],
+    },
+    {
+      team: "blue",
+      axis: "v",
+      line: 300,
+      arrows: [
+        [619, 529, 520],
+        [458, 367, 358],
+      ],
+      texts: [
+        { x: 281.5, y: 396.5, mode: "v180" },
+        { x: 281.5, y: 553, mode: "v180" },
+      ],
+    },
+  ];
+  const READY_LABELS = [
+    { team: "green", x: 74, y: 275, rotate: 180 },
+    { team: "red", x: 700, y: 63, rotate: 180 },
+    { team: "yellow", x: 287, y: 923, rotate: 0 },
+    { team: "blue", x: 911, y: 712, rotate: 0 },
+  ];
+
+  // Rotate a point 90° clockwise about the board centre: (x, y) -> (985-y, x)
+  function rotatePoint(point, times) {
+    let [x, y] = point;
+    for (let i = 0; i < ((times % 4) + 4) % 4; i++) {
+      const next = BOARD_SIZE - y;
+      y = x;
+      x = next;
+    }
+    return [x, y];
+  }
+
+  function rotateRect(rect, times) {
+    const [x, y, w, h] = rect;
+    const corners = [rotatePoint([x, y], times), rotatePoint([x + w, y + h], times)];
+    const xs = corners.map((c) => c[0]);
+    const ys = corners.map((c) => c[1]);
+    return [
+      Math.min(...xs),
+      Math.min(...ys),
+      Math.max(...xs) - Math.min(...xs),
+      Math.max(...ys) - Math.min(...ys),
+    ];
+  }
+
+  function rotatePoints(points, times) {
+    const rotated = [];
+    for (let i = 0; i < points.length; i += 2) {
+      rotated.push(...rotatePoint([points[i], points[i + 1]], times));
+    }
+    return rotated;
+  }
 
   function svgElement(name, attributes) {
     const element = document.createElementNS(SVG_NS, name);
@@ -49,190 +186,186 @@
     return element;
   }
 
-  function centerOf(coord) {
-    return {
-      x: Number.parseInt(coord.left, 10) + CELL_SIZE / 2,
-      y: Number.parseInt(coord.top, 10) + CELL_SIZE / 2,
-    };
+  function appendShape(svg, name, attributes) {
+    const element = svgElement(name, attributes);
+    svg.appendChild(element);
+    return element;
   }
 
-  function addDefinitions(svg) {
-    const defs = svgElement("defs");
-    for (const [team, color] of Object.entries(TEAM_COLORS)) {
-      const marker = svgElement("marker", {
-        id: `flying-arrow-${team}`,
-        viewBox: "0 0 10 10",
-        refX: "8",
-        refY: "5",
-        markerWidth: "6",
-        markerHeight: "6",
-        orient: "auto",
-      });
-      marker.appendChild(svgElement("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: color }));
-      defs.appendChild(marker);
-    }
-    svg.appendChild(defs);
+  function centerOfRect(rect) {
+    return [rect[0] + rect[2] / 2, rect[1] + rect[3] / 2];
   }
 
-  function drawHangars(svg) {
-    const hangars = {
-      green: { x: 39, y: 39 },
-      red: { x: 738, y: 39 },
-      yellow: { x: 39, y: 738 },
-      blue: { x: 738, y: 738 },
-    };
-    for (const [team, position] of Object.entries(hangars)) {
-      svg.appendChild(
-        svgElement("rect", {
-          x: position.x,
-          y: position.y,
-          width: "208",
-          height: "208",
-          fill: TEAM_COLORS[team],
-        })
-      );
-    }
-
-    const labels = [
-      { team: "green", x: 45, y: 281 },
-      { team: "red", x: 675, y: 70 },
-      { team: "yellow", x: 259, y: 930 },
-      { team: "blue", x: 884, y: 719 },
-    ];
-    for (const labelData of labels) {
-      const label = svgElement("text", {
-        x: labelData.x,
-        y: labelData.y,
-        fill: TEAM_COLORS[labelData.team],
-        "font-size": "19",
-        "font-weight": "700",
-      });
-      label.textContent = "ready";
-      svg.appendChild(label);
-    }
-  }
-
-  function drawHangarPads(svg, initialCoords) {
-    for (const [team, coords] of Object.entries(initialCoords)) {
-      for (const coord of coords) {
-        const center = centerOf(coord);
-        svg.appendChild(
-          svgElement("circle", {
-            cx: center.x,
-            cy: center.y,
-            r: "36",
-            fill: PAD_COLORS[team],
-          })
-        );
+  // Circle inside a triangle sits 29px diagonally inwards from the
+  // right-angle corner (the vertex joined to the other two by one
+  // horizontal and one vertical edge).
+  function triangleCircleCenter(vertices) {
+    for (let i = 0; i < 3; i++) {
+      const ax = vertices[i * 2];
+      const ay = vertices[i * 2 + 1];
+      const bx = vertices[((i + 1) % 3) * 2];
+      const by = vertices[((i + 1) % 3) * 2 + 1];
+      const cx = vertices[((i + 2) % 3) * 2];
+      const cy = vertices[((i + 2) % 3) * 2 + 1];
+      const bVertical = bx === ax && by !== ay;
+      const bHorizontal = by === ay && bx !== ax;
+      const cVertical = cx === ax && cy !== ay;
+      const cHorizontal = cy === ay && cx !== ax;
+      if (bVertical && cHorizontal) {
+        return [ax + Math.sign(cx - ax) * 29, ay + Math.sign(by - ay) * 29];
+      }
+      if (bHorizontal && cVertical) {
+        return [ax + Math.sign(bx - ax) * 29, ay + Math.sign(cy - ay) * 29];
       }
     }
+    return null;
   }
 
-  function drawCenter(svg) {
-    const triangles = [
-      { team: "red", points: "413,405 573,405 493,485" },
-      { team: "blue", points: "581,413 581,573 501,493" },
-      { team: "yellow", points: "413,581 573,581 493,501" },
-      { team: "green", points: "405,413 405,573 485,493" },
-    ];
-    for (const triangle of triangles) {
-      svg.appendChild(
-        svgElement("polygon", {
-          points: triangle.points,
-          fill: TEAM_COLORS[triangle.team],
-          stroke: BOARD_COLOR,
-          "stroke-width": "5",
-        })
-      );
-    }
-  }
-
-  function drawFuelStations(svg) {
-    const routes = [
-      { team: "yellow", x1: 366, y1: 307, x2: 458, y2: 307 },
-      { team: "yellow", x1: 527, y1: 307, x2: 619, y2: 307 },
-      { team: "green", x1: 686, y1: 366, x2: 686, y2: 458 },
-      { team: "green", x1: 686, y1: 527, x2: 686, y2: 619 },
-      { team: "red", x1: 619, y1: 686, x2: 527, y2: 686 },
-      { team: "red", x1: 458, y1: 686, x2: 366, y2: 686 },
-      { team: "blue", x1: 300, y1: 619, x2: 300, y2: 527 },
-      { team: "blue", x1: 300, y1: 458, x2: 300, y2: 366 },
-    ];
-    for (const route of routes) {
-      svg.appendChild(
-        svgElement("line", {
-          x1: route.x1,
-          y1: route.y1,
-          x2: route.x2,
-          y2: route.y2,
-          stroke: TEAM_COLORS[route.team],
-          "stroke-width": "2",
-          "stroke-dasharray": "12 9",
-          "marker-end": `url(#flying-arrow-${route.team})`,
-        })
-      );
-    }
-
-    const labels = [
-      { team: "yellow", x: 412, y: 294, transform: "" },
-      { team: "green", x: 700, y: 415, transform: "rotate(90 700 415)" },
-      { team: "red", x: 573, y: 705, transform: "" },
-      { team: "blue", x: 286, y: 573, transform: "rotate(-90 286 573)" },
-    ];
-    for (const labelData of labels) {
-      const label = svgElement("text", {
-        x: labelData.x,
-        y: labelData.y,
-        fill: TEAM_COLORS[labelData.team],
-        "font-size": "14",
-        "font-weight": "700",
-        transform: labelData.transform,
-      });
-      label.textContent = "加油站";
-      svg.appendChild(label);
-    }
-  }
-
-  function drawCell(svg, coord) {
-    const center = centerOf(coord);
-    const finishTeam = coord.id > 52 ? FINISH_COLORS[Math.floor(coord.id / 10)] : null;
-    const team = coord.color || finishTeam;
-    const group = svgElement("g", {
-      class: `board-cell board-cell-${team}`,
-      "data-coord-id": coord.id,
+  function drawHangar(svg, rect, team, pads) {
+    appendShape(svg, "rect", {
+      x: rect[0],
+      y: rect[1],
+      width: rect[2],
+      height: rect[3],
+      fill: TEAM_COLORS[team],
     });
-    group.appendChild(
-      svgElement("rect", {
-        x: Number.parseInt(coord.left, 10),
-        y: Number.parseInt(coord.top, 10),
-        width: CELL_SIZE,
-        height: CELL_SIZE,
-        fill: TEAM_COLORS[team],
-      })
-    );
-    group.appendChild(
-      svgElement("circle", {
-        cx: center.x,
-        cy: center.y,
-        r: "19",
-        fill: BOARD_COLOR,
-      })
-    );
+    for (const pad of pads) {
+      appendShape(svg, "circle", {
+        cx: Number.parseInt(pad.left, 10) + 25,
+        cy: Number.parseInt(pad.top, 10) + 25,
+        r: PAD_RADIUS,
+        fill: PAD_COLORS[team],
+      });
+    }
+  }
 
-    const cellLabel = CELL_LABELS[coord.id];
-    if (cellLabel) {
-      const label = svgElement("text", {
-        x: center.x,
-        y: center.y + 9,
+  function drawRunway(svg, shaft, head, team, finishCoords) {
+    appendShape(svg, "rect", {
+      x: shaft[0],
+      y: shaft[1],
+      width: shaft[2],
+      height: shaft[3],
+      fill: TEAM_COLORS[team],
+    });
+    appendShape(svg, "polygon", { points: head.join(" "), fill: TEAM_COLORS[team] });
+    for (const coord of finishCoords) {
+      appendShape(svg, "circle", {
+        cx: Number.parseInt(coord.left, 10) + 25,
+        cy: Number.parseInt(coord.top, 10) + 25,
+        r: CIRCLE_RADIUS,
+        fill: BOARD_COLOR,
+      });
+    }
+  }
+
+  function drawCell(svg, shape, color) {
+    const label = CELL_LABELS[shape.id];
+    const group = svgElement("g", {
+      class: `board-cell board-cell-${color}`,
+      "data-coord-id": shape.id,
+    });
+    let center;
+    if (shape.rect) {
+      const [x, y, w, h] = shape.rect;
+      appendShape(group, "rect", { x, y, width: w, height: h, fill: TEAM_COLORS[color] });
+      center = centerOfRect(shape.rect);
+    } else {
+      appendShape(group, "polygon", { points: shape.tri.join(" "), fill: TEAM_COLORS[color] });
+      center = triangleCircleCenter(shape.tri);
+    }
+    if (center) {
+      appendShape(group, "circle", {
+        cx: center[0],
+        cy: center[1],
+        r: CIRCLE_RADIUS,
+        fill: BOARD_COLOR,
+      });
+    }
+    if (label && center) {
+      const text = appendShape(group, "text", {
+        x: center[0],
+        y: center[1],
+        dy: "0.35em",
         "text-anchor": "middle",
-        fill: TEAM_COLORS[team],
-        "font-size": "29",
+        fill: TEAM_COLORS[color],
+        "font-family": FONT_FAMILY,
+        "font-size": "30",
         "font-weight": "700",
       });
-      label.textContent = cellLabel;
-      group.appendChild(label);
+      text.textContent = label;
     }
     svg.appendChild(group);
+  }
+
+  function drawFuelText(svg, color, text) {
+    if (text.mode === "v" || text.mode === "v180") {
+      const chars = [..."加油站"];
+      chars.forEach((char, i) => {
+        const y = text.y - 14.5 + i * 14.5;
+        const element = appendShape(svg, "text", {
+          x: text.x,
+          y,
+          dy: "0.35em",
+          "text-anchor": "middle",
+          fill: color,
+          "font-family": FONT_FAMILY,
+          "font-size": "14",
+          "font-weight": "700",
+          transform: text.mode === "v180" ? `rotate(180 ${text.x} ${text.y})` : undefined,
+        });
+        element.textContent = char;
+      });
+      return;
+    }
+    const element = appendShape(svg, "text", {
+      x: text.x,
+      y: text.y,
+      dy: "0.35em",
+      "text-anchor": "middle",
+      fill: color,
+      "font-family": FONT_FAMILY,
+      "font-size": "14",
+      "font-weight": "700",
+      transform: text.mode === "h180" ? `rotate(180 ${text.x} ${text.y})` : undefined,
+    });
+    element.textContent = "加油站";
+  }
+
+  function drawFuelSide(svg, side) {
+    const color = FUEL_COLORS[side.team];
+    for (const [from, to, tip] of side.arrows) {
+      const dash = { stroke: color, "stroke-width": "3", "stroke-dasharray": "14.5 13.5" };
+      if (side.axis === "h") {
+        appendShape(svg, "line", { x1: from, y1: side.line, x2: to, y2: side.line, ...dash });
+        appendShape(svg, "polygon", {
+          points: `${to},${side.line - 4.5} ${to},${side.line + 4.5} ${tip},${side.line}`,
+          fill: color,
+        });
+      } else {
+        appendShape(svg, "line", { x1: side.line, y1: from, x2: side.line, y2: to, ...dash });
+        appendShape(svg, "polygon", {
+          points: `${side.line - 4.5},${to} ${side.line + 4.5},${to} ${side.line},${tip}`,
+          fill: color,
+        });
+      }
+    }
+    for (const text of side.texts) drawFuelText(svg, color, text);
+  }
+
+  function drawReadyLabel(svg, label) {
+    const text = appendShape(svg, "text", {
+      x: label.x,
+      y: label.y,
+      dy: "0.35em",
+      "text-anchor": "middle",
+      fill: TEAM_COLORS[label.team],
+      "font-family": FONT_FAMILY,
+      "font-size": "20",
+      "font-weight": "700",
+      "font-style": "italic",
+      transform: label.rotate ? `rotate(${label.rotate} ${label.x} ${label.y})` : undefined,
+    });
+    text.textContent = "ready";
   }
 
   function render(container, coords, initialCoords) {
@@ -248,15 +381,52 @@
       "aria-hidden": "true",
       focusable: "false",
     });
-    addDefinitions(svg);
-    svg.appendChild(
-      svgElement("rect", { width: BOARD_SIZE, height: BOARD_SIZE, fill: BOARD_COLOR })
-    );
-    drawHangars(svg);
-    drawHangarPads(svg, initialCoords);
-    drawFuelStations(svg);
-    drawCenter(svg);
-    for (const coord of coords) drawCell(svg, coord);
+
+    appendShape(svg, "rect", { width: BOARD_SIZE, height: BOARD_SIZE, fill: BOARD_COLOR });
+
+    const coordsById = new Map(coords.map((coord) => [coord.id, coord]));
+    const finishCoordsByQuadrant = [[], [], [], []];
+    for (const coord of coords) {
+      if (coord.id > 52) {
+        finishCoordsByQuadrant[Math.floor(coord.id / 10) - 6].push(coord);
+      }
+    }
+
+    // Hangars with their four parking pads
+    for (let q = 0; q < 4; q++) {
+      const team = QUADRANT_TEAMS[q];
+      drawHangar(svg, rotateRect(HANGAR, q), team, initialCoords[team] || []);
+    }
+
+    // Finish runways (shaft + arrow head + finish circles); the runway of
+    // quadrant q points at the centre and belongs to the next team clockwise
+    for (let q = 0; q < 4; q++) {
+      const team = QUADRANT_TEAMS[(q + 1) % 4];
+      drawRunway(
+        svg,
+        rotateRect(QUADRANT_RUNWAY.shaft, q),
+        rotatePoints(QUADRANT_RUNWAY.head, q),
+        team,
+        finishCoordsByQuadrant[q]
+      );
+    }
+
+    // 52 track cells: one quadrant of shapes rotated four ways
+    for (let q = 0; q < 4; q++) {
+      for (const cell of QUADRANT_CELLS) {
+        const id = ((cell.id + q * 13 - 1) % 52) + 1;
+        const coord = coordsById.get(id);
+        if (!coord) continue;
+        const shape = { id };
+        if (cell.rect) shape.rect = rotateRect(cell.rect, q);
+        if (cell.tri) shape.tri = rotatePoints(cell.tri, q);
+        drawCell(svg, shape, coord.color);
+      }
+    }
+
+    for (const side of FUEL_SIDES) drawFuelSide(svg, side);
+    for (const label of READY_LABELS) drawReadyLabel(svg, label);
+
     container.prepend(svg);
   }
 
