@@ -246,6 +246,12 @@ function canCapture(attacker, defender, attackerX, attackerY, defenderX, defende
   // Cannot capture own pieces
   if (attacker.team === defender.team) return false;
 
+  // Water rule: only the rat may swim, and a rat in the water cannot
+  // interact with pieces on land at all — a swimming rat cannot snatch the
+  // shore elephant, and rats on land and in water cannot capture each other.
+  // (Captures across the river by lion/tiger jumps are handled separately.)
+  if (isRiver(attackerX, attackerY) !== isRiver(defenderX, defenderY)) return false;
+
   // A piece standing in the attacker's trap (the traps guarding its own den)
   // loses all rank and can be captured by any piece. Pieces are unaffected
   // by their own traps.

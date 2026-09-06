@@ -426,6 +426,30 @@ describe("capture rules - 吃子规则", () => {
     const elephantRed = makePiece(ELEPHANT, RED);
     expect(canCapture(catBlack, elephantRed, 0, 0, 3, 7)).toBe(false);
   });
+
+  it("rat in water cannot capture the elephant on shore", () => {
+    const rat = makePiece(RAT, BLACK);
+    const elephant = makePiece(ELEPHANT, RED);
+
+    // Black rat swims at (1,3) (water); red elephant stands at (1,2) (land)
+    expect(canCapture(rat, elephant, 1, 3, 1, 2)).toBe(false);
+  });
+
+  it("rat on land cannot capture the rat in water", () => {
+    const rat = makePiece(RAT, RED);
+    const swimmer = makePiece(RAT, BLACK);
+
+    expect(canCapture(rat, swimmer, 1, 2, 1, 3)).toBe(false);
+    expect(canCapture(swimmer, rat, 1, 3, 1, 2)).toBe(false);
+  });
+
+  it("rat in water can capture a rat in the water", () => {
+    const ratA = makePiece(RAT, RED);
+    const ratB = makePiece(RAT, BLACK);
+
+    // (1,3) and (2,3) are both river squares
+    expect(canCapture(ratA, ratB, 1, 3, 2, 3)).toBe(true);
+  });
 });
 
 // ============================================================
