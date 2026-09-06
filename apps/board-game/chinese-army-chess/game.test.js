@@ -566,6 +566,31 @@ describe("moveCard", () => {
     expect(state.winner).toBe(RED);
   });
 
+  it("Any piece captures the flag in the base camp for victory", () => {
+    var board = emptyBoard();
+    board[1][1] = makePiece("排长", RED); // adjacent to blue base camp (1,0)
+    board[0][1] = makePiece("军旗", BLUE);
+    var state = makeState(board, RED);
+    var result = moveCard(state, { x: 1, y: 1 }, { x: 1, y: 0 });
+    expect(result).not.toBe(null);
+    expect(state.gameOver).toBe(true);
+    expect(state.winner).toBe(RED);
+    expect(state.board[0][1].name).toBe("排长");
+  });
+
+  it("Piece that entered a base camp cannot move again (open mode)", () => {
+    var board = emptyBoard();
+    board[0][1] = makePiece("排长", RED);
+    expect(getValidMoves(board, 1, 0, RED, "open").length).toBe(0);
+    expect(getValidMoves(board, 1, 0, RED, "hidden").length).toBe(0);
+  });
+
+  it("Flip mode allows base camp pieces to move", () => {
+    var board = emptyBoard();
+    board[0][1] = makePiece("排长", RED);
+    expect(getValidMoves(board, 1, 0, RED, "flip").length).toBeGreaterThan(0);
+  });
+
   it("Cannot move to illegal position", () => {
     var board = emptyBoard();
     board[5][2] = makePiece("排长", RED);
@@ -693,13 +718,15 @@ describe("Flag Capture", () => {
     expect(flagMove).not.toBe(undefined);
   });
 
-  it("Non-engineer pieces cannot capture flag", () => {
+  it("Non-engineer pieces can capture flag (standard rule)", () => {
     var board = emptyBoard();
     board[1][0] = makePiece("排长", RED);
     board[0][1] = makePiece("军旗", BLUE);
     var moves = getValidMoves(board, 0, 1, RED);
     var flagMove = moves.find((m) => m.type === "capture_flag");
-    expect(flagMove).toBe(undefined);
+    expect(flagMove).toBeDefined();
+    expect(flagMove.x).toBe(1);
+    expect(flagMove.y).toBe(0);
   });
 
   it("Engineer can reach near base camp via railway", () => {
