@@ -246,8 +246,10 @@ function canCapture(attacker, defender, attackerX, attackerY, defenderX, defende
   // Cannot capture own pieces
   if (attacker.team === defender.team) return false;
 
-  // Check if defender is in trap (any piece can capture)
-  if (isTrap(defenderX, defenderY, defender.team)) return true;
+  // A piece standing in the attacker's trap (the traps guarding its own den)
+  // loses all rank and can be captured by any piece. Pieces are unaffected
+  // by their own traps.
+  if (isTrap(defenderX, defenderY, attacker.team)) return true;
 
   const attRank = attacker.rank;
   const defRank = defender.rank;
