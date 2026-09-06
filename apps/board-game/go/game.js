@@ -182,12 +182,16 @@ function playMove(board, x, y, player) {
     return null; // Suicide, illegal move
   }
 
-  // Ko detection: if only one stone captured and own group has only one liberty, it may be a ko
+  // Ko detection: a simple ko exists only when exactly one stone was
+  // captured and the capturing stone forms a SINGLE-stone group left with
+  // exactly one liberty (the classic ko shape). If the capturing group is
+  // larger, the opponent's recapture would take several stones and never
+  // recreates the previous position, so it must stay legal (e.g. snapbacks).
   let koPoint = null;
   if (totalCaptures === 1 && lastCaptured) {
     const selfGroupAfter = getGroup(newBoard, x, y);
     const selfLibertiesAfter = getLiberties(newBoard, selfGroupAfter.stones);
-    if (selfLibertiesAfter.length === 1) {
+    if (selfGroupAfter.stones.length === 1 && selfLibertiesAfter.length === 1) {
       koPoint = lastCaptured;
     }
   }
