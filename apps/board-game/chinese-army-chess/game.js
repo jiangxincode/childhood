@@ -522,39 +522,48 @@ function getNormalMoves(board, x, y, team) {
     }
   }
 
-  // Non-engineer pieces on railway: extra step along railway
+  // Non-engineer pieces on railway slide any number of squares in a straight
+  // line (no turning; only engineers may turn at railway junctions). The
+  // slide stops at the first occupied square; an enemy piece standing there
+  // may be captured if the combat rules allow it.
   if (isOnRailway(x, y)) {
     for (const dir of dirs) {
-      const nx = x + dir.dx;
-      const ny = y + dir.dy;
-      if (!inBounds(nx, ny)) continue;
-      if (!areOnSameRailway(x, y, nx, ny)) continue;
-
-      // Check if already included
-      let dup = false;
-      for (let j = 0; j < moves.length; j++) {
-        if (moves[j].x === nx && moves[j].y === ny) {
-          dup = true;
+      let nx = x + dir.dx;
+      let ny = y + dir.dy;
+      if (!inBounds(nx, ny) || !areOnSameRailway(x, y, nx, ny)) continue;
+      while (true) {
+        const target = board[ny][nx];
+        if (target === null) {
+          pushUniqueMove(moves, { x: nx, y: ny, type: "move" });
+          const tx = nx + dir.dx;
+          const ty = ny + dir.dy;
+          if (!inBounds(tx, ty) || !areOnSameRailway(nx, ny, tx, ty)) break;
+          nx = tx;
+          ny = ty;
+        } else {
+          if (
+            target.team !== team &&
+            !isCamp(nx, ny) &&
+            !isBaseCamp(nx, ny) &&
+            target.state !== STATE_FACE_DOWN &&
+            canCapture(board[y][x], target)
+          ) {
+            pushUniqueMove(moves, { x: nx, y: ny, type: "capture" });
+          }
           break;
-        }
-      }
-      if (dup) continue;
-
-      const target = board[ny][nx];
-      if (target === null) {
-        moves.push({ x: nx, y: ny, type: "move" });
-      } else if (target.team !== team) {
-        if (isCamp(nx, ny)) continue;
-        if (isBaseCamp(nx, ny)) continue;
-        if (target.state === STATE_FACE_DOWN) continue;
-        if (canCapture(board[y][x], target)) {
-          moves.push({ x: nx, y: ny, type: "capture" });
         }
       }
     }
   }
 
   return moves;
+}
+
+function pushUniqueMove(moves, move) {
+  for (const m of moves) {
+    if (m.x === move.x && m.y === move.y) return;
+  }
+  moves.push(move);
 }
 
 function getEngineerMoves(board, x, y, team) {
